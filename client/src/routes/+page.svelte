@@ -1,6 +1,5 @@
 <script lang="ts">
 	import DatasetList from '$lib/components/DatasetList.svelte';
-	import UploadDropzone from '$lib/components/UploadDropzone.svelte';
 	import type { DocumentMeta } from '$lib/types/document';
 
 	let { data } = $props();
@@ -18,15 +17,10 @@
 			</p>
 		</header>
 
-		<section class="grid grid-cols-1 md:grid-cols-2 gap-8">
+		<section>
 			<div class="bg-white border rounded-lg p-6 shadow-sm">
 				<h2 class="font-medium mb-4">Dataset (CUAD)</h2>
 				<DatasetList {documents} />
-			</div>
-
-			<div class="bg-white border rounded-lg p-6 shadow-sm">
-				<h2 class="font-medium mb-4">Upload PDF</h2>
-				<UploadDropzone />
 			</div>
 		</section>
 
