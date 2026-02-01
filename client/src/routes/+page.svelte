@@ -3,7 +3,7 @@
 	import type { DocumentMeta } from '$lib/types/document';
 
 	let { data } = $props();
-	const documents: DocumentMeta[] = data.documents;
+	const documents: DocumentMeta[] = $derived(data.documents);
 
 </script>
 
