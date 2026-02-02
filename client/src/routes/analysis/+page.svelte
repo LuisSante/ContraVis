@@ -5,6 +5,7 @@
 	import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 	import { selectedParagraph, paragraphs, relations, pdfUrl } from '$lib/stores/document';
 	import type { Paragraph, ParagraphRelation } from '$lib/types/document';
+	import { api } from '$lib/api/client';
 
 	pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 

@@ -3,7 +3,7 @@ import json
 from typing import Optional, Dict, Any
 
 from openai import OpenAI
-from .static import TYPE_PRIORITY
+from .config import Config
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -64,7 +64,7 @@ def classify_contradiction(a: str, b: str, model: str = "gpt-4o-mini") -> Dict[s
 def rank_score(result: dict, edge_type: str, sim_score: Optional[float]) -> float:
     base = float(result.get("confidence", 0.0))
     t = str(result.get("type", "other")).lower()
-    pri = TYPE_PRIORITY.get(t, 1)
+    pri = Config.TYPE_PRIORITY.get(t, 1)
 
     bonus_ref = 0.10 if edge_type.startswith("reference") else 0.0
     bonus_sim = 0.05 if (edge_type == "semantic_similarity" and (sim_score or 0) > 0.85) else 0.0

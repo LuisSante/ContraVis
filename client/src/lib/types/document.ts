@@ -23,3 +23,13 @@ export interface ParagraphRelation {
 	ref_label?: string;
 	ref_value?: string;
 }
+
+export interface ParagraphEdit {
+	id: string;
+	text: string;
+}
+
+export interface DocumentEditsPayload {
+	documentId: string;
+	paragraphs: ParagraphEdit[];
+}

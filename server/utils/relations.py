@@ -1,6 +1,6 @@
 from sentence_transformers import SentenceTransformer, util
 from collections import Counter
-from .static import REFERENCE_PATTERNS
+from .config import Config
 
 import json
 import os
@@ -105,7 +105,7 @@ def generate_graph_data(paragraphs: list) -> dict:
     for i in range(len(nodes)):
         current_text = nodes[i]["text"]
         
-        for ref_type, pattern in REFERENCE_PATTERNS:
+        for ref_type, pattern in Config.REFERENCE_PATTERNS:
             matches = pattern.finditer(current_text)
             
             for match in matches:
