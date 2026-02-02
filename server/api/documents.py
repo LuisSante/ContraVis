@@ -91,61 +91,61 @@ async def process_document(
 
         graph_data = generate_graph_data(paragraphs)
 
-        id2text = {n["id"]: n["text"] for n in graph_data["nodes"]}
+        # id2text = {n["id"]: n["text"] for n in graph_data["nodes"]}
         
-        raw_candidates = []
-        for e in graph_data["edges"]:
-            et = e.get("type", "")
-            if not (et.startswith("reference") or et == "semantic_similarity"):
-                continue
+        # raw_candidates = []
+        # for e in graph_data["edges"]:
+        #     et = e.get("type", "")
+        #     if not (et.startswith("reference") or et == "semantic_similarity"):
+        #         continue
 
-            a = id2text.get(e["source"], "")
-            b = id2text.get(e["target"], "")
-            if not a or not b:
-                continue
+        #     a = id2text.get(e["source"], "")
+        #     b = id2text.get(e["target"], "")
+        #     if not a or not b:
+        #         continue
 
-            result = classify_contradiction(a, b, model="gpt-4o-mini")
-            raw_candidates.append({
-                "source": e["source"],
-                "target": e["target"],
-                "edge_type": et,
-                "edge_score": e.get("score"),
-                "result": result
-            })
+        #     result = classify_contradiction(a, b, model="gpt-4o-mini")
+        #     raw_candidates.append({
+        #         "source": e["source"],
+        #         "target": e["target"],
+        #         "edge_type": et,
+        #         "edge_score": e.get("score"),
+        #         "result": result
+        #     })
 
-        ranked = postfilter_and_rank(raw_candidates)
+        # ranked = postfilter_and_rank(raw_candidates)
 
-        final_contradictions = []
-        for c in ranked:
-            source_node = next(n for n in paragraphs if n.id == c["source"])
-            target_node = next(n for n in paragraphs if n.id == c["target"])
+        # final_contradictions = []
+        # for c in ranked:
+        #     source_node = next(n for n in paragraphs if n.id == c["source"])
+        #     target_node = next(n for n in paragraphs if n.id == c["target"])
             
-            ev_a = c["result"].get("evidence", {}).get("source", "")
-            ev_b = c["result"].get("evidence", {}).get("target", "")
+        #     ev_a = c["result"].get("evidence", {}).get("source", "")
+        #     ev_b = c["result"].get("evidence", {}).get("target", "")
 
-            bbox_a = pdf_reader.get_text_bbox(ev_a, df_lines, source_node.page)
-            bbox_b = pdf_reader.get_text_bbox(ev_b, df_lines, target_node.page)
+        #     bbox_a = pdf_reader.get_text_bbox(ev_a, df_lines, source_node.page)
+        #     bbox_b = pdf_reader.get_text_bbox(ev_b, df_lines, target_node.page)
 
-            final_contradictions.append(
-                Contradiction(
-                    source=c["source"],
-                    target=c["target"],
-                    type=c["result"].get("type", "other"),
-                    confidence=float(c["result"].get("confidence", 0.0)),
-                    edge_type=c["edge_type"],
-                    edge_score=c.get("edge_score"),
-                    evidence_a=ev_a,
-                    evidence_b=ev_b,
-                    evidence_a_bbox=bbox_a,
-                    evidence_b_bbox=bbox_b,
-                    evidence_a_page=source_node.page,
-                    evidence_b_page=target_node.page,
-                    summary=c["result"].get("summary", ""),
-                    score=float(c.get("final_score", 0.0)),
-                )
-            )
+        #     final_contradictions.append(
+        #         Contradiction(
+        #             source=c["source"],
+        #             target=c["target"],
+        #             type=c["result"].get("type", "other"),
+        #             confidence=float(c["result"].get("confidence", 0.0)),
+        #             edge_type=c["edge_type"],
+        #             edge_score=c.get("edge_score"),
+        #             evidence_a=ev_a,
+        #             evidence_b=ev_b,
+        #             evidence_a_bbox=bbox_a,
+        #             evidence_b_bbox=bbox_b,
+        #             evidence_a_page=source_node.page,
+        #             evidence_b_page=target_node.page,
+        #             summary=c["result"].get("summary", ""),
+        #             score=float(c.get("final_score", 0.0)),
+        #         )
+        #     )
 
-        graph_data["contradictions"] = [c.model_dump() for c in final_contradictions]
+        # graph_data["contradictions"] = [c.model_dump() for c in final_contradictions]
         return Graph(**graph_data)  
 
     finally:
