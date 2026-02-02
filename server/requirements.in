@@ -16,5 +16,6 @@ spacy
 openai
 datasets 
 tqdm 
+pdf2docx
 
 # pip install --upgrade pyarrow datasets
