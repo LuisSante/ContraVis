@@ -17,5 +17,7 @@ openai
 datasets 
 tqdm 
 pdf2docx
+mammoth
+weasyprint
 
 # pip install --upgrade pyarrow datasets
