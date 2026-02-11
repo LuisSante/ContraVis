@@ -245,33 +245,6 @@
 				</div>
 			{/if}
 		</div>
-
-		<div
-			class="flex flex-1 flex-col overflow-hidden rounded-lg border border-gray-300 bg-white p-6 shadow-sm"
-		>
-			<h3 class="mb-4 border-b pb-2 text-xs font-bold tracking-wider text-gray-800 uppercase">
-				Editable Document
-			</h3>
-			<div class="flex-1 overflow-y-auto bg-white p-4">
-				<div class="space-y-4">
-					{#each $paragraphs as p}
-						<div
-							class="cursor-pointer p-2 transition-all {$selectedParagraph?.id === p.id
-								? 'border-l-4 border-yellow-500 bg-yellow-50'
-								: 'hover:bg-gray-50'}"
-							on:mousedown={() => ($selectedParagraph = p)}
-						>
-							<p
-								class="text-justify text-sm leading-relaxed text-gray-700 outline-none"
-								contenteditable="true"
-							>
-								{p.text}
-							</p>
-						</div>
-					{/each}
-				</div>
-			</div>
-		</div>
 	</div>
 </main>
 
