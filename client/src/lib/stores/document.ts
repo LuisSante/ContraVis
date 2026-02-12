@@ -3,7 +3,7 @@ import type { Paragraph, DocumentMeta, ParagraphRelation } from '$lib/types/docu
 
 export const currentDocument = writable<DocumentMeta | null>(null);
 export const pdfUrl = writable<string | null>(null);
-export const paragraphs = writable<Paragraph[]>([]); //nodes
+export const paragraphs = writable<[]>([]); //nodes
 export const relations = writable<ParagraphRelation[]>([]); //edges
 export const loading = writable<boolean>(false);
 export const error = writable<string | null>(null);

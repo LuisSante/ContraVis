@@ -19,5 +19,6 @@ tqdm
 pdf2docx
 mammoth
 weasyprint
+mammoth
 
 # pip install --upgrade pyarrow datasets

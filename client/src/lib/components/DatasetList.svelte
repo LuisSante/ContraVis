@@ -30,12 +30,9 @@
 			formData.append('document_id', doc.id);
 
 			const res = await api.post('/process', formData);
-			if (res.data && res.data.nodes) {
-				console.log('Setting paragraphs:', res.data.edges);
-
-				paragraphs.set(res.data.nodes);
-				relations.set(res.data.edges || []);
-
+			if (res.data) {
+				console.log(res.data)	
+				paragraphs.set(res.data); 
 				goto('/analysis');
 			} else {
 				paragraphs.set([]);

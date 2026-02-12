@@ -22,6 +22,8 @@ document_store = DocumentStore()
 def list_documents():
     if not document_store._initialized:
         document_store.initialize()
+
+    logger.info(document_store.get_documents())
     return document_store.get_documents()
 
 
@@ -40,109 +42,17 @@ def get_document_pdf(document_id: str):
 
     raise HTTPException(status_code=404, detail="Document not found")
 
-@router.post("/process", response_model=Graph)
+# @router.post("/process", response_model=Graph)
+@router.post("/process")
 async def process_document(
-    document_id: str = Form(...),
-    file: UploadFile = File(None)
+    document_id: str = Form(...)
 ):
-    tmp_path = None
+    pdf_path = document_store.get_path(document_id)
+    tmp_path = str(pdf_path)
 
-    try:
-        pdf_path = document_store.get_path(document_id)
+    output = pdf_reader.pdf_to_structured_json(pdf_path)
 
-        if not pdf_path:
-            raise HTTPException(
-                status_code=404,
-                detail="Documento no encontrado localmente"
-            )
-
-        tmp_path = str(pdf_path)
-
-        df_paragraphs, df_lines = pdf_reader.PDF_to_dataframe(tmp_path)
-
-        paragraphs = [
-            Paragraph(
-                id=f"{index}",
-                documentId=document_id,
-                page=int(row["page"]),
-                paragraph_enum=int(row["paragraph_enum"]),
-                text=row.get("clean_text", row["text"]),
-                bbox=[
-                    float(row["x0"]),
-                    float(row["y0"]),
-                    float(row["x1"]),
-                    float(row["y1"]),
-                ],
-            )
-            for index, row in df_paragraphs.iterrows()
-        ]
-
-        graph_data = generate_graph_data(paragraphs)
-
-        """
-        id2text = {n["id"]: n["text"] for n in graph_data["nodes"]}
-        
-        raw_candidates = []
-        for e in graph_data["edges"]:
-            et = e.get("type", "")
-            if not (et.startswith("reference") or et == "semantic_similarity"):
-                continue
-
-            a = id2text.get(e["source"], "")
-            b = id2text.get(e["target"], "")
-            if not a or not b:
-                continue
-
-            result = classify_contradiction(a, b, model="gpt-4o-mini")
-            raw_candidates.append({
-                "source": e["source"],
-                "target": e["target"],
-                "edge_type": et,
-                "edge_score": e.get("score"),
-                "result": result
-            })
-
-        ranked = postfilter_and_rank(raw_candidates)
-
-        final_contradictions = []
-        for c in ranked:
-            source_node = next(n for n in paragraphs if n.id == c["source"])
-            target_node = next(n for n in paragraphs if n.id == c["target"])
-            
-            ev_a = c["result"].get("evidence", {}).get("source", "")
-            ev_b = c["result"].get("evidence", {}).get("target", "")
-
-            bbox_a = pdf_reader.get_text_bbox(ev_a, df_lines, source_node.page)
-            bbox_b = pdf_reader.get_text_bbox(ev_b, df_lines, target_node.page)
-
-            final_contradictions.append(
-                Contradiction(
-                    source=c["source"],
-                    target=c["target"],
-                    type=c["result"].get("type", "other"),
-                    confidence=float(c["result"].get("confidence", 0.0)),
-                    edge_type=c["edge_type"],
-                    edge_score=c.get("edge_score"),
-                    evidence_a=ev_a,
-                    evidence_b=ev_b,
-                    evidence_a_bbox=bbox_a,
-                    evidence_b_bbox=bbox_b,
-                    evidence_a_page=source_node.page,
-                    evidence_b_page=target_node.page,
-                    summary=c["result"].get("summary", ""),
-                    score=float(c.get("final_score", 0.0)),
-                )
-            )
-
-        graph_data["contradictions"] = [c.model_dump() for c in final_contradictions]
-        """
-
-        return Graph(**graph_data)  
-
-    finally:
-        if file and tmp_path and os.path.exists(tmp_path):
-            os.remove(tmp_path)
-
+    return output
 
 
 @router.get("/")
