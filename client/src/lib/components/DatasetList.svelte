@@ -32,7 +32,7 @@
 			const res = await api.post('/process', formData);
 			if (res.data) {
 				console.log(res.data)	
-				paragraphs.set(res.data); 
+				paragraphs.set(res.data.paragraphs);
 				goto('/analysis');
 			} else {
 				paragraphs.set([]);

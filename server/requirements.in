@@ -20,5 +20,6 @@ pdf2docx
 mammoth
 weasyprint
 mammoth
+pdfplumber
 
 # pip install --upgrade pyarrow datasets

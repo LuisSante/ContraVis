@@ -15,6 +15,14 @@ export interface DocumentMeta {
 // 	relationsCount: number;
 // }
 
+export type DomBox = { 
+	id: string; 
+	x: number; 
+	y: number; 
+	w: number; 
+	h: number 
+};
+
 export type Run = {
 	text: string;
 	size: number;

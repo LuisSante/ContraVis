@@ -23,7 +23,6 @@ def list_documents():
     if not document_store._initialized:
         document_store.initialize()
 
-    logger.info(document_store.get_documents())
     return document_store.get_documents()
 
 
@@ -48,8 +47,6 @@ async def process_document(
     document_id: str = Form(...)
 ):
     pdf_path = document_store.get_path(document_id)
-    tmp_path = str(pdf_path)
-
     output = pdf_reader.pdf_to_structured_json(pdf_path)
 
     return output

@@ -5,33 +5,20 @@
 	import type { Paragraph } from '$lib/types/document';
 
 	let container: HTMLDivElement;
-	let svg: SVGSVGElement;
-	let paras: Paragraph[] = [];
-
-	type DomBox = { id: string; x: number; y: number; w: number; h: number };
-
-	let boxes: DomBox[] = [];
 	let selectedId: string | null = null;
 
-	function renderBBoxes() {
-		if (!container || !svg) return;
+	let paras: Paragraph[] = [];
+	let byPage = new Map<number, Paragraph[]>();
+	let pageList: number[] = [];
 
-		const containerRect = container.getBoundingClientRect();
-		const nodes = Array.from(container.querySelectorAll<HTMLElement>('[data-pid]'));
-
-		boxes = nodes.map((el) => {
-			const r = el.getBoundingClientRect();
-			return {
-				id: el.dataset.pid!,
-				x: r.left - containerRect.left + container.scrollLeft,
-				y: r.top - containerRect.top + container.scrollTop,
-				w: r.width,
-				h: r.height
-			};
-		});
-
-		svg.setAttribute('width', String(container.scrollWidth));
-		svg.setAttribute('height', String(container.scrollHeight));
+	function groupByPage() {
+		byPage = new Map();
+		for (const p of paras) {
+			const arr = byPage.get(p.page) ?? [];
+			arr.push(p);
+			byPage.set(p.page, arr);
+		}
+		pageList = Array.from(byPage.keys()).sort((a, b) => a - b);
 	}
 
 	function onClickPara(id: string) {
@@ -40,61 +27,37 @@
 
 	onMount(() => {
 		paras = get(paragraphs) as Paragraph[];
-
-		requestAnimationFrame(() => renderBBoxes());
-
-		const ro = new ResizeObserver(() => renderBBoxes());
-		ro.observe(container);
-
-		const onScroll = () => renderBBoxes();
-		container.addEventListener('scroll', onScroll);
-
-		return () => {
-			ro.disconnect();
-			container.removeEventListener('scroll', onScroll);
-		};
+		groupByPage();
 	});
 </script>
 
-<div class="grid grid-cols-1 gap-4 p-4 lg:grid-cols-[1fr_320px]">
+<div class="grid grid-cols-2 gap-4 p-4">
 	<div
 		bind:this={container}
-		class="relative h-[95vh] overflow-auto rounded-xl border border-gray-200 bg-white"
+		class="h-[95vh] rounded-xl border border-gray-200 bg-gray-50 p-6"
 	>
-		<svg bind:this={svg} class="pointer-events-none absolute top-0 left-0">
-			{#each boxes as b (b.id)}
-				<rect
-					x={b.x}
-					y={b.y}
-					width={b.w}
-					height={b.h}
-					fill="transparent"
-					stroke={selectedId === b.id ? 'rgb(239 68 68)' : 'rgba(0,0,0,0.18)'}
-					stroke-width="2"
-					class="pointer-events-auto cursor-pointer"
-					on:click={() => onClickPara(b.id)}
-				/>
-			{/each}
-		</svg>
+		<div class="flex flex-col gap-6">
+			{#each pageList as pg}
+				<section class="relative rounded-md border border-gray-200 bg-white shadow-sm">
+					<!-- “hoja” -->
+					<div class="border-b border-gray-100 px-4 py-2 text-xs text-gray-500">
+						Page {pg + 1}
+					</div>
 
-		<div class="relative p-6">
-			{#each paras as p (p.id)}
-				<p
-					data-pid={p.id}
-					class="mb-2 cursor-pointer leading-relaxed hover:bg-gray-50"
-					on:click={() => onClickPara(p.id)}
-				>
-					{#each p.runs as run}
-						<span
-							style="
-								font-weight: {run.bold ? '700' : '400'};
-								font-style: {run.italic ? 'italic' : 'normal'};
-							"
-						>
-							{run.text}
-						</span>
-					{/each}
-				</p>
+					<!-- contenido -->
+					<div class="relative px-10 py-8 font-serif text-sm leading-relaxed">
+						{#each byPage.get(pg) ?? [] as p (p.id)}
+							<p
+								data-pid={p.id}
+								class={'mb-2 border-2 cursor-pointer rounded px-1 py-0.5 hover:bg-gray-50 ' +
+									(selectedId === p.id ? 'bg-red-50' : '')}
+								on:click={() => onClickPara(p.id)}
+							>
+								{p.text}
+							</p>
+						{/each}
+					</div>
+				</section>
 			{/each}
 		</div>
 	</div>
