@@ -77,7 +77,6 @@
 			{/each}
 		</svg>
 
-		<!-- Document content -->
 		<div class="relative p-6">
 			{#each paras as p (p.id)}
 				<p
