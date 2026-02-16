@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import FileResponse
 from schemas.document import DatasetDocument, Paragraph
 from schemas.graph import Graph
-from utils.pdf_reader import PDFReader
+from utils.pdf_reader_enhanced import PDFReader
 from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
 from schemas.contradiction import Contradiction

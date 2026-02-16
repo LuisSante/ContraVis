@@ -1,59 +1,21 @@
 export interface DocumentMeta {
 	id: string;
 	name: string;
-	origin: 'dataset' | 'upload';
 	processed: boolean;
 }
 
-// export interface Paragraph {
-// 	id: string;
-// 	documentId: string;
-// 	page: number;
-// 	paragraph_enum: number;
-// 	text: string;
-// 	bbox: [number, number, number, number]; // pdf.js coords
-// 	relationsCount: number;
-// }
-
-export type DomBox = { 
-	id: string; 
-	x: number; 
-	y: number; 
-	w: number; 
-	h: number 
-};
-
-export type Run = {
-	text: string;
-	size: number;
-	font: string;
+interface ParagraphStyle {
+	font_name: string | null;
+	font_size: number | null;
 	bold: boolean;
 	italic: boolean;
-	color: number;
-};
-
-export type Paragraph = {
-	id: string;
-	page: number;
-	bbox: [number, number, number, number]; // x0,y0,x1,y1 en coords PDF
-	runs: Run[];
-};
-
-export interface ParagraphRelation {
-	source: string;
-	target: string;
-	type: 'reference' | 'semantic_similarity';
-	score?: number;
-	ref_label?: string;
-	ref_value?: string;
+	alignment: 'Left' | 'Center' | 'Right' | 'Justify' | 'None';
 }
 
-export interface ParagraphEdit {
+export interface Paragraph {
 	id: string;
 	text: string;
-}
-
-export interface DocumentEditsPayload {
-	documentId: string;
-	paragraphs: ParagraphEdit[];
+	original: string;
+	style: ParagraphStyle;
+	modified?: boolean;
 }

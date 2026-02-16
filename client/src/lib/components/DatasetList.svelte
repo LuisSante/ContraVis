@@ -8,7 +8,6 @@
 		loading,
 		error,
 		pdfUrl,
-		relations
 	} from '$lib/stores/document';
 	import { PUBLIC_DEV_LOCAL } from '$env/static/public';
 
