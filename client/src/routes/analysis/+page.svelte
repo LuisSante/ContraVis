@@ -3,10 +3,15 @@
     import { pdfUrl } from '$lib/stores/document';
     import * as pdfjsLib from 'pdfjs-dist';
     import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
+    import { api } from '$lib/api/client';
+    import { get } from 'svelte/store';
+    import { currentDocument } from '$lib/stores/document';
 
     pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
     let pagesData: any[] = [];
+    let graphData: { nodes: any[], edges: any[] } = { nodes: [], edges: [] };
+    
     let loading = true;
     let elementStates: Record<
         string,
@@ -45,13 +50,58 @@
                     elements: items
                 });
             }
-            pagesData = extractedPages;
+            
+            pagesData = extractedPages; 
+
+            const doc = get(currentDocument); 
+            
+            if (doc && doc.id) {
+                const payload = {
+                    documentId: doc.id,
+                    pages: extractedPages
+                };
+
+                const response = await api.post('/process', payload);
+                // Guardamos el grafo que devuelve el backend
+                if (response.data.graph) {
+                    graphData = response.data.graph;
+                }
+                console.log('Backend processing complete:', response);
+            } else {
+                console.warn("No document ID found in store.");
+            }
+
         } catch (err) {
-            console.error(err);
+            console.error("Error in extraction or processing:", err); 
         } finally {
-            loading = false;
+            loading = false; 
         }
     }
+
+    // Lógica reactiva para filtrar los párrafos relacionados basándose en activeEditId
+    $: relatedParagraphs = (() => {
+        if (!activeEditId || !graphData.edges.length) return [];
+
+        // Buscamos conexiones donde el actual sea origen o destino
+        const connections = graphData.edges.filter(
+            edge => edge.source === activeEditId || edge.target === activeEditId
+        );
+
+        const relatedIds = connections.map(edge => 
+            edge.source === activeEditId ? edge.target : edge.source
+        );
+
+        return graphData.nodes
+            .filter(node => relatedIds.includes(node.id))
+            .map(node => {
+                const edge = connections.find(e => e.source === node.id || e.target === node.id);
+                return {
+                    ...node,
+                    relType: edge?.type,
+                    score: edge?.score
+                };
+            });
+    })();
 
     function handleInput(id: string, event: Event) {
         const target = event.target as HTMLSpanElement;
@@ -134,10 +184,11 @@
                     
                     <span
                         contenteditable="true"
-                        class="absolute origin-top-left leading-none whitespace-pre-wrap transition-shadow outline-none
+                        class="absolute origin-top-left leading-none whitespace-pre-wrap transition-all outline-none
                                hover:ring-1 hover:ring-blue-300 focus:ring-2 focus:ring-yellow-400
                                {isEdited ? 'ring-1 ring-green-400' : ''}
-                               {isDirty ? 'ring-1 ring-orange-400' : ''}"
+                               {isDirty ? 'ring-1 ring-orange-400' : ''}
+                               {activeEditId === el.id ? 'bg-yellow-50/50 ring-2 ring-yellow-400 z-10' : ''}"
                         style="left: {el.x}px; top: {el.y}px; font-size: {el.fontSize}px; min-width: 4px;"
                         on:input={(e) => handleInput(el.id, e)}
                         on:focus={() => handleFocus(el.id)}
@@ -208,13 +259,43 @@
                 <h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Related Paragraphs</h3>
             </header>
 
-            <div class="flex flex-1 flex-col overflow-y-auto bg-gray-50/30 p-4">
-                <div class="flex flex-1 flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-xl">
-                    <svg class="h-5 w-5 text-gray-200 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                    <p class="text-[10px] text-gray-300 font-medium tracking-tight">Ready for related content</p>
-                </div>
+            <div class="flex flex-1 flex-col overflow-y-auto bg-gray-50/30 p-2 space-y-2">
+                {#if activeEditId}
+                    {#each relatedParagraphs as rel}
+                        <div class="group rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-blue-300 hover:shadow-md">
+                            <div class="mb-2 flex items-center justify-between">
+                                <span class="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase border border-blue-100">
+                                    {rel.relType === 'semantic_similarity' ? 'Similarity' : 'Reference'}
+                                </span>
+                                <span class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter">Page {rel.page}</span>
+                            </div>
+                            
+                            <p class="text-[11px] leading-relaxed text-gray-600">
+                                {rel.text}
+                            </p>
+
+                            {#if rel.score}
+                                <div class="mt-2 flex items-center gap-2">
+                                    <div class="h-1 flex-1 overflow-hidden rounded-full bg-gray-100">
+                                        <div class="h-full bg-blue-400 transition-all" style="width: {rel.score * 100}%"></div>
+                                    </div>
+                                    <span class="text-[8px] font-bold text-blue-400">{(rel.score * 100).toFixed(0)}%</span>
+                                </div>
+                            {/if}
+                        </div>
+                    {:else}
+                        <div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+                            <p class="text-[10px] italic">No relations found for this element</p>
+                        </div>
+                    {/each}
+                {:else}
+                    <div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+                        <svg class="h-6 w-6 opacity-20 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <p class="text-[10px] font-medium uppercase tracking-widest">Select text to analyze</p>
+                    </div>
+                {/if}
             </div>
         </div>
     </div>

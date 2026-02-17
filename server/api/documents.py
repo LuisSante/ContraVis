@@ -40,13 +40,34 @@ def get_document_pdf(document_id: str):
 
 # @router.post("/process", response_model=Graph)
 @router.post("/process")
-async def process_document(
+async def process_document(data: dict):    
+    doc_id = data.get("documentId")
+    pages = data.get("pages", [])
+
+    all_paragraphs = []
+    for page in pages:
+        for el in page.get("elements", []):
+            text_content = el.get("text", "").strip()
+            if text_content:  # Solo si el texto no es vacío
+                all_paragraphs.append({
+                    "id": el.get("id"),
+                    "text": text_content,
+                    "page": page.get("pageNumber"),
+                    "x": el.get("x"),
+                    "y": el.get("y")
+                })
     
-):
-   
+    with open(f"{doc_id}.json", "w") as f:
+        import json
+        json.dump(all_paragraphs, f, indent=2)
 
-    return 
-
+    graph_result = generate_graph_data(all_paragraphs)
+    
+    return {
+        "status": "success",
+        "documentId": doc_id,
+        "graph": graph_result
+    }
 
 @router.get("/")
 def document_init():

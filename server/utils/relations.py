@@ -90,13 +90,13 @@ def generate_graph_data(paragraphs: list) -> dict:
     
     for p in paragraphs:
         nodes.append({
-            "id": p.id,
-            "documentId": p.documentId,
-            "text": p.text.strip(),
-            "paragraph_enum": p.paragraph_enum,
-            "page": p.page,
-            "bbox": p.bbox,
-            "relationsCount": p.relationsCount
+            "id": p.get("id"),
+            "documentId": p.get("documentId"),
+            "text": p.get("text", "").strip(),
+            "paragraph_enum": p.get("paragraph_enum"),
+            "page": p.get("page"),
+            "bbox": p.get("bbox"),
+            "relationsCount": 0 
         })
     
     logger.info(f"TOTAL PARAGRAPH {len(paragraphs)}\n\n")
