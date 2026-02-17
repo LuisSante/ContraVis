@@ -31,7 +31,7 @@
 			// 	console.log(get(paragraphs));
 			// 	console.log(get(numPages));
 
-			goto('/test');
+			goto('/analysis');
 			// } else {
 			// 	paragraphs.set([]);
 			// }
