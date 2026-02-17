@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { paragraphs, selectedParagraph, currentDocument } from '$lib/stores/document';
+	import { paragraphs, selectedParagraph, currentDocument, numPages } from '$lib/stores/document';
 	import type { Paragraph } from '$lib/types/document';
 	import { api } from '$lib/api/client';
 

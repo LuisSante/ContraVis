@@ -2,7 +2,6 @@ from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import FileResponse
 from schemas.document import DatasetDocument, Paragraph
 from schemas.graph import Graph
-from utils.pdf_reader_enhanced import PDFReader
 from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
 from schemas.contradiction import Contradiction
@@ -13,8 +12,6 @@ import os
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-pdf_reader = PDFReader()
 
 document_store = DocumentStore()
 
@@ -44,12 +41,11 @@ def get_document_pdf(document_id: str):
 # @router.post("/process", response_model=Graph)
 @router.post("/process")
 async def process_document(
-    document_id: str = Form(...)
+    
 ):
-    pdf_path = document_store.get_path(document_id)
-    output = pdf_reader.pdf_to_structured_json(pdf_path)
+   
 
-    return output
+    return 
 
 
 @router.get("/")

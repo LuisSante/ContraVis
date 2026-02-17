@@ -4,6 +4,7 @@ from typing import Literal, List, Optional
 class DatasetDocument(BaseModel):
     id: str
     name: str
+    full_path: str
     origin: Literal['dataset', 'upload']
     processed: bool
 

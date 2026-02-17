@@ -1,7 +1,6 @@
 from pathlib import Path
 from schemas.document import DatasetDocument
 from utils.config import Config
-from utils.utils import iter_pdfs
 import logging
 
 logger = logging.getLogger(__name__)
@@ -17,6 +16,14 @@ class DocumentStore:
             cls._instance._initialized = False
         return cls._instance
 
+    from pathlib import Path
+
+    def iter_pdfs(self, base_dir: Path):
+        return (
+            p for p in base_dir.rglob("*")
+            if p.is_file() and p.suffix.lower() == ".pdf"
+        )
+
     def initialize(self):
         if self._initialized:
             return
@@ -29,10 +36,11 @@ class DocumentStore:
         documents = []
         path_map = {}
 
-        for pdf_path in iter_pdfs(Config.CUAD_PDF_DIR):
+        for pdf_path in self.iter_pdfs(Config.CUAD_PDF_DIR):
             doc = DatasetDocument(
                 id=pdf_path.stem,
                 name=pdf_path.name,
+                full_path=str(pdf_path.resolve()),
                 origin="dataset",
                 processed=False
             )

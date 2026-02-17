@@ -1,6 +1,7 @@
 export interface DocumentMeta {
 	id: string;
 	name: string;
+	full_path: string;
 	processed: boolean;
 }
 
