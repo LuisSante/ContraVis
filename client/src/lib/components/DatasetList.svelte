@@ -2,14 +2,9 @@
 	import type { DocumentMeta } from '$lib/types/document';
 	import { goto } from '$app/navigation';
 	import { api } from '$lib/api/client';
-	import {
-		currentDocument,
-		paragraphs,
-		loading,
-		error,
-		pdfUrl,
-	} from '$lib/stores/document';
+	import { currentDocument, paragraphs, loading, error, pdfUrl } from '$lib/stores/document';
 	import { PUBLIC_DEV_LOCAL } from '$env/static/public';
+	import { get } from 'svelte/store';
 
 	export let documents: DocumentMeta[];
 	let query = '';
@@ -30,7 +25,6 @@
 
 			const res = await api.post('/process', formData);
 			if (res.data) {
-				console.log(res.data)	
 				paragraphs.set(res.data.paragraphs);
 				goto('/analysis');
 			} else {

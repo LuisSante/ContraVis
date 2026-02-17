@@ -2,6 +2,7 @@ from typing import Dict, List, Any
 from pdf2docx import Converter
 from docx import Document
 import logging
+import json 
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("pdf_test")
@@ -42,8 +43,11 @@ class PDFReader:
                     "italic": para.runs[0].italic if para.runs else False,
                     "alignment": str(para.alignment)
                 },
-                "original": para.text  # Para tracking
+                "original": para.text  
         })
+
+        with open("output.json", "w") as f:
+            json.dump(paragraphs, f)
 
         return {
             "paragraphs": paragraphs,
