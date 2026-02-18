@@ -1,10 +1,8 @@
 <script lang="ts">
 	import type { DocumentMeta } from '$lib/types/document';
 	import { goto } from '$app/navigation';
-	import { api } from '$lib/api/client';
-	import { currentDocument, paragraphs, numPages, loading, error, pdfUrl } from '$lib/stores/document';
+	import { currentDocument, loading, error, pdfUrl } from '$lib/stores/document';
 	import { PUBLIC_DEV_LOCAL } from '$env/static/public';
-	import { get } from 'svelte/store';
 
 	export let documents: DocumentMeta[];
 	let query = '';
@@ -20,21 +18,7 @@
 		error.set(null);
 
 		try {
-			// const formData = new FormData();
-			// formData.append('document_id', doc.id);
-
-			// const res = await api.post('/process', formData);
-			// if (res.data) {
-			// 	paragraphs.set(res.data.paragraphs);
-			// 	numPages.set(res.data.num_pages);
-
-			// 	console.log(get(paragraphs));
-			// 	console.log(get(numPages));
-
 			goto('/analysis');
-			// } else {
-			// 	paragraphs.set([]);
-			// }
 		} catch (err) {
 			error.set('Error processing document');
 		} finally {

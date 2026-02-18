@@ -1,22 +1,26 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { pdfUrl } from '$lib/stores/document';
+	import { pdfUrl, currentDocument } from '$lib/stores/document';
 	import * as pdfjsLib from 'pdfjs-dist';
 	import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 	import { api } from '$lib/api/client';
 	import { get } from 'svelte/store';
-	import { currentDocument } from '$lib/stores/document';
+	import type {
+		Graph,
+		Node,
+		Edge,
+		ProcessDocumentResponse,
+		ExtractedPage,
+		ElementState,
+		ExtractedElement
+	} from '$lib/types/document';
 
 	pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-	let pagesData: any[] = [];
-	let graphData: { nodes: any[]; edges: any[] } = { nodes: [], edges: [] };
-
+	let pagesData: ExtractedPage[] = [];
+	let graphData: Graph = { nodes: [], edges: [] };
+	let elementStates: Record<string, ElementState> = {};
 	let loading = true;
-	let elementStates: Record<
-		string,
-		{ original: string; committed: string; current: string; isDirty: boolean }
-	> = {};
 	let activeEditId: string | null = null;
 
 	async function extractPdfData() {
@@ -26,14 +30,13 @@
 			loading = true;
 			const loadingTask = pdfjsLib.getDocument(url);
 			const pdf = await loadingTask.promise;
-			let extractedPages = [];
+			let extractedPages: ExtractedPage[] = [];
 
 			for (let i = 1; i <= pdf.numPages; i++) {
 				const page = await pdf.getPage(i);
 				const textContent = await page.getTextContent();
 				const viewport = page.getViewport({ scale: 1.5 });
-
-				const items = textContent.items.map((item: any, idx: number) => {
+				const items: ExtractedElement[] = textContent.items.map((item: any, idx: number) => {
 					const [scaleX, b, c, scaleY, x, y] = item.transform;
 					return {
 						id: `p${i}-e${idx}`,
@@ -54,14 +57,13 @@
 			pagesData = extractedPages;
 
 			const doc = get(currentDocument);
-
 			if (doc && doc.id) {
 				const payload = {
 					documentId: doc.id,
 					pages: extractedPages
 				};
 
-				const response = await api.post('/process', payload);
+				const response = await api.post<ProcessDocumentResponse>('/process', payload);
 				if (response.data.graph) {
 					graphData = response.data.graph;
 				}
@@ -80,7 +82,6 @@
 	$: relatedParagraphs = (() => {
 		if (!activeEditId || !graphData.edges.length) return [];
 
-		// Buscamos conexiones donde el actual sea origen o destino
 		const connections = graphData.edges.filter(
 			(edge) => edge.source === activeEditId || edge.target === activeEditId
 		);
@@ -116,6 +117,7 @@
 	function handleFocus(id: string) {
 		activeEditId = id;
 	}
+
 	function handleBlur() {}
 
 	function handleKeydown(id: string, event: KeyboardEvent) {
@@ -150,7 +152,6 @@
 		const m = oldWords.length,
 			n = newWords.length;
 		const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
-
 		for (let i = 1; i <= m; i++) {
 			for (let j = 1; j <= n; j++) {
 				if (oldWords[i - 1] === newWords[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
@@ -200,6 +201,8 @@
 
 					<span
 						contenteditable="true"
+						role="textbox"
+						tabindex="0"
 						class="absolute origin-top-left leading-none whitespace-pre-wrap transition-all outline-none
                                hover:ring-1 hover:ring-blue-300 focus:ring-2 focus:ring-yellow-400
                                {isEdited ? 'ring-1 ring-green-400' : ''}
@@ -296,7 +299,7 @@
 								<span
 									class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase"
 								>
-									{rel.relType === 'semantic_similarity' ? 'Similarity' : 'Reference'}
+									{rel.relType === 'semantic_similarity' ? 'Similarity' : 'Reference'} 42]
 								</span>
 								<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase"
 									>Page {rel.page}</span

@@ -2,21 +2,60 @@ export interface DocumentMeta {
 	id: string;
 	name: string;
 	full_path: string;
+	origin: 'dataset' | 'upload';
 	processed: boolean;
 }
 
-interface ParagraphStyle {
-	font_name: string | null;
-	font_size: number | null;
-	bold: boolean;
-	italic: boolean;
-	alignment: 'Left' | 'Center' | 'Right' | 'Justify' | 'None';
+export interface Node {
+	id: string;
+	documentId: string;
+	text: string;
+	paragraph_enum: number;
+	page: number;
+	relationsCount: number;
+	x?: number;
+	y?: number;
+	fontSize?: number;
 }
 
-export interface Paragraph {
+export interface Edge {
+	source: string;
+	target: string;
+	type: 'reference' | 'semantic_similarity';
+	score?: number;
+	ref_label?: string;
+	ref_value?: string;
+}
+
+export interface Graph {
+	nodes: Node[];
+	edges: Edge[];
+}
+
+export interface ProcessDocumentResponse {
+	status: 'success' | 'error';
+	documentId: string;
+	graph: Graph;
+}
+
+export interface ExtractedElement {
 	id: string;
 	text: string;
+	x: number;
+	y: number;
+	fontSize: number;
+}
+
+export interface ExtractedPage {
+	pageNumber: number;
+	width: number;
+	height: number;
+	elements: ExtractedElement[];
+}
+
+export interface ElementState {
 	original: string;
-	style: ParagraphStyle;
-	modified?: boolean;
+	committed: string;
+	current: string;
+	isDirty: boolean;
 }
