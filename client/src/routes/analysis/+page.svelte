@@ -1,260 +1,378 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onMount } from 'svelte';
+	import { pdfUrl, currentDocument } from '$lib/stores/document';
 	import * as pdfjsLib from 'pdfjs-dist';
-	// @ts-ignore
-	import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-	import { selectedParagraph, paragraphs, relations, pdfUrl } from '$lib/stores/document';
-	import type { Paragraph, ParagraphRelation } from '$lib/types/document';
+	import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 	import { api } from '$lib/api/client';
+	import { get } from 'svelte/store';
+	import { pagesToParagraphPages, normalizePagesForRender } from '$lib/utils/paragrahs';
+	import { PAGE_PADDING, LINE_HEIGHT_MULTIPLIER } from '$lib/constant';
+	import type {
+		Graph,
+		ProcessDocumentResponse,
+		ExtractedPage,
+		ElementState,
+		ExtractedElement,
+		LayoutPage
+	} from '$lib/types/document';
 
 	pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-	const scale = 1.5;
+	let pagesData: LayoutPage[] = [];
+	let graphData: Graph = { nodes: [], edges: [] };
+	let elementStates: Record<string, ElementState> = {};
+	let loading = true;
+	let activeEditId: string | null = null;
 
-	let loading = false;
-	let error: string | null = null;
-	let pdfDoc: pdfjsLib.PDFDocumentProxy | null = null;
-	let pages: number[] = [];
-	let loadTask: any = null;
-	let pageNodes: (HTMLCanvasElement | null)[] = [];
-
-	$: if ($pdfUrl) {
-		loadDocument($pdfUrl);
-	}
-
-	function drawBoundingBoxes(pageNum: number) {
-		const canvas = pageNodes[pageNum - 1];
-		if (!canvas || !pdfDoc) return;
-		const context = canvas.getContext('2d');
-		if (!context) return;
-
-		$paragraphs.forEach((p) => {
-			if (p.page === pageNum) {
-				const [x1, y1, x2, y2] = p.bbox;
-
-				if ($selectedParagraph && $selectedParagraph.id === p.id) {
-					context.strokeStyle = 'rgba(255, 215, 0, 1)';
-					context.lineWidth = 2;
-				} else {
-					context.strokeStyle = 'rgba(0, 0, 255, 0.5)';
-					context.lineWidth = 1;
-				}
-				context.strokeRect(x1 * scale, y1 * scale, (x2 - x1) * scale, (y2 - y1) * scale);
-
-				if (p.relationsCount > 0) {
-					const text = p.relationsCount.toString();
-					context.font = 'bold 16px Arial';
-					const textWidth = context.measureText(text).width;
-					const bgPadding = 8;
-					const boxHeight = 26;
-					const boxX = x2 * scale + 2;
-					const boxY = y1 * scale;
-
-					context.fillStyle = 'rgba(255, 0, 0, 0.7)';
-					context.fillRect(boxX, boxY, textWidth + bgPadding * 2, boxHeight);
-
-					context.fillStyle = 'white';
-					context.textBaseline = 'middle';
-					context.fillText(text, boxX + bgPadding, boxY + boxHeight / 2);
-				}
-			}
-		});
-	}
-
-	async function loadDocument(url: string) {
-		loading = true;
-		error = null;
-		pdfDoc = null;
-		pages = [];
+	async function extractPdfData() {
+		const url = $pdfUrl;
+		if (!url) return;
 		try {
-			if (loadTask) loadTask.destroy();
-			loadTask = pdfjsLib.getDocument(url);
-			pdfDoc = await loadTask.promise;
-			if (pdfDoc) pages = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
-		} catch (err: any) {
-			if (err.name !== 'RenderingCancelledException') {
-				console.error('Error loading PDF:', err);
-				error = 'Failed to load PDF';
+			loading = true;
+			const loadingTask = pdfjsLib.getDocument(url);
+			const pdf = await loadingTask.promise;
+			let extractedPages: ExtractedPage[] = [];
+
+			for (let i = 1; i <= pdf.numPages; i++) {
+				const page = await pdf.getPage(i);
+				const textContent = await page.getTextContent();
+				const viewport = page.getViewport({ scale: 1.5 });
+				const items: ExtractedElement[] = textContent.items.map((item: any, idx: number) => {
+					const [scaleX, b, _c, _scaleY, x, y] = item.transform;
+
+					return {
+						id: `p${i}-e${idx}`,
+						text: item.str,
+						x: x * viewport.scale,
+						y: viewport.height - y * viewport.scale,
+						fontSize: Math.sqrt(scaleX * scaleX + b * b) * viewport.scale,
+						width: (item.width || 0) * viewport.scale
+					};
+				});
+				extractedPages.push({
+					pageNumber: i,
+					width: viewport.width,
+					height: viewport.height,
+					elements: items
+				});
 			}
+
+			const paragraphPages = pagesToParagraphPages(extractedPages);
+			pagesData = normalizePagesForRender(paragraphPages);
+			elementStates = {};
+			activeEditId = null;
+
+			const doc = get(currentDocument);
+			if (doc && doc.id) {
+				const payload = {
+					documentId: doc.id,
+					pages: paragraphPages
+				};
+				const response = await api.post<ProcessDocumentResponse>('/process', payload);
+
+				if (response.data.graph) {
+					graphData = response.data.graph;
+				}
+				console.log('Backend processing complete:', response);
+			} else {
+				console.warn('No document ID found in store.');
+			}
+		} catch (err) {
+			console.error('Error in extraction or processing:', err);
 		} finally {
 			loading = false;
 		}
 	}
 
-	function handlePageClick(event: MouseEvent, pageNum: number) {
-		const canvas = pageNodes[pageNum - 1];
-		if (!canvas) return;
-		const rect = canvas.getBoundingClientRect();
-		const x = event.clientX - rect.left;
-		const y = event.clientY - rect.top;
+	$: relatedParagraphs = (() => {
+		if (!activeEditId || !graphData.edges.length) return [];
 
-		const clickedParagraph = $paragraphs.find((p) => {
-			if (p.page !== pageNum) return false;
-			const [x1, y1, x2, y2] = p.bbox;
-			return x >= x1 * scale && x <= x2 * scale && y >= y1 * scale && y <= y2 * scale;
-		});
-		if (clickedParagraph) $selectedParagraph = clickedParagraph;
+		const connections = graphData.edges.filter(
+			(edge) => edge.source === activeEditId || edge.target === activeEditId
+		);
+
+		const relatedIds = connections.map((edge) =>
+			edge.source === activeEditId ? edge.target : edge.source
+		);
+
+		return graphData.nodes
+			.filter((node) => relatedIds.includes(node.id))
+			.map((node) => {
+				const edge = connections.find((e) => e.source === node.id || e.target === node.id);
+				return {
+					...node,
+					relType: edge?.type,
+					score: edge?.score
+				};
+			});
+	})();
+
+	function handleInput(id: string, event: Event) {
+		const target = event.target as HTMLElement;
+		const currentText = target.innerText;
+		if (!elementStates[id]) {
+			const original = pagesData.flatMap((p) => p.elements).find((e) => e.id === id)?.text ?? '';
+			elementStates[id] = { original, committed: original, current: currentText, isDirty: true };
+		} else {
+			elementStates[id] = { ...elementStates[id], current: currentText, isDirty: true };
+		}
+		elementStates = elementStates;
 	}
 
-	function renderPage(node: HTMLCanvasElement, pageNum: number) {
-		let renderTask: any = null;
-		pageNodes[pageNum - 1] = node;
-		async function render() {
-			if (!pdfDoc) return;
-			try {
-				const page = await pdfDoc.getPage(pageNum);
-				const viewport = page.getViewport({ scale: scale });
-				node.height = viewport.height;
-				node.width = viewport.width;
-				const context = node.getContext('2d');
-				if (context) {
-					renderTask = page.render({ canvasContext: context, viewport: viewport } as any);
-					await renderTask.promise;
-					drawBoundingBoxes(pageNum);
-				}
-			} catch (err: any) {
-				if (err.name !== 'RenderingCancelledException')
-					console.error(`Error rendering page ${pageNum}:`, err);
+	function handleFocus(id: string) {
+		activeEditId = id;
+	}
+
+	function handleBlur() {}
+
+	function handleKeydown(id: string, event: KeyboardEvent) {
+		if (event.ctrlKey && event.shiftKey && event.key === 'Enter') {
+			event.preventDefault();
+			commitChange(id, event.target as HTMLElement);
+		}
+	}
+
+	function commitChange(id: string, target: HTMLElement) {
+		const currentText = target.innerText;
+		if (!elementStates[id]) {
+			const original = pagesData.flatMap((p) => p.elements).find((e) => e.id === id)?.text ?? '';
+			elementStates[id] = { original, committed: original, current: currentText, isDirty: false };
+		} else {
+			elementStates[id] = {
+				...elementStates[id],
+				committed: currentText,
+				current: currentText,
+				isDirty: false
+			};
+		}
+		elementStates = elementStates;
+	}
+
+	function computeDiff(
+		oldText: string,
+		newText: string
+	): { token: string; type: 'equal' | 'removed' | 'added' }[] {
+		const oldWords = oldText.split(/(\s+)/);
+		const newWords = newText.split(/(\s+)/);
+		const m = oldWords.length,
+			n = newWords.length;
+		const dp: number[][] = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+		for (let i = 1; i <= m; i++) {
+			for (let j = 1; j <= n; j++) {
+				if (oldWords[i - 1] === newWords[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
+				else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
 			}
 		}
-		render();
-		return {
-			update() {
-				render();
-			},
-			destroy() {
-				if (renderTask) renderTask.cancel();
+
+		const result: { token: string; type: 'equal' | 'removed' | 'added' }[] = [];
+		let i = m,
+			j = n;
+		while (i > 0 || j > 0) {
+			if (i > 0 && j > 0 && oldWords[i - 1] === newWords[j - 1]) {
+				result.unshift({ token: oldWords[i - 1], type: 'equal' });
+				i--;
+				j--;
+			} else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+				result.unshift({ token: newWords[j - 1], type: 'added' });
+				j--;
+			} else {
+				result.unshift({ token: oldWords[i - 1], type: 'removed' });
+				i--;
 			}
-		};
-	}
-
-	$: if ($selectedParagraph && pageNodes.length > 0) {
-		pages.forEach((pageNum) => {
-			const canvas = pageNodes[pageNum - 1];
-			if (canvas) {
-				const context = canvas.getContext('2d');
-				if (context && pdfDoc) {
-					pdfDoc.getPage(pageNum).then((page) => {
-						const viewport = page.getViewport({ scale: scale });
-						page.render({ canvasContext: context, viewport: viewport } as any).promise.then(() => {
-							drawBoundingBoxes(pageNum);
-						});
-					});
-				}
-			}
-		});
-	}
-
-	onDestroy(() => {
-		if (loadTask) loadTask.destroy();
-	});
-
-	let relatedParagraphs: (Paragraph & { relationType: 'reference' | 'semantic_similarity' })[] = [];
-
-	function fetchRelatedParagraphs(
-		paragraph: Paragraph | null,
-		allParagraphs: Paragraph[],
-		allRelations: ParagraphRelation[]
-	) {
-		if (!paragraph) {
-			relatedParagraphs = [];
-			return;
 		}
-		relatedParagraphs = allRelations
-			.filter((r) => r.source === paragraph.id || r.target === paragraph.id)
-			.map((r) => {
-				const targetId = r.source === paragraph.id ? r.target : r.source;
-				const targetParagraph = allParagraphs.find((p) => p.id === targetId);
-				return targetParagraph ? { ...targetParagraph, relationType: r.type } : null;
-			})
-			.filter(
-				(p): p is Paragraph & { relationType: 'reference' | 'semantic_similarity' } => p !== null
-			);
+		return result;
 	}
 
-	$: fetchRelatedParagraphs($selectedParagraph, $paragraphs, $relations);
+	$: committedChanges = Object.entries(elementStates)
+		.filter(([id, state]) => id === activeEditId && state.committed !== state.original)
+		.map(([id, state]) => ({ id, ...state }));
+
+	onMount(extractPdfData);
 </script>
 
-<main class="box-border flex h-screen w-full gap-4 bg-gray-100 p-4">
+<div class="flex h-screen w-screen overflow-hidden bg-gray-100 font-sans">
 	<div
-		class="flex flex-1 flex-col overflow-hidden rounded-lg border border-gray-300 bg-white shadow-sm"
+		class="flex w-[60%] flex-col items-center overflow-auto border-r border-gray-300 px-4 py-6 shadow-inner"
 	>
-		<div class="h-full w-full overflow-auto bg-gray-200 shadow-inner">
-			<div class="relative flex flex-col items-center gap-8 p-2">
-				{#if pdfDoc}
-					{#each pages as pageNum (pageNum)}
-						<div class="relative border border-gray-300 bg-white shadow-2xl">
-							<canvas
-								use:renderPage={pageNum}
-								on:click={(e) => handlePageClick(e, pageNum)}
-								class="block"
-							></canvas>
+		{#each pagesData as page}
+			<div
+				class="relative mb-6 shrink-0 bg-white shadow-xl"
+				style="width: {page.width}px; height: {page.height}px;"
+			>
+				{#each page.elements as el (el.id)}
+					{@const state = elementStates[el.id]}
+					{@const isEdited = state && state.committed !== state.original}
+					{@const isDirty = state && state.isDirty}
+
+					<div
+						contenteditable="true"
+						role="textbox"
+						tabindex="0"
+						class="wrap-break-words absolute inline-block origin-top-left whitespace-pre-wrap transition-all outline-none
+                               hover:ring-1 hover:ring-blue-300 focus:ring-2 focus:ring-yellow-400
+                               {isEdited ? 'ring-1 ring-green-400' : ''}
+                               {isDirty ? 'ring-1 ring-orange-400' : ''}
+                               {activeEditId === el.id
+							? 'z-10 bg-yellow-50/50 ring-2 ring-yellow-400'
+							: ''}"
+						style="left: {el.boxX}px; top: {el.boxY}px; width: {el.boxWidth}px; min-height: {el.boxHeight}px; max-width: {page.width -
+							el.boxX -
+							PAGE_PADDING}px; font-size: {el.fontSize}px; line-height: {LINE_HEIGHT_MULTIPLIER};"
+						on:input={(e) => handleInput(el.id, e)}
+						on:focus={() => handleFocus(el.id)}
+						on:blur={handleBlur}
+						on:keydown={(e) => handleKeydown(el.id, e)}
+					>
+						{el.text}
+					</div>
+
+					{#if activeEditId === el.id && state?.isDirty}
+						<div
+							class="pointer-events-none absolute z-20 animate-bounce rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white shadow-2xl ring-1 ring-white/20"
+							style="left: {el.boxX}px; top: {Math.max(0, el.boxY - 28)}px;"
+						>
+							Ctrl + Shift + Enter to save
+						</div>
+					{/if}
+				{/each}
+			</div>
+		{/each}
+	</div>
+
+	<div class="flex w-[40%] flex-col overflow-hidden bg-white shadow-xl">
+		<div class="flex flex-none flex-col border-b border-gray-200">
+			<header
+				class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
+			>
+				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Change Log</h3>
+				{#if activeEditId}
+					<span
+						class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 font-mono text-[9px] text-blue-500"
+					>
+						{activeEditId}
+					</span>
+				{/if}
+			</header>
+
+			<div class="max-h-[35vh] overflow-y-auto p-3">
+				{#each committedChanges as change (change.id)}
+					{@const diff = computeDiff(change.original, change.committed)}
+					<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+						<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+							<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
+							<p class="font-mono leading-relaxed text-red-700/80">
+								{#each diff as token}
+									{#if token.type === 'removed'}<mark class="bg-red-100 px-0.5 text-red-800"
+											>{token.token}</mark
+										>
+									{:else if token.type === 'equal'}<span>{token.token}</span>{/if}
+								{/each}
+							</p>
+						</div>
+						<div class="bg-green-50/20 px-3 py-2">
+							<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Modified</span>
+							<p class="font-mono leading-relaxed text-green-800">
+								{#each diff as token}
+									{#if token.type === 'added'}<mark class="bg-green-100 px-0.5 text-green-800"
+											>{token.token}</mark
+										>
+									{:else if token.type === 'equal'}<span>{token.token}</span>{/if}
+								{/each}
+							</p>
+						</div>
+					</div>
+				{:else}
+					<div class="py-2 flex flex-col items-center justify-center text-gray-300">
+						<p class="text-[10px] italic">No active changes</p>
+					</div>
+				{/each}
+			</div>
+		</div>
+
+		<div class="flex flex-1 flex-col">
+			<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+					Related Paragraphs
+				</h3>
+			</header>
+
+			<div class="flex flex-1 flex-col space-y-2 overflow-y-auto bg-gray-50/30 p-2">
+				{#if activeEditId}
+					{#each relatedParagraphs as rel}
+						<div
+							class="group rounded-lg border border-gray-200 bg-white p-3 shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+						>
+							<div class="mb-2 flex items-center justify-between">
+								<span
+									class="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase
+    {rel.relType === 'semantic_similarity'
+										? 'border-green-100 bg-green-50 text-green-600'
+										: 'border-blue-100 bg-blue-50 text-blue-600'}"
+								>
+									{rel.relType === 'semantic_similarity' ? 'Similarity' : 'Reference'}
+								</span>
+								<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase"
+									>Page {rel.page}</span
+								>
+							</div>
+
+							<p class="text-[11px] leading-relaxed text-gray-600">
+								{rel.text}
+							</p>
+						</div>
+					{:else}
+						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+							<p class="text-[10px] italic">No relations found for this element</p>
 						</div>
 					{/each}
+				{:else}
+					<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+						<svg
+							class="mb-2 h-6 w-6 opacity-20"
+							fill="none"
+							stroke="currentColor"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M13 10V3L4 14h7v7l9-11h-7z"
+							/>
+						</svg>
+						<p class="text-[10px] font-medium tracking-widest uppercase">Select text to analyze</p>
+					</div>
 				{/if}
 			</div>
 		</div>
 	</div>
-
-	<div class="flex flex-1 flex-col gap-4 overflow-hidden">
-		<div
-			class="flex flex-1 flex-col overflow-y-auto rounded-lg border border-gray-200 bg-white p-6 shadow-sm"
-		>
-			{#if !$selectedParagraph}
-				<div class="flex h-full items-center justify-center text-center text-gray-400 italic">
-					Select a paragraph in the PDF to view its relationships.
-				</div>
-			{:else}
-				<div class="mb-2">
-					<h3 class="mb-4 border-b pb-2 text-xs font-bold tracking-wider text-gray-800 uppercase">
-						Paragraph Selected
-					</h3>
-					<div class="rounded-lg bg-yellow-50 p-1 shadow-sm">
-						<textarea
-							bind:value={$selectedParagraph.text}
-							class="h-32 w-full border-none bg-transparent text-sm text-gray-700"
-						></textarea>
-					</div>
-				</div>
-
-				<div>
-					<h3 class="mb-4 text-xs font-bold tracking-widest text-gray-800 uppercase">
-						Relations ({relatedParagraphs.length})
-					</h3>
-					<div class="mt-4 flex flex-col gap-3">
-						{#each relatedParagraphs as p}
-							<div
-								class="rounded-lg border p-3 text-sm transition-all {p.relationType === 'reference'
-									? 'border-blue-200 bg-blue-50'
-									: 'border-green-200 bg-green-50'}"
-							>
-								<span
-									class="text-[10px] font-bold tracking-wider uppercase {p.relationType ===
-									'reference'
-										? 'text-blue-600'
-										: 'text-green-600'}"
-								>
-									{p.relationType}
-								</span>
-								<p class="mt-1 leading-relaxed whitespace-pre-wrap text-gray-600 italic">
-									"{p.text}"
-								</p>
-							</div>
-						{/each}
-					</div>
-				</div>
-			{/if}
-		</div>
-	</div>
-</main>
+</div>
 
 <style>
-	:global(body) {
-		margin: 0;
-		background-color: #f3f4f6;
+	[contenteditable='true']::selection {
+		background: rgba(250, 204, 21, 0.3);
 	}
-	canvas {
-		max-width: 100%;
-		height: auto !important;
+	.overflow-y-auto::-webkit-scrollbar {
+		width: 3px;
+	}
+	.overflow-y-auto::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	.overflow-y-auto::-webkit-scrollbar-thumb {
+		background: #f3f4f6;
+		border-radius: 10px;
+	}
+
+	@keyframes bounce {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-3px);
+		}
+	}
+	.animate-bounce {
+		animation: bounce 2s infinite;
 	}
 </style>

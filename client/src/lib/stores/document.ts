@@ -1,12 +1,11 @@
 import { writable } from 'svelte/store';
-import type { Paragraph, DocumentMeta, ParagraphRelation } from '$lib/types/document';
+import type { DocumentMeta, Node, Edge } from '$lib/types/document';
 
+export const fullPathPdf = writable<string | null>(null);
 export const currentDocument = writable<DocumentMeta | null>(null);
 export const pdfUrl = writable<string | null>(null);
-export const paragraphs = writable<Paragraph[]>([]); //nodes
-export const relations = writable<ParagraphRelation[]>([]); //edges
+export const numPages = writable<number>(0);
+export const paragraphs = writable<Node[]>([]);
 export const loading = writable<boolean>(false);
 export const error = writable<string | null>(null);
-export const selectedParagraph = writable<Paragraph | null>(null);
-export const contradictions = writable<any[]>([]);
-export const paragraphPositions = writable<Map<string, number>>(new Map());
+export const selectedParagraph = writable<Node | null>(null);

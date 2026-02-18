@@ -1,15 +1,7 @@
 <script lang="ts">
 	import type { DocumentMeta } from '$lib/types/document';
 	import { goto } from '$app/navigation';
-	import { api } from '$lib/api/client';
-	import {
-		currentDocument,
-		paragraphs,
-		loading,
-		error,
-		pdfUrl,
-		relations
-	} from '$lib/stores/document';
+	import { currentDocument, loading, error, pdfUrl } from '$lib/stores/document';
 	import { PUBLIC_DEV_LOCAL } from '$env/static/public';
 
 	export let documents: DocumentMeta[];
@@ -26,20 +18,7 @@
 		error.set(null);
 
 		try {
-			const formData = new FormData();
-			formData.append('document_id', doc.id);
-
-			const res = await api.post('/process', formData);
-			if (res.data && res.data.nodes) {
-				console.log('Setting paragraphs:', res.data.edges);
-
-				paragraphs.set(res.data.nodes);
-				relations.set(res.data.edges || []);
-
-				goto('/analysis');
-			} else {
-				paragraphs.set([]);
-			}
+			goto('/analysis');
 		} catch (err) {
 			error.set('Error processing document');
 		} finally {
