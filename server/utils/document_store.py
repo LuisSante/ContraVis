@@ -1,5 +1,5 @@
 from pathlib import Path
-from schemas.document import DatasetDocument
+from schemas.types import DatasetDocument
 from utils.config import Config
 import logging
 

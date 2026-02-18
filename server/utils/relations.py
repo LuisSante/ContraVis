@@ -1,6 +1,8 @@
 from sentence_transformers import SentenceTransformer, util
 from collections import Counter
 from .config import Config
+from schemas.types import Graph, Node, Edge
+from typing import List
 
 import json
 import os
@@ -80,68 +82,64 @@ def create_nodes(text):
     return paragraphs
 
 
-def generate_graph_data(paragraphs: list) -> dict:
-    # BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement
+def generate_graph_data(paragraphs_data: list) -> Graph:
     model = SentenceTransformer('all-MiniLM-L6-v2')
-
-    ## EXPLAIN WHY ?
-    nodes = []
-    edges = []
+    nodes: List[Node] = []
+    edges: List[Edge] = []
     
-    for p in paragraphs:
-        nodes.append({
-            "id": p.get("id"),
-            "documentId": p.get("documentId"),
-            "text": p.get("text", "").strip(),
-            "paragraph_enum": p.get("paragraph_enum"),
-            "page": p.get("page"),
-            "bbox": p.get("bbox"),
-            "relationsCount": 0 
-        })
+    for p in paragraphs_data:
+        node = Node(
+            id=str(p.get("id")),
+            documentId=str(p.get("documentId")),
+            text=p.get("text", "").strip(),
+            paragraph_enum=p.get("paragraph_enum", 0),
+            page=p.get("page", 0),
+            relationsCount=0,
+            x=p.get("x", 0.0),
+            y=p.get("y", 0.0),
+            fontSize=p.get("fontSize", 0.0)
+        )
+        nodes.append(node)
     
-    logger.info(f"TOTAL PARAGRAPH {len(paragraphs)}\n\n")
-    logger.info(f"TOTAL NODES {len(nodes)}\n\n")
+    logger.info(f"TOTAL NODES {len(nodes)}")
 
     for i in range(len(nodes)):
-        current_text = nodes[i]["text"]
-        
+        current_text = nodes[i].text
         for ref_type, pattern in Config.REFERENCE_PATTERNS:
             matches = pattern.finditer(current_text)
-            
             for match in matches:
                 ref_id = match.group(1)
-                
                 for target_node in nodes:
-                    if target_node["id"] != nodes[i]["id"] and target_node["text"].startswith(ref_id):
-                        edges.append({
-                            "source": nodes[i]["id"], 
-                            "target": target_node["id"], 
-                            "type": "reference",
-                            "ref_label": ref_type,
-                            "ref_value": ref_id
-                        })
+                    if target_node.id != nodes[i].id and target_node.text.startswith(ref_id):
+                        edges.append(Edge(
+                            source=nodes[i].id, 
+                            target=target_node.id, 
+                            type="reference",
+                            ref_label=ref_type,
+                            ref_value=ref_id
+                        ))
 
     if nodes:
-        embeddings = model.encode([n["text"] for n in nodes], convert_to_tensor=True)
+        embeddings = model.encode([n.text for n in nodes], convert_to_tensor=True)
         cosine_scores = util.cos_sim(embeddings, embeddings)
 
         for i in range(len(nodes)):
             for j in range(i + 1, len(nodes)):
-                if cosine_scores[i][j] > 0.8: # Threshold for similarity
-                    edges.append({
-                        "source": nodes[i]["id"], 
-                        "target": nodes[j]["id"], 
-                        "type": "semantic_similarity", 
-                        "score": float(cosine_scores[i][j])
-                    })
+                score = float(cosine_scores[i][j])
+                if score > 0.8:
+                    edges.append(Edge(
+                        source=nodes[i].id, 
+                        target=nodes[j].id, 
+                        type="semantic_similarity", 
+                        score=score
+                    ))
 
     relations_map = {}
     for edge in edges:
-        s, t = edge['source'], edge['target']
-        relations_map[s] = relations_map.get(s, 0) + 1
-        relations_map[t] = relations_map.get(t, 0) + 1
+        relations_map[edge.source] = relations_map.get(edge.source, 0) + 1
+        relations_map[edge.target] = relations_map.get(edge.target, 0) + 1
     
     for node in nodes:
-        node["relationsCount"] = relations_map.get(node["id"], 0)
+        node.relationsCount = relations_map.get(node.id, 0)
 
-    return {"nodes": nodes, "edges": edges}
+    return Graph(nodes=nodes, edges=edges)

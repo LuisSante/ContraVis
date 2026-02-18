@@ -1,14 +1,9 @@
-from fastapi import APIRouter, HTTPException, Form
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from schemas.document import DatasetDocument, Paragraph
-from schemas.graph import Graph
+from schemas.types import DatasetDocument
 from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
-from schemas.contradiction import Contradiction
-from utils.contradictions import classify_contradiction, postfilter_and_rank
-from pdf2docx import Converter
 import logging
-import os
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -38,36 +33,37 @@ def get_document_pdf(document_id: str):
 
     raise HTTPException(status_code=404, detail="Document not found")
 
-# @router.post("/process", response_model=Graph)
 @router.post("/process")
 async def process_document(data: dict):    
     doc_id = data.get("documentId")
     pages = data.get("pages", [])
 
-    all_paragraphs = []
+    all_paragraphs_input = []
+    
     for page in pages:
-        for el in page.get("elements", []):
+        for idx, el in enumerate(page.get("elements", [])):
             text_content = el.get("text", "").strip()
-            if text_content:  # Solo si el texto no es vacío
-                all_paragraphs.append({
+            if text_content:
+                all_paragraphs_input.append({
                     "id": el.get("id"),
+                    "documentId": doc_id,
                     "text": text_content,
                     "page": page.get("pageNumber"),
-                    "x": el.get("x"),
-                    "y": el.get("y")
+                    "paragraph_enum": idx,
+                    "x": el.get("x", 0.0),
+                    "y": el.get("y", 0.0),
+                    "fontSize": el.get("fontSize", 0.0),
                 })
-    
-    with open(f"{doc_id}.json", "w") as f:
-        import json
-        json.dump(all_paragraphs, f, indent=2)
 
-    graph_result = generate_graph_data(all_paragraphs)
-    
-    return {
+    graph_obj = generate_graph_data(all_paragraphs_input)
+
+    payload = {
         "status": "success",
         "documentId": doc_id,
-        "graph": graph_result
+        "graph": graph_obj.model_dump()
     }
+    
+    return payload
 
 @router.get("/")
 def document_init():
