@@ -44,6 +44,7 @@ export interface ExtractedElement {
 	x: number;
 	y: number;
 	fontSize: number;
+	width?: number;
 }
 
 export interface ExtractedPage {
@@ -59,3 +60,30 @@ export interface ElementState {
 	current: string;
 	isDirty: boolean;
 }
+
+export interface Line {
+	page: number;
+	y: number;
+	fontSize: number;
+	items: ExtractedElement[];
+};
+
+export interface Paragraph {
+	page: number;
+	lines: Line[];
+	text: string;
+	x: number;
+	y: number;
+	fontSize: number;
+};
+
+export type LayoutElement = ExtractedElement & {
+	boxX: number;
+	boxY: number;
+	boxWidth: number;
+	boxHeight: number;
+};
+
+export type LayoutPage = Omit<ExtractedPage, 'elements'> & {
+	elements: LayoutElement[];
+};

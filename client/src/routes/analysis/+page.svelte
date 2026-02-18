@@ -5,19 +5,20 @@
 	import pdfWorker from 'pdfjs-dist/build/pdf.worker.mjs?url';
 	import { api } from '$lib/api/client';
 	import { get } from 'svelte/store';
+	import { pagesToParagraphPages, normalizePagesForRender } from '$lib/utils/paragrahs';
+	import { PAGE_PADDING, LINE_HEIGHT_MULTIPLIER } from '$lib/constant';
 	import type {
 		Graph,
-		Node,
-		Edge,
 		ProcessDocumentResponse,
 		ExtractedPage,
 		ElementState,
-		ExtractedElement
+		ExtractedElement,
+		LayoutPage
 	} from '$lib/types/document';
 
 	pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-	let pagesData: ExtractedPage[] = [];
+	let pagesData: LayoutPage[] = [];
 	let graphData: Graph = { nodes: [], edges: [] };
 	let elementStates: Record<string, ElementState> = {};
 	let loading = true;
@@ -37,13 +38,15 @@
 				const textContent = await page.getTextContent();
 				const viewport = page.getViewport({ scale: 1.5 });
 				const items: ExtractedElement[] = textContent.items.map((item: any, idx: number) => {
-					const [scaleX, b, c, scaleY, x, y] = item.transform;
+					const [scaleX, b, _c, _scaleY, x, y] = item.transform;
+
 					return {
 						id: `p${i}-e${idx}`,
 						text: item.str,
 						x: x * viewport.scale,
 						y: viewport.height - y * viewport.scale,
-						fontSize: Math.sqrt(scaleX * scaleX + b * b) * viewport.scale
+						fontSize: Math.sqrt(scaleX * scaleX + b * b) * viewport.scale,
+						width: (item.width || 0) * viewport.scale
 					};
 				});
 				extractedPages.push({
@@ -54,16 +57,19 @@
 				});
 			}
 
-			pagesData = extractedPages;
+			const paragraphPages = pagesToParagraphPages(extractedPages);
+			pagesData = normalizePagesForRender(paragraphPages);
+			elementStates = {};
+			activeEditId = null;
 
 			const doc = get(currentDocument);
 			if (doc && doc.id) {
 				const payload = {
 					documentId: doc.id,
-					pages: extractedPages
+					pages: paragraphPages
 				};
-
 				const response = await api.post<ProcessDocumentResponse>('/process', payload);
+
 				if (response.data.graph) {
 					graphData = response.data.graph;
 				}
@@ -78,7 +84,6 @@
 		}
 	}
 
-	// Lógica reactiva para filtrar los párrafos relacionados basándose en activeEditId
 	$: relatedParagraphs = (() => {
 		if (!activeEditId || !graphData.edges.length) return [];
 
@@ -103,7 +108,7 @@
 	})();
 
 	function handleInput(id: string, event: Event) {
-		const target = event.target as HTMLSpanElement;
+		const target = event.target as HTMLElement;
 		const currentText = target.innerText;
 		if (!elementStates[id]) {
 			const original = pagesData.flatMap((p) => p.elements).find((e) => e.id === id)?.text ?? '';
@@ -123,11 +128,11 @@
 	function handleKeydown(id: string, event: KeyboardEvent) {
 		if (event.ctrlKey && event.shiftKey && event.key === 'Enter') {
 			event.preventDefault();
-			commitChange(id, event.target as HTMLSpanElement);
+			commitChange(id, event.target as HTMLElement);
 		}
 	}
 
-	function commitChange(id: string, target: HTMLSpanElement) {
+	function commitChange(id: string, target: HTMLElement) {
 		const currentText = target.innerText;
 		if (!elementStates[id]) {
 			const original = pagesData.flatMap((p) => p.elements).find((e) => e.id === id)?.text ?? '';
@@ -192,37 +197,39 @@
 		{#each pagesData as page}
 			<div
 				class="relative mb-6 shrink-0 bg-white shadow-xl"
-				style="width: {page.width}px; min-height: {page.height}px;"
+				style="width: {page.width}px; height: {page.height}px;"
 			>
 				{#each page.elements as el (el.id)}
 					{@const state = elementStates[el.id]}
 					{@const isEdited = state && state.committed !== state.original}
 					{@const isDirty = state && state.isDirty}
 
-					<span
+					<div
 						contenteditable="true"
 						role="textbox"
 						tabindex="0"
-						class="absolute origin-top-left leading-none whitespace-pre-wrap transition-all outline-none
+						class="wrap-break-words absolute inline-block origin-top-left whitespace-pre-wrap transition-all outline-none
                                hover:ring-1 hover:ring-blue-300 focus:ring-2 focus:ring-yellow-400
                                {isEdited ? 'ring-1 ring-green-400' : ''}
                                {isDirty ? 'ring-1 ring-orange-400' : ''}
                                {activeEditId === el.id
 							? 'z-10 bg-yellow-50/50 ring-2 ring-yellow-400'
 							: ''}"
-						style="left: {el.x}px; top: {el.y}px; font-size: {el.fontSize}px; min-width: 4px;"
+						style="left: {el.boxX}px; top: {el.boxY}px; width: {el.boxWidth}px; min-height: {el.boxHeight}px; max-width: {page.width -
+							el.boxX -
+							PAGE_PADDING}px; font-size: {el.fontSize}px; line-height: {LINE_HEIGHT_MULTIPLIER};"
 						on:input={(e) => handleInput(el.id, e)}
 						on:focus={() => handleFocus(el.id)}
 						on:blur={handleBlur}
 						on:keydown={(e) => handleKeydown(el.id, e)}
 					>
 						{el.text}
-					</span>
+					</div>
 
 					{#if activeEditId === el.id && state?.isDirty}
 						<div
 							class="pointer-events-none absolute z-20 animate-bounce rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white shadow-2xl ring-1 ring-white/20"
-							style="left: {el.x}px; top: {el.y - 28}px;"
+							style="left: {el.boxX}px; top: {Math.max(0, el.boxY - 28)}px;"
 						>
 							Ctrl + Shift + Enter to save
 						</div>
@@ -297,9 +304,12 @@
 						>
 							<div class="mb-2 flex items-center justify-between">
 								<span
-									class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase"
+									class="rounded border px-1.5 py-0.5 text-[9px] font-bold uppercase
+    {rel.relType === 'semantic_similarity'
+										? 'border-green-100 bg-green-50 text-green-600'
+										: 'border-blue-100 bg-blue-50 text-blue-600'}"
 								>
-									{rel.relType === 'semantic_similarity' ? 'Similarity' : 'Reference'} 42]
+									{rel.relType === 'semantic_similarity' ? 'Similarity' : 'Reference'}
 								</span>
 								<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase"
 									>Page {rel.page}</span
@@ -309,20 +319,6 @@
 							<p class="text-[11px] leading-relaxed text-gray-600">
 								{rel.text}
 							</p>
-
-							{#if rel.score}
-								<div class="mt-2 flex items-center gap-2">
-									<div class="h-1 flex-1 overflow-hidden rounded-full bg-gray-100">
-										<div
-											class="h-full bg-blue-400 transition-all"
-											style="width: {rel.score * 100}%"
-										></div>
-									</div>
-									<span class="text-[8px] font-bold text-blue-400"
-										>{(rel.score * 100).toFixed(0)}%</span
-									>
-								</div>
-							{/if}
 						</div>
 					{:else}
 						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
