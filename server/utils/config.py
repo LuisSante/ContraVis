@@ -3,6 +3,7 @@ import re
 
 class Config:
   CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf")
+  CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx")
   EDITED_PDF_DIR = Path("../infra/edited_pdfs")
   EDITED_DOC_DIR = Path("../infra/edited_docs")
   REFERENCE_PATTERNS = [

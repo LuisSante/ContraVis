@@ -39,17 +39,10 @@
 		"vite": "^7.2.6"
 	},
 	"dependencies": {
-		"@tiptap/core": "^3.19.0",
-		"@tiptap/extension-bubble-menu": "^3.19.0",
-		"@tiptap/extension-color": "^3.19.0",
-		"@tiptap/extension-paragraph": "^3.19.0",
-		"@tiptap/extension-text": "^3.19.0",
-		"@tiptap/extension-text-style": "^3.19.0",
-		"@tiptap/pm": "^3.19.0",
-		"@tiptap/starter-kit": "^3.19.0",
 		"axios": "^1.13.2",
 		"d3": "^7.9.0",
 		"diff": "^8.0.3",
+		"docx4js": "^3.3.0",
 		"pdf-lib": "^1.17.1",
 		"pdfjs-dist": "^5.4.449"
 	}

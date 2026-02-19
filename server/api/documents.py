@@ -17,21 +17,23 @@ def list_documents():
 
     return document_store.get_documents()
 
+@router.get("/document_file/{doc_id}")
+def get_document_file(doc_id: str):
+    if not document_store._initialized:
+        document_store.initialize()
 
-@router.get("/{document_id}/pdf")
-def get_document_pdf(document_id: str):
-    logger.info(f"Fetching PDF for document ID: {document_id}")
+    path = document_store.get_path(doc_id)
+    if path is None or not path.exists():
+        raise HTTPException(status_code=404, detail="Document not found")
 
-    pdf_path = document_store.get_path(document_id)
+    if path.suffix.lower() != ".docx":
+        raise HTTPException(status_code=400, detail="Only DOCX documents are supported")
 
-    if pdf_path and pdf_path.exists():
-        return FileResponse(
-            path=pdf_path,
-            media_type="application/pdf",
-            filename=pdf_path.name
-        )
-
-    raise HTTPException(status_code=404, detail="Document not found")
+    return FileResponse(
+        path=path,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=path.name,
+    )
 
 @router.post("/process")
 async def process_document(data: dict):    

@@ -1,7 +1,6 @@
 import { writable } from 'svelte/store';
-import type { DocumentMeta, Node, Edge } from '$lib/types/document';
+import type { DocumentMeta, Node } from '$lib/types/document';
 
-export const fullPathPdf = writable<string | null>(null);
 export const currentDocument = writable<DocumentMeta | null>(null);
 export const pdfUrl = writable<string | null>(null);
 export const numPages = writable<number>(0);
