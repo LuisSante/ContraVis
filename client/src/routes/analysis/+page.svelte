@@ -22,7 +22,7 @@
 	let graphData: Graph = { nodes: [], edges: [] };
 	let elementStates: Record<string, ElementState> = {};
 	let loading = true;
-	let loadingMessage = 'Cargando documento...';
+	let loadingMessage = 'Loading document...';
 	let activeEditId: string | null = null;
 
 	async function extractPdfData() {
@@ -34,7 +34,7 @@
 		}
 		try {
 			loading = true;
-			loadingMessage = 'Extrayendo parrafos del PDF...';
+			loadingMessage = 'Extracting paragraphs from the PDF...';
 			const loadingTask = pdfjsLib.getDocument(url);
 			const pdf = await loadingTask.promise;
 			let extractedPages: ExtractedPage[] = [];
@@ -74,7 +74,7 @@
 					documentId: doc.id,
 					pages: paragraphPages
 				};
-				loadingMessage = 'Cargando relaciones del backend...';
+				loadingMessage = 'Loading backend relationships...';
 				const response = await api.post<ProcessDocumentResponse>('/process', payload);
 
 				if (response.data.graph) {
@@ -380,7 +380,7 @@
 		<div class="absolute inset-0 z-40 flex items-center justify-center bg-gray-100/80 backdrop-blur-[1px]">
 			<div class="rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
 				<p class="animate-pulse text-xs font-semibold tracking-wide text-gray-600">
-					{loadingMessage || 'Cargando...'}
+					{loadingMessage || 'Loading...'}
 				</p>
 			</div>
 		</div>
