@@ -14,6 +14,7 @@ import {
 	MAX_FONT_SIZE, 
 	MIN_FONT_SIZE, 
 	MIN_TEXT_BLOCK_WIDTH,
+	NODE_COUNT_GUTTER,
 	LIST_MARKER_RE, 
 	LIST_LINE_RE, 
 	RIGHT_PUNCT_RE, 
@@ -264,9 +265,10 @@ function normalizePageLayout(page: ExtractedPage): LayoutPage {
 
 	for (const el of sorted) {
 		const fontSize = clamp(el.fontSize || 12, MIN_FONT_SIZE, MAX_FONT_SIZE);
-		const maxLeft = page.width - PAGE_PADDING - MIN_TEXT_BLOCK_WIDTH;
+		const rightInset = PAGE_PADDING + NODE_COUNT_GUTTER;
+		const maxLeft = page.width - rightInset - MIN_TEXT_BLOCK_WIDTH;
 		const boxX = clamp(el.x || PAGE_PADDING, PAGE_PADDING, maxLeft);
-		const maxWidth = Math.max(MIN_TEXT_BLOCK_WIDTH, page.width - boxX - PAGE_PADDING);
+		const maxWidth = Math.max(MIN_TEXT_BLOCK_WIDTH, page.width - boxX - rightInset);
 		const preferredWidth = el.width && el.width > 0 ? el.width : maxWidth;
 		const boxWidth = clamp(preferredWidth, MIN_TEXT_BLOCK_WIDTH, maxWidth);
 		const boxHeight = estimateTextHeight(el.text, boxWidth, fontSize);

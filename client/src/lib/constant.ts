@@ -12,3 +12,4 @@ export const MAX_FONT_SIZE = 26;
 export const COLLISION_GAP = 2;
 export const PAGE_PADDING = 12;
 export const LINE_HEIGHT_MULTIPLIER = 1.25;
+export const NODE_COUNT_GUTTER = 36;

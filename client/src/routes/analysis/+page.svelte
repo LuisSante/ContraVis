@@ -22,13 +22,19 @@
 	let graphData: Graph = { nodes: [], edges: [] };
 	let elementStates: Record<string, ElementState> = {};
 	let loading = true;
+	let loadingMessage = 'Cargando documento...';
 	let activeEditId: string | null = null;
 
 	async function extractPdfData() {
 		const url = $pdfUrl;
-		if (!url) return;
+		if (!url) {
+			loading = false;
+			loadingMessage = '';
+			return;
+		}
 		try {
 			loading = true;
+			loadingMessage = 'Extrayendo parrafos del PDF...';
 			const loadingTask = pdfjsLib.getDocument(url);
 			const pdf = await loadingTask.promise;
 			let extractedPages: ExtractedPage[] = [];
@@ -68,6 +74,7 @@
 					documentId: doc.id,
 					pages: paragraphPages
 				};
+				loadingMessage = 'Cargando relaciones del backend...';
 				const response = await api.post<ProcessDocumentResponse>('/process', payload);
 
 				if (response.data.graph) {
@@ -83,6 +90,15 @@
 			loading = false;
 		}
 	}
+
+	$: relationCountByNodeId = graphData.edges.reduce(
+		(acc, edge) => {
+			acc[edge.source] = (acc[edge.source] ?? 0) + 1;
+			acc[edge.target] = (acc[edge.target] ?? 0) + 1;
+			return acc;
+		},
+		{} as Record<string, number>
+	);
 
 	$: relatedParagraphs = (() => {
 		if (!activeEditId || !graphData.edges.length) return [];
@@ -190,9 +206,9 @@
 	onMount(extractPdfData);
 </script>
 
-<div class="flex h-screen w-screen overflow-hidden bg-gray-100 font-sans">
+<div class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans">
 	<div
-		class="flex w-[60%] flex-col items-center overflow-auto border-r border-gray-300 px-4 py-6 shadow-inner"
+		class="flex w-[60%] flex-col items-center overflow-auto border-r border-gray-300 px-2 py-4 shadow-inner"
 	>
 		{#each pagesData as page}
 			<div
@@ -203,6 +219,7 @@
 					{@const state = elementStates[el.id]}
 					{@const isEdited = state && state.committed !== state.original}
 					{@const isDirty = state && state.isDirty}
+					{@const relationCount = relationCountByNodeId[el.id] ?? 0}
 
 					<div
 						contenteditable="true"
@@ -226,6 +243,18 @@
 						{el.text}
 					</div>
 
+					<div
+						class="pointer-events-none absolute z-10 text-[12px] font-bold
+						{activeEditId === el.id
+							? 'text-yellow-700'
+							: relationCount > 0
+								? 'text-red-500'
+								: 'text-gray-300'}"
+						style="left: {el.boxX + el.boxWidth + 8}px; top: {Math.max(PAGE_PADDING, el.boxY + el.boxHeight / 2 - 8)}px;"
+					>
+						{relationCount}
+					</div>
+
 					{#if activeEditId === el.id && state?.isDirty}
 						<div
 							class="pointer-events-none absolute z-20 animate-bounce rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white shadow-2xl ring-1 ring-white/20"
@@ -239,7 +268,7 @@
 		{/each}
 	</div>
 
-	<div class="flex w-[40%] flex-col overflow-hidden bg-white shadow-xl">
+	<div class="flex w-[40%] min-h-0 flex-col overflow-hidden bg-white shadow-xl">
 		<div class="flex flex-none flex-col border-b border-gray-200">
 			<header
 				class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
@@ -289,14 +318,14 @@
 			</div>
 		</div>
 
-		<div class="flex flex-1 flex-col">
+		<div class="flex min-h-0 flex-1 flex-col">
 			<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
 				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
 					Related Paragraphs
 				</h3>
 			</header>
 
-			<div class="flex flex-1 flex-col space-y-2 overflow-y-auto bg-gray-50/30 p-2">
+			<div class="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2">
 				{#if activeEditId}
 					{#each relatedParagraphs as rel}
 						<div
@@ -346,6 +375,16 @@
 			</div>
 		</div>
 	</div>
+
+	{#if loading}
+		<div class="absolute inset-0 z-40 flex items-center justify-center bg-gray-100/80 backdrop-blur-[1px]">
+			<div class="rounded-md border border-gray-200 bg-white px-4 py-3 shadow-sm">
+				<p class="animate-pulse text-xs font-semibold tracking-wide text-gray-600">
+					{loadingMessage || 'Cargando...'}
+				</p>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
