@@ -87,3 +87,67 @@ export type LayoutElement = ExtractedElement & {
 export type LayoutPage = Omit<ExtractedPage, 'elements'> & {
 	elements: LayoutElement[];
 };
+
+export type XmlNode = {
+	name?: string;
+	attribs?: Record<string, string>;
+	children?: XmlNode[];
+	type?: string;
+	data?: string;
+};
+
+export type Docx4jsDocument = {
+	render: (
+		factory: (type: string, props: Record<string, unknown>, children: unknown) => unknown,
+		identify?: (
+			node: XmlNode,
+			officeDocument: {
+				constructor: { identify: (node: XmlNode, officeDocument: unknown) => unknown };
+			}
+		) => unknown
+	) => unknown;
+	release?: () => void;
+};
+
+export type Docx4jsBrowserModule = {
+	docx: {
+		load: (file: ArrayBuffer) => Promise<Docx4jsDocument>;
+	};
+};
+
+export type ParagraphKind = 'paragraph' | 'heading' | 'list';
+export type RelationKind = 'semantic_similarity' | 'reference';
+
+export type TokenDiffSegment = {
+	value: string;
+	changed: boolean;
+};
+
+export type ChangeLogState = {
+	hasChanges: boolean;
+	oldSegments: TokenDiffSegment[];
+	newSegments: TokenDiffSegment[];
+};
+
+export type ParagraphEditState = {
+	committed: string;
+	current: string;
+	editedSinceCommit: boolean;
+};
+
+export type ReferenceMatch = {
+	label: string;
+	value: string;
+};
+
+export type RelatedParagraph = {
+	node: Node;
+	relationTypes: RelationKind[];
+	semanticScore?: number;
+	references: ReferenceMatch[];
+};
+
+export type TokenVector = {
+	weights: Map<string, number>;
+	magnitude: number;
+};

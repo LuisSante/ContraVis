@@ -1,15 +1,40 @@
-// constants for text analysis
-export const LIST_MARKER_RE = /^(?:\d+[\.\)]|[A-Za-z][\.\)]|[-•])$/;
-export const LIST_LINE_RE = /^\s*(?:\d+[\.\)]|[A-Za-z][\.\)]|[-•])\s+/;
-export const RIGHT_PUNCT_RE = /^[\.,;:!\?\)\]\}]/;
-export const LEFT_PUNCT_RE = /^[\(\[\{]/;
+import type { ChangeLogState } from './types/document';
+
+export const highlightMap: Record<string, string> = {
+    yellow: '#fff59d',
+    green: '#a5d6a7',
+    cyan: '#80deea',
+    magenta: '#f48fb1',
+    blue: '#90caf9',
+    red: '#ef9a9a',
+    darkblue: '#5c6bc0',
+    darkcyan: '#26a69a',
+    darkgreen: '#43a047',
+    darkmagenta: '#ab47bc',
+    darkred: '#e53935',
+    darkyellow: '#f9a825',
+    lightgray: '#e0e0e0',
+    darkgray: '#757575',
+    black: '#000000',
+    white: '#ffffff',
+    none: 'transparent'
+};
 
 
-// constant for collision detection and layout
-export const MIN_TEXT_BLOCK_WIDTH = 80;
-export const MIN_FONT_SIZE = 8;
-export const MAX_FONT_SIZE = 26;
-export const COLLISION_GAP = 2;
-export const PAGE_PADDING = 12;
-export const LINE_HEIGHT_MULTIPLIER = 1.25;
-export const NODE_COUNT_GUTTER = 36;
+export const EMPTY_CHANGE_LOG: ChangeLogState = {
+    hasChanges: false,
+    oldSegments: [],
+    newSegments: []
+};
+
+export const REFERENCE_PATTERNS: Array<{ label: string; expression: RegExp }> = [
+    { label: 'section', expression: /\bsection\s+(\d+(?:\.\d+)*)\b/gi },
+    { label: 'article', expression: /\barticle\s+(\d+(?:\.\d+)*)\b/gi },
+    { label: 'exhibit', expression: /\bexhibit\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi },
+    { label: 'schedule', expression: /\bschedule\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi },
+    { label: 'annex', expression: /\bannex\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi },
+    { label: 'appendix', expression: /\bappendix\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi }
+];
+
+export const SEMANTIC_THRESHOLD = 0.2;
+export const MAX_RELATED_PARAGRAPHS = 18;

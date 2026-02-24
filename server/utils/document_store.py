@@ -23,29 +23,35 @@ class DocumentStore:
             p for p in base_dir.rglob("*")
             if p.is_file() and p.suffix.lower() == ".pdf"
         )
+    
+    def iter_docxs(self, base_dir: Path):
+        return (
+            p for p in base_dir.rglob("*")
+            if p.is_file() and p.suffix.lower() == ".docx"
+        )
 
     def initialize(self):
         if self._initialized:
             return
 
         logger.info("Initializing DocumentStore...")
-        if not Config.CUAD_PDF_DIR.exists():
-            logger.error(f"Dataset directory not found: {Config.CUAD_PDF_DIR}")
+        if not Config.CUAD_DOC_DIR.exists():
+            logger.error(f"Dataset directory not found: {Config.CUAD_DOC_DIR}")
             return
 
         documents = []
         path_map = {}
 
-        for pdf_path in self.iter_pdfs(Config.CUAD_PDF_DIR):
+        for docx_path in self.iter_docxs(Config.CUAD_DOC_DIR):
             doc = DatasetDocument(
-                id=pdf_path.stem,
-                name=pdf_path.name,
-                full_path=str(pdf_path.resolve()),
+                id=docx_path.stem,
+                name=docx_path.name,
+                full_path=str(docx_path.resolve()),
                 origin="dataset",
                 processed=False
             )
             documents.append(doc)
-            path_map[pdf_path.stem] = pdf_path
+            path_map[docx_path.stem] = docx_path
 
         self._documents = documents
         self._path_map = path_map

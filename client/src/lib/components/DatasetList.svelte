@@ -1,8 +1,7 @@
 <script lang="ts">
 	import type { DocumentMeta } from '$lib/types/document';
 	import { goto } from '$app/navigation';
-	import { currentDocument, loading, error, pdfUrl } from '$lib/stores/document';
-	import { PUBLIC_DEV_LOCAL } from '$env/static/public';
+	import { currentDocument, loading, error } from '$lib/stores/document';
 
 	export let documents: DocumentMeta[];
 	let query = '';
@@ -13,12 +12,11 @@
 
 	async function selectDocument(doc: DocumentMeta) {
 		currentDocument.set(doc);
-		pdfUrl.set(`${PUBLIC_DEV_LOCAL}/${doc.id}/pdf`);
 		loading.set(true);
 		error.set(null);
 
 		try {
-			goto('/analysis');
+			await goto(`/docx?id=${encodeURIComponent(doc.id)}`);
 		} catch (err) {
 			error.set('Error processing document');
 		} finally {
