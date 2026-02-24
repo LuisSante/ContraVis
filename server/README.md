@@ -1,0 +1,81 @@
+# Backend (`server`)
+
+FastAPI service to list CUAD DOCX contracts, serve files, and build a relationship graph from paragraph data.
+
+## Requirements
+
+- Python 3.11+ recommended.
+- `pip`.
+
+## Installation
+
+From the repository root:
+
+```bash
+make setup-backend
+```
+
+Or manually:
+
+```bash
+cd server
+python3 -m pip install -r requirements.txt
+```
+
+## Environment variables
+
+`server/.env` (optional for LLM features):
+
+```bash
+OPENAI_API_KEY=your_api_key
+```
+
+Notes:
+
+- `utils/contradictions.py` reads `OPENAI_API_KEY`.
+- Do not commit `.env` files.
+
+## Run in development
+
+From repository root:
+
+```bash
+make dev-backend
+```
+
+Or manually:
+
+```bash
+cd server
+python3 -m uvicorn main:app --reload --port 8300
+```
+
+Local base URL: `http://localhost:8300`
+
+## Endpoints
+
+- `GET /`: simple status message.
+- `GET /health`: health check.
+- `GET /api/v1/list_documents`: list available CUAD documents.
+- `GET /api/v1/document_file/{doc_id}`: download DOCX by id.
+- `POST /api/v1/process`: generate graph (`nodes` + `edges`) from paragraph payload.
+
+## Data dependency
+
+`DocumentStore` loads files from:
+
+- `../infra/CUAD_v1/full_contract_docx` (relative to `server/`).
+
+Because of this, start the backend from `server/` or use `make dev-backend` (already does `cd server`).
+
+## Performance notes
+
+- `POST /api/v1/process` uses `sentence-transformers` (`all-MiniLM-L6-v2`).
+- On first run, model download/initialization can take longer.
+- Current implementation instantiates the model per request.
+
+## Common issues
+
+- `Dataset directory not found`: verify `infra/CUAD_v1/full_contract_docx` exists.
+- Empty document list: dataset folder is empty or initialization failed.
+- Dependency/import errors: reinstall with `pip install -r requirements.txt`.

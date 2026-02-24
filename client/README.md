@@ -1,38 +1,63 @@
-# sv
+# Frontend (`client`)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit application for browsing CUAD DOCX contracts, rendering them in the browser, and editing paragraphs.
 
-## Creating a project
+## Requirements
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Node.js 20+ recommended.
+- `npm`.
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Installation
 
-# create a new project in my-app
-npx sv create my-app
+```bash
+cd client
+npm install
 ```
 
-## Developing
+## Environment variables
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+Create `client/.env`:
 
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```bash
+PUBLIC_DEV_LOCAL=http://localhost:8300/api/v1
 ```
 
-## Building
+This variable defines the API base URL used by `src/lib/api/client.ts`.
 
-To create a production version of your app:
+## Development
 
-```sh
-npm run build
+From `client/`:
+
+```bash
+npm run dev -- --port 5173
 ```
 
-You can preview the production build with `npm run preview`.
+Or from the repository root:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```bash
+make dev-frontend
+```
+
+Local URL: http://localhost:5173
+
+## Useful scripts
+
+- `npm run dev`: start development server.
+- `npm run build`: production build.
+- `npm run preview`: preview build locally.
+- `npm run check`: Svelte/TypeScript checks.
+- `npm run lint`: prettier check + eslint.
+- `npm run format`: format code.
+
+## Main workflow
+
+1. Loads document list from `GET /list_documents`.
+2. Navigates to `/docx?id=<documentId>` when a document is selected.
+3. Downloads file with `GET /document_file/{doc_id}`.
+4. Renders DOCX and enables inline paragraph editing.
+
+## Common issues
+
+- CORS or `Network Error`: verify backend is running at `http://localhost:8300`.
+- Empty dataset list: verify backend can read `infra/CUAD_v1/full_contract_docx`.
+- `404` on `document_file`: `doc_id` was not found in `DocumentStore`.

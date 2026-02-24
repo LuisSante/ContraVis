@@ -1,33 +1,28 @@
-CONDA_ENV_PATH = $(shell conda info --base)/envs/doc
-PYTHON = $(CONDA_ENV_PATH)/bin/python
-PIP = $(CONDA_ENV_PATH)/bin/pip
-UVICORN = $(CONDA_ENV_PATH)/bin/uvicorn
+PYTHON = python3
+PIP = pip
+UVICORN = uvicorn
 NPM = npm --prefix client
 
 .PHONY: setup-backend setup-frontend setup dev help
 
 help:
-	@echo "Commands:"
-	@echo "  make setup          - Install dependencies backend and frontend"
-	@echo "  make dev            - Run both servers (parallel)"
+	@echo "Comands available:"
+	@echo "  make setup          - Install all dependencies for backend and frontend""
 
 setup: setup-backend setup-frontend
 
 setup-backend:
-	@echo "Installing dependencies Python in Conda enviroment..."
-	cd server && pip install -r requirements.txt
+	@echo "Installing dependencies in backend"
+	cd server && $(PYTHON) -m pip install -r requirements.txt
 
 setup-frontend:
-	@echo "Installing dependencies Svelte..."
-	npm install
-
-dev:
-	@make -j 2 dev-backend dev-frontend
+	@echo "Installing dependencies in frontend"
+	cd client && npm install
 
 dev-backend:
-	@echo "Initialize FastAPI since Conda..."
-	cd server && $(UVICORN) main:app --reload --port 8300
+	@echo "Init FastAPI..."
+	cd server && $(PYTHON) -m uvicorn main:app --reload --port 8300
 
 dev-frontend:
-	@echo "Initialize SvelteKit..."
+	@echo "Init SvelteKit..."
 	$(NPM) run dev -- --open --port 5173

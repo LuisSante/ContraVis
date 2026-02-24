@@ -28,6 +28,8 @@ bert-score==0.3.13
     # via -r requirements.in
 blis==1.3.3
     # via thinc
+brotli==1.2.0
+    # via fonttools
 catalogue==2.0.10
     # via
     #   spacy
@@ -38,20 +40,32 @@ certifi==2026.1.4
     #   httpcore
     #   httpx
     #   requests
+cffi==2.0.0
+    # via
+    #   cryptography
+    #   weasyprint
 charset-normalizer==3.4.4
-    # via requests
+    # via
+    #   pdfminer-six
+    #   requests
 click==8.3.1
     # via
     #   typer-slim
     #   uvicorn
 cloudpathlib==0.23.0
     # via weasel
+cobble==0.1.4
+    # via mammoth
 confection==0.1.5
     # via
     #   thinc
     #   weasel
 contourpy==1.3.3
     # via matplotlib
+cryptography==46.0.5
+    # via pdfminer-six
+cssselect2==0.9.0
+    # via weasyprint
 cycler==0.12.1
     # via matplotlib
 cymem==2.0.13
@@ -79,8 +93,13 @@ filelock==3.20.3
     #   huggingface-hub
     #   torch
     #   transformers
-fonttools==4.61.1
-    # via matplotlib
+fire==0.7.1
+    # via pdf2docx
+fonttools[woff]==4.61.1
+    # via
+    #   matplotlib
+    #   pdf2docx
+    #   weasyprint
 frozenlist==1.8.0
     # via
     #   aiohttp
@@ -130,6 +149,10 @@ kiwisolver==1.4.9
     # via matplotlib
 levenshtein==0.27.3
     # via python-levenshtein
+lxml==6.0.2
+    # via python-docx
+mammoth==1.11.0
+    # via -r requirements.in
 markupsafe==3.0.3
     # via jinja2
 matplotlib==3.10.8
@@ -159,7 +182,9 @@ numpy==2.4.1
     #   datasets
     #   evaluate
     #   matplotlib
+    #   opencv-python-headless
     #   pandas
+    #   pdf2docx
     #   scikit-learn
     #   scipy
     #   spacy
@@ -206,6 +231,8 @@ nvidia-nvtx-cu12==12.8.90
     # via torch
 openai==2.15.0
     # via -r requirements.in
+opencv-python-headless==4.13.0.92
+    # via pdf2docx
 packaging==25.0
     # via
     #   bert-score
@@ -223,8 +250,17 @@ pandas==2.3.3
     #   bert-score
     #   datasets
     #   evaluate
+pdf2docx==0.5.9
+    # via -r requirements.in
+pdfminer-six==20251230
+    # via pdfplumber
+pdfplumber==0.11.9
+    # via -r requirements.in
 pillow==12.1.0
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   pdfplumber
+    #   weasyprint
 preshed==3.0.12
     # via
     #   spacy
@@ -235,6 +271,8 @@ propcache==0.4.1
     #   yarl
 pyarrow==23.0.0
     # via datasets
+pycparser==3.0
+    # via cffi
 pydantic==2.12.5
     # via
     #   -r requirements.in
@@ -246,14 +284,24 @@ pydantic==2.12.5
     #   weasel
 pydantic-core==2.41.5
     # via pydantic
+pydyf==0.12.1
+    # via weasyprint
 pymupdf==1.26.7
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   pdf2docx
 pyparsing==3.3.2
     # via matplotlib
+pypdfium2==5.5.0
+    # via pdfplumber
+pyphen==0.17.2
+    # via weasyprint
 python-dateutil==2.9.0.post0
     # via
     #   matplotlib
     #   pandas
+python-docx==1.2.0
+    # via pdf2docx
 python-dotenv==1.2.1
     # via
     #   -r requirements.in
@@ -318,12 +366,20 @@ starlette==0.50.0
     # via fastapi
 sympy==1.14.0
     # via torch
+termcolor==3.3.0
+    # via fire
 thinc==8.3.10
     # via spacy
 threadpoolctl==3.6.0
     # via scikit-learn
 tiktoken==0.12.0
     # via -r requirements.in
+tinycss2==1.5.1
+    # via
+    #   cssselect2
+    #   weasyprint
+tinyhtml5==2.0.0
+    # via weasyprint
 tokenizers==0.22.2
     # via transformers
 torch==2.9.1
@@ -361,6 +417,7 @@ typing-extensions==4.15.0
     #   openai
     #   pydantic
     #   pydantic-core
+    #   python-docx
     #   sentence-transformers
     #   starlette
     #   torch
@@ -385,6 +442,13 @@ watchfiles==1.1.1
     # via uvicorn
 weasel==0.4.3
     # via spacy
+weasyprint==68.1
+    # via -r requirements.in
+webencodings==0.5.1
+    # via
+    #   cssselect2
+    #   tinycss2
+    #   tinyhtml5
 websockets==15.0.1
     # via uvicorn
 wrapt==2.0.1
@@ -395,6 +459,8 @@ xxhash==3.6.0
     #   evaluate
 yarl==1.22.0
     # via aiohttp
+zopfli==0.4.1
+    # via fonttools
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
