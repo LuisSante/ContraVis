@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
@@ -15,30 +14,41 @@
 		DocumentMeta,
 		Docx4jsBrowserModule,
 		Node as ParagraphNode,
-		XmlNode
+		XmlNode,
+		ParagraphKind,
+		ChangeLogState,
+		ParagraphEditState,
+		RelatedParagraph
 	} from '$lib/types/document';
-
-	type ParagraphKind = 'paragraph' | 'heading' | 'list';
-
-	const highlightMap: Record<string, string> = {
-		yellow: '#fff59d',
-		green: '#a5d6a7',
-		cyan: '#80deea',
-		magenta: '#f48fb1',
-		blue: '#90caf9',
-		red: '#ef9a9a',
-		darkblue: '#5c6bc0',
-		darkcyan: '#26a69a',
-		darkgreen: '#43a047',
-		darkmagenta: '#ab47bc',
-		darkred: '#e53935',
-		darkyellow: '#f9a825',
-		lightgray: '#e0e0e0',
-		darkgray: '#757575',
-		black: '#000000',
-		white: '#ffffff',
-		none: 'transparent'
-	};
+	import { 
+		EMPTY_CHANGE_LOG
+	} from '$lib/constant';
+	import { 
+		localName, 
+		getAttr, 
+		findChild, 
+		toTwipsPx, 
+		toNumber, 
+		toNodeList, 
+		setStyles, 
+		appendChildren, 
+		normalizeEditableText, 
+		resolveDocx4jsFromRequire,
+		getSectionLayout,
+		getParagraphStyles,
+		getRunStyles,
+		hasOnlySectionBreak,
+		parseBorder
+	} from '$lib/utils/paragraph';
+	import {
+		buildChangeLog,
+		buildRelatedParagraphs,
+		ensureNodeEditState,
+		formatReferenceSummary,
+		getNodeCurrentText,
+		truncateText,
+		updateSelectionHighlight
+	} from '$lib/utils/edit';
 
 	let viewer: HTMLDivElement | null = null;
 	let activeDocumentId: string | null = null;
@@ -47,110 +57,11 @@
 	let renderToken = 0;
 	let releaseDoc: (() => void) | null = null;
 	let browserDocxModulePromise: Promise<Docx4jsBrowserModule> | null = null;
-
-	function localName(tag?: string): string {
-		return tag?.split(':').pop()?.toLowerCase() ?? '';
-	}
-
-	function normalizeEditableText(raw: string): string {
-		return raw.replace(/\u00a0/g, ' ').replace(/\r/g, '');
-	}
-
-	function toNumber(value: unknown): number | null {
-		const parsed = Number(value);
-		return Number.isFinite(parsed) ? parsed : null;
-	}
-
-	function toTwipsPx(value: unknown): number | null {
-		const parsed = toNumber(value);
-		if (parsed == null) return null;
-		return parsed / 15;
-	}
-
-	function toBorderPx(value: unknown): number | null {
-		const parsed = toNumber(value);
-		if (parsed == null) return null;
-		return parsed / 6;
-	}
-
-	function getAttr(node: XmlNode | null | undefined, attr: string): string | undefined {
-		const attribs =
-			node &&
-			typeof node === 'object' &&
-			node.attribs &&
-			typeof node.attribs === 'object' &&
-			!Array.isArray(node.attribs)
-				? node.attribs
-				: null;
-
-		if (!attribs) return undefined;
-		if (attribs[attr] !== undefined) return attribs[attr];
-
-		for (const [key, value] of Object.entries(attribs)) {
-			if (localName(key) === localName(attr)) return value;
-		}
-
-		return undefined;
-	}
-
-	function findChild(node: XmlNode | null | undefined, name: string): XmlNode | undefined {
-		return node?.children?.find((child) => localName(child.name) === name.toLowerCase());
-	}
-
-	function isOn(node?: XmlNode | null): boolean {
-		if (!node) return false;
-		const raw = (getAttr(node, 'val') ?? '').toLowerCase();
-		return raw === '' || !['0', 'false', 'off', 'none', 'nil'].includes(raw);
-	}
-
-	function normalizeColor(raw?: string): string | null {
-		if (!raw) return null;
-		const value = raw.trim();
-		if (!value || value.toLowerCase() === 'auto' || value.toLowerCase() === 'none') return null;
-		if (value.startsWith('#')) return value;
-		if (/^[0-9a-f]{6}$/i.test(value)) return `#${value}`;
-		return value;
-	}
-
-	function setStyles(el: HTMLElement, styles: unknown) {
-		if (!styles || typeof styles !== 'object' || Array.isArray(styles)) return;
-		for (const [key, value] of Object.entries(styles as Record<string, string | undefined | null>)) {
-			if (value == null || value === '') continue;
-			el.style.setProperty(key, value);
-		}
-	}
-
-	function toNodeList(children: unknown): Node[] {
-		if (children == null) return [];
-		if (children instanceof Node) return [children];
-		if (Array.isArray(children)) return children.flatMap((child) => toNodeList(child));
-		if (typeof children === 'string' || typeof children === 'number') {
-			return [document.createTextNode(String(children))];
-		}
-		return [];
-	}
-
-	function appendChildren(parent: Node, children: unknown) {
-		for (const child of toNodeList(children)) {
-			parent.appendChild(child);
-		}
-	}
-
-	function resolveDocx4jsFromRequire(): Docx4jsBrowserModule | null {
-		const maybeRequire = (
-			globalThis as typeof globalThis & { require?: (moduleName: string) => unknown }
-		).require;
-		if (typeof maybeRequire !== 'function') return null;
-
-		try {
-			const mod = maybeRequire('docx4js') as Partial<Docx4jsBrowserModule> | undefined;
-			if (mod?.docx?.load) return mod as Docx4jsBrowserModule;
-		} catch {
-			return null;
-		}
-
-		return null;
-	}
+	let selectedNodeId: string | null = null;
+	let selectedChangeLog: ChangeLogState = EMPTY_CHANGE_LOG;
+	let selectedRelatedParagraphs: RelatedParagraph[] = [];
+	const nodeEditStateById = new Map<string, ParagraphEditState>();
+	const paragraphElementById = new Map<string, HTMLElement>();
 
 	async function loadBrowserDocx4js(): Promise<Docx4jsBrowserModule> {
 		if (browserDocxModulePromise) return browserDocxModulePromise;
@@ -199,153 +110,65 @@
 		return browserDocxModulePromise;
 	}
 
-	function hasOnlySectionBreak(pr?: XmlNode | null): boolean {
-		if (!pr?.children || pr.children.length !== 1) return false;
-		return localName(pr.children[0].name) === 'sectpr';
-	}
+	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
+		selectedNodeId = selectedNode?.id ?? null;
+		updateSelectionHighlight(paragraphElementById, selectedNodeId);
 
-	function getParagraphStyles(pr?: XmlNode | null): Record<string, string> {
-		const style: Record<string, string> = {
-			'margin-top': '0',
-			'margin-bottom': '0',
-			'white-space': 'pre-wrap',
-			'word-break': 'break-word'
-		};
-
-		if (!pr) return style;
-
-		const alignment = getAttr(findChild(pr, 'jc'), 'val')?.toLowerCase();
-		if (alignment === 'both') style['text-align'] = 'justify';
-		if (alignment && alignment !== 'both') style['text-align'] = alignment;
-
-		const spacing = findChild(pr, 'spacing');
-		const before = toTwipsPx(getAttr(spacing, 'before'));
-		const after = toTwipsPx(getAttr(spacing, 'after'));
-		const line = toNumber(getAttr(spacing, 'line'));
-		const lineRule = getAttr(spacing, 'lineRule')?.toLowerCase();
-
-		if (before != null) style['margin-top'] = `${before}px`;
-		if (after != null) style['margin-bottom'] = `${after}px`;
-		if (line != null) {
-			if (lineRule === 'auto') {
-				style['line-height'] = `${Math.max(1, line / 240)}`;
-			} else {
-				const linePx = toTwipsPx(line);
-				if (linePx != null) style['line-height'] = `${Math.max(linePx, 1)}px`;
-			}
+		if (!selectedNode) {
+			selectedChangeLog = { ...EMPTY_CHANGE_LOG, oldSegments: [], newSegments: [] };
+			selectedRelatedParagraphs = [];
+			return;
 		}
 
-		const indent = findChild(pr, 'ind');
-		const left = toTwipsPx(getAttr(indent, 'left'));
-		const right = toTwipsPx(getAttr(indent, 'right'));
-		const firstLine = toTwipsPx(getAttr(indent, 'firstLine'));
-		const hanging = toTwipsPx(getAttr(indent, 'hanging'));
-
-		if (left != null) style['padding-left'] = `${left}px`;
-		if (right != null) style['padding-right'] = `${right}px`;
-		if (firstLine != null) style['text-indent'] = `${firstLine}px`;
-		if (hanging != null) style['text-indent'] = `${-hanging}px`;
-
-		return style;
+		const state = ensureNodeEditState(nodeEditStateById, selectedNode.id, selectedNode.text);
+		selectedChangeLog = buildChangeLog(state.committed, state.current);
+		selectedRelatedParagraphs = buildRelatedParagraphs(selectedNode, {
+			nodes: get(paragraphs),
+			nodeEditStateById
+		});
 	}
 
-	function getRunStyles(pr?: XmlNode | null): Record<string, string> {
-		const style: Record<string, string> = {};
-		if (!pr) return style;
-
-		const bold = findChild(pr, 'b') ?? findChild(pr, 'bcs');
-		const italic = findChild(pr, 'i') ?? findChild(pr, 'ics');
-		const underline = findChild(pr, 'u');
-		const strike = findChild(pr, 'strike') ?? findChild(pr, 'dstrike');
-		const caps = findChild(pr, 'caps');
-		const smallCaps = findChild(pr, 'smallcaps');
-		const verticalAlign = findChild(pr, 'vertalign');
-		const color = findChild(pr, 'color');
-		const size = findChild(pr, 'sz');
-		const fonts = findChild(pr, 'rfonts');
-		const highlight = findChild(pr, 'highlight');
-
-		if (isOn(bold)) style['font-weight'] = '700';
-		if (isOn(italic)) style['font-style'] = 'italic';
-		if (underline && (getAttr(underline, 'val') ?? 'single').toLowerCase() !== 'none') {
-			style['text-decoration-line'] = 'underline';
-		}
-		if (isOn(strike)) style['text-decoration-line'] = 'line-through';
-		if (isOn(caps)) style['text-transform'] = 'uppercase';
-		if (isOn(smallCaps)) style['font-variant'] = 'small-caps';
-
-		const va = getAttr(verticalAlign, 'val')?.toLowerCase();
-		if (va === 'superscript') style['vertical-align'] = 'super';
-		if (va === 'subscript') style['vertical-align'] = 'sub';
-
-		const colorValue = normalizeColor(getAttr(color, 'val'));
-		if (colorValue) style.color = colorValue;
-
-		const fontSize = toNumber(getAttr(size, 'val'));
-		if (fontSize != null) style['font-size'] = `${Math.max(fontSize / 2, 1)}pt`;
-
-		const fontFamily =
-			getAttr(fonts, 'ascii') ??
-			getAttr(fonts, 'hAnsi') ??
-			getAttr(fonts, 'eastAsia') ??
-			getAttr(fonts, 'cs');
-		if (fontFamily) style['font-family'] = `"${fontFamily}"`;
-
-		const highlightKey = getAttr(highlight, 'val')?.toLowerCase();
-		if (highlightKey) {
-			style['background-color'] = highlightMap[highlightKey] ?? highlightKey;
+	function setSelectedParagraphNode(selectedNode: ParagraphNode | null) {
+		if (!selectedNode) {
+			selectedParagraph.set(null);
+			refreshInspector(null);
+			return;
 		}
 
-		return style;
+		const state = ensureNodeEditState(nodeEditStateById, selectedNode.id, selectedNode.text);
+		const nodeWithCurrent = { ...selectedNode, text: state.current };
+		selectedParagraph.set(nodeWithCurrent);
+		refreshInspector(nodeWithCurrent);
 	}
 
-	function getSectionLayout(sectPr?: XmlNode | null) {
-		const defaultLayout = {
-			width: 793,
-			height: 1122,
-			marginTop: 96,
-			marginRight: 96,
-			marginBottom: 96,
-			marginLeft: 96
-		};
+	function focusNodeFromPanel(nodeId: string) {
+		const target = get(paragraphs).find((node) => node.id === nodeId);
+		if (!target) return;
 
-		if (!sectPr) return defaultLayout;
-
-		const pgSz = findChild(sectPr, 'pgsz');
-		const pgMar = findChild(sectPr, 'pgmar');
-
-		let width = toTwipsPx(getAttr(pgSz, 'w')) ?? defaultLayout.width;
-		let height = toTwipsPx(getAttr(pgSz, 'h')) ?? defaultLayout.height;
-		const orient = getAttr(pgSz, 'orient')?.toLowerCase();
-		if (orient === 'landscape' && width < height) {
-			[width, height] = [height, width];
+		const nodeElement = paragraphElementById.get(nodeId);
+		if (nodeElement) {
+			nodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			nodeElement.focus();
+			return;
 		}
 
-		return {
-			width,
-			height,
-			marginTop: toTwipsPx(getAttr(pgMar, 'top')) ?? defaultLayout.marginTop,
-			marginRight: toTwipsPx(getAttr(pgMar, 'right')) ?? defaultLayout.marginRight,
-			marginBottom: toTwipsPx(getAttr(pgMar, 'bottom')) ?? defaultLayout.marginBottom,
-			marginLeft: toTwipsPx(getAttr(pgMar, 'left')) ?? defaultLayout.marginLeft
-		};
+		setSelectedParagraphNode(target);
 	}
 
-	function parseBorder(border?: XmlNode): string | null {
-		if (!border) return null;
-		const val = (getAttr(border, 'val') ?? 'single').toLowerCase();
-		if (val === 'none' || val === 'nil') return 'none';
-
-		const width = Math.max(toBorderPx(getAttr(border, 'sz')) ?? 0.5, 0.5);
-		const color = normalizeColor(getAttr(border, 'color')) ?? '#000000';
-		const cssType = val.includes('dot') ? 'dotted' : val.includes('dash') ? 'dashed' : 'solid';
-		return `${width}px ${cssType} ${color}`;
+	function resetInspectorState() {
+		updateSelectionHighlight(paragraphElementById, null);
+		selectedNodeId = null;
+		selectedChangeLog = { ...EMPTY_CHANGE_LOG, oldSegments: [], newSegments: [] };
+		selectedRelatedParagraphs = [];
+		nodeEditStateById.clear();
+		paragraphElementById.clear();
 	}
 
 	function createRenderer(
 		docId: string,
 		onNodeUpsert: (node: ParagraphNode) => void,
-		onNodeFocus: (node: ParagraphNode) => void
+		onNodeFocus: (node: ParagraphNode) => void,
+		onNodeCommit: (node: ParagraphNode) => void
 	) {
 		const listState = new Map<string, number[]>();
 		let paragraphCounter = 0;
@@ -378,32 +201,55 @@
 			element.dataset.paragraphKind = kind;
 			element.setAttribute('contenteditable', 'true');
 			element.setAttribute('spellcheck', 'false');
+			paragraphElementById.set(nodeId, element);
 			element.classList.add(
-				'rounded-sm',
-				'-mx-1',
-				'px-1',
+				'rounded-[2px]',
+				'-mx-[2px]',
+				'px-[2px]',
 				'outline-none',
-				'focus:bg-sky-50/40',
+				'transition-all',
+				'hover:ring-1',
+				'hover:ring-blue-300',
 				'focus:ring-2',
-				'focus:ring-sky-300'
+				'focus:ring-yellow-400'
 			);
 
-			const syncText = () => {
+			const syncText = (): ParagraphNode => {
 				const text = normalizeEditableText(element.innerText ?? '');
-				onNodeUpsert({ ...baseNode, text });
-				return text;
+				const node = { ...baseNode, text };
+				onNodeUpsert(node);
+				return node;
 			};
 
 			element.addEventListener('input', () => {
-				syncText();
+				const state = ensureNodeEditState(nodeEditStateById, nodeId, element.innerText ?? '');
+				state.editedSinceCommit = true;
+				const node = syncText();
+				if (selectedNodeId === node.id || document.activeElement === element) {
+					onNodeFocus(node);
+				}
 			});
 
 			element.addEventListener('focus', () => {
-				const text = syncText();
-				onNodeFocus({ ...baseNode, text });
+				const node = syncText();
+				const state = ensureNodeEditState(nodeEditStateById, node.id, node.text);
+				if (!state.editedSinceCommit && state.committed !== state.current) {
+					state.committed = state.current;
+				}
+				onNodeFocus(node);
 			});
 
-			syncText();
+			element.addEventListener('keydown', (event: KeyboardEvent) => {
+				if (!(event.key === 'Enter' && event.ctrlKey && event.shiftKey)) return;
+				event.preventDefault();
+				const node = syncText();
+				onNodeCommit(node);
+			});
+
+			const node = syncText();
+			if (selectedNodeId === node.id) {
+				onNodeFocus(node);
+			}
 		};
 
 		return (type: string, props: Record<string, unknown> = {}, children: unknown) => {
@@ -589,9 +435,10 @@
 			releaseDoc = null;
 		}
 		if (viewer) viewer.replaceChildren();
+		resetInspectorState();
 		if (clearStores) {
 			paragraphs.set([]);
-			selectedParagraph.set(null);
+			setSelectedParagraphNode(null);
 		}
 	}
 
@@ -615,7 +462,7 @@
 		error.set(null);
 		localError = null;
 		paragraphs.set([]);
-		selectedParagraph.set(null);
+		setSelectedParagraphNode(null);
 
 		try {
 			const metadata = await resolveDocumentMeta(docId);
@@ -639,13 +486,26 @@
 
 			const nodesById = new Map<string, ParagraphNode>();
 			const upsertParagraphNode = (node: ParagraphNode) => {
+				const state = ensureNodeEditState(nodeEditStateById, node.id, node.text);
+				state.current = normalizeEditableText(node.text);
 				nodesById.set(node.id, node);
 				paragraphs.set(
 					Array.from(nodesById.values()).sort((a, b) => a.paragraph_enum - b.paragraph_enum)
 				);
 			};
 			const focusParagraphNode = (node: ParagraphNode) => {
-				selectedParagraph.set(node);
+				setSelectedParagraphNode(node);
+			};
+			const commitParagraphNode = (node: ParagraphNode) => {
+				const state = ensureNodeEditState(nodeEditStateById, node.id, node.text);
+				state.current = normalizeEditableText(node.text);
+				state.committed = state.current;
+				state.editedSinceCommit = false;
+
+				const selected = get(selectedParagraph);
+				if (selected?.id === node.id) {
+					setSelectedParagraphNode(node);
+				}
 			};
 
 			clearRenderedDocument(false);
@@ -661,7 +521,7 @@
 			};
 
 			const renderedRoot = parsedDoc.render(
-				createRenderer(docId, upsertParagraphNode, focusParagraphNode),
+				createRenderer(docId, upsertParagraphNode, focusParagraphNode, commitParagraphNode),
 				identify
 			);
 			if (token !== renderToken || !viewer) return;
@@ -709,41 +569,181 @@
 	});
 </script>
 
-<main class="flex min-h-screen flex-col bg-slate-200">
-	<header class="sticky top-0 z-20 flex items-center gap-3 border-b border-slate-300 bg-white/95 px-4 py-3 backdrop-blur">
-		<button
-			class="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-			on:click={() => goto('/')}
-		>
-			Back
-		</button>
+<main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans max-lg:flex-col">
+	<div class="flex w-[60%] min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b">
+		<header class="flex flex-none items-center gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3">
+			<div class="min-w-0">
+				<div class="truncate text-sm font-semibold text-gray-800">
+					{activeDocumentName || 'No document selected'}
+				</div>
+			</div>
+		</header>
 
-		<div>
-			<div class="text-xs tracking-wide text-slate-500 uppercase">DOCX Editor</div>
-			<div class="text-sm font-semibold text-slate-800">
-				{activeDocumentName || 'No document selected'}
+		{#if localError || $error}
+			<div class="mx-4 mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+				{localError ?? $error}
+			</div>
+		{/if}
+
+		<section class="flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner">
+			<div bind:this={viewer} class="min-h-full w-full"></div>
+		</section>
+	</div>
+
+	<aside class="flex w-[40%] min-h-0 flex-col overflow-hidden bg-white shadow-xl max-lg:h-[42%] max-lg:w-full">
+		<div class="flex flex-none flex-col border-b border-gray-200">
+			<header class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Node Diff</h3>
+				<div class="group relative inline-flex">
+					<span
+						class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
+						title="Commit changes with Ctrl + Shift + Enter"
+					>
+						CTRL + SHIFT + ENTER
+					</span>
+					<div
+						class="pointer-events-none absolute right-0 top-full z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges ? 'animate-bounce' : ''}"
+					>
+						Ctrl + Shift + Enter to save
+					</div>
+				</div>
+			</header>
+
+			<div class="max-h-[35vh] overflow-y-auto p-3">
+				{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
+					<div class="flex flex-col items-center justify-center py-2 text-gray-300">
+						<p class="text-[10px] italic">No active changes</p>
+					</div>
+				{:else}
+					<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+						<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+							<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
+							<p class="font-mono leading-relaxed text-red-700/80">
+								{#each selectedChangeLog.oldSegments as segment}
+									{#if segment.changed}
+										<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+									{:else}
+										<span>{segment.value}</span>
+									{/if}
+								{/each}
+							</p>
+						</div>
+
+						<div class="bg-green-50/20 px-3 py-2">
+							<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Modified</span>
+							<p class="font-mono leading-relaxed text-green-800">
+								{#each selectedChangeLog.newSegments as segment}
+									{#if segment.changed}
+										<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+									{:else}
+										<span>{segment.value}</span>
+									{/if}
+								{/each}
+							</p>
+						</div>
+					</div>
+				{/if}
 			</div>
 		</div>
 
-		<div class="ml-auto flex items-center gap-2">
-			<div class="rounded border border-slate-300 bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
-				Nodes: {$paragraphs.length}
+		<div class="flex min-h-0 flex-1 flex-col">
+			<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Related Paragraphs</h3>
+			</header>
+
+			<div class="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2">
+				{#if !$selectedParagraph}
+					<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+						<svg class="mb-2 h-6 w-6 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="M13 10V3L4 14h7v7l9-11h-7z"
+							/>
+						</svg>
+						<p class="text-[10px] font-medium tracking-widest uppercase">Select text to analyze</p>
+					</div>
+				{:else if selectedRelatedParagraphs.length === 0}
+					<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+						<p class="text-[10px] italic">No relations found for this element</p>
+					</div>
+				{:else}
+					{#each selectedRelatedParagraphs as related}
+						<button
+							type="button"
+							class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+							on:click={() => focusNodeFromPanel(related.node.id)}
+						>
+							<div class="mb-2 flex items-center justify-between">
+								<div class="flex flex-wrap items-center gap-1.5">
+									{#if related.relationTypes.includes('semantic_similarity')}
+										<span class="rounded border border-green-100 bg-green-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-green-600">
+											Similarity
+										</span>
+									{/if}
+									{#if related.relationTypes.includes('reference')}
+										<span class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold uppercase text-blue-600">
+											Reference
+										</span>
+									{/if}
+									{#if related.semanticScore != null}
+										<span class="text-[9px] font-semibold text-gray-500">
+											{(related.semanticScore * 100).toFixed(1)}%
+										</span>
+									{/if}
+								</div>
+								<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase">
+									Page {related.node.page}
+								</span>
+							</div>
+
+							<p class="text-[11px] leading-relaxed text-gray-600">
+								{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
+							</p>
+
+							{#if related.references.length}
+								<p class="mt-2 text-[10px] text-gray-500">
+									Refs: {formatReferenceSummary(related.references)}
+								</p>
+							{/if}
+						</button>
+					{/each}
+				{/if}
 			</div>
-			{#if $selectedParagraph}
-				<code class="rounded border border-sky-300 bg-sky-50 px-2 py-1 text-xs text-sky-800">
-					{$selectedParagraph.id}
-				</code>
-			{/if}
 		</div>
-	</header>
-
-	{#if localError || $error}
-		<div class="mx-4 mt-3 rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-			{localError ?? $error}
-		</div>
-	{/if}
-
-	<section class="flex-1 overflow-auto p-4">
-		<div bind:this={viewer} class="min-h-full"></div>
-	</section>
+	</aside>
 </main>
+
+<style>
+	:global([contenteditable='true'])::selection {
+		background: rgba(250, 204, 21, 0.3);
+	}
+
+	:global(.overflow-y-auto)::-webkit-scrollbar {
+		width: 3px;
+	}
+
+	:global(.overflow-y-auto)::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	:global(.overflow-y-auto)::-webkit-scrollbar-thumb {
+		background: #f3f4f6;
+		border-radius: 10px;
+	}
+
+	@keyframes bounce {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-3px);
+		}
+	}
+
+	.animate-bounce {
+		animation: bounce 2s infinite;
+	}
+</style>

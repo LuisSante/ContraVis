@@ -114,3 +114,40 @@ export type Docx4jsBrowserModule = {
 		load: (file: ArrayBuffer) => Promise<Docx4jsDocument>;
 	};
 };
+
+export type ParagraphKind = 'paragraph' | 'heading' | 'list';
+export type RelationKind = 'semantic_similarity' | 'reference';
+
+export type TokenDiffSegment = {
+	value: string;
+	changed: boolean;
+};
+
+export type ChangeLogState = {
+	hasChanges: boolean;
+	oldSegments: TokenDiffSegment[];
+	newSegments: TokenDiffSegment[];
+};
+
+export type ParagraphEditState = {
+	committed: string;
+	current: string;
+	editedSinceCommit: boolean;
+};
+
+export type ReferenceMatch = {
+	label: string;
+	value: string;
+};
+
+export type RelatedParagraph = {
+	node: Node;
+	relationTypes: RelationKind[];
+	semanticScore?: number;
+	references: ReferenceMatch[];
+};
+
+export type TokenVector = {
+	weights: Map<string, number>;
+	magnitude: number;
+};
