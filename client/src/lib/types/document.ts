@@ -38,56 +38,6 @@ export interface ProcessDocumentResponse {
 	graph: Graph;
 }
 
-export interface ExtractedElement {
-	id: string;
-	text: string;
-	x: number;
-	y: number;
-	fontSize: number;
-	width?: number;
-}
-
-export interface ExtractedPage {
-	pageNumber: number;
-	width: number;
-	height: number;
-	elements: ExtractedElement[];
-}
-
-export interface ElementState {
-	original: string;
-	committed: string;
-	current: string;
-	isDirty: boolean;
-}
-
-export interface Line {
-	page: number;
-	y: number;
-	fontSize: number;
-	items: ExtractedElement[];
-};
-
-export interface Paragraph {
-	page: number;
-	lines: Line[];
-	text: string;
-	x: number;
-	y: number;
-	fontSize: number;
-};
-
-export type LayoutElement = ExtractedElement & {
-	boxX: number;
-	boxY: number;
-	boxWidth: number;
-	boxHeight: number;
-};
-
-export type LayoutPage = Omit<ExtractedPage, 'elements'> & {
-	elements: LayoutElement[];
-};
-
 export type XmlNode = {
 	name?: string;
 	attribs?: Record<string, string>;
@@ -147,7 +97,8 @@ export type RelatedParagraph = {
 	references: ReferenceMatch[];
 };
 
-export type TokenVector = {
-	weights: Map<string, number>;
-	magnitude: number;
+export type BuildRelatedOptions = {
+	nodes: Node[];
+	edges: Edge[];
+	maxRelatedParagraphs?: number;
 };

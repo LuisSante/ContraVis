@@ -26,15 +26,4 @@ export const EMPTY_CHANGE_LOG: ChangeLogState = {
     oldSegments: [],
     newSegments: []
 };
-
-export const REFERENCE_PATTERNS: Array<{ label: string; expression: RegExp }> = [
-    { label: 'section', expression: /\bsection\s+(\d+(?:\.\d+)*)\b/gi },
-    { label: 'article', expression: /\barticle\s+(\d+(?:\.\d+)*)\b/gi },
-    { label: 'exhibit', expression: /\bexhibit\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi },
-    { label: 'schedule', expression: /\bschedule\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi },
-    { label: 'annex', expression: /\bannex\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi },
-    { label: 'appendix', expression: /\bappendix\s+([A-Za-z]|\d+(?:\.\d+)*)\b/gi }
-];
-
-export const SEMANTIC_THRESHOLD = 0.2;
 export const MAX_RELATED_PARAGRAPHS = 18;
