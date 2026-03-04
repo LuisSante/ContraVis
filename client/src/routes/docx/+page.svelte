@@ -3,77 +3,31 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
-	import {
-		currentDocument,
-		error,
-		loading,
-		paragraphs,
-		selectedParagraph
-	} from '$lib/stores/document';
-	import type {
-		AssistantChatMessage,
-		AssistantChatRequest,
-		AssistantContextNode,
-		AssistantContextRelation,
-		AssistantMode,
-		AssistantProvider,
-		AssistantScope,
-		ChangeLogState,
-		Edge as GraphEdge,
-		Node as ParagraphNode,
-		ParagraphEditState,
-		RelatedParagraph,
-		SimplifySelectionResponse,
-		XmlNode,
-
-		SimplifyResultState,
-
-		SimplifyAuditRecord
-
-
-	} from '$lib/types/document';
+	import { currentDocument, error, loading, paragraphs, selectedParagraph } from '$lib/stores/document';
+	import { getAxiosErrorMessage } from '$lib/utils/http-error';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
-	import {
-		buildInspectorState,
-		createEmptyInspectorState,
-		focusNodeFromPanel as focusNodeFromInspectorPanel,
-		toSelectedParagraphNode
+	import type { 
+		AssistantChatMessage, AssistantChatRequest, AssistantContextNode, AssistantContextRelation, AssistantMode, 
+		AssistantProvider, AssistantScope, ChangeLogState, Edge as GraphEdge, Node as ParagraphNode, ParagraphEditState, 
+		RelatedParagraph, XmlNode, SimplifyResultState, SimplifyAuditRecord 
+	} from '$lib/types/document';
+	import { buildInspectorState, createEmptyInspectorState, 
+		focusNodeFromPanel as focusNodeFromInspectorPanel, toSelectedParagraphNode 
 	} from '$lib/utils/docx/inspector';
 	import {
-		fetchAssistantResponse,
-		fetchBackendGraph,
-		fetchSimplifySelection,
-		loadBrowserDocx4js,
-		resolveDocumentMeta,
-		updateRelationBadge
+		fetchAssistantResponse, fetchBackendGraph, fetchSimplifySelection, loadBrowserDocx4js, resolveDocumentMeta, updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
-		buildChangeLog,
-		ensureNodeEditState,
-		formatReferenceSummary,
-		getNodeCurrentText,
-		truncateText
+		buildChangeLog, ensureNodeEditState, formatReferenceSummary, getNodeCurrentText, truncateText
 	} from '$lib/utils/edit';
-	import {
-		COMMIT_SHORTCUT_HINT,
-		COMMIT_SHORTCUT_LABEL,
-		COMMIT_SHORTCUT_TOOLTIP,
-		MAX_SIMPLIFY_AUDIT_TRAIL,
-		MODE_OPTIONS,
-		PROVIDER_OPTIONS,
-		QUICK_ACTIONS,
-		SCOPE_OPTIONS
+	import { 
+		COMMIT_SHORTCUT_HINT, COMMIT_SHORTCUT_LABEL, COMMIT_SHORTCUT_TOOLTIP, MAX_SIMPLIFY_AUDIT_TRAIL, 
+		MODE_OPTIONS, PROVIDER_OPTIONS, QUICK_ACTIONS, SCOPE_OPTIONS
 	} from '$lib/constants/docx-viewer';
-	import { getAxiosErrorMessage } from '$lib/utils/http-error';
-	import {
-		buildTargetForWholeParagraph,
-		buildTargetFromSelectionRange,
-		computeSimplifyToolbarPosition,
-		normalizeBounds,
-		preserveBoundaryWhitespace,
-		replaceParagraphTextRange,
-		type SimplifyTarget
+	import { 
+		buildTargetForWholeParagraph, buildTargetFromSelectionRange, computeSimplifyToolbarPosition, 
+		normalizeBounds, preserveBoundaryWhitespace, replaceParagraphTextRange, type SimplifyTarget
 	} from '$lib/utils/docx/simplify-selection';
 
 	let viewer: HTMLDivElement | null = null;
