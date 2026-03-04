@@ -1,6 +1,7 @@
 from sentence_transformers import SentenceTransformer, util
 from collections import Counter
-from .config import Config
+# from ...utils.config import Config
+from utils.config import Config
 from schemas.types import Graph, Node, Edge
 from typing import List
 

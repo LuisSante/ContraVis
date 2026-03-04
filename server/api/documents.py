@@ -7,7 +7,8 @@ from schemas.types import (
     SimplifySelectionRequest,
     SimplifySelectionResponse,
 )
-from utils.relations import generate_graph_data
+from services.graph.relations import generate_graph_data
+# from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
 from services.contract_assistant import generate_assistant_response, simplify_paragraph_selection
 import logging
