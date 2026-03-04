@@ -9,7 +9,9 @@ import type {
 	Edge as GraphEdge,
 	Node as ParagraphNode,
 	ParagraphEditState,
-	ProcessDocumentResponse
+	ProcessDocumentResponse,
+	SimplifySelectionRequest,
+	SimplifySelectionResponse
 } from '$lib/types/document';
 import { getNodeCurrentText } from '$lib/utils/edit';
 import { resolveDocx4jsFromRequire } from '$lib/utils/docx/loader';
@@ -148,5 +150,12 @@ export async function fetchAssistantResponse(
 	payload: AssistantChatRequest
 ): Promise<AssistantChatResponse> {
 	const response = await api.post<AssistantChatResponse>('/assistant/chat', payload);
+	return response.data;
+}
+
+export async function fetchSimplifySelection(
+	payload: SimplifySelectionRequest
+): Promise<SimplifySelectionResponse> {
+	const response = await api.post<SimplifySelectionResponse>('/assistant/simplify', payload);
 	return response.data;
 }

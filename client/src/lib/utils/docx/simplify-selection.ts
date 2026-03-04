@@ -1,0 +1,176 @@
+import { normalizeEditableText } from '$lib/utils/docx/dom';
+
+export type SimplifyTarget = {
+	paragraphId: string;
+	paragraphText: string;
+	selectionStart: number;
+	selectionEnd: number;
+	originalSnippet: string;
+	anchorRect: DOMRect;
+};
+
+export function normalizeBounds(start: number, end: number, totalLength: number) {
+	const clampedStart = Math.max(0, Math.min(start, totalLength));
+	const clampedEnd = Math.max(0, Math.min(end, totalLength));
+	if (clampedEnd < clampedStart) {
+		return { start: clampedEnd, end: clampedStart };
+	}
+	return { start: clampedStart, end: clampedEnd };
+}
+
+export function buildTargetForWholeParagraph(
+	paragraphId: string,
+	paragraphElementById: Map<string, HTMLElement>
+): SimplifyTarget | null {
+	const paragraphElement = paragraphElementById.get(paragraphId);
+	if (!paragraphElement) return null;
+
+	const paragraphText = normalizeEditableText(paragraphElement.innerText ?? '');
+	const anchorRect = paragraphElement.getBoundingClientRect();
+	return {
+		paragraphId,
+		paragraphText,
+		selectionStart: 0,
+		selectionEnd: paragraphText.length,
+		originalSnippet: paragraphText,
+		anchorRect
+	};
+}
+
+export function buildTargetFromSelectionRange(options: {
+	viewer: HTMLElement | null;
+}): SimplifyTarget | null {
+	const { viewer } = options;
+	if (!viewer) return null;
+
+	const selection = window.getSelection();
+	if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return null;
+
+	const range = selection.getRangeAt(0);
+	if (!viewer.contains(range.commonAncestorContainer)) return null;
+
+	const startElement = getClosestParagraphElement(range.startContainer);
+	const endElement = getClosestParagraphElement(range.endContainer);
+	if (!startElement || !endElement || startElement !== endElement) return null;
+
+	const paragraphId = startElement.dataset.nodeId;
+	if (!paragraphId) return null;
+
+	const paragraphText = normalizeEditableText(startElement.innerText ?? '');
+
+	const startRange = document.createRange();
+	startRange.selectNodeContents(startElement);
+	startRange.setEnd(range.startContainer, range.startOffset);
+
+	const endRange = document.createRange();
+	endRange.selectNodeContents(startElement);
+	endRange.setEnd(range.endContainer, range.endOffset);
+
+	const bounds = normalizeBounds(startRange.toString().length, endRange.toString().length, paragraphText.length);
+	if (bounds.start === bounds.end) return null;
+
+	const originalSnippet = paragraphText.slice(bounds.start, bounds.end);
+	if (!originalSnippet) return null;
+
+	const rawRect = range.getBoundingClientRect();
+	const anchorRect =
+		rawRect.width > 0 || rawRect.height > 0 ? rawRect : startElement.getBoundingClientRect();
+
+	return {
+		paragraphId,
+		paragraphText,
+		selectionStart: bounds.start,
+		selectionEnd: bounds.end,
+		originalSnippet,
+		anchorRect
+	};
+}
+
+export function computeSimplifyToolbarPosition(anchorRect: DOMRect, viewportWidth: number) {
+	const toolbarWidth = 120;
+	const margin = 12;
+	const horizontalCenter = anchorRect.left + anchorRect.width / 2;
+	const left = Math.max(
+		margin,
+		Math.min(viewportWidth - toolbarWidth - margin, horizontalCenter - toolbarWidth / 2)
+	);
+	const top = anchorRect.top - 42 > 8 ? anchorRect.top - 42 : anchorRect.bottom + 8;
+	return { left, top };
+}
+
+export function preserveBoundaryWhitespace(originalSnippet: string, simplifiedSnippet: string): string {
+	const leadingWhitespace = originalSnippet.match(/^\s*/)?.[0] ?? '';
+	const trailingWhitespace = originalSnippet.match(/\s*$/)?.[0] ?? '';
+	const core = simplifiedSnippet.trim();
+	if (!core) return originalSnippet;
+	return `${leadingWhitespace}${core}${trailingWhitespace}`;
+}
+
+export function replaceParagraphTextRange(
+	paragraphElement: HTMLElement,
+	selectionStart: number,
+	selectionEnd: number,
+	replacementText: string
+) {
+	const range = document.createRange();
+	const startPoint = resolveDomPointByOffset(paragraphElement, selectionStart);
+	const endPoint = resolveDomPointByOffset(paragraphElement, selectionEnd);
+	range.setStart(startPoint.node, startPoint.offset);
+	range.setEnd(endPoint.node, endPoint.offset);
+	range.deleteContents();
+
+	const replacementNode = document.createTextNode(replacementText);
+	range.insertNode(replacementNode);
+	range.setStartAfter(replacementNode);
+	range.collapse(true);
+
+	const selection = window.getSelection();
+	if (selection) {
+		selection.removeAllRanges();
+		selection.addRange(range);
+	}
+}
+
+function getClosestParagraphElement(node: Node | null): HTMLElement | null {
+	if (!node) return null;
+	if (node instanceof HTMLElement) return node.closest<HTMLElement>('[data-node-id]');
+	if (node instanceof Text) return node.parentElement?.closest<HTMLElement>('[data-node-id]') ?? null;
+	return null;
+}
+
+function resolveDomPointByOffset(root: HTMLElement, offset: number): { node: Node; offset: number } {
+	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+		acceptNode: (node) => {
+			if (node.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT;
+			if (node instanceof HTMLBRElement) return NodeFilter.FILTER_ACCEPT;
+			return NodeFilter.FILTER_SKIP;
+		}
+	});
+
+	let remaining = Math.max(0, offset);
+	let current = walker.nextNode();
+	let fallbackTextNode: Text | null = null;
+	while (current) {
+		if (current.nodeType === Node.TEXT_NODE) {
+			const textNode = current as Text;
+			const length = textNode.data.length;
+			fallbackTextNode = textNode;
+			if (remaining <= length) {
+				return { node: textNode, offset: remaining };
+			}
+			remaining -= length;
+		} else if (current instanceof HTMLBRElement) {
+			const parent = current.parentNode ?? root;
+			const childIndex = Array.prototype.indexOf.call(parent.childNodes, current);
+			if (remaining === 0) return { node: parent, offset: childIndex };
+			remaining -= 1;
+			if (remaining === 0) return { node: parent, offset: childIndex + 1 };
+		}
+		current = walker.nextNode();
+	}
+
+	if (fallbackTextNode) {
+		return { node: fallbackTextNode, offset: fallbackTextNode.data.length };
+	}
+	return { node: root, offset: root.childNodes.length };
+}

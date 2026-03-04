@@ -1,4 +1,4 @@
-import { MAX_RELATED_PARAGRAPHS } from '$lib/constant';
+import { MAX_RELATED_PARAGRAPHS } from '$lib/constants/graph';
 import type {
 	BuildRelatedOptions,
 	Node as ParagraphNode,

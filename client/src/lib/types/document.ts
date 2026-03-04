@@ -163,3 +163,33 @@ export type AssistantChatResponse = {
 	scope: AssistantScope;
 	provider: AssistantProvider;
 };
+
+export type SimplifyEvidence = {
+	paragraph_id: string;
+	selection_start: number;
+	selection_end: number;
+};
+
+export type SimplifyAudit = {
+	system_prompt: string;
+	user_prompt: string;
+	model_response: string;
+};
+
+export type SimplifySelectionRequest = {
+	documentId: string;
+	provider: AssistantProvider;
+	paragraphId: string;
+	paragraphText: string;
+	selectionStart: number;
+	selectionEnd: number;
+};
+
+export type SimplifySelectionResponse = {
+	paragraphId: string;
+	provider: AssistantProvider;
+	originalSnippet: string;
+	simplifiedSnippet: string;
+	evidence: SimplifyEvidence;
+	audit: SimplifyAudit;
+};

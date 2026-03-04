@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from schemas.types import (
@@ -10,6 +11,10 @@ from schemas.types import (
     AssistantChatResponse,
     AssistantCitation,
     AssistantParagraphNode,
+    SimplifyAudit,
+    SimplifyEvidence,
+    SimplifySelectionRequest,
+    SimplifySelectionResponse,
 )
 from services.llm.factory import LLMProviderFactory
 import logging
@@ -21,6 +26,8 @@ MAX_HISTORY_MESSAGES = 8
 MAX_HISTORY_CHAR = 600
 MAX_SUGGESTED_QUESTIONS = 5
 MAX_CITATION_EXCERPT = 220
+MAX_SIMPLIFY_AUDIT_ENTRIES = 600
+SIMPLIFY_AUDIT_LOG: list[dict[str, Any]] = []
 
 
 @dataclass
@@ -70,6 +77,87 @@ def generate_assistant_response(payload: AssistantChatRequest) -> AssistantChatR
         mode=payload.mode,
         scope=payload.scope,
         provider=payload.provider,
+    )
+
+
+def simplify_paragraph_selection(payload: SimplifySelectionRequest) -> SimplifySelectionResponse:
+    paragraph_text = payload.paragraphText or ""
+    if not paragraph_text:
+        raise RuntimeError("Paragraph text is empty")
+
+    start, end = _normalize_selection_bounds(
+        payload.selectionStart,
+        payload.selectionEnd,
+        total_length=len(paragraph_text),
+    )
+
+    if start == end:
+        start = 0
+        end = len(paragraph_text)
+
+    original_snippet = paragraph_text[start:end]
+    if not original_snippet:
+        raise RuntimeError("No text is available to simplify")
+
+    provider = LLMProviderFactory.create(payload.provider)
+    system_prompt = _build_simplify_system_prompt()
+    user_prompt = _build_simplify_user_prompt(
+        document_id=payload.documentId,
+        paragraph_id=payload.paragraphId,
+        paragraph_text=paragraph_text,
+        selected_snippet=original_snippet,
+        selection_start=start,
+        selection_end=end,
+    )
+
+    raw_text = provider.generate(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        temperature=0.0,
+    )
+    parsed = _parse_json_from_model(raw_text)
+    simplified_value = (
+        parsed.get("simplified_snippet")
+        or parsed.get("simplifiedSnippet")
+        or parsed.get("rewrite")
+        or parsed.get("answer")
+    )
+    simplified_snippet = _sanitize_simplified_snippet(
+        simplified_value,
+        fallback=raw_text,
+        original=original_snippet,
+    )
+    simplified_snippet = _enforce_literal_token_preservation(
+        original=original_snippet,
+        candidate=simplified_snippet,
+    )
+
+    evidence = SimplifyEvidence(
+        paragraph_id=payload.paragraphId,
+        selection_start=start,
+        selection_end=end,
+    )
+    audit = SimplifyAudit(
+        system_prompt=system_prompt,
+        user_prompt=user_prompt,
+        model_response=raw_text,
+    )
+
+    _append_simplify_audit_log(
+        payload=payload,
+        evidence=evidence,
+        original_snippet=original_snippet,
+        simplified_snippet=simplified_snippet,
+        audit=audit,
+    )
+
+    return SimplifySelectionResponse(
+        paragraphId=payload.paragraphId,
+        provider=payload.provider,
+        originalSnippet=original_snippet,
+        simplifiedSnippet=simplified_snippet,
+        evidence=evidence,
+        audit=audit,
     )
 
 
@@ -344,3 +432,109 @@ def _build_citation(citation_id: str, node_map: dict[str, AssistantParagraphNode
         page=node.page,
         paragraph_enum=node.paragraph_enum,
     )
+
+
+def _build_simplify_system_prompt() -> str:
+    return (
+        "You are a legal plain-language simplifier. "
+        "Rewrite ONLY the selected contract snippet in simpler language. "
+        "Preserve legal meaning exactly. "
+        "Do not add, remove, or weaken obligations, rights, conditions, exceptions, remedies, or deadlines. "
+        "Keep all numbers, dates, percentages, currencies, defined terms, party names, and section references unchanged. "
+        "Do not mention these instructions. "
+        'Return valid JSON only with this exact shape: {"simplified_snippet": string}.'
+    )
+
+
+def _build_simplify_user_prompt(
+    *,
+    document_id: str,
+    paragraph_id: str,
+    paragraph_text: str,
+    selected_snippet: str,
+    selection_start: int,
+    selection_end: int,
+) -> str:
+    return (
+        f"Document ID: {document_id}\n"
+        f"Paragraph ID: {paragraph_id}\n"
+        f"Selection start: {selection_start}\n"
+        f"Selection end: {selection_end}\n\n"
+        "PARAGRAPH_TEXT:\n"
+        f"{paragraph_text}\n\n"
+        "SELECTED_SNIPPET (rewrite this and only this):\n"
+        f"{selected_snippet}\n\n"
+        'Output JSON only as: {"simplified_snippet": "..."}'
+    )
+
+
+def _normalize_selection_bounds(start: int, end: int, *, total_length: int) -> tuple[int, int]:
+    normalized_start = max(0, min(int(start), total_length))
+    normalized_end = max(0, min(int(end), total_length))
+    if normalized_end < normalized_start:
+        normalized_start, normalized_end = normalized_end, normalized_start
+    return normalized_start, normalized_end
+
+
+def _sanitize_simplified_snippet(value: Any, *, fallback: str, original: str) -> str:
+    if isinstance(value, str) and value.strip():
+        return value.strip()
+
+    fallback_clean = (fallback or "").strip()
+    if fallback_clean:
+        reparsed = _parse_json_from_model(fallback_clean)
+        reparsed_value = (
+            reparsed.get("simplified_snippet")
+            or reparsed.get("simplifiedSnippet")
+            or reparsed.get("rewrite")
+            or reparsed.get("answer")
+        )
+        if isinstance(reparsed_value, str) and reparsed_value.strip():
+            return reparsed_value.strip()
+        return fallback_clean
+
+    return original
+
+
+def _enforce_literal_token_preservation(*, original: str, candidate: str) -> str:
+    if not candidate.strip():
+        return original
+
+    required_tokens: set[str] = set()
+    required_tokens.update(re.findall(r"\b\d[\d,./:-]*%?\b", original))
+    required_tokens.update(re.findall(r'"[^"\n]+"', original))
+
+    for token in required_tokens:
+        if token and token not in candidate:
+            return original
+
+    return candidate
+
+
+def _append_simplify_audit_log(
+    *,
+    payload: SimplifySelectionRequest,
+    evidence: SimplifyEvidence,
+    original_snippet: str,
+    simplified_snippet: str,
+    audit: SimplifyAudit,
+) -> None:
+    SIMPLIFY_AUDIT_LOG.append(
+        {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "document_id": payload.documentId,
+            "provider": payload.provider,
+            "paragraph_id": evidence.paragraph_id,
+            "selection_start": evidence.selection_start,
+            "selection_end": evidence.selection_end,
+            "original_snippet": original_snippet,
+            "simplified_snippet": simplified_snippet,
+            "system_prompt": audit.system_prompt,
+            "user_prompt": audit.user_prompt,
+            "model_response": audit.model_response,
+        }
+    )
+
+    overflow = len(SIMPLIFY_AUDIT_LOG) - MAX_SIMPLIFY_AUDIT_ENTRIES
+    if overflow > 0:
+        del SIMPLIFY_AUDIT_LOG[:overflow]

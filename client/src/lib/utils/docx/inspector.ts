@@ -1,4 +1,4 @@
-import { EMPTY_CHANGE_LOG } from '$lib/constant';
+import { EMPTY_CHANGE_LOG } from '$lib/constants/graph';
 import type {
 	ChangeLogState,
 	Edge as GraphEdge,

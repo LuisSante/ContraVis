@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import axios from 'axios';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
@@ -24,6 +23,7 @@
 		Node as ParagraphNode,
 		ParagraphEditState,
 		RelatedParagraph,
+		SimplifySelectionResponse,
 		XmlNode
 	} from '$lib/types/document';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
@@ -37,31 +37,58 @@
 	import {
 		fetchAssistantResponse,
 		fetchBackendGraph,
+		fetchSimplifySelection,
 		loadBrowserDocx4js,
 		resolveDocumentMeta,
 		updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
+		buildChangeLog,
 		ensureNodeEditState,
 		formatReferenceSummary,
 		getNodeCurrentText,
 		truncateText
 	} from '$lib/utils/edit';
+	import {
+		COMMIT_SHORTCUT_HINT,
+		COMMIT_SHORTCUT_LABEL,
+		COMMIT_SHORTCUT_TOOLTIP,
+		MAX_SIMPLIFY_AUDIT_TRAIL,
+		MODE_OPTIONS,
+		PROVIDER_OPTIONS,
+		QUICK_ACTIONS,
+		SCOPE_OPTIONS
+	} from '$lib/constants/docx-viewer';
+	import { getAxiosErrorMessage } from '$lib/utils/http-error';
+	import {
+		buildTargetForWholeParagraph,
+		buildTargetFromSelectionRange,
+		computeSimplifyToolbarPosition,
+		normalizeBounds,
+		preserveBoundaryWhitespace,
+		replaceParagraphTextRange,
+		type SimplifyTarget
+	} from '$lib/utils/docx/simplify-selection';
 
-	const QUICK_ACTIONS = ["What happens if I don't?", 'Can I terminate?', 'Who is liable?'];
-	const MODE_OPTIONS: Array<{ value: AssistantMode; label: string }> = [
-		{ value: 'explain', label: 'Explain' },
-		{ value: 'quote', label: 'Quote' },
-		{ value: 'suggest_questions', label: 'Suggestion Question' }
-	];
-	const SCOPE_OPTIONS: Array<{ value: AssistantScope; label: string }> = [
-		{ value: 'selected', label: 'Selected Paragraph' },
-		{ value: 'full_contract', label: 'Full Contract' }
-	];
-	const PROVIDER_OPTIONS: Array<{ value: AssistantProvider; label: string }> = [
-		{ value: 'gemini', label: 'Gemini' },
-		{ value: 'openai', label: 'OpenAI' }
-	];
+	type SimplifyResultState = {
+		payload: SimplifySelectionResponse;
+		paragraphTextSnapshot: string;
+		createdAt: string;
+	};
+
+	type SimplifyAuditRecord = {
+		documentId: string;
+		provider: AssistantProvider;
+		paragraphId: string;
+		selectionStart: number;
+		selectionEnd: number;
+		originalSnippet: string;
+		simplifiedSnippet: string;
+		systemPrompt: string;
+		userPrompt: string;
+		modelResponse: string;
+		timestamp: string;
+	};
 
 	let viewer: HTMLDivElement | null = null;
 	let assistantThread: HTMLDivElement | null = null;
@@ -92,6 +119,19 @@
 	let assistantError: string | null = null;
 	let assistantMessageCounter = 0;
 	let selectedQuickAction = '';
+	let simplifyToolbarVisible = false;
+	let simplifyToolbarTop = 0;
+	let simplifyToolbarLeft = 0;
+	let simplifyTarget: SimplifyTarget | null = null;
+	let simplifyResult: SimplifyResultState | null = null;
+	let simplifyResultDiff: ChangeLogState = { hasChanges: false, oldSegments: [], newSegments: [] };
+	let simplifyLoading = false;
+	let simplifyError: string | null = null;
+	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+
+	$: simplifyResultDiff = simplifyResult
+		? buildChangeLog(simplifyResult.payload.originalSnippet, simplifyResult.payload.simplifiedSnippet)
+		: { hasChanges: false, oldSegments: [], newSegments: [] };
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
 		const nextState = buildInspectorState({
@@ -110,6 +150,9 @@
 		const nodeWithCurrent = toSelectedParagraphNode(selectedNode, nodeEditStateById);
 		selectedParagraph.set(nodeWithCurrent);
 		refreshInspector(nodeWithCurrent);
+		void tick().then(() => {
+			refreshSimplifyTarget();
+		});
 	}
 
 	function flashCitationTarget(nodeId: string) {
@@ -152,6 +195,7 @@
 		nodeEditStateById.clear();
 		paragraphElementById.clear();
 		paragraphRelationHostById.clear();
+		resetSimplifyState();
 	}
 
 	function resetAssistantState() {
@@ -263,19 +307,10 @@
 				}
 			];
 		} catch (assistantRequestError) {
-			const detail =
-				axios.isAxiosError(assistantRequestError) &&
-				assistantRequestError.response?.data &&
-				typeof assistantRequestError.response.data === 'object' &&
-				'detail' in assistantRequestError.response.data &&
-				typeof assistantRequestError.response.data.detail === 'string'
-					? assistantRequestError.response.data.detail
-					: null;
-			const fallbackMessage =
-				assistantRequestError instanceof Error
-					? assistantRequestError.message
-					: 'Failed to generate a response.';
-			const message = detail ?? fallbackMessage;
+			const message = getAxiosErrorMessage(
+				assistantRequestError,
+				'Failed to generate a response.'
+			);
 			assistantError = message;
 			assistantMessages = [
 				...assistantMessages,
@@ -303,6 +338,197 @@
 
 	function onSuggestedQuestionClick(question: string) {
 		void submitAssistantQuestion(question);
+	}
+
+	function resetSimplifyState() {
+		simplifyToolbarVisible = false;
+		simplifyToolbarTop = 0;
+		simplifyToolbarLeft = 0;
+		simplifyTarget = null;
+		simplifyResult = null;
+		simplifyLoading = false;
+		simplifyError = null;
+	}
+
+	function setSimplifyToolbarPosition(anchorRect: DOMRect) {
+		const { left, top } = computeSimplifyToolbarPosition(anchorRect, window.innerWidth);
+		simplifyToolbarLeft = left;
+		simplifyToolbarTop = top;
+	}
+
+	function refreshSimplifyTarget() {
+		const rangeTarget = buildTargetFromSelectionRange({ viewer });
+		if (rangeTarget) {
+			simplifyTarget = rangeTarget;
+			simplifyToolbarVisible = true;
+			setSimplifyToolbarPosition(rangeTarget.anchorRect);
+			return;
+		}
+
+		const selected = get(selectedParagraph);
+		const activeElement = document.activeElement;
+		const activeInViewer = Boolean(activeElement && viewer?.contains(activeElement));
+		if (selected?.id && activeInViewer) {
+			const paragraphTarget = buildTargetForWholeParagraph(selected.id, paragraphElementById);
+			if (paragraphTarget) {
+				simplifyTarget = paragraphTarget;
+				simplifyToolbarVisible = true;
+				setSimplifyToolbarPosition(paragraphTarget.anchorRect);
+				return;
+			}
+		}
+
+		simplifyToolbarVisible = false;
+		simplifyTarget = null;
+	}
+
+	function resolveActiveSimplifyTarget(): SimplifyTarget | null {
+		const rangeTarget = buildTargetFromSelectionRange({ viewer });
+		if (rangeTarget) return rangeTarget;
+
+		const selected = get(selectedParagraph);
+		if (selected?.id) {
+			const paragraphTarget = buildTargetForWholeParagraph(selected.id, paragraphElementById);
+			if (paragraphTarget) return paragraphTarget;
+		}
+
+		return simplifyTarget;
+	}
+
+	async function runSimplify() {
+		if (simplifyLoading) return;
+		if (!activeDocumentId) {
+			simplifyError = 'No document is loaded.';
+			return;
+		}
+
+		const target = resolveActiveSimplifyTarget();
+		if (!target) {
+			simplifyError = 'Select text in a paragraph or focus a paragraph to simplify.';
+			return;
+		}
+
+		const safeBounds = normalizeBounds(
+			target.selectionStart,
+			target.selectionEnd,
+			target.paragraphText.length
+		);
+		const selectionStart = safeBounds.start;
+		const selectionEnd = safeBounds.end === safeBounds.start ? target.paragraphText.length : safeBounds.end;
+
+		simplifyLoading = true;
+		simplifyError = null;
+
+		try {
+			const response = await fetchSimplifySelection({
+				documentId: activeDocumentId,
+				provider: assistantProvider,
+				paragraphId: target.paragraphId,
+				paragraphText: target.paragraphText,
+				selectionStart,
+				selectionEnd
+			});
+
+			simplifyResult = {
+				payload: response,
+				paragraphTextSnapshot: target.paragraphText,
+				createdAt: new Date().toISOString()
+			};
+
+			simplifyAuditTrail.unshift({
+				documentId: activeDocumentId,
+				provider: response.provider,
+				paragraphId: response.evidence.paragraph_id,
+				selectionStart: response.evidence.selection_start,
+				selectionEnd: response.evidence.selection_end,
+				originalSnippet: response.originalSnippet,
+				simplifiedSnippet: response.simplifiedSnippet,
+				systemPrompt: response.audit.system_prompt,
+				userPrompt: response.audit.user_prompt,
+				modelResponse: response.audit.model_response,
+				timestamp: new Date().toISOString()
+			});
+
+			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
+				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
+			}
+		} catch (simplifyRequestError) {
+			simplifyError = getAxiosErrorMessage(
+				simplifyRequestError,
+				'Failed to simplify the selected text.'
+			);
+		} finally {
+			simplifyLoading = false;
+			refreshSimplifyTarget();
+		}
+	}
+
+	async function copySimplifiedSnippet() {
+		if (!simplifyResult) return;
+		if (!navigator.clipboard) {
+			simplifyError = 'Clipboard access is unavailable in this browser.';
+			return;
+		}
+
+		try {
+			await navigator.clipboard.writeText(simplifyResult.payload.simplifiedSnippet);
+		} catch (copyError) {
+			simplifyError = copyError instanceof Error ? copyError.message : 'Failed to copy text.';
+		}
+	}
+
+	function cancelSimplifyResult() {
+		simplifyResult = null;
+		simplifyError = null;
+	}
+
+	function replaceSelectionWithSimplifiedText() {
+		if (!simplifyResult) return;
+
+		const payload = simplifyResult.payload;
+		const paragraphId = payload.evidence.paragraph_id;
+		const paragraphElement = paragraphElementById.get(paragraphId);
+		if (!paragraphElement) {
+			simplifyError = 'Could not find the paragraph to replace.';
+			return;
+		}
+
+		const currentParagraphText = normalizeEditableText(paragraphElement.innerText ?? '');
+		let bounds = normalizeBounds(
+			payload.evidence.selection_start,
+			payload.evidence.selection_end,
+			currentParagraphText.length
+		);
+
+		const snapshotText = simplifyResult.paragraphTextSnapshot;
+		if (snapshotText !== currentParagraphText) {
+			const locatedStart = currentParagraphText.indexOf(payload.originalSnippet);
+			if (locatedStart >= 0) {
+				bounds = {
+					start: locatedStart,
+					end: locatedStart + payload.originalSnippet.length
+				};
+			} else {
+				simplifyError =
+					'The paragraph changed after simplification. Please run Simplify again on the latest text.';
+				return;
+			}
+		}
+
+		const replacement = preserveBoundaryWhitespace(
+			payload.originalSnippet,
+			payload.simplifiedSnippet
+		);
+		replaceParagraphTextRange(paragraphElement, bounds.start, bounds.end, replacement);
+		paragraphElement.dispatchEvent(new Event('input', { bubbles: true }));
+		paragraphElement.focus();
+
+		const selectedNode = get(paragraphs).find((node) => node.id === paragraphId) ?? null;
+		if (selectedNode) setSelectedParagraphNode(selectedNode);
+
+		simplifyResult = null;
+		simplifyError = null;
+		refreshSimplifyTarget();
 	}
 
 	async function recomputeBackendEdges(docId: string, nodesSnapshot: ParagraphNode[]) {
@@ -462,6 +688,7 @@
 
 			viewer.replaceChildren();
 			appendChildren(viewer, renderedRoot);
+			refreshSimplifyTarget();
 
 			const snapshot = Array.from(nodesById.values()).sort(
 				(left, right) => left.paragraph_enum - right.paragraph_enum
@@ -496,6 +723,16 @@
 	}
 
 	onMount(() => {
+		const handleDocumentSelectionChange = () => {
+			refreshSimplifyTarget();
+		};
+
+		document.addEventListener('selectionchange', handleDocumentSelectionChange);
+		document.addEventListener('mouseup', handleDocumentSelectionChange);
+		document.addEventListener('keyup', handleDocumentSelectionChange);
+		window.addEventListener('resize', handleDocumentSelectionChange);
+		window.addEventListener('scroll', handleDocumentSelectionChange, true);
+
 		const unsubscribe = page.subscribe(($page) => {
 			void openFromRoute($page.url.searchParams.get('id'));
 		});
@@ -503,6 +740,11 @@
 		return () => {
 			renderToken += 1;
 			unsubscribe();
+			document.removeEventListener('selectionchange', handleDocumentSelectionChange);
+			document.removeEventListener('mouseup', handleDocumentSelectionChange);
+			document.removeEventListener('keyup', handleDocumentSelectionChange);
+			window.removeEventListener('resize', handleDocumentSelectionChange);
+			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
 			clearRenderedDocument();
 		};
 	});
@@ -542,54 +784,161 @@
 				<div class="group relative inline-flex">
 					<span
 						class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
-						title="Commit changes with Ctrl + Shift + Enter"
+						title={COMMIT_SHORTCUT_HINT}
 					>
-						CTRL + SHIFT + ENTER
+						{COMMIT_SHORTCUT_LABEL}
 					</span>
 					<div
 						class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
 							? 'animate-bounce'
 							: ''}"
 					>
-						Ctrl + Shift + Enter to save
+						{COMMIT_SHORTCUT_TOOLTIP}
 					</div>
 				</div>
 			</header>
 
 			<div class="max-h-[35vh] overflow-y-auto p-3">
-				{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
-					<div class="flex flex-col items-center justify-center py-2 text-gray-300">
-						<p class="text-[10px] italic">No active changes</p>
-					</div>
-				{:else}
-					<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-						<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-							<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
-							<p class="font-mono leading-relaxed text-red-700/80">
-								{#each selectedChangeLog.oldSegments as segment}
-									{#if segment.changed}
-										<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-									{:else}
-										<span>{segment.value}</span>
-									{/if}
-								{/each}
-							</p>
+				<div class="space-y-2">
+					{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
+						<div class="flex flex-col items-center justify-center py-2 text-gray-300">
+							<p class="text-[10px] italic">No active changes</p>
 						</div>
+					{:else}
+						<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+							<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+								<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
+								<p class="font-mono leading-relaxed text-red-700/80">
+									{#each selectedChangeLog.oldSegments as segment}
+										{#if segment.changed}
+											<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+										{:else}
+											<span>{segment.value}</span>
+										{/if}
+									{/each}
+								</p>
+							</div>
 
-						<div class="bg-green-50/20 px-3 py-2">
-							<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Modified</span>
-							<p class="font-mono leading-relaxed text-green-800">
-								{#each selectedChangeLog.newSegments as segment}
-									{#if segment.changed}
-										<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-									{:else}
-										<span>{segment.value}</span>
-									{/if}
-								{/each}
-							</p>
+							<div class="bg-green-50/20 px-3 py-2">
+								<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Modified</span>
+								<p class="font-mono leading-relaxed text-green-800">
+									{#each selectedChangeLog.newSegments as segment}
+										{#if segment.changed}
+											<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+										{:else}
+											<span>{segment.value}</span>
+										{/if}
+									{/each}
+								</p>
+							</div>
 						</div>
-					</div>
-				{/if}
+					{/if}
+
+					{#if simplifyResult || simplifyLoading || simplifyError}
+						<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+							<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-1.5">
+								<span class="block text-[8px] font-bold text-gray-400 uppercase">
+									Simplify Selection
+								</span>
+							</div>
+
+							<div class="space-y-2 p-2.5">
+								{#if simplifyLoading}
+									<div class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500">
+										Simplifying selected text...
+									</div>
+								{/if}
+
+								{#if simplifyError}
+									<div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+										{simplifyError}
+									</div>
+								{/if}
+
+								{#if simplifyResult}
+									<div class="rounded border border-gray-100 text-[11px]">
+										<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-2">
+											<span class="mb-1 block text-[8px] font-bold text-gray-400 uppercase">Original</span>
+											<p class="whitespace-pre-wrap font-mono leading-relaxed text-gray-700">
+												{simplifyResult.payload.originalSnippet}
+											</p>
+										</div>
+										<div class="px-3 py-2">
+											<span class="mb-1 block text-[8px] font-bold text-blue-300 uppercase">Simplified</span>
+											<p class="whitespace-pre-wrap font-mono leading-relaxed text-blue-900">
+												{simplifyResult.payload.simplifiedSnippet}
+											</p>
+										</div>
+									</div>
+
+									<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+										<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+											<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original Diff</span>
+											<p class="whitespace-pre-wrap font-mono leading-relaxed text-red-700/80">
+												{#each simplifyResultDiff.oldSegments as segment}
+													{#if segment.changed}
+														<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+													{:else}
+														<span>{segment.value}</span>
+													{/if}
+												{/each}
+											</p>
+										</div>
+
+										<div class="bg-green-50/20 px-3 py-2">
+											<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Simplified Diff</span>
+											<p class="whitespace-pre-wrap font-mono leading-relaxed text-green-800">
+												{#each simplifyResultDiff.newSegments as segment}
+													{#if segment.changed}
+														<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+													{:else}
+														<span>{segment.value}</span>
+													{/if}
+												{/each}
+											</p>
+										</div>
+									</div>
+
+									<div class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500">
+										<p>
+											evidence: {simplifyResult.payload.evidence.paragraph_id} ·
+											{simplifyResult.payload.evidence.selection_start}-
+											{simplifyResult.payload.evidence.selection_end}
+										</p>
+										<p class="mt-1 truncate" title={simplifyResult.payload.audit.user_prompt}>
+											audit: prompt/response captured ({simplifyResult.payload.provider})
+										</p>
+										<p class="mt-1">audit trail entries: {simplifyAuditTrail.length}</p>
+									</div>
+
+									<div class="flex flex-wrap items-center gap-1.5">
+										<button
+											type="button"
+											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+											on:click={replaceSelectionWithSimplifiedText}
+										>
+											Replace selection
+										</button>
+										<button
+											type="button"
+											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+											on:click={() => void copySimplifiedSnippet()}
+										>
+											Copy
+										</button>
+										<button
+											type="button"
+											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+											on:click={cancelSimplifyResult}
+										>
+											Cancel
+										</button>
+									</div>
+								{/if}
+							</div>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</div>
 
@@ -819,6 +1168,23 @@
 			</section>
 		</div>
 	</aside>
+
+	{#if simplifyToolbarVisible && simplifyTarget}
+		<div
+			class="fixed z-40 rounded-md border border-gray-200 bg-white p-1 shadow-lg"
+			style={`top: ${simplifyToolbarTop}px; left: ${simplifyToolbarLeft}px;`}
+		>
+			<button
+				type="button"
+				class="rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-bold text-gray-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+				disabled={simplifyLoading}
+				on:mousedown|preventDefault
+				on:click={() => void runSimplify()}
+			>
+				{simplifyLoading ? 'Simplifying...' : 'Simplify'}
+			</button>
+		</div>
+	{/if}
 
 	{#if backendGraphLoading}
 		<div

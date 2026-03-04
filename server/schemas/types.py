@@ -83,3 +83,33 @@ class AssistantChatResponse(BaseModel):
     mode: AssistantMode
     scope: AssistantScope
     provider: AssistantProvider
+
+
+class SimplifyEvidence(BaseModel):
+    paragraph_id: str
+    selection_start: int
+    selection_end: int
+
+
+class SimplifyAudit(BaseModel):
+    system_prompt: str
+    user_prompt: str
+    model_response: str
+
+
+class SimplifySelectionRequest(BaseModel):
+    documentId: str
+    provider: AssistantProvider = "gemini"
+    paragraphId: str
+    paragraphText: str
+    selectionStart: int = 0
+    selectionEnd: int = 0
+
+
+class SimplifySelectionResponse(BaseModel):
+    paragraphId: str
+    provider: AssistantProvider
+    originalSnippet: str
+    simplifiedSnippet: str
+    evidence: SimplifyEvidence
+    audit: SimplifyAudit

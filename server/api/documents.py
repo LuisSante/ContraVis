@@ -1,9 +1,15 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from schemas.types import AssistantChatRequest, AssistantChatResponse, DatasetDocument
+from schemas.types import (
+    AssistantChatRequest,
+    AssistantChatResponse,
+    DatasetDocument,
+    SimplifySelectionRequest,
+    SimplifySelectionResponse,
+)
 from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
-from services.contract_assistant import generate_assistant_response
+from services.contract_assistant import generate_assistant_response, simplify_paragraph_selection
 import logging
 
 router = APIRouter()
@@ -78,6 +84,17 @@ def assistant_chat(payload: AssistantChatRequest):
     except Exception as exc:
         logger.exception("Unexpected assistant error")
         raise HTTPException(status_code=500, detail="Failed to generate assistant response") from exc
+
+
+@router.post("/assistant/simplify", response_model=SimplifySelectionResponse)
+def assistant_simplify(payload: SimplifySelectionRequest):
+    try:
+        return simplify_paragraph_selection(payload)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Unexpected simplify error")
+        raise HTTPException(status_code=500, detail="Failed to simplify selection") from exc
 
 @router.get("/")
 def document_init():

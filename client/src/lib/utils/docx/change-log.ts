@@ -1,5 +1,5 @@
 import { diffWordsWithSpace } from 'diff';
-import { EMPTY_CHANGE_LOG } from '$lib/constant';
+import { EMPTY_CHANGE_LOG } from '$lib/constants/graph';
 import type { ChangeLogState, TokenDiffSegment } from '$lib/types/document';
 import { normalizeEditableText } from '$lib/utils/docx/dom';
 

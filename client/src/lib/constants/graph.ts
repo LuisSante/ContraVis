@@ -1,4 +1,4 @@
-import type { ChangeLogState } from './types/document';
+import type { ChangeLogState } from '../types/document';
 
 export const highlightMap: Record<string, string> = {
     yellow: '#fff59d',

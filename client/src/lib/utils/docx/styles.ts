@@ -1,4 +1,4 @@
-import { highlightMap } from '$lib/constant';
+import { highlightMap } from '$lib/constants/graph';
 import type { XmlNode } from '$lib/types/document';
 import {
 	findChild,
