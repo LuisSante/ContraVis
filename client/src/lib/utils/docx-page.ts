@@ -2,6 +2,8 @@ import { get } from 'svelte/store';
 import { api } from '$lib/api/client';
 import { currentDocument } from '$lib/stores/document';
 import type {
+	AssistantChatRequest,
+	AssistantChatResponse,
 	DocumentMeta,
 	Docx4jsBrowserModule,
 	Edge as GraphEdge,
@@ -140,4 +142,11 @@ export async function fetchBackendGraph(
 	);
 
 	return { edges, relationsByNodeId };
+}
+
+export async function fetchAssistantResponse(
+	payload: AssistantChatRequest
+): Promise<AssistantChatResponse> {
+	const response = await api.post<AssistantChatResponse>('/assistant/chat', payload);
+	return response.data;
 }

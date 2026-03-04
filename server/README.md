@@ -27,12 +27,14 @@ python3 -m pip install -r requirements.txt
 `server/.env` (optional for LLM features):
 
 ```bash
+GEMINI_API_KEY=your_api_key
 OPENAI_API_KEY=your_api_key
 ```
 
 Notes:
 
-- `utils/contradictions.py` reads `OPENAI_API_KEY`.
+- Contract assistant uses `GEMINI_API_KEY` by default.
+- OpenAI support is available via provider selection when `OPENAI_API_KEY` is configured.
 - Do not commit `.env` files.
 
 ## Run in development
@@ -59,6 +61,7 @@ Local base URL: `http://localhost:8300`
 - `GET /api/v1/list_documents`: list available CUAD documents.
 - `GET /api/v1/document_file/{doc_id}`: download DOCX by id.
 - `POST /api/v1/process`: generate graph (`nodes` + `edges`) from paragraph payload.
+- `POST /api/v1/assistant/chat`: contract assistant response with paragraph citations.
 
 ## Data dependency
 

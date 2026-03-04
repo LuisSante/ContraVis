@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import axios from 'axios';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
@@ -11,12 +12,19 @@
 		selectedParagraph
 	} from '$lib/stores/document';
 	import type {
+		AssistantChatMessage,
+		AssistantChatRequest,
+		AssistantContextNode,
+		AssistantContextRelation,
+		AssistantMode,
+		AssistantProvider,
+		AssistantScope,
+		ChangeLogState,
 		Edge as GraphEdge,
 		Node as ParagraphNode,
-		XmlNode,
-		ChangeLogState,
 		ParagraphEditState,
-		RelatedParagraph
+		RelatedParagraph,
+		XmlNode
 	} from '$lib/types/document';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
@@ -27,6 +35,7 @@
 		toSelectedParagraphNode
 	} from '$lib/utils/docx/inspector';
 	import {
+		fetchAssistantResponse,
 		fetchBackendGraph,
 		loadBrowserDocx4js,
 		resolveDocumentMeta,
@@ -39,7 +48,23 @@
 		truncateText
 	} from '$lib/utils/edit';
 
+	const QUICK_ACTIONS = ["What happens if I don't?", 'Can I terminate?', 'Who is liable?'];
+	const MODE_OPTIONS: Array<{ value: AssistantMode; label: string }> = [
+		{ value: 'explain', label: 'Explain' },
+		{ value: 'quote', label: 'Quote' },
+		{ value: 'suggest_questions', label: 'Suggestion Question' }
+	];
+	const SCOPE_OPTIONS: Array<{ value: AssistantScope; label: string }> = [
+		{ value: 'selected', label: 'Selected Paragraph' },
+		{ value: 'full_contract', label: 'Full Contract' }
+	];
+	const PROVIDER_OPTIONS: Array<{ value: AssistantProvider; label: string }> = [
+		{ value: 'gemini', label: 'Gemini' },
+		{ value: 'openai', label: 'OpenAI' }
+	];
+
 	let viewer: HTMLDivElement | null = null;
+	let assistantThread: HTMLDivElement | null = null;
 	let activeDocumentId: string | null = null;
 	let activeDocumentName = '';
 	let localError: string | null = null;
@@ -57,6 +82,16 @@
 	const paragraphElementById = new Map<string, HTMLElement>();
 	const paragraphRelationHostById = new Map<string, HTMLElement>();
 	const relationsCountByNodeId = new Map<string, number>();
+
+	let assistantMode: AssistantMode = 'explain';
+	let assistantScope: AssistantScope = 'selected';
+	let assistantProvider: AssistantProvider = 'gemini';
+	let assistantInput = '';
+	let assistantMessages: AssistantChatMessage[] = [];
+	let assistantLoading = false;
+	let assistantError: string | null = null;
+	let assistantMessageCounter = 0;
+	let selectedQuickAction = '';
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
 		const nextState = buildInspectorState({
@@ -77,13 +112,26 @@
 		refreshInspector(nodeWithCurrent);
 	}
 
-	function focusNodeFromPanel(nodeId: string) {
+	function flashCitationTarget(nodeId: string) {
+		const element = paragraphElementById.get(nodeId);
+		if (!element) return;
+
+		element.classList.remove('docx-citation-flash');
+		void element.offsetHeight;
+		element.classList.add('docx-citation-flash');
+		window.setTimeout(() => {
+			element.classList.remove('docx-citation-flash');
+		}, 1300);
+	}
+
+	function focusNodeFromPanel(nodeId: string, emphasize = false) {
 		focusNodeFromInspectorPanel({
 			nodeId,
 			paragraphNodes: get(paragraphs),
 			paragraphElementById,
 			onFallbackFocus: setSelectedParagraphNode
 		});
+		if (emphasize) flashCitationTarget(nodeId);
 	}
 
 	function resetInspectorState() {
@@ -104,6 +152,157 @@
 		nodeEditStateById.clear();
 		paragraphElementById.clear();
 		paragraphRelationHostById.clear();
+	}
+
+	function resetAssistantState() {
+		assistantInput = '';
+		assistantMessages = [];
+		assistantLoading = false;
+		assistantError = null;
+	}
+
+	function nextAssistantMessageId() {
+		assistantMessageCounter += 1;
+		return `assistant-${assistantMessageCounter}`;
+	}
+
+	function buildAssistantNodeSnapshot(): AssistantContextNode[] {
+		return get(paragraphs).map((node) => ({
+			id: node.id,
+			text: getNodeCurrentText(nodeEditStateById, node),
+			paragraph_enum: node.paragraph_enum,
+			page: node.page
+		}));
+	}
+
+	function buildAssistantRelatedContext(): AssistantContextRelation[] {
+		return selectedRelatedParagraphs.map((related) => ({
+			id: related.node.id,
+			relationTypes: related.relationTypes,
+			semanticScore: related.semanticScore,
+			references: related.references.map((reference) => `${reference.label} ${reference.value}`)
+		}));
+	}
+
+	function buildAssistantHistoryPayload() {
+		return assistantMessages.slice(-8).map((message) => ({
+			role: message.role,
+			content: message.content
+		}));
+	}
+
+	async function scrollAssistantToBottom() {
+		await tick();
+		assistantThread?.scrollTo({ top: assistantThread.scrollHeight, behavior: 'smooth' });
+	}
+
+	function handleAssistantInputKeydown(event: KeyboardEvent) {
+		if (event.key !== 'Enter' || event.shiftKey) return;
+		event.preventDefault();
+		void submitAssistantQuestion();
+	}
+
+	async function submitAssistantQuestion(questionOverride?: string) {
+		if (assistantLoading) return;
+
+		const question = (questionOverride ?? assistantInput).trim();
+		if (!question) return;
+		if (!activeDocumentId) {
+			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		const paragraphNodes = buildAssistantNodeSnapshot();
+		if (paragraphNodes.length === 0) {
+			assistantError = 'The contract is still loading.';
+			return;
+		}
+
+		const selected = get(selectedParagraph);
+		if (assistantScope === 'selected' && !selected) {
+			assistantError = 'Select a paragraph before asking in selected-paragraph mode.';
+			return;
+		}
+
+		assistantError = null;
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'user',
+				content: question
+			}
+		];
+		assistantInput = questionOverride ? assistantInput : '';
+		assistantLoading = true;
+		await scrollAssistantToBottom();
+
+		const payload: AssistantChatRequest = {
+			documentId: activeDocumentId,
+			question,
+			mode: assistantMode,
+			scope: assistantScope,
+			provider: assistantProvider,
+			selectedParagraphId: selected?.id ?? null,
+			relatedParagraphs: buildAssistantRelatedContext(),
+			paragraphNodes,
+			history: buildAssistantHistoryPayload()
+		};
+
+		console.log("select", payload)
+		try {
+			const response = await fetchAssistantResponse(payload);
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: response.answer,
+					citations: response.citations,
+					suggestedQuestions: response.suggestedQuestions
+				}
+			];
+		} catch (assistantRequestError) {
+			const detail =
+				axios.isAxiosError(assistantRequestError) &&
+				assistantRequestError.response?.data &&
+				typeof assistantRequestError.response.data === 'object' &&
+				'detail' in assistantRequestError.response.data &&
+				typeof assistantRequestError.response.data.detail === 'string'
+					? assistantRequestError.response.data.detail
+					: null;
+			const fallbackMessage =
+				assistantRequestError instanceof Error
+					? assistantRequestError.message
+					: 'Failed to generate a response.';
+			const message = detail ?? fallbackMessage;
+			assistantError = message;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `I could not complete this request: ${message}`
+				}
+			];
+		} finally {
+			assistantLoading = false;
+			await scrollAssistantToBottom();
+		}
+	}
+
+	function askQuickAction(prompt: string) {
+		void submitAssistantQuestion(prompt);
+	}
+
+	function handleQuickActionSelectionChange() {
+		if (!selectedQuickAction) return;
+		askQuickAction(selectedQuickAction);
+		selectedQuickAction = '';
+	}
+
+	function onSuggestedQuestionClick(question: string) {
+		void submitAssistantQuestion(question);
 	}
 
 	async function recomputeBackendEdges(docId: string, nodesSnapshot: ParagraphNode[]) {
@@ -162,6 +361,7 @@
 		}
 		if (viewer) viewer.replaceChildren();
 		resetInspectorState();
+		resetAssistantState();
 		if (clearStores) {
 			paragraphs.set([]);
 			setSelectedParagraphNode(null);
@@ -175,6 +375,7 @@
 		localError = null;
 		paragraphs.set([]);
 		setSelectedParagraphNode(null);
+		resetAssistantState();
 
 		try {
 			const metadata = await resolveDocumentMeta(docId);
@@ -392,84 +593,230 @@
 			</div>
 		</div>
 
-		<div class="flex min-h-0 flex-1 flex-col">
-			<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-					Related Paragraphs
-				</h3>
-			</header>
+			<div class="grid min-h-0 flex-1 grid-rows-[minmax(0,1.15fr)_minmax(0,1fr)]">
+			<section class="flex min-h-0 flex-col border-b border-gray-200">
+				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+						Related Paragraphs
+					</h3>
+				</header>
 
-			<div
-				class="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2"
-			>
-				{#if !$selectedParagraph}
-					<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-						<svg
-							class="mb-2 h-6 w-6 opacity-20"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M13 10V3L4 14h7v7l9-11h-7z"
-							/>
-						</svg>
-						<p class="text-[10px] font-medium tracking-widest uppercase">Select text to analyze</p>
-					</div>
-				{:else if selectedRelatedParagraphs.length === 0}
-					<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-						<p class="text-[10px] italic">No relations found for this element</p>
-					</div>
-				{:else}
-					{#each selectedRelatedParagraphs as related}
-						<button
-							type="button"
-							class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-							on:click={() => focusNodeFromPanel(related.node.id)}
-						>
-							<div class="mb-2 flex items-center justify-between">
-								<div class="flex flex-wrap items-center gap-1.5">
-									{#if related.relationTypes.includes('semantic_similarity')}
-										<span
-											class="rounded border border-green-100 bg-green-50 px-1.5 py-0.5 text-[9px] font-bold text-green-600 uppercase"
-										>
-											Similarity
-										</span>
-									{/if}
-									{#if related.relationTypes.includes('reference')}
-										<span
-											class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase"
-										>
-											Reference
-										</span>
-									{/if}
-									{#if related.semanticScore != null}
-										<span class="text-[9px] font-semibold text-gray-500">
-											{(related.semanticScore * 100).toFixed(1)}%
-										</span>
-									{/if}
+				<div
+					class="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2"
+				>
+					{#if !$selectedParagraph}
+						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+							<svg
+								class="mb-2 h-6 w-6 opacity-20"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M13 10V3L4 14h7v7l9-11h-7z"
+								/>
+							</svg>
+							<p class="text-[10px] font-medium tracking-widest uppercase">Select text to analyze</p>
+						</div>
+					{:else if selectedRelatedParagraphs.length === 0}
+						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+							<p class="text-[10px] italic">No relations found for this element</p>
+						</div>
+					{:else}
+						{#each selectedRelatedParagraphs as related}
+							<button
+								type="button"
+								class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+								on:click={() => focusNodeFromPanel(related.node.id)}
+							>
+								<div class="mb-2 flex items-center justify-between">
+									<div class="flex flex-wrap items-center gap-1.5">
+										{#if related.relationTypes.includes('semantic_similarity')}
+											<span
+												class="rounded border border-green-100 bg-green-50 px-1.5 py-0.5 text-[9px] font-bold text-green-600 uppercase"
+											>
+												Similarity
+											</span>
+										{/if}
+										{#if related.relationTypes.includes('reference')}
+											<span
+												class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase"
+											>
+												Reference
+											</span>
+										{/if}
+										{#if related.semanticScore != null}
+											<span class="text-[9px] font-semibold text-gray-500">
+												{(related.semanticScore * 100).toFixed(1)}%
+											</span>
+										{/if}
+									</div>
+									<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase">
+										Page {related.node.page}
+									</span>
 								</div>
-								<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase">
-									Page {related.node.page}
-								</span>
-							</div>
 
-							<p class="text-[11px] leading-relaxed text-gray-600">
-								{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
-							</p>
-
-							{#if related.references.length}
-								<p class="mt-2 text-[10px] text-gray-500">
-									Refs: {formatReferenceSummary(related.references)}
+								<p class="text-[11px] leading-relaxed text-gray-600">
+									{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
 								</p>
-							{/if}
-						</button>
+
+								{#if related.references.length}
+									<p class="mt-2 text-[10px] text-gray-500">
+										Refs: {formatReferenceSummary(related.references)}
+									</p>
+								{/if}
+							</button>
+						{/each}
+					{/if}
+				</div>
+			</section>
+
+			<section class="flex min-h-0 flex-col bg-white">
+				<header class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+						What-if Contract Assistant
+					</h3>
+					<select
+						bind:value={assistantProvider}
+						class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-600"
+					>
+						{#each PROVIDER_OPTIONS as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
+				</header>
+
+					<div
+						class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2"
+					>
+						<select
+							bind:value={assistantMode}
+							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+						>
+							{#each MODE_OPTIONS as option}
+								<option value={option.value}>{option.label}</option>
+							{/each}
+						</select>
+
+						<select
+							bind:value={assistantScope}
+							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+						>
+							{#each SCOPE_OPTIONS as option}
+								<option value={option.value}>{option.label}</option>
+							{/each}
+						</select>
+
+						<select
+							bind:value={selectedQuickAction}
+							on:change={handleQuickActionSelectionChange}
+							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+						>
+							<option value="">Quick Action</option>
+							{#each QUICK_ACTIONS as action}
+								<option value={action}>{action}</option>
+							{/each}
+						</select>
+					</div>
+
+				<div
+					bind:this={assistantThread}
+					class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2"
+				>
+					{#if assistantMessages.length === 0 && !assistantLoading}
+						<div class="flex flex-1 flex-col items-center justify-center text-gray-300">
+							<p class="text-[10px] italic">Ask what-if questions about this contract</p>
+						</div>
+					{/if}
+
+					{#each assistantMessages as message (message.id)}
+						<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
+							<div
+								class="max-w-[92%] rounded-lg border px-2.5 py-2 text-[11px] leading-relaxed shadow-sm {message.role ===
+								'user'
+									? 'border-blue-200 bg-blue-50 text-blue-900'
+									: 'border-gray-200 bg-white text-gray-700'}"
+							>
+								<p class="whitespace-pre-wrap">{message.content}</p>
+
+								{#if message.citations?.length}
+									<div class="mt-2 flex flex-wrap gap-1">
+										{#each message.citations as citation}
+											<button
+												type="button"
+												class="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 transition-colors hover:border-amber-300"
+												title={citation.excerpt}
+												on:click={() => focusNodeFromPanel(citation.id, true)}
+											>
+												{citation.id}
+											</button>
+										{/each}
+									</div>
+								{/if}
+
+								{#if message.suggestedQuestions?.length}
+									<div class="mt-2">
+										<p class="mb-1 text-[9px] font-bold tracking-tight text-gray-500 uppercase">
+											Suggested Questions
+										</p>
+										<div class="flex flex-wrap gap-1">
+											{#each message.suggestedQuestions as suggestedQuestion}
+												<button
+													type="button"
+													class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] text-gray-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+													on:click={() => onSuggestedQuestionClick(suggestedQuestion)}
+												>
+													{suggestedQuestion}
+												</button>
+											{/each}
+										</div>
+									</div>
+								{/if}
+							</div>
+						</div>
 					{/each}
+
+					{#if assistantLoading}
+						<div class="flex justify-start">
+							<div class="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[11px] text-gray-500">
+								Analyzing contract context...
+							</div>
+						</div>
+					{/if}
+				</div>
+
+				{#if assistantError}
+					<div class="border-t border-red-100 bg-red-50 px-3 py-1.5 text-[10px] text-red-700">
+						{assistantError}
+					</div>
 				{/if}
-			</div>
+
+				<form
+					class="border-t border-gray-200 bg-white p-2"
+					on:submit|preventDefault={() => void submitAssistantQuestion()}
+				>
+					<textarea
+						rows="2"
+						placeholder="What happens if I don't?, Can I terminate?, Who is liable?"
+						bind:value={assistantInput}
+						on:keydown={handleAssistantInputKeydown}
+						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 outline-none transition focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
+					></textarea>
+					<div class="mt-1.5 flex items-center justify-between">
+							<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
+						<button
+							type="submit"
+							disabled={assistantLoading || !assistantInput.trim()}
+							class="rounded border border-gray-200 bg-white px-3 py-1 text-[10px] font-bold text-gray-600 transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+						>
+							Ask
+						</button>
+					</div>
+				</form>
+			</section>
 		</div>
 	</aside>
 
@@ -548,6 +895,10 @@
 		color: #1d4ed8;
 	}
 
+	:global(.docx-citation-flash) {
+		animation: citation-flash 1.2s ease-out;
+	}
+
 	:global(.overflow-y-auto)::-webkit-scrollbar {
 		width: 3px;
 	}
@@ -573,5 +924,20 @@
 
 	.animate-bounce {
 		animation: bounce 2s infinite;
+	}
+
+	@keyframes citation-flash {
+		0% {
+			background-color: rgba(254, 243, 199, 0.8);
+			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+		}
+		70% {
+			background-color: rgba(254, 252, 232, 0.65);
+			box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+		}
+		100% {
+			background-color: transparent;
+			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+		}
 	}
 </style>

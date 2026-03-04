@@ -14,6 +14,7 @@ transformers
 evaluate
 spacy
 openai
+google-genai
 datasets 
 tqdm 
 pdf2docx

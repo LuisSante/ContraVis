@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
-from schemas.types import DatasetDocument
+from schemas.types import AssistantChatRequest, AssistantChatResponse, DatasetDocument
 from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
+from services.contract_assistant import generate_assistant_response
 import logging
 
 router = APIRouter()
@@ -66,6 +67,17 @@ async def process_document(data: dict):
     }
     
     return payload
+
+
+@router.post("/assistant/chat", response_model=AssistantChatResponse)
+def assistant_chat(payload: AssistantChatRequest):
+    try:
+        return generate_assistant_response(payload)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Unexpected assistant error")
+        raise HTTPException(status_code=500, detail="Failed to generate assistant response") from exc
 
 @router.get("/")
 def document_init():
