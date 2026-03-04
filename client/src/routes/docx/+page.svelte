@@ -24,7 +24,13 @@
 		ParagraphEditState,
 		RelatedParagraph,
 		SimplifySelectionResponse,
-		XmlNode
+		XmlNode,
+
+		SimplifyResultState,
+
+		SimplifyAuditRecord
+
+
 	} from '$lib/types/document';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
@@ -69,26 +75,6 @@
 		replaceParagraphTextRange,
 		type SimplifyTarget
 	} from '$lib/utils/docx/simplify-selection';
-
-	type SimplifyResultState = {
-		payload: SimplifySelectionResponse;
-		paragraphTextSnapshot: string;
-		createdAt: string;
-	};
-
-	type SimplifyAuditRecord = {
-		documentId: string;
-		provider: AssistantProvider;
-		paragraphId: string;
-		selectionStart: number;
-		selectionEnd: number;
-		originalSnippet: string;
-		simplifiedSnippet: string;
-		systemPrompt: string;
-		userPrompt: string;
-		modelResponse: string;
-		timestamp: string;
-	};
 
 	let viewer: HTMLDivElement | null = null;
 	let assistantThread: HTMLDivElement | null = null;

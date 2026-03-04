@@ -193,3 +193,23 @@ export type SimplifySelectionResponse = {
 	evidence: SimplifyEvidence;
 	audit: SimplifyAudit;
 };
+
+export type SimplifyResultState = {
+	payload: SimplifySelectionResponse;
+	paragraphTextSnapshot: string;
+	createdAt: string;
+};
+
+export type SimplifyAuditRecord = {
+	documentId: string;
+	provider: AssistantProvider;
+	paragraphId: string;
+	selectionStart: number;
+	selectionEnd: number;
+	originalSnippet: string;
+	simplifiedSnippet: string;
+	systemPrompt: string;
+	userPrompt: string;
+	modelResponse: string;
+	timestamp: string;
+};
