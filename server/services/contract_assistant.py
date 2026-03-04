@@ -151,6 +151,18 @@ def simplify_paragraph_selection(payload: SimplifySelectionRequest) -> SimplifyS
         audit=audit,
     )
 
+    logger.info("======================")
+    logger.info("\t\t SIMPLIFY AUDIT LOG ENTRY")
+    logger.info(SimplifySelectionResponse(
+        paragraphId=payload.paragraphId,
+        provider=payload.provider,
+        originalSnippet=original_snippet,
+        simplifiedSnippet=simplified_snippet,
+        evidence=evidence,
+        audit=audit,
+    ))
+    logger.info("======================")
+
     return SimplifySelectionResponse(
         paragraphId=payload.paragraphId,
         provider=payload.provider,
