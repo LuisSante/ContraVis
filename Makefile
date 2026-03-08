@@ -1,4 +1,4 @@
-PYTHON = python3
+PYTHON = python
 PIP = pip
 UVICORN = uvicorn
 NPM = npm --prefix client

@@ -18,6 +18,7 @@ annotated-types==0.7.0
     # via pydantic
 anyio==4.12.0
     # via
+    #   google-genai
     #   httpx
     #   openai
     #   starlette
@@ -56,6 +57,12 @@ cloudpathlib==0.23.0
     # via weasel
 cobble==0.1.4
     # via mammoth
+colorama==0.4.6
+    # via
+    #   click
+    #   tqdm
+    #   uvicorn
+    #   wasabi
 confection==0.1.5
     # via
     #   thinc
@@ -63,7 +70,9 @@ confection==0.1.5
 contourpy==1.3.3
     # via matplotlib
 cryptography==46.0.5
-    # via pdfminer-six
+    # via
+    #   google-auth
+    #   pdfminer-six
 cssselect2==0.9.0
     # via weasyprint
 cycler==0.12.1
@@ -83,7 +92,9 @@ dill==0.3.7
     #   evaluate
     #   multiprocess
 distro==1.9.0
-    # via openai
+    # via
+    #   google-genai
+    #   openai
 evaluate==0.4.6
     # via -r requirements.in
 fastapi==0.127.0
@@ -112,23 +123,26 @@ fsspec[http]==2026.1.0
     #   torch
 fuzzywuzzy==0.18.0
     # via -r requirements.in
+google-auth[requests]==2.49.0
+    # via google-genai
+google-genai==1.66.0
+    # via -r requirements.in
 h11==0.16.0
     # via
     #   httpcore
     #   uvicorn
-hf-xet==1.2.0
-    # via huggingface-hub
 httpcore==1.0.9
     # via httpx
 httptools==0.7.1
     # via uvicorn
 httpx==0.28.1
-    # via openai
+    # via
+    #   google-genai
+    #   openai
 huggingface-hub==0.36.0
     # via
     #   datasets
     #   evaluate
-    #   sentence-transformers
     #   tokenizers
     #   transformers
 idna==3.11
@@ -143,8 +157,6 @@ jinja2==3.1.6
     #   torch
 jiter==0.12.0
     # via openai
-joblib==1.5.3
-    # via scikit-learn
 kiwisolver==1.4.9
     # via matplotlib
 levenshtein==0.27.3
@@ -185,52 +197,9 @@ numpy==2.4.1
     #   opencv-python-headless
     #   pandas
     #   pdf2docx
-    #   scikit-learn
-    #   scipy
     #   spacy
     #   thinc
     #   transformers
-nvidia-cublas-cu12==12.8.4.1
-    # via
-    #   nvidia-cudnn-cu12
-    #   nvidia-cusolver-cu12
-    #   torch
-nvidia-cuda-cupti-cu12==12.8.90
-    # via torch
-nvidia-cuda-nvrtc-cu12==12.8.93
-    # via torch
-nvidia-cuda-runtime-cu12==12.8.90
-    # via torch
-nvidia-cudnn-cu12==9.10.2.21
-    # via torch
-nvidia-cufft-cu12==11.3.3.83
-    # via torch
-nvidia-cufile-cu12==1.13.1.3
-    # via torch
-nvidia-curand-cu12==10.3.9.90
-    # via torch
-nvidia-cusolver-cu12==11.7.3.90
-    # via torch
-nvidia-cusparse-cu12==12.5.8.93
-    # via
-    #   nvidia-cusolver-cu12
-    #   torch
-nvidia-cusparselt-cu12==0.7.1
-    # via torch
-nvidia-nccl-cu12==2.27.5
-    # via torch
-nvidia-nvjitlink-cu12==12.8.93
-    # via
-    #   nvidia-cufft-cu12
-    #   nvidia-cusolver-cu12
-    #   nvidia-cusparse-cu12
-    #   torch
-nvidia-nvshmem-cu12==3.3.20
-    # via torch
-nvidia-nvtx-cu12==12.8.90
-    # via torch
-google-genai
-    # via -r requirements.in
 openai==2.15.0
     # via -r requirements.in
 opencv-python-headless==4.13.0.92
@@ -271,8 +240,14 @@ propcache==0.4.1
     # via
     #   aiohttp
     #   yarl
-pyarrow==23.0.0
+pyarrow==14.0.2
     # via datasets
+pyasn1==0.6.2
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.4.2
+    # via google-auth
 pycparser==3.0
     # via cffi
 pydantic==2.12.5
@@ -280,6 +255,7 @@ pydantic==2.12.5
     #   -r requirements.in
     #   confection
     #   fastapi
+    #   google-genai
     #   openai
     #   spacy
     #   thinc
@@ -331,27 +307,25 @@ requests==2.32.5
     #   bert-score
     #   datasets
     #   evaluate
+    #   google-auth
+    #   google-genai
     #   huggingface-hub
     #   spacy
     #   tiktoken
     #   transformers
     #   weasel
+rsa==4.9.1
+    # via google-auth
 safetensors==0.7.0
     # via transformers
-scikit-learn==1.8.0
-    # via sentence-transformers
-scipy==1.17.0
-    # via
-    #   scikit-learn
-    #   sentence-transformers
-sentence-transformers==5.2.0
-    # via -r requirements.in
 six==1.17.0
     # via python-dateutil
 smart-open==7.5.0
     # via weasel
 sniffio==1.3.1
-    # via openai
+    # via
+    #   google-genai
+    #   openai
 spacy==3.8.11
     # via -r requirements.in
 spacy-legacy==3.0.12
@@ -368,12 +342,12 @@ starlette==0.50.0
     # via fastapi
 sympy==1.14.0
     # via torch
+tenacity==9.1.4
+    # via google-genai
 termcolor==3.3.0
     # via fire
 thinc==8.3.10
     # via spacy
-threadpoolctl==3.6.0
-    # via scikit-learn
 tiktoken==0.12.0
     # via -r requirements.in
 tinycss2==1.5.1
@@ -385,9 +359,7 @@ tinyhtml5==2.0.0
 tokenizers==0.22.2
     # via transformers
 torch==2.9.1
-    # via
-    #   bert-score
-    #   sentence-transformers
+    # via bert-score
 tqdm==4.67.1
     # via
     #   -r requirements.in
@@ -396,16 +368,10 @@ tqdm==4.67.1
     #   evaluate
     #   huggingface-hub
     #   openai
-    #   sentence-transformers
     #   spacy
     #   transformers
 transformers==4.57.6
-    # via
-    #   -r requirements.in
-    #   bert-score
-    #   sentence-transformers
-triton==3.5.1
-    # via torch
+    # via bert-score
 typer-slim==0.21.1
     # via
     #   spacy
@@ -415,12 +381,12 @@ typing-extensions==4.15.0
     #   aiosignal
     #   anyio
     #   fastapi
+    #   google-genai
     #   huggingface-hub
     #   openai
     #   pydantic
     #   pydantic-core
     #   python-docx
-    #   sentence-transformers
     #   starlette
     #   torch
     #   typer-slim
@@ -433,8 +399,6 @@ urllib3==2.6.3
     # via requests
 uvicorn[standard]==0.40.0
     # via -r requirements.in
-uvloop==0.22.1
-    # via uvicorn
 wasabi==1.1.3
     # via
     #   spacy
@@ -452,7 +416,9 @@ webencodings==0.5.1
     #   tinycss2
     #   tinyhtml5
 websockets==15.0.1
-    # via uvicorn
+    # via
+    #   google-genai
+    #   uvicorn
 wrapt==2.0.1
     # via smart-open
 xxhash==3.6.0
