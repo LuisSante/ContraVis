@@ -6,11 +6,11 @@ fuzzywuzzy
 pandas
 pydantic
 python-Levenshtein
-sentence-transformers
+# sentence-transformers
 python-dotenv
 bert_score
 tiktoken
-transformers
+# transformers
 evaluate
 spacy
 openai
