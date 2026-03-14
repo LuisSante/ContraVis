@@ -7,9 +7,17 @@ from typing import List
 
 import json
 import os
+import re
 import logging
 
 logger = logging.getLogger(__name__)
+
+SEMANTIC_SIMILARITY_THRESHOLD = 0.8
+MIN_SEMANTIC_WORDS = 8
+MIN_SEMANTIC_CHARS = 45
+MAX_BOILERPLATE_WORDS = 24
+BOILERPLATE_REPEAT_THRESHOLD = 3
+UPPERCASE_HEADING_WORDS = 10
 
 def create_folder(folder):
     if not os.path.exists(folder):
@@ -83,6 +91,31 @@ def create_nodes(text):
     return paragraphs
 
 
+def normalize_for_match(text: str) -> str:
+    return re.sub(r"\s+", " ", text or "").strip()
+
+
+def should_skip_semantic_similarity(text: str, repeat_count: int) -> bool:
+    normalized = normalize_for_match(text)
+    if not normalized:
+        return True
+
+    words = [token for token in normalized.split(" ") if token]
+    if len(words) < MIN_SEMANTIC_WORDS:
+        return True
+    if len(normalized) < MIN_SEMANTIC_CHARS:
+        return True
+
+    alpha_only = re.sub(r"[^A-Za-z]+", "", normalized)
+    if alpha_only and alpha_only.isupper() and len(words) <= UPPERCASE_HEADING_WORDS:
+        return True
+
+    if repeat_count >= BOILERPLATE_REPEAT_THRESHOLD and len(words) <= MAX_BOILERPLATE_WORDS:
+        return True
+
+    return False
+
+
 def generate_graph_data(paragraphs_data: list) -> Graph:
     model = SentenceTransformer('all-MiniLM-L6-v2')
     nodes: List[Node] = []
@@ -101,6 +134,9 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
             fontSize=p.get("fontSize", 0.0)
         )
         nodes.append(node)
+
+    normalized_text_keys = [normalize_for_match(node.text).lower() for node in nodes]
+    normalized_counts = Counter([key for key in normalized_text_keys if key])
     
     logger.info(f"TOTAL NODES {len(nodes)}")
 
@@ -120,20 +156,40 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                             ref_value=ref_id
                         ))
 
-    if nodes:
-        embeddings = model.encode([n.text for n in nodes], convert_to_tensor=True)
+    semantic_candidate_indices = []
+    for idx, node in enumerate(nodes):
+        text_key = normalized_text_keys[idx]
+        repeat_count = normalized_counts.get(text_key, 0)
+        if should_skip_semantic_similarity(node.text, repeat_count):
+            continue
+        semantic_candidate_indices.append(idx)
+
+    if semantic_candidate_indices:
+        semantic_texts = [nodes[idx].text for idx in semantic_candidate_indices]
+        embeddings = model.encode(semantic_texts, convert_to_tensor=True)
         cosine_scores = util.cos_sim(embeddings, embeddings)
 
-        for i in range(len(nodes)):
-            for j in range(i + 1, len(nodes)):
-                score = float(cosine_scores[i][j])
-                if score > 0.8:
-                    edges.append(Edge(
-                        source=nodes[i].id, 
-                        target=nodes[j].id, 
-                        type="semantic_similarity", 
-                        score=score
-                    ))
+        for left_local_idx in range(len(semantic_candidate_indices)):
+            for right_local_idx in range(left_local_idx + 1, len(semantic_candidate_indices)):
+                score = float(cosine_scores[left_local_idx][right_local_idx])
+                if score <= SEMANTIC_SIMILARITY_THRESHOLD:
+                    continue
+
+                left_idx = semantic_candidate_indices[left_local_idx]
+                right_idx = semantic_candidate_indices[right_local_idx]
+
+                if (
+                    normalized_text_keys[left_idx]
+                    and normalized_text_keys[left_idx] == normalized_text_keys[right_idx]
+                ):
+                    continue
+
+                edges.append(Edge(
+                    source=nodes[left_idx].id,
+                    target=nodes[right_idx].id,
+                    type="semantic_similarity",
+                    score=score
+                ))
 
     relations_map = {}
     for edge in edges:

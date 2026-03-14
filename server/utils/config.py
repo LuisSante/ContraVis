@@ -12,7 +12,7 @@ class Config:
     # Article 16 / article 2.1 / Article IV
     ("article", re.compile(r'\b[Aa]rticle\s+(\d+(?:\.\d+)*)\b')),
     # Exhibit A / exhibit 10.1
-    # ("exhibit", re.compile(r'\b[Ee]xhibit\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
+    ("exhibit", re.compile(r'\b[Ee]xhibit\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
     # Schedule 1 / Annex B / Appendix C
     ("schedule", re.compile(r'\b[Ss]chedule\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
     ("annex",    re.compile(r'\b[Aa]nnex\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),

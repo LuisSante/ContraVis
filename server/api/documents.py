@@ -22,6 +22,7 @@ document_store = DocumentStore()
 
 PAGE_NUMBER_ONLY_RE = re.compile(r"^(?:\d+|[ivxlcdm]{1,8})$", re.IGNORECASE)
 PAGE_LABEL_RE = re.compile(r"^(?:page|pagina|p[aá]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$", re.IGNORECASE)
+BOUNDARY_SCAN_LINES = 3
 
 
 def normalize_text(raw: str) -> str:
@@ -43,8 +44,10 @@ def is_repeated_boundary_candidate(text: str) -> bool:
     return 0 < len(words) <= 22
 
 
-def detect_repeated_boundary_texts(pages: list[dict]) -> tuple[dict[int, dict[str, int | str]], set[str], set[str]]:
-    boundaries_by_page: dict[int, dict[str, int | str]] = {}
+def detect_repeated_boundary_texts(
+    pages: list[dict],
+) -> tuple[dict[int, dict[str, list[tuple[int, str]]]], set[str], set[str]]:
+    boundaries_by_page: dict[int, dict[str, list[tuple[int, str]]]] = {}
     top_counts: Counter[str] = Counter()
     bottom_counts: Counter[str] = Counter()
 
@@ -58,16 +61,18 @@ def detect_repeated_boundary_texts(pages: list[dict]) -> tuple[dict[int, dict[st
         if not non_empty_entries:
             continue
 
-        top_idx, top_text = non_empty_entries[0]
-        bottom_idx, bottom_text = non_empty_entries[-1]
+        top_entries = non_empty_entries[:BOUNDARY_SCAN_LINES]
+        bottom_entries = non_empty_entries[max(len(non_empty_entries) - BOUNDARY_SCAN_LINES, 0):]
+        top_entries_keyed = [(idx, text.lower()) for idx, text in top_entries]
+        bottom_entries_keyed = [(idx, text.lower()) for idx, text in bottom_entries]
         boundaries_by_page[page_idx] = {
-            "top_idx": top_idx,
-            "top_text": top_text,
-            "bottom_idx": bottom_idx,
-            "bottom_text": bottom_text,
+            "top": top_entries_keyed,
+            "bottom": bottom_entries_keyed,
         }
-        top_counts[top_text] += 1
-        bottom_counts[bottom_text] += 1
+        for _, text_key in top_entries_keyed:
+            top_counts[text_key] += 1
+        for _, text_key in bottom_entries_keyed:
+            bottom_counts[text_key] += 1
 
     repeated_top = {
         text for text, count in top_counts.items()
@@ -115,6 +120,8 @@ async def process_document(data: dict):
     
     for page_idx, page in enumerate(pages):
         boundary = boundaries_by_page.get(page_idx, {})
+        top_boundary = boundary.get("top", [])
+        bottom_boundary = boundary.get("bottom", [])
 
         for idx, el in enumerate(page.get("elements", [])):
             text_content = normalize_text(str(el.get("text", "")))
@@ -122,17 +129,22 @@ async def process_document(data: dict):
                 if is_page_marker(text_content):
                     continue
 
+                text_key = text_content.lower()
                 if (
-                    boundary
-                    and idx == boundary.get("top_idx")
-                    and text_content in repeated_top_texts
+                    text_key in repeated_top_texts
+                    and any(
+                        idx == boundary_idx and text_key == boundary_text
+                        for boundary_idx, boundary_text in top_boundary
+                    )
                 ):
                     continue
 
                 if (
-                    boundary
-                    and idx == boundary.get("bottom_idx")
-                    and text_content in repeated_bottom_texts
+                    text_key in repeated_bottom_texts
+                    and any(
+                        idx == boundary_idx and text_key == boundary_text
+                        for boundary_idx, boundary_text in bottom_boundary
+                    )
                 ):
                     continue
 

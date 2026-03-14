@@ -4,6 +4,7 @@ const PAGE_NUMBER_ONLY_RE = /^(?:\d+|[ivxlcdm]{1,8})$/i;
 const PAGE_LABEL_RE = /^(?:page|pagina|p[aá]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$/i;
 const MAX_REPEATED_BOUNDARY_LENGTH = 180;
 const MAX_REPEATED_BOUNDARY_WORDS = 22;
+const BOUNDARY_SCAN_LINES = 3;
 
 type BoundaryNode = {
 	nodeId: string;
@@ -46,13 +47,14 @@ function collectSectionParagraphNodes(section: HTMLElement): BoundaryNode[] {
 function findRepeatedBoundaryTexts(entries: BoundaryNode[]): Set<string> {
 	const counts = new Map<string, number>();
 	for (const entry of entries) {
-		counts.set(entry.text, (counts.get(entry.text) ?? 0) + 1);
+		const key = entry.text.toLowerCase();
+		counts.set(key, (counts.get(key) ?? 0) + 1);
 	}
 
 	const repeated = new Set<string>();
-	for (const [text, count] of counts.entries()) {
-		if (count >= 2 && isLikelyRepeatedBoundary(text)) {
-			repeated.add(text);
+	for (const [key, count] of counts.entries()) {
+		if (count >= 2 && isLikelyRepeatedBoundary(key)) {
+			repeated.add(key);
 		}
 	}
 
@@ -81,21 +83,21 @@ export function detectDocxNoiseNodeIds(root: ParentNode): string[] {
 	for (const section of sections) {
 		const sectionNodes = collectSectionParagraphNodes(section);
 		if (sectionNodes.length === 0) continue;
-		topEntries.push(sectionNodes[0]);
-		bottomEntries.push(sectionNodes[sectionNodes.length - 1]);
+		topEntries.push(...sectionNodes.slice(0, BOUNDARY_SCAN_LINES));
+		bottomEntries.push(...sectionNodes.slice(Math.max(sectionNodes.length - BOUNDARY_SCAN_LINES, 0)));
 	}
 
 	const repeatedTopTexts = findRepeatedBoundaryTexts(topEntries);
 	const repeatedBottomTexts = findRepeatedBoundaryTexts(bottomEntries);
 
 	for (const entry of topEntries) {
-		if (repeatedTopTexts.has(entry.text)) {
+		if (repeatedTopTexts.has(entry.text.toLowerCase())) {
 			noiseNodeIds.add(entry.nodeId);
 		}
 	}
 
 	for (const entry of bottomEntries) {
-		if (repeatedBottomTexts.has(entry.text)) {
+		if (repeatedBottomTexts.has(entry.text.toLowerCase())) {
 			noiseNodeIds.add(entry.nodeId);
 		}
 	}
