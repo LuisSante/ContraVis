@@ -11,12 +11,74 @@ from services.graph.relations import generate_graph_data
 # from utils.relations import generate_graph_data
 from utils.document_store import DocumentStore
 from services.contract_assistant import generate_assistant_response, simplify_paragraph_selection
+from collections import Counter
+import re
 import logging
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 document_store = DocumentStore()
+
+PAGE_NUMBER_ONLY_RE = re.compile(r"^(?:\d+|[ivxlcdm]{1,8})$", re.IGNORECASE)
+PAGE_LABEL_RE = re.compile(r"^(?:page|pagina|p[aá]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$", re.IGNORECASE)
+
+
+def normalize_text(raw: str) -> str:
+    return re.sub(r"\s+", " ", raw or "").strip()
+
+
+def is_page_marker(text: str) -> bool:
+    if not text:
+        return False
+    return bool(PAGE_NUMBER_ONLY_RE.match(text) or PAGE_LABEL_RE.match(text))
+
+
+def is_repeated_boundary_candidate(text: str) -> bool:
+    if is_page_marker(text):
+        return True
+    if len(text) > 180:
+        return False
+    words = [token for token in text.split(" ") if token]
+    return 0 < len(words) <= 22
+
+
+def detect_repeated_boundary_texts(pages: list[dict]) -> tuple[dict[int, dict[str, int | str]], set[str], set[str]]:
+    boundaries_by_page: dict[int, dict[str, int | str]] = {}
+    top_counts: Counter[str] = Counter()
+    bottom_counts: Counter[str] = Counter()
+
+    for page_idx, page in enumerate(pages):
+        non_empty_entries: list[tuple[int, str]] = []
+        for element_idx, element in enumerate(page.get("elements", [])):
+            text = normalize_text(str(element.get("text", "")))
+            if text:
+                non_empty_entries.append((element_idx, text))
+
+        if not non_empty_entries:
+            continue
+
+        top_idx, top_text = non_empty_entries[0]
+        bottom_idx, bottom_text = non_empty_entries[-1]
+        boundaries_by_page[page_idx] = {
+            "top_idx": top_idx,
+            "top_text": top_text,
+            "bottom_idx": bottom_idx,
+            "bottom_text": bottom_text,
+        }
+        top_counts[top_text] += 1
+        bottom_counts[bottom_text] += 1
+
+    repeated_top = {
+        text for text, count in top_counts.items()
+        if count >= 2 and is_repeated_boundary_candidate(text)
+    }
+    repeated_bottom = {
+        text for text, count in bottom_counts.items()
+        if count >= 2 and is_repeated_boundary_candidate(text)
+    }
+
+    return boundaries_by_page, repeated_top, repeated_bottom
 
 @router.get("/list_documents", response_model=list[DatasetDocument])
 def list_documents():
@@ -47,13 +109,33 @@ def get_document_file(doc_id: str):
 async def process_document(data: dict):    
     doc_id = data.get("documentId")
     pages = data.get("pages", [])
+    boundaries_by_page, repeated_top_texts, repeated_bottom_texts = detect_repeated_boundary_texts(pages)
 
     all_paragraphs_input = []
     
-    for page in pages:
+    for page_idx, page in enumerate(pages):
+        boundary = boundaries_by_page.get(page_idx, {})
+
         for idx, el in enumerate(page.get("elements", [])):
-            text_content = el.get("text", "").strip()
+            text_content = normalize_text(str(el.get("text", "")))
             if text_content:
+                if is_page_marker(text_content):
+                    continue
+
+                if (
+                    boundary
+                    and idx == boundary.get("top_idx")
+                    and text_content in repeated_top_texts
+                ):
+                    continue
+
+                if (
+                    boundary
+                    and idx == boundary.get("bottom_idx")
+                    and text_content in repeated_bottom_texts
+                ):
+                    continue
+
                 all_paragraphs_input.append({
                     "id": el.get("id"),
                     "documentId": doc_id,

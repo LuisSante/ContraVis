@@ -9,6 +9,7 @@ import { getRelationsCount, updateRelationBadge } from '$lib/utils/docx-page';
 import { appendChildren, normalizeEditableText, setStyles, toNodeList } from '$lib/utils/docx/dom';
 import { getAttr, findChild, toTwipsPx, toNumber } from '$lib/utils/docx/xml';
 import {
+	getParagraphStyleId,
 	getParagraphStyles,
 	getRunStyles,
 	getSectionLayout,
@@ -20,6 +21,7 @@ export type DocxRendererCallbacks = {
 	onNodeUpsert: (node: ParagraphNode) => void;
 	onNodeFocus: (node: ParagraphNode) => void;
 	onNodeCommit: (node: ParagraphNode) => void;
+	onNodeRemove: (nodeId: string) => void;
 };
 
 export type DocxRendererDeps = {
@@ -35,7 +37,7 @@ export function createRenderer(
 	callbacks: DocxRendererCallbacks,
 	deps: DocxRendererDeps
 ) {
-	const { onNodeUpsert, onNodeFocus, onNodeCommit } = callbacks;
+	const { onNodeUpsert, onNodeFocus, onNodeCommit, onNodeRemove } = callbacks;
 	const {
 		nodeEditStateById,
 		paragraphElementById,
@@ -46,6 +48,17 @@ export function createRenderer(
 
 	const listState = new Map<string, number[]>();
 	let paragraphCounter = 0;
+	const INTERACTIVE_PARAGRAPH_CLASSES = [
+		'rounded-[2px]',
+		'-mx-[2px]',
+		'px-[2px]',
+		'outline-none',
+		'transition-all',
+		'hover:ring-1',
+		'hover:ring-blue-300',
+		'focus:ring-2',
+		'focus:ring-yellow-400'
+	] as const;
 
 	const nextListMarker = (numId: string | undefined, level: number): string => {
 		if (!numId) return '*';
@@ -57,11 +70,31 @@ export function createRenderer(
 		return `${counters[level]}.`;
 	};
 
+	const clearRelationBadge = (host: HTMLElement) => {
+		host.classList.remove('docx-relations-badge-host');
+		delete host.dataset.relationsCount;
+		delete host.dataset.relationsTone;
+	};
+
+	const isHeaderOrFooterStyle = (pr?: XmlNode | null): boolean => {
+		const styleId = getParagraphStyleId(pr)?.toLowerCase();
+		if (!styleId) return false;
+		return styleId.includes('header') || styleId.includes('footer');
+	};
+
 	const attachParagraphEditor = (
 		element: HTMLElement,
 		kind: ParagraphKind,
-		relationHost: HTMLElement = element
+		relationHost: HTMLElement = element,
+		options: { disabled?: boolean } = {}
 	) => {
+		if (options.disabled) {
+			element.dataset.ignoredParagraph = 'true';
+			element.setAttribute('contenteditable', 'false');
+			element.setAttribute('spellcheck', 'false');
+			return;
+		}
+
 		paragraphCounter += 1;
 		const paragraphEnum = paragraphCounter;
 		const nodeId = `${docId}-p-${paragraphEnum}`;
@@ -81,27 +114,29 @@ export function createRenderer(
 		element.setAttribute('spellcheck', 'false');
 		paragraphElementById.set(nodeId, element);
 		paragraphRelationHostById.set(nodeId, relationHost);
-		updateRelationBadge(paragraphRelationHostById, relationsCountByNodeId, nodeId, relationHost);
-		element.classList.add(
-			'rounded-[2px]',
-			'-mx-[2px]',
-			'px-[2px]',
-			'outline-none',
-			'transition-all',
-			'hover:ring-1',
-			'hover:ring-blue-300',
-			'focus:ring-2',
-			'focus:ring-yellow-400'
-		);
+		element.classList.add(...INTERACTIVE_PARAGRAPH_CLASSES);
 
-		const syncText = (): ParagraphNode => {
-			const text = normalizeEditableText(element.innerText ?? '');
+		let hasNodeInStore = false;
+
+		const syncText = (): ParagraphNode | null => {
+			const text = normalizeEditableText(element.innerText ?? '').trim();
+			if (!text) {
+				if (hasNodeInStore) {
+					onNodeRemove(nodeId);
+					hasNodeInStore = false;
+				}
+				clearRelationBadge(relationHost);
+				return null;
+			}
+
+			updateRelationBadge(paragraphRelationHostById, relationsCountByNodeId, nodeId, relationHost);
 			const node = {
 				...baseNode,
 				text,
 				relationsCount: getRelationsCount(relationsCountByNodeId, nodeId)
 			};
 			onNodeUpsert(node);
+			hasNodeInStore = true;
 			return node;
 		};
 
@@ -109,6 +144,7 @@ export function createRenderer(
 			const state = ensureNodeEditState(nodeEditStateById, nodeId, element.innerText ?? '');
 			state.editedSinceCommit = true;
 			const node = syncText();
+			if (!node) return;
 			if (getSelectedNodeId() === node.id || document.activeElement === element) {
 				onNodeFocus(node);
 			}
@@ -116,6 +152,7 @@ export function createRenderer(
 
 		element.addEventListener('focus', () => {
 			const node = syncText();
+			if (!node) return;
 			const state = ensureNodeEditState(nodeEditStateById, node.id, node.text);
 			if (!state.editedSinceCommit && state.committed !== state.current) {
 				state.committed = state.current;
@@ -127,11 +164,12 @@ export function createRenderer(
 			if (!(event.key === 'Enter' && event.ctrlKey && event.shiftKey)) return;
 			event.preventDefault();
 			const node = syncText();
+			if (!node) return;
 			onNodeCommit(node);
 		});
 
 		const node = syncText();
-		if (getSelectedNodeId() === node.id) {
+		if (node && getSelectedNodeId() === node.id) {
 			onNodeFocus(node);
 		}
 	};
@@ -163,17 +201,21 @@ export function createRenderer(
 				}
 				case 'heading': {
 					const level = Math.min(Math.max(toNumber(safeProps.outline) ?? 1, 1), 6);
+					const pr = (safeProps.pr as XmlNode) ?? null;
 					const heading = document.createElement(`h${level}`);
 					heading.className = 'font-bold whitespace-pre-wrap break-words [tab-size:4]';
-					setStyles(heading, getParagraphStyles((safeProps.pr as XmlNode) ?? null));
+					setStyles(heading, getParagraphStyles(pr));
 					appendChildren(heading, children);
-					attachParagraphEditor(heading, 'heading');
+					attachParagraphEditor(heading, 'heading', heading, {
+						disabled: isHeaderOrFooterStyle(pr)
+					});
 					return heading;
 				}
 				case 'list': {
 					const item = document.createElement('p');
 					item.className = 'flex items-start gap-2 whitespace-pre-wrap break-words [tab-size:4]';
 					const level = Math.max(toNumber(safeProps.level) ?? 0, 0);
+					const pr = (safeProps.pr as XmlNode) ?? null;
 
 					const marker = document.createElement('span');
 					marker.className = 'w-7 shrink-0 text-right';
@@ -187,26 +229,28 @@ export function createRenderer(
 					content.className = 'block min-w-0 flex-1 whitespace-pre-wrap break-words [tab-size:4]';
 					appendChildren(content, children);
 
-					setStyles(item, getParagraphStyles((safeProps.pr as XmlNode) ?? null));
+					setStyles(item, getParagraphStyles(pr));
 					if (!item.style.paddingLeft) item.style.paddingLeft = `${(level + 1) * 20}px`;
 
 					item.appendChild(marker);
 					item.appendChild(content);
-					attachParagraphEditor(content, 'list', item);
+					attachParagraphEditor(content, 'list', item, {
+						disabled: isHeaderOrFooterStyle(pr)
+					});
 					return item;
 				}
 				case 'p': {
 					const paragraph = document.createElement('p');
+					const pr = (safeProps.pr as XmlNode) ?? null;
 					paragraph.className = 'whitespace-pre-wrap break-words [tab-size:4]';
-					setStyles(paragraph, getParagraphStyles((safeProps.pr as XmlNode) ?? null));
-					if (
-						hasOnlySectionBreak((safeProps.pr as XmlNode) ?? null) &&
-						toNodeList(children).length === 0
-					) {
+					setStyles(paragraph, getParagraphStyles(pr));
+					if (hasOnlySectionBreak(pr) && toNodeList(children).length === 0) {
 						paragraph.classList.add('min-h-[1px]');
 					}
 					appendChildren(paragraph, children);
-					attachParagraphEditor(paragraph, 'paragraph');
+					attachParagraphEditor(paragraph, 'paragraph', paragraph, {
+						disabled: isHeaderOrFooterStyle(pr)
+					});
 					return paragraph;
 				}
 				case 'r': {
