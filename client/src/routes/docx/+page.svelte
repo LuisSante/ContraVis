@@ -7,6 +7,7 @@
 	import { getAxiosErrorMessage } from '$lib/utils/http-error';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
+	import { detectDocxNoiseNodeIds } from '$lib/utils/docx/noise';
 	import type { 
 		AssistantChatMessage, AssistantChatRequest, AssistantContextNode, AssistantContextRelation, AssistantMode, 
 		AssistantProvider, AssistantScope, ChangeLogState, Edge as GraphEdge, Node as ParagraphNode, ParagraphEditState, 
@@ -22,7 +23,7 @@
 		buildChangeLog, ensureNodeEditState, formatReferenceSummary, getNodeCurrentText, truncateText
 	} from '$lib/utils/edit';
 	import { 
-		COMMIT_SHORTCUT_HINT, COMMIT_SHORTCUT_LABEL, COMMIT_SHORTCUT_TOOLTIP, MAX_SIMPLIFY_AUDIT_TRAIL, 
+		COMMIT_SHORTCUT_HINT, COMMIT_SHORTCUT_LABEL, COMMIT_SHORTCUT_TOOLTIP, EDITABLE_PARAGRAPH_CLASSES, MAX_SIMPLIFY_AUDIT_TRAIL, 
 		MODE_OPTIONS, PROVIDER_OPTIONS, QUICK_ACTIONS, SCOPE_OPTIONS
 	} from '$lib/constants/docx-viewer';
 	import { 
@@ -143,6 +144,21 @@
 		assistantMessages = [];
 		assistantLoading = false;
 		assistantError = null;
+	}
+
+	function clearRelationBadgeHost(host: HTMLElement) {
+		host.classList.remove('docx-relations-badge-host');
+		delete host.dataset.relationsCount;
+		delete host.dataset.relationsTone;
+	}
+
+	function freezeIgnoredParagraphElement(element: HTMLElement) {
+		element.dataset.ignoredParagraph = 'true';
+		element.removeAttribute('contenteditable');
+		element.removeAttribute('spellcheck');
+		element.removeAttribute('data-node-id');
+		element.removeAttribute('data-paragraph-kind');
+		element.classList.remove(...EDITABLE_PARAGRAPH_CLASSES);
 	}
 
 	function nextAssistantMessageId() {
@@ -564,13 +580,47 @@
 			}
 
 			const nodesById = new Map<string, ParagraphNode>();
+			const syncParagraphNodeStore = () => {
+				paragraphs.set(
+					Array.from(nodesById.values()).sort((left, right) => left.paragraph_enum - right.paragraph_enum)
+				);
+			};
+			const removeParagraphNode = (
+				nodeId: string,
+				options: { freezeElement?: boolean; deferStoreSync?: boolean } = {}
+			): boolean => {
+				const paragraphElement = paragraphElementById.get(nodeId);
+				if (options.freezeElement && paragraphElement) {
+					freezeIgnoredParagraphElement(paragraphElement);
+				}
+
+				const relationHost = paragraphRelationHostById.get(nodeId);
+				if (relationHost) {
+					clearRelationBadgeHost(relationHost);
+				}
+
+				nodeEditStateById.delete(nodeId);
+				paragraphElementById.delete(nodeId);
+				paragraphRelationHostById.delete(nodeId);
+				relationsCountByNodeId.delete(nodeId);
+
+				const removed = nodesById.delete(nodeId);
+				const selected = get(selectedParagraph);
+				if (selected?.id === nodeId) {
+					setSelectedParagraphNode(null);
+				}
+
+				if (removed && !options.deferStoreSync) {
+					syncParagraphNodeStore();
+				}
+				return removed;
+			};
+
 			const upsertParagraphNode = (node: ParagraphNode) => {
 				const state = ensureNodeEditState(nodeEditStateById, node.id, node.text);
 				state.current = normalizeEditableText(node.text);
 				nodesById.set(node.id, node);
-				paragraphs.set(
-					Array.from(nodesById.values()).sort((a, b) => a.paragraph_enum - b.paragraph_enum)
-				);
+				syncParagraphNodeStore();
 			};
 			const focusParagraphNode = (node: ParagraphNode) => {
 				setSelectedParagraphNode(node);
@@ -612,7 +662,10 @@
 					{
 						onNodeUpsert: upsertParagraphNode,
 						onNodeFocus: focusParagraphNode,
-						onNodeCommit: commitParagraphNode
+						onNodeCommit: commitParagraphNode,
+						onNodeRemove: (nodeId: string) => {
+							removeParagraphNode(nodeId);
+						}
 					},
 					{
 						nodeEditStateById,
@@ -628,6 +681,22 @@
 
 			viewer.replaceChildren();
 			appendChildren(viewer, renderedRoot);
+
+			const structuralNoiseNodeIds = detectDocxNoiseNodeIds(viewer);
+			if (structuralNoiseNodeIds.length > 0) {
+				let removedAnyNode = false;
+				for (const nodeId of structuralNoiseNodeIds) {
+					const removed = removeParagraphNode(nodeId, {
+						freezeElement: true,
+						deferStoreSync: true
+					});
+					removedAnyNode = removedAnyNode || removed;
+				}
+				if (removedAnyNode) {
+					syncParagraphNodeStore();
+				}
+			}
+
 			refreshSimplifyTarget();
 
 			const snapshot = Array.from(nodesById.values()).sort(

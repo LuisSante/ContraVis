@@ -16,6 +16,11 @@ export function hasOnlySectionBreak(pr?: XmlNode | null): boolean {
 	return localName(pr.children[0].name) === 'sectpr';
 }
 
+export function getParagraphStyleId(pr?: XmlNode | null): string | null {
+	if (!pr) return null;
+	return getAttr(findChild(pr, 'pstyle'), 'val') ?? null;
+}
+
 export function getParagraphStyles(pr?: XmlNode | null): Record<string, string> {
 	const style: Record<string, string> = {
 		'margin-top': '0',
