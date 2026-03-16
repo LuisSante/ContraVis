@@ -1,0 +1,103 @@
+{
+  "target_id": "IDX40",
+  "candidate_ids": [
+    "IDX37",
+    "IDX31",
+    "IDX32",
+    "IDX33",
+    "IDX34"
+  ],
+  "heuristic_top": [
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX37",
+      "method": "heuristic",
+      "legal_type": "numeric",
+      "semantic_sim": 0.5118,
+      "lexical_overlap": 0.2286,
+      "direct_reference_bonus": 2.0,
+      "semantic_edge_bonus": 0.0,
+      "relation_score": 0.3077,
+      "priority_score": 0.4,
+      "score": 0.6756,
+      "text": "5.4 SUPPORT. DESK. E.piphany allows for unlimited calls to its technical support desk by the HSNS personnel designated under Section 5.7 (\"HSNS Responsibilities.\") The technical support desk hours of operation are from 7:00 a.m. until 6:00 p.m. Pacific Time, Monday through Friday except holidays. During the off hours, the technical support desk can be reached via pager, twenty four (24) hours a day for Priority 1 errors."
+    },
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX33",
+      "method": "heuristic",
+      "legal_type": "deontic",
+      "semantic_sim": 0.6748,
+      "lexical_overlap": 0.2429,
+      "direct_reference_bonus": 1.0,
+      "semantic_edge_bonus": 0.0,
+      "relation_score": 0.3077,
+      "priority_score": 0.6,
+      "score": 0.5455,
+      "text": "5.2 ERROR CORRECTION. E.piphany shall use reasonable efforts to provide workarounds for, and to correct reproducible programming errors in, the Application attributable to E.piphany with a level of effort commensurate with the severity of such errors and in accordance with the terms of Section 5.3 (\"Response Times\"). Upon identification of any programming error, HSNS shall notify E.piphany of such error and shall provide E.piphany with information sufficient to locate and duplicate the error."
+    },
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX32",
+      "method": "heuristic",
+      "legal_type": "deontic",
+      "semantic_sim": 0.6726,
+      "lexical_overlap": 0.2143,
+      "direct_reference_bonus": 1.0,
+      "semantic_edge_bonus": 0.0,
+      "relation_score": 0.2308,
+      "priority_score": 0.6,
+      "score": 0.5313,
+      "text": "5.1 FOR HSNS UNDER LICENSES. E.piphany will provide the Maintenance described below, provided HSNS remains a compliant subscriber to such Maintenance and has paid all monies due therefor. Upon reasonable notice, E.piphany reserves the right to modify the terms and conditions of Maintenance, provided that any such modification will not substantially diminish the level of Maintenance that HSNS is then currently receiving."
+    }
+  ],
+  "cross_encoder_top": [
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX33",
+      "score": 3.2016055583953857,
+      "method": "cross_encoder",
+      "text": "5.2 ERROR CORRECTION. E.piphany shall use reasonable efforts to provide workarounds for, and to correct reproducible programming errors in, the Application attributable to E.piphany with a level of effort commensurate with the severity of such errors and in accordance with the terms of Section 5.3 (\"Response Times\"). Upon identification of any programming error, HSNS shall notify E.piphany of such error and shall provide E.piphany with information sufficient to locate and duplicate the error.",
+      "relationsCount": 4
+    },
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX34",
+      "score": 2.4180922508239746,
+      "method": "cross_encoder",
+      "text": "5.3 RESPONSE TIMES. PRIORITY 1: Response in under fifteen (15) minutes for instances in which the Application is down (product is unusable resulting in total disruption of use or outage of the Application). PRIORITY 2: Response in under one (1) hour during technical support desk hours for a major feature or function failure, which results in the operation of the Application being restricted. PRIORITY 3: Response in under four (4) hours during technical support desk hours for a minor feature or function failure which results in the Application not working as described in the Documentation and with minor impact on usage. PRIORITY 4: Response in under eight (8) hours during technical support desk hours for a minor problem or feature request that does not impact usability of the Application. In each instance, E.piphany will, after the initial response, within a time frame mutually agreed upon by the parties, provide HSNS with an action plan for resolution, if possible, of the error. Priority 4 errors may, in E.piphany's",
+      "relationsCount": 4
+    },
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX32",
+      "score": 0.7963458895683289,
+      "method": "cross_encoder",
+      "text": "5.1 FOR HSNS UNDER LICENSES. E.piphany will provide the Maintenance described below, provided HSNS remains a compliant subscriber to such Maintenance and has paid all monies due therefor. Upon reasonable notice, E.piphany reserves the right to modify the terms and conditions of Maintenance, provided that any such modification will not substantially diminish the level of Maintenance that HSNS is then currently receiving.",
+      "relationsCount": 3
+    }
+  ],
+  "cohere": [
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX33",
+      "score": 0.99424744,
+      "method": "cohere_rerank",
+      "text": "5.2 ERROR CORRECTION. E.piphany shall use reasonable efforts to provide workarounds for, and to correct reproducible programming errors in, the Application attributable to E.piphany with a level of effort commensurate with the severity of such errors and in accordance with the terms of Section 5.3 (\"Response Times\"). Upon identification of any programming error, HSNS shall notify E.piphany of such error and shall provide E.piphany with information sufficient to locate and duplicate the error."
+    },
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX32",
+      "score": 0.98913974,
+      "method": "cohere_rerank",
+      "text": "5.1 FOR HSNS UNDER LICENSES. E.piphany will provide the Maintenance described below, provided HSNS remains a compliant subscriber to such Maintenance and has paid all monies due therefor. Upon reasonable notice, E.piphany reserves the right to modify the terms and conditions of Maintenance, provided that any such modification will not substantially diminish the level of Maintenance that HSNS is then currently receiving."
+    },
+    {
+      "target_id": "IDX40",
+      "candidate_id": "IDX31",
+      "score": 0.47625992,
+      "method": "cohere_rerank",
+      "text": "5. MAINTENANCE"
+    }
+  ]
+}
