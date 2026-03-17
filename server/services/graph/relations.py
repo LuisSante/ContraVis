@@ -19,6 +19,15 @@ MAX_BOILERPLATE_WORDS = 24
 BOILERPLATE_REPEAT_THRESHOLD = 3
 UPPERCASE_HEADING_WORDS = 10
 
+REFERENCE_PREFIX_BY_TYPE = {
+    "section": "section",
+    "article": "article",
+    "exhibit": "exhibit",
+    "schedule": "schedule",
+    "annex": "annex",
+    "appendix": "appendix",
+}
+
 def create_folder(folder):
     if not os.path.exists(folder):
         os.makedirs(folder)
@@ -95,6 +104,42 @@ def normalize_for_match(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
 
 
+def has_reference_prefix(candidate_text: str, ref_id: str) -> bool:
+    if not candidate_text.startswith(ref_id):
+        return False
+
+    if len(candidate_text) == len(ref_id):
+        return True
+
+    next_char = candidate_text[len(ref_id)]
+    last_ref_char = ref_id[-1]
+
+    if last_ref_char.isdigit():
+        return not next_char.isdigit()
+    if last_ref_char.isalpha():
+        return not next_char.isalpha()
+
+    return True
+
+
+def target_starts_with_reference(target_text: str, ref_type: str, ref_id: str) -> bool:
+    normalized_target = normalize_for_match(target_text)
+    normalized_ref = normalize_for_match(ref_id)
+    if not normalized_target or not normalized_ref:
+        return False
+
+    keyword = REFERENCE_PREFIX_BY_TYPE.get(ref_type)
+    lowered_target = normalized_target.lower()
+    if keyword:
+        keyword_prefix = f"{keyword} "
+        if lowered_target.startswith(keyword_prefix):
+            ref_candidate = normalized_target[len(keyword_prefix):].lstrip()
+            if has_reference_prefix(ref_candidate, normalized_ref):
+                return True
+
+    return has_reference_prefix(normalized_target, normalized_ref)
+
+
 def should_skip_semantic_similarity(text: str, repeat_count: int) -> bool:
     normalized = normalize_for_match(text)
     if not normalized:
@@ -140,6 +185,8 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
     
     logger.info(f"TOTAL NODES {len(nodes)}")
 
+    seen_reference_edges: set[tuple[str, str, str, str]] = set()
+
     for i in range(len(nodes)):
         current_text = nodes[i].text
         for ref_type, pattern in Config.REFERENCE_PATTERNS:
@@ -147,14 +194,23 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
             for match in matches:
                 ref_id = match.group(1)
                 for target_node in nodes:
-                    if target_node.id != nodes[i].id and target_node.text.startswith(ref_id):
-                        edges.append(Edge(
-                            source=nodes[i].id, 
-                            target=target_node.id, 
-                            type="reference",
-                            ref_label=ref_type,
-                            ref_value=ref_id
-                        ))
+                    if target_node.id == nodes[i].id:
+                        continue
+                    if not target_starts_with_reference(target_node.text, ref_type, ref_id):
+                        continue
+
+                    edge_key = (nodes[i].id, target_node.id, ref_type, ref_id)
+                    if edge_key in seen_reference_edges:
+                        continue
+                    seen_reference_edges.add(edge_key)
+
+                    edges.append(Edge(
+                        source=nodes[i].id,
+                        target=target_node.id,
+                        type="reference",
+                        ref_label=ref_type,
+                        ref_value=ref_id
+                    ))
 
     semantic_candidate_indices = []
     for idx, node in enumerate(nodes):
@@ -191,12 +247,15 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                     score=score
                 ))
 
-    relations_map = {}
+    relations_map: dict[str, set[str]] = {}
     for edge in edges:
-        relations_map[edge.source] = relations_map.get(edge.source, 0) + 1
-        relations_map[edge.target] = relations_map.get(edge.target, 0) + 1
+        source_neighbors = relations_map.setdefault(edge.source, set())
+        source_neighbors.add(edge.target)
+
+        target_neighbors = relations_map.setdefault(edge.target, set())
+        target_neighbors.add(edge.source)
     
     for node in nodes:
-        node.relationsCount = relations_map.get(node.id, 0)
+        node.relationsCount = len(relations_map.get(node.id, set()))
 
     return Graph(nodes=nodes, edges=edges)

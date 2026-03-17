@@ -117,9 +117,16 @@ export function replaceParagraphTextRange(
 	const endPoint = resolveDomPointByOffset(paragraphElement, selectionEnd);
 	range.setStart(startPoint.node, startPoint.offset);
 	range.setEnd(endPoint.node, endPoint.offset);
+
+	const replacementNode = createStyledReplacementNode(
+		paragraphElement,
+		startPoint.node,
+		startPoint.offset,
+		replacementText
+	);
+
 	range.deleteContents();
 
-	const replacementNode = document.createTextNode(replacementText);
 	range.insertNode(replacementNode);
 	range.setStartAfter(replacementNode);
 	range.collapse(true);
@@ -129,6 +136,8 @@ export function replaceParagraphTextRange(
 		selection.removeAllRanges();
 		selection.addRange(range);
 	}
+
+	paragraphElement.normalize();
 }
 
 function getClosestParagraphElement(node: Node | null): HTMLElement | null {
@@ -173,4 +182,98 @@ function resolveDomPointByOffset(root: HTMLElement, offset: number): { node: Nod
 		return { node: fallbackTextNode, offset: fallbackTextNode.data.length };
 	}
 	return { node: root, offset: root.childNodes.length };
+}
+
+function createStyledReplacementNode(
+	root: HTMLElement,
+	startNode: Node,
+	startOffset: number,
+	replacementText: string
+): Node {
+	const anchorNode = resolveStyleAnchorNode(root, startNode, startOffset);
+	if (!anchorNode) return document.createTextNode(replacementText);
+
+	const styleChain = collectInlineStyleChain(root, anchorNode);
+	if (styleChain.length === 0) return document.createTextNode(replacementText);
+
+	let current: Node = document.createTextNode(replacementText);
+	for (let idx = styleChain.length - 1; idx >= 0; idx -= 1) {
+		const wrapper = styleChain[idx].cloneNode(false) as HTMLElement;
+		wrapper.appendChild(current);
+		current = wrapper;
+	}
+
+	return current;
+}
+
+function resolveStyleAnchorNode(root: HTMLElement, node: Node, offset: number): Node | null {
+	if (node.nodeType === Node.TEXT_NODE) return node;
+	if (!(node instanceof Element)) return root;
+
+	const index = Math.max(0, Math.min(offset, node.childNodes.length));
+	const before = index > 0 ? node.childNodes[index - 1] : null;
+	const after = index < node.childNodes.length ? node.childNodes[index] : null;
+
+	return (
+		findDeepTextNode(before, 'right') ??
+		findDeepTextNode(after, 'left') ??
+		findDeepTextNode(root, 'left') ??
+		root
+	);
+}
+
+function findDeepTextNode(node: Node | null, direction: 'left' | 'right'): Text | null {
+	if (!node) return null;
+	if (node.nodeType === Node.TEXT_NODE) return node as Text;
+
+	if (!(node instanceof Element) || node.childNodes.length === 0) {
+		return null;
+	}
+
+	if (direction === 'left') {
+		for (let idx = 0; idx < node.childNodes.length; idx += 1) {
+			const found = findDeepTextNode(node.childNodes[idx], direction);
+			if (found) return found;
+		}
+		return null;
+	}
+
+	for (let idx = node.childNodes.length - 1; idx >= 0; idx -= 1) {
+		const found = findDeepTextNode(node.childNodes[idx], direction);
+		if (found) return found;
+	}
+	return null;
+}
+
+function collectInlineStyleChain(root: HTMLElement, anchorNode: Node): HTMLElement[] {
+	const chain: HTMLElement[] = [];
+	let current: HTMLElement | null =
+		anchorNode instanceof Text ? anchorNode.parentElement : anchorNode instanceof HTMLElement ? anchorNode : null;
+
+	while (current && current !== root) {
+		if (isInlineStyleContainer(current)) {
+			chain.push(current);
+		}
+		current = current.parentElement;
+	}
+
+	return chain;
+}
+
+function isInlineStyleContainer(element: HTMLElement): boolean {
+	const tag = element.tagName.toLowerCase();
+	return (
+		tag === 'span' ||
+		tag === 'a' ||
+		tag === 'strong' ||
+		tag === 'b' ||
+		tag === 'em' ||
+		tag === 'i' ||
+		tag === 'u' ||
+		tag === 's' ||
+		tag === 'sub' ||
+		tag === 'sup' ||
+		tag === 'mark' ||
+		tag === 'code'
+	);
 }

@@ -64,7 +64,7 @@ export function buildRelatedParagraphs(
 		relatedById.set(candidateId, existing);
 	}
 
-	return Array.from(relatedById.values())
+	const sortedRelated = Array.from(relatedById.values())
 		.sort((left, right) => {
 			const leftReference = left.relationTypes.includes('reference') ? 1 : 0;
 			const rightReference = right.relationTypes.includes('reference') ? 1 : 0;
@@ -75,8 +75,13 @@ export function buildRelatedParagraphs(
 			if (rightSemantic !== leftSemantic) return rightSemantic - leftSemantic;
 
 			return left.node.paragraph_enum - right.node.paragraph_enum;
-		})
-		.slice(0, maxRelatedParagraphs);
+		});
+
+	if (maxRelatedParagraphs > 0) {
+		return sortedRelated.slice(0, maxRelatedParagraphs);
+	}
+
+	return sortedRelated;
 }
 
 export function truncateText(text: string, maxLength = 420): string {
