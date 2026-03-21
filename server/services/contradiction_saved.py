@@ -15,7 +15,7 @@ def load_saved_contradictions_for_document(
     base_dir = Config.SAVED_CONTRADICTIONS_DIR
     if not base_dir.exists() or not base_dir.is_dir():
         raise RuntimeError(
-            f"Saved contradictions directory not found: {base_dir}"
+            f"Pasta de resultados salvos nao encontrada: {base_dir}"
         )
 
     json_files = sorted(
@@ -37,7 +37,7 @@ def load_saved_contradictions_for_document(
             return normalized, str(json_path)
 
     raise RuntimeError(
-        f"No saved contradiction file found for documentId={document_id}"
+        f"Ainda nao ha contradicoes salvas para este documento: {document_id}"
     )
 
 
@@ -69,6 +69,9 @@ def save_analyzed_contradictions(response: ContradictionAnalysisResponse) -> str
 
 def _extract_rows_for_document(payload: Any, document_id: str) -> list[dict[str, Any]]:
     if isinstance(payload, dict):
+        if not _payload_matches_document(payload, document_id):
+            return []
+
         if isinstance(payload.get("paragraph_results"), list):
             return payload["paragraph_results"]
 
@@ -88,6 +91,22 @@ def _extract_rows_for_document(payload: Any, document_id: str) -> list[dict[str,
         return _filter_rows_by_document_id(payload, document_id)
 
     return []
+
+
+def _payload_matches_document(payload: dict[str, Any], document_id: str) -> bool:
+    target = str(document_id).strip().lower()
+
+    explicit_doc_id = payload.get("documentId") or payload.get("document_id") or payload.get("doc_id")
+    if explicit_doc_id is not None:
+        return str(explicit_doc_id).strip().lower() == target
+
+    # Legacy shape: {"<documentId>": [...]}.
+    if document_id in payload:
+        return True
+
+    # No explicit doc identifier -> require row-level filtering keys.
+    has_rows = isinstance(payload.get("results"), list) or isinstance(payload.get("data"), list)
+    return has_rows
 
 
 def _filter_rows_by_document_id(rows: list[Any], document_id: str) -> list[dict[str, Any]]:
