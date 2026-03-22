@@ -32,6 +32,7 @@
 	} from '$lib/utils/docx/simplify-selection';
 
 	let viewer: HTMLDivElement | null = null;
+	let documentScrollHost: HTMLElement | null = null;
 	let assistantThread: HTMLDivElement | null = null;
 	let activeDocumentId: string | null = null;
 	let activeDocumentName = '';
@@ -74,6 +75,14 @@
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
+	type ContradictionScrollMarker = {
+		paragraphId: string;
+		topPercent: number;
+		confidenceBand: 'high' | 'medium' | 'low';
+	};
+	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
+	let contradictionMarkerFrame: number | null = null;
+	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter((row) => row.contradiction).length;
 
@@ -162,6 +171,62 @@
 		}
 	}
 
+	function resolveContradictionConfidenceBand(confidence: number): ContradictionScrollMarker['confidenceBand'] {
+		let confidenceBand: ContradictionScrollMarker['confidenceBand'] = 'low';
+		if (confidence >= 80) confidenceBand = 'high';
+		else if (confidence >= 50) confidenceBand = 'medium';
+		return confidenceBand;
+	}
+
+	function refreshContradictionScrollMarkers() {
+		if (!documentScrollHost || contradictionResultsByParagraphId.size === 0) {
+			contradictionScrollMarkers = [];
+			return;
+		}
+
+		const hostRect = documentScrollHost.getBoundingClientRect();
+		const hostScrollHeight = documentScrollHost.scrollHeight;
+		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
+			contradictionScrollMarkers = [];
+			return;
+		}
+
+		const nextMarkers: ContradictionScrollMarker[] = [];
+
+		for (const [paragraphId, result] of contradictionResultsByParagraphId.entries()) {
+			if (!result.contradiction) continue;
+			const element = paragraphElementById.get(paragraphId);
+			if (!element) continue;
+
+			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
+			const elementRect = element.getBoundingClientRect();
+			const centerOffset =
+				elementRect.top - hostRect.top + documentScrollHost.scrollTop + elementRect.height / 2;
+			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
+			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
+
+			nextMarkers.push({
+				paragraphId,
+				topPercent,
+				confidenceBand
+			});
+		}
+
+		nextMarkers.sort((left, right) => left.topPercent - right.topPercent);
+		contradictionScrollMarkers = nextMarkers;
+	}
+
+	function scheduleContradictionScrollMarkerRefresh() {
+		if (typeof window === 'undefined') return;
+		if (contradictionMarkerFrame != null) {
+			window.cancelAnimationFrame(contradictionMarkerFrame);
+		}
+		contradictionMarkerFrame = window.requestAnimationFrame(() => {
+			contradictionMarkerFrame = null;
+			refreshContradictionScrollMarkers();
+		});
+	}
+
 	function applyContradictionHighlights() {
 		clearContradictionHighlights();
 
@@ -170,9 +235,7 @@
 			const element = paragraphElementById.get(paragraphId);
 			if (!element) continue;
 
-			let confidenceBand = 'low';
-			if (result.confidence >= 80) confidenceBand = 'high';
-			else if (result.confidence >= 50) confidenceBand = 'medium';
+			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
 
 			element.classList.add('docx-contradiction-highlight');
 			element.dataset.contradictionConfidenceBand = confidenceBand;
@@ -184,6 +247,8 @@
 		if (selected?.id && contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
 			paragraphElementById.get(selected.id)?.classList.add('docx-contradiction-selected');
 		}
+
+		scheduleContradictionScrollMarkerRefresh();
 	}
 
 	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
@@ -662,6 +727,7 @@
 		contradictionResultsByParagraphId = new Map();
 		contradictionSource = null;
 		contradictionError = null;
+		contradictionScrollMarkers = [];
 		resetInspectorState();
 		resetAssistantState();
 		if (clearStores) {
@@ -855,6 +921,7 @@
 	onMount(() => {
 		const handleDocumentSelectionChange = () => {
 			refreshSimplifyTarget();
+			scheduleContradictionScrollMarkerRefresh();
 		};
 
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
@@ -862,10 +929,22 @@
 		document.addEventListener('keyup', handleDocumentSelectionChange);
 		window.addEventListener('resize', handleDocumentSelectionChange);
 		window.addEventListener('scroll', handleDocumentSelectionChange, true);
+		documentScrollHost?.addEventListener('scroll', handleDocumentSelectionChange, {
+			passive: true
+		});
+
+		if (typeof ResizeObserver !== 'undefined') {
+			contradictionMarkerResizeObserver = new ResizeObserver(() => {
+				scheduleContradictionScrollMarkerRefresh();
+			});
+			if (documentScrollHost) contradictionMarkerResizeObserver.observe(documentScrollHost);
+			if (viewer) contradictionMarkerResizeObserver.observe(viewer);
+		}
 
 		const unsubscribe = page.subscribe(($page) => {
 			void openFromRoute($page.url.searchParams.get('id'));
 		});
+		scheduleContradictionScrollMarkerRefresh();
 
 		return () => {
 			renderToken += 1;
@@ -875,6 +954,13 @@
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
 			window.removeEventListener('resize', handleDocumentSelectionChange);
 			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
+			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
+			contradictionMarkerResizeObserver?.disconnect();
+			contradictionMarkerResizeObserver = null;
+			if (contradictionMarkerFrame != null) {
+				window.cancelAnimationFrame(contradictionMarkerFrame);
+				contradictionMarkerFrame = null;
+			}
 			clearRenderedDocument();
 		};
 	});
@@ -897,7 +983,7 @@
 					disabled={!activeDocumentId || contradictionLoading || $loading}
 					class="rounded border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700 transition hover:border-amber-300 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					Contradições salvas
+					Saved Contradictions
 				</button>
 				<button
 					type="button"
@@ -905,7 +991,7 @@
 					disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
 					class="rounded border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					Buscar contradições
+					Searching for contradictions
 				</button>
 			</div>
 		</header>
@@ -913,14 +999,14 @@
 		{#if contradictionLoading || contradictionError || contradictionResultsByParagraphId.size > 0}
 			<div class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600">
 				{#if contradictionLoading}
-					<p>Processando classificacao de contradicoes...</p>
+					<p>Processing contradiction classification...</p>
 				{:else if contradictionError}
 					<p class="text-red-700">{contradictionError}</p>
 				{:else}
 					<p>
-						{contradictionCount} paragrafo(s) com contradicao destacado(s).
+						{contradictionCount} paragraph(s) with highlighted contradiction(s).
 						{#if contradictionSource}
-							<span class="text-gray-500"> Fonte: {contradictionSource}</span>
+							<span class="text-gray-500"> Source: {contradictionSource}</span>
 						{/if}
 					</p>
 				{/if}
@@ -933,9 +1019,25 @@
 			</div>
 		{/if}
 
-		<section class="flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner">
-			<div bind:this={viewer} class="min-h-full w-full"></div>
-		</section>
+		<div class="relative flex min-h-0 flex-1">
+			<section
+				bind:this={documentScrollHost}
+				class="flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner"
+			>
+				<div bind:this={viewer} class="min-h-full w-full"></div>
+			</section>
+
+			{#if contradictionScrollMarkers.length > 0}
+				<div class="pointer-events-none absolute top-2 right-1 bottom-2 z-20 w-2">
+					{#each contradictionScrollMarkers as marker (marker.paragraphId)}
+						<span
+							class={`docx-contradiction-scroll-marker docx-contradiction-scroll-marker--${marker.confidenceBand}`}
+							style={`top: ${marker.topPercent}%;`}
+						></span>
+					{/each}
+				</div>
+			{/if}
+		</div>
 	</div>
 
 	<aside
@@ -1449,6 +1551,26 @@
 		outline: 1px solid #dc2626;
 	}
 
+	:global(.docx-contradiction-scroll-marker) {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 2px;
+		transform: translateY(-50%);
+		border-radius: 9999px;
+		background: #dc2626;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+		opacity: 0.92;
+	}
+
+	:global(.docx-contradiction-scroll-marker--medium) {
+		background: #ef4444;
+	}
+
+	:global(.docx-contradiction-scroll-marker--low) {
+		background: #f87171;
+	}
+
 	:global(.overflow-y-auto)::-webkit-scrollbar {
 		width: 3px;
 	}
@@ -1491,5 +1613,4 @@
 		}
 	}
 </style>
-
 
