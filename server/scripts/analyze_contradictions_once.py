@@ -37,6 +37,12 @@ def main() -> None:
         default=0.3,
         help="Sampling temperature for the LLM request.",
     )
+    parser.add_argument(
+        "--model",
+        required=False,
+        default=None,
+        help="Optional model override for the selected provider.",
+    )
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -47,6 +53,7 @@ def main() -> None:
 
     payload["provider"] = args.provider
     payload["temperature"] = args.temperature
+    payload["model"] = args.model
 
     request = ContradictionAnalysisRequest.model_validate(payload)
     response = analyze_document_contradictions(request)

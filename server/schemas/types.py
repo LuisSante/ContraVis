@@ -126,12 +126,14 @@ class ContradictionAnalysisRequest(BaseModel):
     graph: Graph
     provider: AssistantProvider = "openai"
     temperature: float = 0.3
+    model: Optional[str] = None
 
 
 class ContradictionAnalysisResponse(BaseModel):
     documentId: str
     provider: AssistantProvider
     temperature: float
+    model: Optional[str] = None
     paragraphResults: List[ContradictionParagraphResult]
     rawResponse: str
 
