@@ -1,11 +1,17 @@
-from pathlib import Path
+﻿from pathlib import Path
+import os
 import re
 
 class Config:
-  CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf")
-  CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx")
+  # CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf")
+  # CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx")
+  CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf_contradictions")
+  CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx_contradictions")
   EDITED_PDF_DIR = Path("../infra/edited_pdfs")
   EDITED_DOC_DIR = Path("../infra/edited_docs")
+  SAVED_CONTRADICTIONS_DIR = Path(
+    os.getenv("SAVED_CONTRADICTIONS_DIR", "../infra/contradiction_results")
+  )
   REFERENCE_PATTERNS = [
     # Section 1.4.2 / section 3 / Section 10.1
     ("section", re.compile(r'\b[Ss]ection\s+(\d+(?:\.\d+)*)\b')),

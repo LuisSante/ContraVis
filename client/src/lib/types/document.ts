@@ -213,3 +213,30 @@ export type SimplifyAuditRecord = {
 	modelResponse: string;
 	timestamp: string;
 };
+export type ContradictionParagraphResult = {
+	paragraph_id: string;
+	contradiction: boolean;
+	confidence: number;
+	brief_reason: string;
+};
+
+export type ContradictionAnalysisRequest = {
+	documentId: string;
+	provider: AssistantProvider;
+	temperature: number;
+	graph: Graph;
+};
+
+export type ContradictionAnalysisResponse = {
+	documentId: string;
+	provider: AssistantProvider;
+	temperature: number;
+	paragraphResults: ContradictionParagraphResult[];
+	rawResponse: string;
+};
+
+export type SavedContradictionsResponse = {
+	documentId: string;
+	sourceFile: string;
+	paragraphResults: ContradictionParagraphResult[];
+};

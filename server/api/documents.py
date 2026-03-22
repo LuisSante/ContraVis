@@ -1,19 +1,28 @@
+﻿from collections import Counter
+import logging
+import re
+
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
+
 from schemas.types import (
     AssistantChatRequest,
     AssistantChatResponse,
+    ContradictionAnalysisRequest,
+    ContradictionAnalysisResponse,
     DatasetDocument,
+    SavedContradictionsResponse,
     SimplifySelectionRequest,
     SimplifySelectionResponse,
 )
-from services.graph.relations import generate_graph_data
-# from utils.relations import generate_graph_data
-from utils.document_store import DocumentStore
+from services.contradiction_analysis import analyze_document_contradictions
+from services.contradiction_saved import (
+    load_saved_contradictions_for_document,
+    save_analyzed_contradictions,
+)
 from services.contract_assistant import generate_assistant_response, simplify_paragraph_selection
-from collections import Counter
-import re
-import logging
+from services.graph.relations import generate_graph_data
+from utils.document_store import DocumentStore
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -21,7 +30,7 @@ logger = logging.getLogger(__name__)
 document_store = DocumentStore()
 
 PAGE_NUMBER_ONLY_RE = re.compile(r"^(?:\d+|[ivxlcdm]{1,8})$", re.IGNORECASE)
-PAGE_LABEL_RE = re.compile(r"^(?:page|pagina|p[aá]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$", re.IGNORECASE)
+PAGE_LABEL_RE = re.compile(r"^(?:page|pagina|p[aÃ¡]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$", re.IGNORECASE)
 BOUNDARY_SCAN_LINES = 3
 
 
@@ -75,15 +84,14 @@ def detect_repeated_boundary_texts(
             bottom_counts[text_key] += 1
 
     repeated_top = {
-        text for text, count in top_counts.items()
-        if count >= 2 and is_repeated_boundary_candidate(text)
+        text for text, count in top_counts.items() if count >= 2 and is_repeated_boundary_candidate(text)
     }
     repeated_bottom = {
-        text for text, count in bottom_counts.items()
-        if count >= 2 and is_repeated_boundary_candidate(text)
+        text for text, count in bottom_counts.items() if count >= 2 and is_repeated_boundary_candidate(text)
     }
 
     return boundaries_by_page, repeated_top, repeated_bottom
+
 
 @router.get("/list_documents", response_model=list[DatasetDocument])
 def list_documents():
@@ -91,6 +99,7 @@ def list_documents():
         document_store.initialize()
 
     return document_store.get_documents()
+
 
 @router.get("/document_file/{doc_id}")
 def get_document_file(doc_id: str):
@@ -110,14 +119,15 @@ def get_document_file(doc_id: str):
         filename=path.name,
     )
 
+
 @router.post("/process")
-async def process_document(data: dict):    
+async def process_document(data: dict):
     doc_id = data.get("documentId")
     pages = data.get("pages", [])
     boundaries_by_page, repeated_top_texts, repeated_bottom_texts = detect_repeated_boundary_texts(pages)
 
     all_paragraphs_input = []
-    
+
     for page_idx, page in enumerate(pages):
         boundary = boundaries_by_page.get(page_idx, {})
         top_boundary = boundary.get("top", [])
@@ -125,30 +135,27 @@ async def process_document(data: dict):
 
         for idx, el in enumerate(page.get("elements", [])):
             text_content = normalize_text(str(el.get("text", "")))
-            if text_content:
-                if is_page_marker(text_content):
-                    continue
+            if not text_content:
+                continue
 
-                text_key = text_content.lower()
-                if (
-                    text_key in repeated_top_texts
-                    and any(
-                        idx == boundary_idx and text_key == boundary_text
-                        for boundary_idx, boundary_text in top_boundary
-                    )
-                ):
-                    continue
+            if is_page_marker(text_content):
+                continue
 
-                if (
-                    text_key in repeated_bottom_texts
-                    and any(
-                        idx == boundary_idx and text_key == boundary_text
-                        for boundary_idx, boundary_text in bottom_boundary
-                    )
-                ):
-                    continue
+            text_key = text_content.lower()
+            if text_key in repeated_top_texts and any(
+                idx == boundary_idx and text_key == boundary_text
+                for boundary_idx, boundary_text in top_boundary
+            ):
+                continue
 
-                all_paragraphs_input.append({
+            if text_key in repeated_bottom_texts and any(
+                idx == boundary_idx and text_key == boundary_text
+                for boundary_idx, boundary_text in bottom_boundary
+            ):
+                continue
+
+            all_paragraphs_input.append(
+                {
                     "id": el.get("id"),
                     "documentId": doc_id,
                     "text": text_content,
@@ -157,17 +164,16 @@ async def process_document(data: dict):
                     "x": el.get("x", 0.0),
                     "y": el.get("y", 0.0),
                     "fontSize": el.get("fontSize", 0.0),
-                })
+                }
+            )
 
     graph_obj = generate_graph_data(all_paragraphs_input)
 
-    payload = {
+    return {
         "status": "success",
         "documentId": doc_id,
-        "graph": graph_obj.model_dump()
+        "graph": graph_obj.model_dump(),
     }
-    
-    return payload
 
 
 @router.post("/assistant/chat", response_model=AssistantChatResponse)
@@ -190,6 +196,40 @@ def assistant_simplify(payload: SimplifySelectionRequest):
     except Exception as exc:
         logger.exception("Unexpected simplify error")
         raise HTTPException(status_code=500, detail="Failed to simplify selection") from exc
+
+
+@router.post("/contradictions/analyze", response_model=ContradictionAnalysisResponse)
+def analyze_document_contradictions_endpoint(payload: ContradictionAnalysisRequest):
+    try:
+        response = analyze_document_contradictions(payload)
+        try:
+            saved_path = save_analyzed_contradictions(response)
+            logger.info("Saved contradiction analysis: %s", saved_path)
+        except Exception:
+            logger.exception("Failed to persist contradiction analysis result")
+        return response
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Unexpected contradiction-analysis error")
+        raise HTTPException(status_code=500, detail="Failed to analyze contradictions") from exc
+
+
+@router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)
+def get_saved_contradictions(document_id: str):
+    try:
+        rows, source_file = load_saved_contradictions_for_document(document_id)
+        return SavedContradictionsResponse(
+            documentId=document_id,
+            sourceFile=source_file,
+            paragraphResults=rows,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Unexpected saved-contradictions error")
+        raise HTTPException(status_code=500, detail="Failed to load saved contradictions") from exc
+
 
 @router.get("/")
 def document_init():

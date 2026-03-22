@@ -1,0 +1,2403 @@
+{
+  "documentId": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement",
+  "provider": "openai",
+  "temperature": 0.3,
+  "savedAt": "2026-03-21T22:18:32.190223+00:00",
+  "paragraphResults": [
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-1",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-2",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-4",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-6",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-8",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-10",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-12",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-14",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-16",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-18",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-20",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-21",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-22",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-24",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-26",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-27",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-29",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-31",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-32",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-33",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-34",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-35",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-36",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-37",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-38",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-40",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-42",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-43",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-44",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-45",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-46",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-47",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-49",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-51",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-52",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-53",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-54",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-56",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-58",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-60",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-61",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-62",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-63",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-65",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-67",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-68",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-69",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-70",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-72",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-74",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-75",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-76",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-78",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-80",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-81",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-82",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-83",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-84",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-86",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-88",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-89",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-90",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-91",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-92",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-93",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-95",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-97",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-99",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-101",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-103",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-105",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-106",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-107",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-108",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-110",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-112",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-113",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-114",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-115",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-117",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-119",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-120",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-121",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-122",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-123",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-124",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-125",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-126",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-127",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-128",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-129",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-130",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-131",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-132",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-134",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-136",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-138",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-140",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-142",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-144",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-146",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-148",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-150",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-152",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-154",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-156",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-158",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-159",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-160",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-162",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-164",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-165",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-167",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-169",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-171",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-173",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-174",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-176",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-178",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-179",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-181",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-183",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-185",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-187",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-189",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-190",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-192",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-193",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-195",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-197",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-199",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-200",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-201",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-203",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-205",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-207",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-208",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-209",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-210",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-212",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-214",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-216",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-218",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-220",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-222",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-223",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-224",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-226",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-227",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-228",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-230",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-232",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-233",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-235",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-237",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-239",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-241",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-243",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-245",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-247",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-249",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-251",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-253",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-255",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-256",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-257",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-259",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-260",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-262",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-264",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-266",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-268",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-270",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-272",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-274",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-276",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-278",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-280",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-282",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-284",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-285",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-286",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-288",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-290",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-292",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-294",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-296",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-298",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-300",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-301",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-302",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-304",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-306",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-308",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-310",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-312",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-313",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-314",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-316",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-318",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-320",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-322",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-324",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-326",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-328",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-329",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-330",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-332",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-333",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-335",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-337",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-338",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-340",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-342",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-343",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-345",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-347",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-349",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-350",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-352",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-354",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-356",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-357",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-359",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-361",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-363",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-365",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-367",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-369",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-371",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-373",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-375",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-377",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-379",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-381",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-383",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-385",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-387",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-389",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-391",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-393",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-395",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-397",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-399",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-401",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-403",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-405",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-407",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-408",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-409",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-410",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-412",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-414",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-416",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-418",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-420",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-422",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-424",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-426",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-428",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-430",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-431",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-432",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-433",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-434",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-435",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-437",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-439",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-441",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-443",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-445",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-447",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-449",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-451",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-452",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-453",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-454",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-455",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-456",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-458",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-460",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-462",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-463",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-464",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-465",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-466",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-467",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-468",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-469",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-470",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-471",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-472",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-473",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-474",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-475",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-476",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-478",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-480",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-481",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-482",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-483",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-484",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-485",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-486",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-487",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-488",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-489",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-490",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-491",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-492",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-493",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-494",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-495",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "This paragraph states all rights and obligations decay after 2 years from termination, but related paragraphs (e.g., 343, 499) specify some obligations survive for longer or as required by law."
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-497",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-499",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-501",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-503",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-505",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-507",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-508",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-510",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-512",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-514",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-516",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-518",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-520",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-522",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-524",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-526",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-528",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-530",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-532",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-534",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-536",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-538",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-540",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-542",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-544",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-546",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-548",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-550",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-552",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-554",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-556",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-558",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-560",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-562",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-564",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-566",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-568",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-570",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-572",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-574",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-576",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-577",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-578",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-579",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-580",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-582",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-583",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-584",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-586",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-588",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-590",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-592",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-594",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-596",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-598",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-600",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-602",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-604",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-606",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-608",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-610",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-612",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-614",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-616",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-618",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-620",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-622",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-624",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-626",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-628",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-630",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-632",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-634",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-636",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-638",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-640",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-642",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-644",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-646",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-648",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-650",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-652",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-654",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-656",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-658",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-660",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    }
+  ],
+  "rawResponse": "{\n  \"paragraph_results\": [\n    {\n      \"paragraph_id\": \"VAPOTHERM_INC._-_Manufacturing_and_Supply_Agreement-p-495\",\n      \"contradiction\": true,\n      \"confidence\": 95,\n      \"brief_reason\": \"This paragraph states all rights and obligations decay after 2 years from termination, but related paragraphs (e.g., 343, 499) specify some obligations survive for longer or as required by law.\"\n    }\n  ]\n}"
+}

@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
@@ -10,14 +10,14 @@
 	import { detectDocxNoiseNodeIds } from '$lib/utils/docx/noise';
 	import type { 
 		AssistantChatMessage, AssistantChatRequest, AssistantContextNode, AssistantContextRelation, AssistantMode, 
-		AssistantProvider, AssistantScope, ChangeLogState, Edge as GraphEdge, Node as ParagraphNode, ParagraphEditState, 
+		AssistantProvider, AssistantScope, ChangeLogState, ContradictionAnalysisRequest, ContradictionParagraphResult, Edge as GraphEdge, Node as ParagraphNode, ParagraphEditState, 
 		RelatedParagraph, XmlNode, SimplifyResultState, SimplifyAuditRecord 
 	} from '$lib/types/document';
 	import { buildInspectorState, createEmptyInspectorState, 
 		focusNodeFromPanel as focusNodeFromInspectorPanel, toSelectedParagraphNode 
 	} from '$lib/utils/docx/inspector';
 	import {
-		fetchAssistantResponse, fetchBackendGraph, fetchSimplifySelection, loadBrowserDocx4js, resolveDocumentMeta, updateRelationBadge
+		fetchAssistantResponse, fetchBackendGraph, fetchContradictionAnalysis, fetchSavedContradictions, fetchSimplifySelection, loadBrowserDocx4js, resolveDocumentMeta, updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
 		buildChangeLog, ensureNodeEditState, formatReferenceSummary, getNodeCurrentText, truncateText
@@ -69,6 +69,13 @@
 	let simplifyLoading = false;
 	let simplifyError: string | null = null;
 	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+
+	let contradictionLoading = false;
+	let contradictionError: string | null = null;
+	let contradictionSource: string | null = null;
+	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
+
+	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter((row) => row.contradiction).length;
 
 	$: simplifyResultDiff = simplifyResult
 		? buildChangeLog(simplifyResult.payload.originalSnippet, simplifyResult.payload.simplifiedSnippet)
@@ -144,6 +151,116 @@
 		assistantMessages = [];
 		assistantLoading = false;
 		assistantError = null;
+	}
+
+	function clearContradictionHighlights() {
+		for (const element of paragraphElementById.values()) {
+			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+			delete element.dataset.contradictionConfidenceBand;
+			delete element.dataset.contradictionConfidence;
+			delete element.dataset.contradictionReason;
+		}
+	}
+
+	function applyContradictionHighlights() {
+		clearContradictionHighlights();
+
+		for (const [paragraphId, result] of contradictionResultsByParagraphId.entries()) {
+			if (!result.contradiction) continue;
+			const element = paragraphElementById.get(paragraphId);
+			if (!element) continue;
+
+			let confidenceBand = 'low';
+			if (result.confidence >= 80) confidenceBand = 'high';
+			else if (result.confidence >= 50) confidenceBand = 'medium';
+
+			element.classList.add('docx-contradiction-highlight');
+			element.dataset.contradictionConfidenceBand = confidenceBand;
+			element.dataset.contradictionConfidence = String(result.confidence);
+			element.dataset.contradictionReason = result.brief_reason ?? '';
+		}
+
+		const selected = get(selectedParagraph);
+		if (selected?.id && contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
+			paragraphElementById.get(selected.id)?.classList.add('docx-contradiction-selected');
+		}
+	}
+
+	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
+		const next = new Map<string, ContradictionParagraphResult>();
+		for (const row of results) {
+			next.set(String(row.paragraph_id), row);
+		}
+		contradictionResultsByParagraphId = next;
+		contradictionSource = source;
+		applyContradictionHighlights();
+	}
+
+	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
+		if (!activeDocumentId) return null;
+
+		const nodes = get(paragraphs).map((node) => ({
+			...node,
+			text: getNodeCurrentText(nodeEditStateById, node),
+			relationsCount: relationsCountByNodeId.get(node.id) ?? node.relationsCount
+		}));
+
+		if (nodes.length === 0) return null;
+
+		return {
+			documentId: activeDocumentId,
+			provider: 'openai',
+			temperature: 0.3,
+			graph: {
+				nodes,
+				edges: backendEdges
+			}
+		};
+	}
+
+	async function loadSavedContradictions() {
+		if (!activeDocumentId) {
+			contradictionError = 'No document is loaded.';
+			return;
+		}
+
+		contradictionLoading = true;
+		contradictionError = null;
+		try {
+			const response = await fetchSavedContradictions(activeDocumentId);
+			setContradictionResults(response.paragraphResults ?? [], response.sourceFile);
+		} catch (savedError) {
+			contradictionError = getAxiosErrorMessage(savedError, 'Failed to load saved contradictions.');
+		} finally {
+			contradictionLoading = false;
+		}
+	}
+
+	async function searchContradictionsWithLlm() {
+		if (backendGraphLoading) {
+			contradictionError = 'Wait until graph generation finishes before searching contradictions.';
+			return;
+		}
+
+		const payload = buildContradictionAnalysisPayload();
+		if (!payload) {
+			contradictionError = 'No paragraph context is available yet.';
+			return;
+		}
+
+		contradictionLoading = true;
+		contradictionError = null;
+		try {
+			const response = await fetchContradictionAnalysis(payload);
+			setContradictionResults(response.paragraphResults ?? [], 'llm:openai');
+		} catch (analysisError) {
+			contradictionError = getAxiosErrorMessage(
+				analysisError,
+				'Failed to search contradictions with LLM.'
+			);
+		} finally {
+			contradictionLoading = false;
+		}
 	}
 
 	function clearRelationBadgeHost(host: HTMLElement) {
@@ -542,6 +659,9 @@
 			releaseDoc = null;
 		}
 		if (viewer) viewer.replaceChildren();
+		contradictionResultsByParagraphId = new Map();
+		contradictionSource = null;
+		contradictionError = null;
 		resetInspectorState();
 		resetAssistantState();
 		if (clearStores) {
@@ -681,6 +801,7 @@
 
 			viewer.replaceChildren();
 			appendChildren(viewer, renderedRoot);
+			applyContradictionHighlights();
 
 			const structuralNoiseNodeIds = detectDocxNoiseNodeIds(viewer);
 			if (structuralNoiseNodeIds.length > 0) {
@@ -763,13 +884,48 @@
 	<div
 		class="flex w-[60%] min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
 	>
-		<header class="flex flex-none items-center gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3">
+		<header class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3">
 			<div class="min-w-0">
 				<div class="truncate text-sm font-semibold text-gray-800">
 					{activeDocumentName || 'No document selected'}
 				</div>
 			</div>
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					on:click={() => void loadSavedContradictions()}
+					disabled={!activeDocumentId || contradictionLoading || $loading}
+					class="rounded border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700 transition hover:border-amber-300 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					Contradições salvas
+				</button>
+				<button
+					type="button"
+					on:click={() => void searchContradictionsWithLlm()}
+					disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
+					class="rounded border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					Buscar contradições
+				</button>
+			</div>
 		</header>
+
+		{#if contradictionLoading || contradictionError || contradictionResultsByParagraphId.size > 0}
+			<div class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600">
+				{#if contradictionLoading}
+					<p>Processando classificacao de contradicoes...</p>
+				{:else if contradictionError}
+					<p class="text-red-700">{contradictionError}</p>
+				{:else}
+					<p>
+						{contradictionCount} paragrafo(s) com contradicao destacado(s).
+						{#if contradictionSource}
+							<span class="text-gray-500"> Fonte: {contradictionSource}</span>
+						{/if}
+					</p>
+				{/if}
+			</div>
+		{/if}
 
 		{#if localError || $error}
 			<div class="mx-4 mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
@@ -910,7 +1066,7 @@
 
 									<div class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500">
 										<p>
-											evidence: {simplifyResult.payload.evidence.paragraph_id} ·
+											evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
 											{simplifyResult.payload.evidence.selection_start}-
 											{simplifyResult.payload.evidence.selection_end}
 										</p>
@@ -1274,6 +1430,25 @@
 		animation: citation-flash 1.2s ease-out;
 	}
 
+	:global(.docx-contradiction-highlight) {
+		background: rgba(254, 226, 226, 0.58);
+		box-shadow: inset 3px 0 0 #dc2626;
+	}
+
+	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='medium']) {
+		background: rgba(254, 242, 242, 0.66);
+		box-shadow: inset 3px 0 0 #ef4444;
+	}
+
+	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='low']) {
+		background: rgba(255, 247, 237, 0.78);
+		box-shadow: inset 3px 0 0 #f97316;
+	}
+
+	:global(.docx-contradiction-selected) {
+		outline: 1px solid #dc2626;
+	}
+
 	:global(.overflow-y-auto)::-webkit-scrollbar {
 		width: 3px;
 	}
@@ -1316,3 +1491,5 @@
 		}
 	}
 </style>
+
+

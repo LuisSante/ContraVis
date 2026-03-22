@@ -1,15 +1,18 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
+from logging import getLogger
+
 from dotenv import load_dotenv
 
 from services.llm.base import LLMProvider
 from services.llm.gemini_provider import GeminiProvider
 from services.llm.openai_provider import OpenAIProvider
-from logging import getLogger
+
 load_dotenv()
 
 logger = getLogger(__name__)
+
 
 class LLMProviderFactory:
     _cache: dict[str, LLMProvider] = {}
@@ -23,10 +26,11 @@ class LLMProviderFactory:
 
         if normalized == "gemini":
             api_key = os.getenv("GEMINI_API_KEY")
-            logger.info(api_key)
             if not api_key:
                 raise RuntimeError("GEMINI_API_KEY is not configured")
-            provider = GeminiProvider(api_key=api_key)
+
+            model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            provider = GeminiProvider(api_key=api_key, model=model)
             cls._cache[normalized] = provider
             return provider
 
@@ -34,7 +38,9 @@ class LLMProviderFactory:
             api_key = os.getenv("OPENAI_API_KEY")
             if not api_key:
                 raise RuntimeError("OPENAI_API_KEY is not configured")
-            provider = OpenAIProvider(api_key=api_key)
+
+            model = os.getenv("OPENAI_MODEL", "gpt-4.1")
+            provider = OpenAIProvider(api_key=api_key, model=model)
             cls._cache[normalized] = provider
             return provider
 

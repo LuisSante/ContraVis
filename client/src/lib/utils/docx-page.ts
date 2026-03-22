@@ -1,15 +1,18 @@
-import { get } from 'svelte/store';
+﻿import { get } from 'svelte/store';
 import { api } from '$lib/api/client';
 import { currentDocument } from '$lib/stores/document';
 import type {
 	AssistantChatRequest,
 	AssistantChatResponse,
+	ContradictionAnalysisRequest,
+	ContradictionAnalysisResponse,
 	DocumentMeta,
 	Docx4jsBrowserModule,
 	Edge as GraphEdge,
 	Node as ParagraphNode,
 	ParagraphEditState,
 	ProcessDocumentResponse,
+	SavedContradictionsResponse,
 	SimplifySelectionRequest,
 	SimplifySelectionResponse
 } from '$lib/types/document';
@@ -157,5 +160,21 @@ export async function fetchSimplifySelection(
 	payload: SimplifySelectionRequest
 ): Promise<SimplifySelectionResponse> {
 	const response = await api.post<SimplifySelectionResponse>('/assistant/simplify', payload);
+	return response.data;
+}
+
+export async function fetchSavedContradictions(
+	documentId: string
+): Promise<SavedContradictionsResponse> {
+	const response = await api.get<SavedContradictionsResponse>(
+		`/contradictions/saved/${encodeURIComponent(documentId)}`
+	);
+	return response.data;
+}
+
+export async function fetchContradictionAnalysis(
+	payload: ContradictionAnalysisRequest
+): Promise<ContradictionAnalysisResponse> {
+	const response = await api.post<ContradictionAnalysisResponse>('/contradictions/analyze', payload);
 	return response.data;
 }

@@ -113,3 +113,29 @@ class SimplifySelectionResponse(BaseModel):
     simplifiedSnippet: str
     evidence: SimplifyEvidence
     audit: SimplifyAudit
+
+class ContradictionParagraphResult(BaseModel):
+    paragraph_id: str
+    contradiction: bool
+    confidence: int = Field(ge=0, le=100)
+    brief_reason: str = ""
+
+
+class ContradictionAnalysisRequest(BaseModel):
+    documentId: str
+    graph: Graph
+    provider: AssistantProvider = "openai"
+    temperature: float = 0.3
+
+
+class ContradictionAnalysisResponse(BaseModel):
+    documentId: str
+    provider: AssistantProvider
+    temperature: float
+    paragraphResults: List[ContradictionParagraphResult]
+    rawResponse: str
+
+class SavedContradictionsResponse(BaseModel):
+    documentId: str
+    sourceFile: str
+    paragraphResults: List[ContradictionParagraphResult]
