@@ -18,6 +18,13 @@ export const PROVIDER_OPTIONS: ReadonlyArray<{ value: AssistantProvider; label: 
 	{ value: 'openai', label: 'OpenAI' }
 ];
 
+export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+	{ value: 'gpt-4o-mini', label: 'gpt-4o-mini (cheaper)' },
+	{ value: 'gpt-4.1-mini', label: 'gpt-4.1-mini' },
+	{ value: 'gpt-4.1', label: 'gpt-4.1' },
+	{ value: 'gpt-4o', label: 'gpt-4o' }
+];
+
 export const COMMIT_SHORTCUT_LABEL = 'CTRL + SHIFT + ENTER';
 export const COMMIT_SHORTCUT_HINT = 'Commit changes with Ctrl + Shift + Enter';
 export const COMMIT_SHORTCUT_TOOLTIP = 'Ctrl + Shift + Enter to save';

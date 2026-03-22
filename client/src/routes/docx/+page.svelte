@@ -24,7 +24,7 @@
 	} from '$lib/utils/edit';
 	import { 
 		COMMIT_SHORTCUT_HINT, COMMIT_SHORTCUT_LABEL, COMMIT_SHORTCUT_TOOLTIP, EDITABLE_PARAGRAPH_CLASSES, MAX_SIMPLIFY_AUDIT_TRAIL, 
-		MODE_OPTIONS, PROVIDER_OPTIONS, QUICK_ACTIONS, SCOPE_OPTIONS
+		CONTRADICTION_OPENAI_MODEL_OPTIONS, MODE_OPTIONS, PROVIDER_OPTIONS, QUICK_ACTIONS, SCOPE_OPTIONS
 	} from '$lib/constants/docx-viewer';
 	import { 
 		buildTargetForWholeParagraph, buildTargetFromSelectionRange, computeSimplifyToolbarPosition, 
@@ -74,6 +74,7 @@
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
+	let contradictionModel = CONTRADICTION_OPENAI_MODEL_OPTIONS[0]?.value ?? 'gpt-4o-mini';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	type ContradictionScrollMarker = {
 		paragraphId: string;
@@ -263,6 +264,7 @@
 
 	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
 		if (!activeDocumentId) return null;
+		const selectedModel = contradictionModel.trim();
 
 		const nodes = get(paragraphs).map((node) => ({
 			...node,
@@ -276,6 +278,7 @@
 			documentId: activeDocumentId,
 			provider: 'openai',
 			temperature: 0.3,
+			model: selectedModel || undefined,
 			graph: {
 				nodes,
 				edges: backendEdges
@@ -317,7 +320,8 @@
 		contradictionError = null;
 		try {
 			const response = await fetchContradictionAnalysis(payload);
-			setContradictionResults(response.paragraphResults ?? [], 'llm:openai');
+			const resolvedModel = response.model?.trim() || payload.model || 'default';
+			setContradictionResults(response.paragraphResults ?? [], `llm:openai:${resolvedModel}`);
 		} catch (analysisError) {
 			contradictionError = getAxiosErrorMessage(
 				analysisError,
@@ -985,6 +989,16 @@
 				>
 					Saved Contradictions
 				</button>
+				<select
+					bind:value={contradictionModel}
+					disabled={contradictionLoading || $loading || backendGraphLoading}
+					class="max-w-[170px] rounded border border-gray-200 bg-white px-1.5 py-1 text-[10px] font-semibold text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+					title="Realtime contradiction model"
+				>
+					{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
 				<button
 					type="button"
 					on:click={() => void searchContradictionsWithLlm()}
@@ -1613,4 +1627,3 @@
 		}
 	}
 </style>
-

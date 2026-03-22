@@ -63,7 +63,7 @@ def analyze_document_contradictions(
         document_json=json.dumps(paragraph_payload, ensure_ascii=False, indent=2)
     )
 
-    provider = LLMProviderFactory.create(payload.provider)
+    provider = LLMProviderFactory.create(payload.provider, model=payload.model)
     raw_response = provider.generate(
         system_prompt=SYSTEM_PROMPT,
         user_prompt=user_prompt,
@@ -100,6 +100,7 @@ def analyze_document_contradictions(
         documentId=payload.documentId,
         provider=payload.provider,
         temperature=payload.temperature,
+        model=payload.model,
         paragraphResults=paragraph_results,
         rawResponse=raw_response,
     )

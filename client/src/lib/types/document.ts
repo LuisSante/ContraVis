@@ -224,6 +224,7 @@ export type ContradictionAnalysisRequest = {
 	documentId: string;
 	provider: AssistantProvider;
 	temperature: number;
+	model?: string;
 	graph: Graph;
 };
 
@@ -231,6 +232,7 @@ export type ContradictionAnalysisResponse = {
 	documentId: string;
 	provider: AssistantProvider;
 	temperature: number;
+	model?: string;
 	paragraphResults: ContradictionParagraphResult[];
 	rawResponse: string;
 };
