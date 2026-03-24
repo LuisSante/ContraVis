@@ -1,0 +1,20 @@
+[
+  {
+    "idx": 5,
+    "mode": "insert",
+    "original_sentence": "3.2.4 Party B shall be obliged to verify the actual use of the leased vehicles, assist and ensure that the Driver User purchases corresponding insurance according to the actual use of the leased vehic",
+    "contradiction": "Party B shall not be obliged to verify the actual use of the leased vehicles, nor assist or ensure that the Driver User purchases corresponding insurance according to the actual use of the leased vehi"
+  },
+  {
+    "idx": 7,
+    "mode": "insert",
+    "original_sentence": "In case that the vehicle leased by Party B to the Driver User is used for the online Ride-Hailing Service, where a traffic accident or other safety accident occurs when a leased vehicle provides an on",
+    "contradiction": "Party B shall not be required to assume the carrier responsibility of leasing the vehicle which provides online Ride-Hailing Service nor pay the compensation in time."
+  },
+  {
+    "idx": 13,
+    "mode": "insert",
+    "original_sentence": "In the event of any breach below by Party B, Party B shall immediately remedy the breach, and Party A is entitled to request Party B to pay the liquidated damages of an amount from RMB5,000 (RMB FIVE ",
+    "contradiction": "Party B shall not be required to remedy the breach immediately."
+  }
+]

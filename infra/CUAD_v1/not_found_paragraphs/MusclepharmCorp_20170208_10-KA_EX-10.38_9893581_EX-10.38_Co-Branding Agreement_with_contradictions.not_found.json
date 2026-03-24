@@ -1,0 +1,8 @@
+[
+  {
+    "idx": 3,
+    "mode": "insert",
+    "original_sentence": "Term: (a) This Agreement shall have an Initial Term of three (3) years.",
+    "contradiction": "This Agreement shall not have a fixed Initial Term and may continue indefinitely until terminated in accordance with Section 9."
+  }
+]

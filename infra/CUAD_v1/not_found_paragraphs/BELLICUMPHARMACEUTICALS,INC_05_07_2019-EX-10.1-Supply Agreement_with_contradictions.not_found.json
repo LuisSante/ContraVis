@@ -1,0 +1,20 @@
+[
+  {
+    "idx": 144,
+    "mode": "insert",
+    "original_sentence": "If during the Term a Change is required to comply with changes in Agreed Standards made by Regulatory Authorities, Applicable Laws and/or other requirements of a Regulatory Authority, or if Miltenyi d",
+    "contradiction": "Miltenyi shall not be required to use [...***...] to implement such Required Change at its cost."
+  },
+  {
+    "idx": 368,
+    "mode": "insert",
+    "original_sentence": "In the event Miltenyi seeks indemnification under this Section 13.2, Miltenyi shall (a) notify Bellicum in writing of such Third Party claim as soon as reasonably practicable after it receives notice ",
+    "contradiction": "Bellicum may act without regard to reasonableness or good faith in all matters relating to the settlement or disposition of any claim as the settlement or disposition relates to parties being indemnif"
+  },
+  {
+    "idx": 381,
+    "mode": "insert",
+    "original_sentence": "Notwithstanding the provisions of this Article 14, nothing in this Agreement shall prevent the Receiving Party from disclosing Confidential Information of the Disclosing Party to the extent the Receiv",
+    "contradiction": "The Receiving Party shall not be required to assert the confidential nature of the Confidential Information, notify the Disclosing Party in writing prior to disclosure, or cooperate with the Disclosin"
+  }
+]
