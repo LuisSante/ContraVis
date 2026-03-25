@@ -1327,7 +1327,7 @@
 			<header
 				class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
 			>
-				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Node Diff</h3>
+				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Paragraph Revisions</h3>
 				<div class="group relative inline-flex">
 					<span
 						class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
@@ -1562,7 +1562,7 @@
 					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
 				>
 					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-						What-if Contract Assistant
+						Contract Chat Assistant
 					</h3>
 					<select
 						bind:value={assistantProvider}
@@ -1611,7 +1611,7 @@
 				>
 					{#if assistantMessages.length === 0 && !assistantLoading}
 						<div class="flex flex-1 flex-col items-center justify-center text-gray-300">
-							<p class="text-[10px] italic">Ask what-if questions about this contract</p>
+							<p class="text-[10px] italic">Chat about this contract</p>
 						</div>
 					{/if}
 
@@ -1685,7 +1685,7 @@
 				>
 					<textarea
 						rows="2"
-						placeholder="What happens if I don't?, Can I terminate?, Who is liable?"
+						placeholder="Ask about this contract or paragraph..."
 						bind:value={assistantInput}
 						on:keydown={handleAssistantInputKeydown}
 						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 transition outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
@@ -1725,11 +1725,11 @@
 						<HammerShieldIcon className="h-3.5 w-3.5" />
 						<span>{fixContradictionLoading ? 'Fixing...' : 'Fix contradiction'}</span>
 					</span>
-					<span
+					<!-- <span
 						class="rounded border border-amber-300 bg-white px-1 py-0.5 text-[8px] font-black text-amber-700"
 					>
 						AI
-					</span>
+					</span> -->
 				</button>
 
 				<button
@@ -1743,11 +1743,11 @@
 						<SimplifyWandIcon className="h-3.5 w-3.5" />
 						<span>{simplifyLoading ? 'Simplifying...' : 'Simplify'}</span>
 					</span>
-					<span
+					<!-- <span
 						class="rounded border border-sky-300 bg-white px-1 py-0.5 text-[8px] font-black text-sky-700"
 					>
 						AI
-					</span>
+					</span> -->
 				</button>
 			</div>
 			<button
