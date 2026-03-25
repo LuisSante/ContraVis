@@ -29,6 +29,7 @@
 		Node as ParagraphNode,
 		ParagraphEditState,
 		RelatedParagraph,
+		SimplifyRelatedParagraph,
 		XmlNode,
 		SimplifyResultState,
 		SimplifyAuditRecord
@@ -43,6 +44,7 @@
 		fetchAssistantResponse,
 		fetchBackendGraph,
 		fetchContradictionAnalysis,
+		fetchFixContradictionSelection,
 		fetchSavedContradictions,
 		fetchSimplifySelection,
 		loadBrowserDocx4js,
@@ -123,6 +125,7 @@
 	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
 	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+	const FIX_CONTRADICTION_TOP_RELATED = 3;
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
@@ -430,6 +433,24 @@
 		}));
 	}
 
+	function buildFixRelatedContext(
+		limit: number = FIX_CONTRADICTION_TOP_RELATED
+	): SimplifyRelatedParagraph[] {
+		if (limit <= 0) return [];
+		return selectedRelatedParagraphs
+			.slice(0, limit)
+			.map((related) => ({
+				id: related.node.id,
+				text: getNodeCurrentText(nodeEditStateById, related.node),
+				paragraph_enum: related.node.paragraph_enum,
+				page: related.node.page,
+				relationTypes: related.relationTypes,
+				semanticScore: related.semanticScore,
+				references: related.references.map((reference) => `${reference.label} ${reference.value}`)
+			}))
+			.filter((related) => related.text.trim().length > 0);
+	}
+
 	function buildAssistantHistoryPayload() {
 		return assistantMessages.slice(-8).map((message) => ({
 			role: message.role,
@@ -709,20 +730,13 @@
 
 		const contradiction = contradictionResultsByParagraphId.get(target.paragraphId);
 		if (!contradiction) {
-			appendAssistantQuickActionMessage(
-				'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.',
-				target.paragraphId
-			);
-			await scrollAssistantToBottom();
+			simplifyError =
+				'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.';
 			return;
 		}
 
 		if (!contradiction.contradiction) {
-			appendAssistantQuickActionMessage(
-				'This paragraph is not currently classified as contradiction.',
-				target.paragraphId
-			);
-			await scrollAssistantToBottom();
+			simplifyError = 'This paragraph is not currently classified as contradiction.';
 			return;
 		}
 
@@ -731,31 +745,54 @@
 			target.selectionEnd,
 			target.paragraphText.length
 		);
-		const selectedSnippet =
-			bounds.end > bounds.start ? target.paragraphText.slice(bounds.start, bounds.end).trim() : '';
-
-		const fixPrompt = [
-			`Fix contradiction for paragraph ${target.paragraphId}.`,
-			`Current contradiction signal: ${contradiction.brief_reason || 'no brief reason provided'}.`,
-			'Rewrite the paragraph to remove the contradiction while preserving legal intent, obligations, dates, numbers, and defined terms whenever possible.',
-			selectedSnippet
-				? `Prioritize fixing this selected snippet: "${selectedSnippet}"`
-				: 'Fix the whole selected paragraph.',
-			'Return in this order:',
-			'1) Rewritten paragraph',
-			'2) What changed',
-			'3) Why contradiction is resolved'
-		].join('\n');
+		const selectionStart = bounds.start;
+		const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
 
 		fixContradictionLoading = true;
 		simplifyError = null;
 		try {
-			await submitAssistantQuestion(fixPrompt, {
-				mode: 'explain',
-				scope: 'selected'
+			const response = await fetchFixContradictionSelection({
+				documentId: activeDocumentId,
+				provider: assistantProvider,
+				paragraphId: target.paragraphId,
+				paragraphText: target.paragraphText,
+				selectionStart,
+				selectionEnd,
+				contradictionReason: contradiction.brief_reason,
+				relatedParagraphs: buildFixRelatedContext()
 			});
+
+			simplifyResult = {
+				payload: response,
+				paragraphTextSnapshot: target.paragraphText,
+				createdAt: new Date().toISOString()
+			};
+
+			simplifyAuditTrail.unshift({
+				documentId: activeDocumentId,
+				provider: response.provider,
+				paragraphId: response.evidence.paragraph_id,
+				selectionStart: response.evidence.selection_start,
+				selectionEnd: response.evidence.selection_end,
+				originalSnippet: response.originalSnippet,
+				simplifiedSnippet: response.simplifiedSnippet,
+				systemPrompt: response.audit.system_prompt,
+				userPrompt: response.audit.user_prompt,
+				modelResponse: response.audit.model_response,
+				timestamp: new Date().toISOString()
+			});
+
+			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
+				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
+			}
+		} catch (fixRequestError) {
+			simplifyError = getAxiosErrorMessage(
+				fixRequestError,
+				'Failed to fix contradiction for selected text.'
+			);
 		} finally {
 			fixContradictionLoading = false;
+			refreshSimplifyTarget();
 		}
 	}
 
@@ -1369,31 +1406,12 @@
 									>
 										{simplifyError}
 									</div>
-								{/if}
+									{/if}
 
-								{#if simplifyResult}
-									<div class="rounded border border-gray-100 text-[11px]">
-										<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-gray-400 uppercase"
-												>Original</span
-											>
-											<p class="font-mono leading-relaxed whitespace-pre-wrap text-gray-700">
-												{simplifyResult.payload.originalSnippet}
-											</p>
-										</div>
-										<div class="px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-blue-300 uppercase"
-												>Simplified</span
-											>
-											<p class="font-mono leading-relaxed whitespace-pre-wrap text-blue-900">
-												{simplifyResult.payload.simplifiedSnippet}
-											</p>
-										</div>
-									</div>
-
-									<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-										<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase"
+									{#if simplifyResult}
+										<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+											<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+												<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase"
 												>Original Diff</span
 											>
 											<p class="font-mono leading-relaxed whitespace-pre-wrap text-red-700/80">

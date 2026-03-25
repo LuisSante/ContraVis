@@ -97,6 +97,16 @@ class SimplifyAudit(BaseModel):
     model_response: str
 
 
+class SimplifyRelatedParagraph(BaseModel):
+    id: str
+    text: str
+    paragraph_enum: Optional[int] = None
+    page: Optional[int] = None
+    relationTypes: List[Literal["reference", "semantic_similarity"]] = Field(default_factory=list)
+    semanticScore: Optional[float] = None
+    references: List[str] = Field(default_factory=list)
+
+
 class SimplifySelectionRequest(BaseModel):
     documentId: str
     provider: AssistantProvider = "gemini"
@@ -104,6 +114,8 @@ class SimplifySelectionRequest(BaseModel):
     paragraphText: str
     selectionStart: int = 0
     selectionEnd: int = 0
+    contradictionReason: Optional[str] = None
+    relatedParagraphs: List[SimplifyRelatedParagraph] = Field(default_factory=list)
 
 
 class SimplifySelectionResponse(BaseModel):

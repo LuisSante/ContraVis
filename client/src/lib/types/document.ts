@@ -176,6 +176,16 @@ export type SimplifyAudit = {
 	model_response: string;
 };
 
+export type SimplifyRelatedParagraph = {
+	id: string;
+	text: string;
+	paragraph_enum?: number;
+	page?: number;
+	relationTypes: RelationKind[];
+	semanticScore?: number;
+	references?: string[];
+};
+
 export type SimplifySelectionRequest = {
 	documentId: string;
 	provider: AssistantProvider;
@@ -183,6 +193,8 @@ export type SimplifySelectionRequest = {
 	paragraphText: string;
 	selectionStart: number;
 	selectionEnd: number;
+	contradictionReason?: string;
+	relatedParagraphs?: SimplifyRelatedParagraph[];
 };
 
 export type SimplifySelectionResponse = {
