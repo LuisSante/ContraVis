@@ -34,7 +34,7 @@ class Graph(BaseModel):
 
 AssistantMode = Literal["explain", "quote", "suggest_questions"]
 AssistantScope = Literal["selected", "full_contract"]
-AssistantProvider = Literal["gemini", "openai"]
+AssistantProvider = Literal["openai", "gemini"]
 AssistantMessageRole = Literal["user", "assistant"]
 
 

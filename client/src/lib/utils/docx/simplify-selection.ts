@@ -86,15 +86,26 @@ export function buildTargetFromSelectionRange(options: {
 	};
 }
 
-export function computeSimplifyToolbarPosition(anchorRect: DOMRect, viewportWidth: number) {
-	const toolbarWidth = 120;
+export function computeSimplifyToolbarPosition(
+	anchorRect: DOMRect,
+	viewportWidth: number,
+	viewportHeight: number
+) {
+	const toolbarWidth = 208;
+	const estimatedToolbarHeight = 172;
 	const margin = 12;
-	const horizontalCenter = anchorRect.left + anchorRect.width / 2;
+	const gap = -15;
+
 	const left = Math.max(
 		margin,
-		Math.min(viewportWidth - toolbarWidth - margin, horizontalCenter - toolbarWidth / 2)
+		Math.min(viewportWidth - toolbarWidth - margin, anchorRect.left)
 	);
-	const top = anchorRect.top - 42 > 8 ? anchorRect.top - 42 : anchorRect.bottom + 8;
+
+	const preferredTop = anchorRect.top - estimatedToolbarHeight - gap;
+	const fallbackTop = anchorRect.bottom + gap;
+	const maxTop = Math.max(margin, viewportHeight - estimatedToolbarHeight - margin);
+	const top = preferredTop >= margin ? preferredTop : Math.min(maxTop, fallbackTop);
+
 	return { left, top };
 }
 

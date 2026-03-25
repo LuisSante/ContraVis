@@ -3,33 +3,85 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
-	import { currentDocument, error, loading, paragraphs, selectedParagraph } from '$lib/stores/document';
+	import {
+		currentDocument,
+		error,
+		loading,
+		paragraphs,
+		selectedParagraph
+	} from '$lib/stores/document';
 	import { getAxiosErrorMessage } from '$lib/utils/http-error';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
 	import { detectDocxNoiseNodeIds } from '$lib/utils/docx/noise';
-	import type { 
-		AssistantChatMessage, AssistantChatRequest, AssistantContextNode, AssistantContextRelation, AssistantMode, 
-		AssistantProvider, AssistantScope, ChangeLogState, ContradictionAnalysisRequest, ContradictionParagraphResult, Edge as GraphEdge, Node as ParagraphNode, ParagraphEditState, 
-		RelatedParagraph, XmlNode, SimplifyResultState, SimplifyAuditRecord 
+	import type {
+		AssistantChatMessage,
+		AssistantChatRequest,
+		AssistantContextNode,
+		AssistantContextRelation,
+		AssistantMode,
+		AssistantProvider,
+		AssistantScope,
+		ChangeLogState,
+		ContradictionAnalysisRequest,
+		ContradictionParagraphResult,
+		Edge as GraphEdge,
+		Node as ParagraphNode,
+		ParagraphEditState,
+		RelatedParagraph,
+		XmlNode,
+		SimplifyResultState,
+		SimplifyAuditRecord
 	} from '$lib/types/document';
-	import { buildInspectorState, createEmptyInspectorState, 
-		focusNodeFromPanel as focusNodeFromInspectorPanel, toSelectedParagraphNode 
+	import {
+		buildInspectorState,
+		createEmptyInspectorState,
+		focusNodeFromPanel as focusNodeFromInspectorPanel,
+		toSelectedParagraphNode
 	} from '$lib/utils/docx/inspector';
 	import {
-		fetchAssistantResponse, fetchBackendGraph, fetchContradictionAnalysis, fetchSavedContradictions, fetchSimplifySelection, loadBrowserDocx4js, resolveDocumentMeta, updateRelationBadge
+		fetchAssistantResponse,
+		fetchBackendGraph,
+		fetchContradictionAnalysis,
+		fetchSavedContradictions,
+		fetchSimplifySelection,
+		loadBrowserDocx4js,
+		resolveDocumentMeta,
+		updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
-		buildChangeLog, ensureNodeEditState, formatReferenceSummary, getNodeCurrentText, truncateText
+		buildChangeLog,
+		ensureNodeEditState,
+		formatReferenceSummary,
+		getNodeCurrentText,
+		truncateText
 	} from '$lib/utils/edit';
-	import { 
-		COMMIT_SHORTCUT_HINT, COMMIT_SHORTCUT_LABEL, COMMIT_SHORTCUT_TOOLTIP, EDITABLE_PARAGRAPH_CLASSES, MAX_SIMPLIFY_AUDIT_TRAIL, 
-		CONTRADICTION_OPENAI_MODEL_OPTIONS, MODE_OPTIONS, PROVIDER_OPTIONS, QUICK_ACTIONS, SCOPE_OPTIONS
+	import {
+		COMMIT_SHORTCUT_HINT,
+		COMMIT_SHORTCUT_LABEL,
+		COMMIT_SHORTCUT_TOOLTIP,
+		EDITABLE_PARAGRAPH_CLASSES,
+		MAX_SIMPLIFY_AUDIT_TRAIL,
+		CONTRADICTION_OPENAI_MODEL_OPTIONS,
+		MODE_OPTIONS,
+		PROVIDER_OPTIONS,
+		QUICK_ACTIONS,
+		QUICK_ACTION_WHY_CONTRADICTION_AI,
+		QUICK_ACTION_WHY_CONTRADICTION_FREE,
+		SCOPE_OPTIONS
 	} from '$lib/constants/docx-viewer';
-	import { 
-		buildTargetForWholeParagraph, buildTargetFromSelectionRange, computeSimplifyToolbarPosition, 
-		normalizeBounds, preserveBoundaryWhitespace, replaceParagraphTextRange, type SimplifyTarget
+	import {
+		buildTargetForWholeParagraph,
+		buildTargetFromSelectionRange,
+		computeSimplifyToolbarPosition,
+		normalizeBounds,
+		preserveBoundaryWhitespace,
+		replaceParagraphTextRange,
+		type SimplifyTarget
 	} from '$lib/utils/docx/simplify-selection';
+	import HammerShieldIcon from '$lib/icons/HammerShieldIcon.svelte';
+	import LightningBoltIcon from '$lib/icons/LightningBoltIcon.svelte';
+	import SimplifyWandIcon from '$lib/icons/SimplifyWandIcon.svelte';
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -54,7 +106,7 @@
 
 	let assistantMode: AssistantMode = 'explain';
 	let assistantScope: AssistantScope = 'selected';
-	let assistantProvider: AssistantProvider = 'gemini';
+	let assistantProvider: AssistantProvider = 'openai';
 	let assistantInput = '';
 	let assistantMessages: AssistantChatMessage[] = [];
 	let assistantLoading = false;
@@ -68,13 +120,14 @@
 	let simplifyResult: SimplifyResultState | null = null;
 	let simplifyResultDiff: ChangeLogState = { hasChanges: false, oldSegments: [], newSegments: [] };
 	let simplifyLoading = false;
+	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
 	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
-	let contradictionModel = CONTRADICTION_OPENAI_MODEL_OPTIONS[0]?.value ?? 'gpt-4o-mini';
+	let contradictionModel = 'gpt-4.1';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	type ContradictionScrollMarker = {
 		paragraphId: string;
@@ -85,10 +138,15 @@
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 
-	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter((row) => row.contradiction).length;
+	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
+		(row) => row.contradiction
+	).length;
 
 	$: simplifyResultDiff = simplifyResult
-		? buildChangeLog(simplifyResult.payload.originalSnippet, simplifyResult.payload.simplifiedSnippet)
+		? buildChangeLog(
+				simplifyResult.payload.originalSnippet,
+				simplifyResult.payload.simplifiedSnippet
+			)
 		: { hasChanges: false, oldSegments: [], newSegments: [] };
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
@@ -172,7 +230,9 @@
 		}
 	}
 
-	function resolveContradictionConfidenceBand(confidence: number): ContradictionScrollMarker['confidenceBand'] {
+	function resolveContradictionConfidenceBand(
+		confidence: number
+	): ContradictionScrollMarker['confidenceBand'] {
 		let confidenceBand: ContradictionScrollMarker['confidenceBand'] = 'low';
 		if (confidence >= 80) confidenceBand = 'high';
 		else if (confidence >= 50) confidenceBand = 'medium';
@@ -388,7 +448,15 @@
 		void submitAssistantQuestion();
 	}
 
-	async function submitAssistantQuestion(questionOverride?: string) {
+	type SubmitAssistantQuestionOptions = {
+		mode?: AssistantMode;
+		scope?: AssistantScope;
+	};
+
+	async function submitAssistantQuestion(
+		questionOverride?: string,
+		options?: SubmitAssistantQuestionOptions
+	) {
 		if (assistantLoading) return;
 
 		const question = (questionOverride ?? assistantInput).trim();
@@ -405,7 +473,9 @@
 		}
 
 		const selected = get(selectedParagraph);
-		if (assistantScope === 'selected' && !selected) {
+		const resolvedScope = options?.scope ?? assistantScope;
+		const resolvedMode = options?.mode ?? assistantMode;
+		if (resolvedScope === 'selected' && !selected) {
 			assistantError = 'Select a paragraph before asking in selected-paragraph mode.';
 			return;
 		}
@@ -426,8 +496,8 @@
 		const payload: AssistantChatRequest = {
 			documentId: activeDocumentId,
 			question,
-			mode: assistantMode,
-			scope: assistantScope,
+			mode: resolvedMode,
+			scope: resolvedScope,
 			provider: assistantProvider,
 			selectedParagraphId: selected?.id ?? null,
 			relatedParagraphs: buildAssistantRelatedContext(),
@@ -435,7 +505,6 @@
 			history: buildAssistantHistoryPayload()
 		};
 
-		console.log("select", payload)
 		try {
 			const response = await fetchAssistantResponse(payload);
 			assistantMessages = [
@@ -449,10 +518,7 @@
 				}
 			];
 		} catch (assistantRequestError) {
-			const message = getAxiosErrorMessage(
-				assistantRequestError,
-				'Failed to generate a response.'
-			);
+			const message = getAxiosErrorMessage(assistantRequestError, 'Failed to generate a response.');
 			assistantError = message;
 			assistantMessages = [
 				...assistantMessages,
@@ -468,13 +534,97 @@
 		}
 	}
 
-	function askQuickAction(prompt: string) {
-		void submitAssistantQuestion(prompt);
+	function appendAssistantQuickActionMessage(content: string, citationId?: string) {
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'assistant',
+				content,
+				citations: citationId ? [{ id: citationId, excerpt: '(selected paragraph)' }] : undefined
+			}
+		];
+	}
+
+	async function askQuickAction(prompt: string) {
+		if (assistantLoading) return;
+		if (
+			prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
+			prompt === QUICK_ACTION_WHY_CONTRADICTION_AI
+		) {
+			const selected = get(selectedParagraph);
+			assistantError = null;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'user',
+					content: prompt
+				}
+			];
+
+			if (!selected) {
+				appendAssistantQuickActionMessage(
+					'Select a highlighted paragraph first, then run this contradiction quick action.'
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			const contradiction = contradictionResultsByParagraphId.get(selected.id);
+			if (!contradiction) {
+				appendAssistantQuickActionMessage(
+					'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.',
+					selected.id
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			if (!contradiction.contradiction) {
+				appendAssistantQuickActionMessage(
+					'This paragraph is not currently classified as contradiction.',
+					selected.id
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			if (prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE) {
+				const reason = (contradiction.brief_reason || 'No brief reason is available.').trim();
+				const confidence = Number.isFinite(contradiction.confidence) ? contradiction.confidence : 0;
+				appendAssistantQuickActionMessage(
+					[
+						`Free explanation for paragraph ${selected.id}:`,
+						reason,
+						`Confidence: ${confidence}%`,
+						'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.'
+					].join('\n\n'),
+					selected.id
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			const aiWhyQuestion = [
+				`Why is selected paragraph ${selected.id} a contradiction?`,
+				'Point to exact conflicting statements and explain why they cannot both be true.',
+				'Cite paragraph IDs from the selected paragraph and its related context.'
+			].join(' ');
+
+			await submitAssistantQuestion(aiWhyQuestion, {
+				mode: 'explain',
+				scope: 'selected'
+			});
+			return;
+		}
+
+		await submitAssistantQuestion(prompt);
 	}
 
 	function handleQuickActionSelectionChange() {
 		if (!selectedQuickAction) return;
-		askQuickAction(selectedQuickAction);
+		void askQuickAction(selectedQuickAction);
 		selectedQuickAction = '';
 	}
 
@@ -493,7 +643,11 @@
 	}
 
 	function setSimplifyToolbarPosition(anchorRect: DOMRect) {
-		const { left, top } = computeSimplifyToolbarPosition(anchorRect, window.innerWidth);
+		const { left, top } = computeSimplifyToolbarPosition(
+			anchorRect,
+			window.innerWidth,
+			window.innerHeight
+		);
 		simplifyToolbarLeft = left;
 		simplifyToolbarTop = top;
 	}
@@ -537,6 +691,74 @@
 		return simplifyTarget;
 	}
 
+	async function runFixContradiction() {
+		if (fixContradictionLoading || assistantLoading || simplifyLoading) return;
+		if (!activeDocumentId) {
+			simplifyError = 'No document is loaded.';
+			return;
+		}
+
+		const target = resolveActiveSimplifyTarget();
+		if (!target) {
+			simplifyError = 'Select text in a paragraph or focus a paragraph to fix contradictions.';
+			return;
+		}
+
+		const paragraphNode = get(paragraphs).find((node) => node.id === target.paragraphId) ?? null;
+		if (paragraphNode) setSelectedParagraphNode(paragraphNode);
+
+		const contradiction = contradictionResultsByParagraphId.get(target.paragraphId);
+		if (!contradiction) {
+			appendAssistantQuickActionMessage(
+				'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.',
+				target.paragraphId
+			);
+			await scrollAssistantToBottom();
+			return;
+		}
+
+		if (!contradiction.contradiction) {
+			appendAssistantQuickActionMessage(
+				'This paragraph is not currently classified as contradiction.',
+				target.paragraphId
+			);
+			await scrollAssistantToBottom();
+			return;
+		}
+
+		const bounds = normalizeBounds(
+			target.selectionStart,
+			target.selectionEnd,
+			target.paragraphText.length
+		);
+		const selectedSnippet =
+			bounds.end > bounds.start ? target.paragraphText.slice(bounds.start, bounds.end).trim() : '';
+
+		const fixPrompt = [
+			`Fix contradiction for paragraph ${target.paragraphId}.`,
+			`Current contradiction signal: ${contradiction.brief_reason || 'no brief reason provided'}.`,
+			'Rewrite the paragraph to remove the contradiction while preserving legal intent, obligations, dates, numbers, and defined terms whenever possible.',
+			selectedSnippet
+				? `Prioritize fixing this selected snippet: "${selectedSnippet}"`
+				: 'Fix the whole selected paragraph.',
+			'Return in this order:',
+			'1) Rewritten paragraph',
+			'2) What changed',
+			'3) Why contradiction is resolved'
+		].join('\n');
+
+		fixContradictionLoading = true;
+		simplifyError = null;
+		try {
+			await submitAssistantQuestion(fixPrompt, {
+				mode: 'explain',
+				scope: 'selected'
+			});
+		} finally {
+			fixContradictionLoading = false;
+		}
+	}
+
 	async function runSimplify() {
 		if (simplifyLoading) return;
 		if (!activeDocumentId) {
@@ -556,7 +778,8 @@
 			target.paragraphText.length
 		);
 		const selectionStart = safeBounds.start;
-		const selectionEnd = safeBounds.end === safeBounds.start ? target.paragraphText.length : safeBounds.end;
+		const selectionEnd =
+			safeBounds.end === safeBounds.start ? target.paragraphText.length : safeBounds.end;
 
 		simplifyLoading = true;
 		simplifyError = null;
@@ -772,7 +995,9 @@
 			const nodesById = new Map<string, ParagraphNode>();
 			const syncParagraphNodeStore = () => {
 				paragraphs.set(
-					Array.from(nodesById.values()).sort((left, right) => left.paragraph_enum - right.paragraph_enum)
+					Array.from(nodesById.values()).sort(
+						(left, right) => left.paragraph_enum - right.paragraph_enum
+					)
 				);
 			};
 			const removeParagraphNode = (
@@ -974,7 +1199,9 @@
 	<div
 		class="flex w-[60%] min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
 	>
-		<header class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3">
+		<header
+			class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3"
+		>
 			<div class="min-w-0">
 				<div class="truncate text-sm font-semibold text-gray-800">
 					{activeDocumentName || 'No document selected'}
@@ -1011,7 +1238,9 @@
 		</header>
 
 		{#if contradictionLoading || contradictionError || contradictionResultsByParagraphId.size > 0}
-			<div class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600">
+			<div
+				class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600"
+			>
 				{#if contradictionLoading}
 					<p>Processing contradiction classification...</p>
 				{:else if contradictionError}
@@ -1101,7 +1330,9 @@
 							</div>
 
 							<div class="bg-green-50/20 px-3 py-2">
-								<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Modified</span>
+								<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
+									>Modified</span
+								>
 								<p class="font-mono leading-relaxed text-green-800">
 									{#each selectedChangeLog.newSegments as segment}
 										{#if segment.changed}
@@ -1125,13 +1356,17 @@
 
 							<div class="space-y-2 p-2.5">
 								{#if simplifyLoading}
-									<div class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500">
+									<div
+										class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500"
+									>
 										Simplifying selected text...
 									</div>
 								{/if}
 
 								{#if simplifyError}
-									<div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
+									<div
+										class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700"
+									>
 										{simplifyError}
 									</div>
 								{/if}
@@ -1139,14 +1374,18 @@
 								{#if simplifyResult}
 									<div class="rounded border border-gray-100 text-[11px]">
 										<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-gray-400 uppercase">Original</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-gray-700">
+											<span class="mb-1 block text-[8px] font-bold text-gray-400 uppercase"
+												>Original</span
+											>
+											<p class="font-mono leading-relaxed whitespace-pre-wrap text-gray-700">
 												{simplifyResult.payload.originalSnippet}
 											</p>
 										</div>
 										<div class="px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-blue-300 uppercase">Simplified</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-blue-900">
+											<span class="mb-1 block text-[8px] font-bold text-blue-300 uppercase"
+												>Simplified</span
+											>
+											<p class="font-mono leading-relaxed whitespace-pre-wrap text-blue-900">
 												{simplifyResult.payload.simplifiedSnippet}
 											</p>
 										</div>
@@ -1154,8 +1393,10 @@
 
 									<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
 										<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original Diff</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-red-700/80">
+											<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase"
+												>Original Diff</span
+											>
+											<p class="font-mono leading-relaxed whitespace-pre-wrap text-red-700/80">
 												{#each simplifyResultDiff.oldSegments as segment}
 													{#if segment.changed}
 														<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
@@ -1167,8 +1408,10 @@
 										</div>
 
 										<div class="bg-green-50/20 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Simplified Diff</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-green-800">
+											<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
+												>Simplified Diff</span
+											>
+											<p class="font-mono leading-relaxed whitespace-pre-wrap text-green-800">
 												{#each simplifyResultDiff.newSegments as segment}
 													{#if segment.changed}
 														<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
@@ -1180,7 +1423,9 @@
 										</div>
 									</div>
 
-									<div class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500">
+									<div
+										class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500"
+									>
 										<p>
 											evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
 											{simplifyResult.payload.evidence.selection_start}-
@@ -1223,7 +1468,7 @@
 			</div>
 		</div>
 
-			<div class="grid min-h-0 flex-1 grid-rows-[minmax(0,1.15fr)_minmax(0,1fr)]">
+		<div class="grid min-h-0 flex-1 grid-rows-[minmax(0,1.15fr)_minmax(0,1fr)]">
 			<section class="flex min-h-0 flex-col border-b border-gray-200">
 				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
 					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
@@ -1236,20 +1481,10 @@
 				>
 					{#if !$selectedParagraph}
 						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-							<svg
-								class="mb-2 h-6 w-6 opacity-20"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								/>
-							</svg>
-							<p class="text-[10px] font-medium tracking-widest uppercase">Select text to analyze</p>
+							<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
+							<p class="text-[10px] font-medium tracking-widest uppercase">
+								Select text to analyze
+							</p>
 						</div>
 					{:else if selectedRelatedParagraphs.length === 0}
 						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
@@ -1305,7 +1540,9 @@
 			</section>
 
 			<section class="flex min-h-0 flex-col bg-white">
-				<header class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+				<header
+					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
+				>
 					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
 						What-if Contract Assistant
 					</h3>
@@ -1319,38 +1556,36 @@
 					</select>
 				</header>
 
-					<div
-						class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2"
+				<div class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2">
+					<select
+						bind:value={assistantMode}
+						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
 					>
-						<select
-							bind:value={assistantMode}
-							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-						>
-							{#each MODE_OPTIONS as option}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
+						{#each MODE_OPTIONS as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
 
-						<select
-							bind:value={assistantScope}
-							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-						>
-							{#each SCOPE_OPTIONS as option}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
+					<select
+						bind:value={assistantScope}
+						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+					>
+						{#each SCOPE_OPTIONS as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
 
-						<select
-							bind:value={selectedQuickAction}
-							on:change={handleQuickActionSelectionChange}
-							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-						>
-							<option value="">Quick Action</option>
-							{#each QUICK_ACTIONS as action}
-								<option value={action}>{action}</option>
-							{/each}
-						</select>
-					</div>
+					<select
+						bind:value={selectedQuickAction}
+						on:change={handleQuickActionSelectionChange}
+						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+					>
+						<option value="">Quick Action</option>
+						{#each QUICK_ACTIONS as action}
+							<option value={action}>{action}</option>
+						{/each}
+					</select>
+				</div>
 
 				<div
 					bind:this={assistantThread}
@@ -1411,7 +1646,9 @@
 
 					{#if assistantLoading}
 						<div class="flex justify-start">
-							<div class="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[11px] text-gray-500">
+							<div
+								class="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[11px] text-gray-500"
+							>
 								Analyzing contract context...
 							</div>
 						</div>
@@ -1433,14 +1670,14 @@
 						placeholder="What happens if I don't?, Can I terminate?, Who is liable?"
 						bind:value={assistantInput}
 						on:keydown={handleAssistantInputKeydown}
-						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 outline-none transition focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
+						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 transition outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
 					></textarea>
 					<div class="mt-1.5 flex items-center justify-between">
-							<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
+						<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
 						<button
 							type="submit"
 							disabled={assistantLoading || !assistantInput.trim()}
-							class="rounded border border-gray-200 bg-white px-3 py-1 text-[10px] font-bold text-gray-600 transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+							class="rounded border border-gray-200 bg-white px-3 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
 						>
 							Ask
 						</button>
@@ -1452,17 +1689,58 @@
 
 	{#if simplifyToolbarVisible && simplifyTarget}
 		<div
-			class="fixed z-40 rounded-md border border-gray-200 bg-white p-1 shadow-lg"
+			class="fixed z-40 w-52 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
 			style={`top: ${simplifyToolbarTop}px; left: ${simplifyToolbarLeft}px;`}
 		>
+			<p class="px-1 pb-1 text-[9px] font-bold tracking-[0.12em] text-slate-400 uppercase">
+				Paragraph Tools
+			</p>
+			<div class="flex flex-col gap-1.5">
+				<button
+					type="button"
+					class="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-800 transition hover:border-amber-300 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+					disabled={fixContradictionLoading || assistantLoading || simplifyLoading}
+					on:mousedown|preventDefault
+					on:click={() => void runFixContradiction()}
+				>
+					<span class="inline-flex items-center gap-1.5">
+						<HammerShieldIcon className="h-3.5 w-3.5" />
+						<span>{fixContradictionLoading ? 'Fixing...' : 'Fix contradiction'}</span>
+					</span>
+					<span
+						class="rounded border border-amber-300 bg-white px-1 py-0.5 text-[8px] font-black text-amber-700"
+					>
+						AI
+					</span>
+				</button>
+
+				<button
+					type="button"
+					class="flex items-center justify-between rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+					disabled={simplifyLoading || fixContradictionLoading}
+					on:mousedown|preventDefault
+					on:click={() => void runSimplify()}
+				>
+					<span class="inline-flex items-center gap-1.5">
+						<SimplifyWandIcon className="h-3.5 w-3.5" />
+						<span>{simplifyLoading ? 'Simplifying...' : 'Simplify'}</span>
+					</span>
+					<span
+						class="rounded border border-sky-300 bg-white px-1 py-0.5 text-[8px] font-black text-sky-700"
+					>
+						AI
+					</span>
+				</button>
+			</div>
 			<button
+				class="mt-2 w-full rounded border border-gray-200 bg-white px-2 py-1 text-[9px] font-semibold text-gray-500 transition hover:border-gray-300 hover:bg-gray-50"
 				type="button"
-				class="rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-bold text-gray-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-				disabled={simplifyLoading}
 				on:mousedown|preventDefault
-				on:click={() => void runSimplify()}
+				on:click={() => {
+					simplifyToolbarVisible = false;
+				}}
 			>
-				{simplifyLoading ? 'Simplifying...' : 'Simplify'}
+				Close tools
 			</button>
 		</div>
 	{/if}
