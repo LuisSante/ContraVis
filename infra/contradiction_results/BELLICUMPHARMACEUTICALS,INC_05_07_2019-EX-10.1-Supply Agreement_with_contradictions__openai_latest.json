@@ -1,0 +1,2355 @@
+{
+  "documentId": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions",
+  "provider": "openai",
+  "temperature": 0.3,
+  "savedAt": "2026-03-25T03:05:30.524117+00:00",
+  "paragraphResults": [
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-2",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is a confidentiality legend and does not contain any mutually incompatible statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-3",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a heading/title and contains no statements that could be contradictory."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-5",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is a reference to a contract number and contains no substantive statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-6",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a standard introductory clause with party definitions and contains no conflicting obligations or rights."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-7",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and contains no statements that could be contradictory."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-8",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes Miltenyi's technology and expertise and contains no mutually incompatible statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-9",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes Bellicum's business focus and contains no conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-10",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "This paragraph states Bellicum will use Miltenyi Products in the development and manufacture of Bellicum Products, but related paragraph 112 prohibits use of Miltenyi Products as an ingredient of a Bellicum Product, creating a direct contradiction."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-11",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a general statement of intent to buy and sell products and contains no conflicting obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-12",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a standard preamble to the agreement and contains no substantive or conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-13",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and contains no statements that could be contradictory."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-14",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is an introductory definition section and contains no conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-15",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a cross-reference definition and contains no substantive or conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-16",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a definition clause and contains no mutually incompatible statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-21",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a continuation of the definition of 'Affiliate' and contains no conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-22",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a definition of 'Agreed Standards' and contains no mutually incompatible statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-23",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a definition of 'Agreement' and contains no conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-24",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a definition of 'Applicable Laws' and contains no mutually incompatible statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-25",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a definition of 'Bellicum Product' and contains no conflicting statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-26",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a definition of 'Bellicum Program' and contains no mutually incompatible statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-27",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-28",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-29",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-30",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-31",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-37",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-38",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-39",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-40",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-41",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-42",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-43",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-44",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-45",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-46",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-47",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-48",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-49",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-50",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-51",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-52",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-58",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-59",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-60",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-61",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-62",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-63",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-64",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-65",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-66",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-67",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-73",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-74",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-75",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-76",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-77",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-78",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-79",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-80",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-81",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-82",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-83",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-84",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-85",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-86",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-87",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-88",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-96",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-97",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-98",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-99",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-100",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-101",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-102",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-103",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-109",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-110",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-111",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-112",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-113",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-114",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-115",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-116",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-117",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-118",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-126",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-127",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-128",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-129",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-130",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-131",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-132",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-133",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-134",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-142",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-143",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-144",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-145",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-146",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-147",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-153",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-154",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-155",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-156",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-157",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-158",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-159",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-160",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-161",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-169",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-170",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-171",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-172",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-173",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-174",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-175",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-176",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-184",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-185",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-186",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-187",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-188",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-189",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-197",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-198",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-199",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-200",
+      "contradiction": false,
+      "confidence": 90,
+      "brief_reason": "The paragraph is consistent with related provisions, allowing for continued supply except in specific cases, with timelines and exceptions clarified elsewhere."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-208",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "This paragraph states Bellicum has no obligation to purchase Miltenyi Products after a Material Change, but related paragraph (h) requires obligations to resume in certain cases, creating a direct conflict."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-209",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "This paragraph requires continued supply after 6 months if Bellicum rejects a Material Change, contradicting the 6-month supply limit in subsection (g) and the no-purchase obligation in p-208."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-210",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a clear carve-out for Research Grade Products and does not conflict with other provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-211",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph simply allocates responsibility for regulatory costs and does not conflict with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-212",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not contain substantive obligations or statements."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-213",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not present any statements that could conflict."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-214",
+      "contradiction": false,
+      "confidence": 90,
+      "brief_reason": "This paragraph is consistent with related paragraphs, assigning regulatory responsibility to Bellicum with carve-outs."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-215",
+      "contradiction": false,
+      "confidence": 90,
+      "brief_reason": "This paragraph is consistent with related paragraphs, assigning regulatory responsibility to Miltenyi with carve-outs."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-216",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a disclaimer and does not contradict other obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-224",
+      "contradiction": false,
+      "confidence": 90,
+      "brief_reason": "This paragraph clarifies responsibility for regulatory compliance and is consistent with related obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-225",
+      "contradiction": false,
+      "confidence": 90,
+      "brief_reason": "This paragraph is consistent with the contract's allocation of regulatory responsibility to Bellicum."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-226",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes regulatory requirements and Miltenyi's obligations, which are not contradicted elsewhere."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-227",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes regulatory work and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-228",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the process for requesting additional regulatory work and does not contradict other provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-236",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph clarifies amendment procedures and is not in conflict with other provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-237",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is consistent with related provisions regarding access to Master Files."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-238",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is consistent with the contract's allocation of rights to Master Files."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-239",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not contain substantive obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-240",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph sets out notification requirements and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-241",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph clarifies responsibility for regulatory communications and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-249",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is a procedural clarification and does not contradict other provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-250",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes required communications and is consistent with the contract's structure."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-251",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes assistance and liability allocation, consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-252",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes procedures for additional filings and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-253",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a standard disclaimer and does not contradict other provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-261",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not contain substantive obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-262",
+      "contradiction": false,
+      "confidence": 90,
+      "brief_reason": "This paragraph is consistent with related provisions, setting out the general forecasting framework."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-263",
+      "contradiction": true,
+      "confidence": 98,
+      "brief_reason": "This paragraph contains two directly conflicting statements about whether the first three months of each Monthly Forecast are binding or not."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-264",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes non-binding quarterly forecasts and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-272",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes non-binding long-term forecasts and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-273",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the procedure if forecasts are not updated and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-274",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes acceptable forecast variances and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-275",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not contain substantive obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-276",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes volume limitations and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-277",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes procedures for supply shortfalls and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-278",
+      "contradiction": false,
+      "confidence": 95,
+      "brief_reason": "This paragraph describes binding Firm Zone requirements, which are consistent with the overall forecasting framework except for the contradiction in p-263."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-286",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the consequences of failing to meet Firm Zone requirements and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-287",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph sets out a general framework for purchase orders and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-288",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the purchase order process and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-289",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes purchase order details and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-290",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes purchase order timing and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-291",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes purchase order acceptance and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-292",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph clarifies that the agreement terms supersede conflicting purchase order terms, which is standard and not contradictory."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-300",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph clarifies purchase order requirements and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-301",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes procedures for safety issues and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-302",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes changes to purchase orders and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-303",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes minimum purchase requirements and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-304",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a partial sentence and does not present a contradiction."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-305",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is consistent with related provisions regarding continuous supply."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-306",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph references regulatory work obligations and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-307",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the procedure for resuming supply after a shortfall and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-308",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not contain substantive obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-309",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section heading and does not contain substantive obligations."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-310",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes delivery terms and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-318",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a continuation of delivery terms and does not contradict other provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-319",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes shipping arrangements and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-320",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes inspection upon delivery and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-321",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes labeling and packaging and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-322",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes procedures for delivery variances and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-323",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes title, risk, and replacement for damaged goods and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-324",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes partial delivery procedures and is consistent with related provisions."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-325",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-333",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-334",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-335",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-336",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-337",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-338",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-346",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-347",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-348",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-349",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-350",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-351",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-352",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-360",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-361",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-362",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-363",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-364",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-365",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-366",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-367",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-375",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-376",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-377",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-378",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-379",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-380",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-381",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-382",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-383",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-384",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-385",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-393",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-394",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-395",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-396",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-397",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-405",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-406",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-407",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-408",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-409",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-410",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-411",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-419",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-420",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-421",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-422",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-423",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-424",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-432",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-433",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-434",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-435",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-436",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-437",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-438",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-439",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-440",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-448",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-449",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-450",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-451",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-452",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-453",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-454",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-455",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-456",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-457",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-458",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-459",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-460",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-461",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-462",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-470",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-471",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-472",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-473",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-474",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-475",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "The warranty in Section 11.1 is expressly made subject to Section 11.4 (Disclaimer), so the obligations are not mutually incompatible."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-476",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-477",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-478",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-479",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-480",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-481",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-487",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-488",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "The representations and warranties in Section 11.2 are not contradicted by the related disclaimers or limitations, as the disclaimers carve out specific exceptions and do not negate the warranties."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-489",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-490",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-491",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-492",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-493",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-494",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-495",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-496",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-497",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-498",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-506",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-507",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-508",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-509",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "Section 11.1 warranty is limited by Section 11.4 and 11.5, and the exclusion of liability for post-delivery issues is not a contradiction but a limitation."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-510",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "The limitation of Miltenyi's warranty regarding third-party rights is not a contradiction but a clarification of scope."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-511",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-512",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "The paragraph clarifies that Article 7 remedies are exclusive for warranty breach, which is not contradictory to the warranty itself."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-513",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-521",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-522",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-523",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-524",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-525",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-526",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-527",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-528",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-529",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-537",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-538",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-539",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-540",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-548",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-549",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-550",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-551",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-557",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-558",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-559",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-560",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-561",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-562",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-563",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-564",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-572",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-573",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-574",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-575",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-576",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-577",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-578",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-579",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-587",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-588",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-589",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-590",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-591",
+      "contradiction": false,
+      "confidence": 95,
+      "brief_reason": "Paragraph 15.7 lists exceptions and cross-references other provisions that survive termination, which is consistent with standard survival clauses and does not contradict the general rule that rights and obligations terminate upon termination."
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-592",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-593",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-601",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-602",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-603",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-604",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-605",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-606",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-607",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-608",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-609",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-610",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-618",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-619",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-620",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-621",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-622",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-623",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-624",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-625",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-633",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-634",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-635",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-636",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-637",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-638",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-639",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-647",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-648",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-649",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-650",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-651",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-657",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-658",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-659",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-660",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-661",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-662",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-663",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-664",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-665",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-670",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-672",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-673",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-674",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-680",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-687",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-694",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-695",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-696",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-697",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-703",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-710",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-711",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-718",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-719",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-731",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    },
+    {
+      "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-732",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": ""
+    }
+  ],
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 278929, \"estimated_output_tokens_total\": 16422, \"estimated_cost_usd\": \"0.689234\", \"batches\": [{\"batch\": 1, \"rows\": 126, \"estimated_input_tokens\": 73488, \"estimated_output_tokens\": 5292, \"estimated_cost_usd\": \"0.189312\", \"response_chars\": 6133, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-2\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"This paragraph is a confidentiality legend and does not contain any mutually incompatible statements.\\\"\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-3\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\"}, {\"batch\": 2, \"rows\": 62, \"estimated_input_tokens\": 74856, \"estimated_output_tokens\": 2604, \"estimated_cost_usd\": \"0.170544\", \"response_chars\": 19156, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-200\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 90,\\n      \\\"brief_reason\\\": \\\"The paragraph is consistent with related provisions, allowing for continued supply except in specific cases, with timelines and exceptions clarified elsewhere.\\\"\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradic\"}, {\"batch\": 3, \"rows\": 116, \"estimated_input_tokens\": 74406, \"estimated_output_tokens\": 4872, \"estimated_cost_usd\": \"0.187788\", \"response_chars\": 1809, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-475\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"The warranty in Section 11.1 is expressly made subject to Section 11.4 (Disclaimer), so the obligations are not mutually incompatible.\\\"\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-488\\\",\\n      \\\"con\"}, {\"batch\": 4, \"rows\": 87, \"estimated_input_tokens\": 56179, \"estimated_output_tokens\": 3654, \"estimated_cost_usd\": \"0.141590\", \"response_chars\": 481, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-591\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 95,\\n      \\\"brief_reason\\\": \\\"Paragraph 15.7 lists exceptions and cross-references other provisions that survive termination, which is consistent with standard survival clauses and does not contradict the general rule that rights and obligations terminate upon termination.\\\"\\n    }\\n  ]\\n}\"}]}"
+}
