@@ -140,6 +140,20 @@
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
+	type RightPanelTab = 'related' | 'revisions' | 'assistant';
+	const RIGHT_PANEL_TABS: Array<{ id: RightPanelTab; label: string }> = [
+		{ id: 'related', label: 'Related Paragraphs' },
+		{ id: 'revisions', label: 'Paragraph Revisions' },
+		{ id: 'assistant', label: 'Contract Chat Assistant' }
+	];
+	const RIGHT_PANEL_MIN_WIDTH = 360;
+	const RIGHT_PANEL_DEFAULT_WIDTH = 540;
+	const RIGHT_PANEL_MAX_RATIO = 0.68;
+	const RIGHT_PANEL_KEYBOARD_STEP = 24;
+	let activeRightPanelTab: RightPanelTab = 'related';
+	let rightPanelWidth = RIGHT_PANEL_DEFAULT_WIDTH;
+	let isResizingRightPanel = false;
+	let isCompactLayout = false;
 
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
 		(row) => row.contradiction
@@ -1184,20 +1198,75 @@
 		await renderDocument(docId);
 	}
 
+	function clampRightPanelWidth(nextWidth: number): number {
+		const viewportWidth = window.innerWidth || RIGHT_PANEL_DEFAULT_WIDTH;
+		const maxWidth = Math.max(RIGHT_PANEL_MIN_WIDTH, Math.floor(viewportWidth * RIGHT_PANEL_MAX_RATIO));
+		return Math.min(Math.max(nextWidth, RIGHT_PANEL_MIN_WIDTH), maxWidth);
+	}
+
+	function setRightPanelWidth(nextWidth: number) {
+		rightPanelWidth = clampRightPanelWidth(nextWidth);
+	}
+
+	function refreshViewportMode() {
+		isCompactLayout = window.innerWidth < 1024;
+	}
+
+	function stopRightPanelResize() {
+		if (!isResizingRightPanel) return;
+		isResizingRightPanel = false;
+		window.removeEventListener('mousemove', handleRightPanelResizeMove);
+		window.removeEventListener('mouseup', stopRightPanelResize);
+		document.body.style.userSelect = '';
+	}
+
+	function handleRightPanelResizeMove(event: MouseEvent) {
+		const desiredWidth = window.innerWidth - event.clientX;
+		setRightPanelWidth(desiredWidth);
+	}
+
+	function startRightPanelResize(event: MouseEvent) {
+		if (window.innerWidth < 1024) return;
+		event.preventDefault();
+		isResizingRightPanel = true;
+		document.body.style.userSelect = 'none';
+		window.addEventListener('mousemove', handleRightPanelResizeMove);
+		window.addEventListener('mouseup', stopRightPanelResize);
+	}
+
+	function handleRightPanelResizeKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			setRightPanelWidth(rightPanelWidth + RIGHT_PANEL_KEYBOARD_STEP);
+			return;
+		}
+		if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			setRightPanelWidth(rightPanelWidth - RIGHT_PANEL_KEYBOARD_STEP);
+		}
+	}
+
 	onMount(() => {
 		const handleDocumentSelectionChange = () => {
 			refreshSimplifyTarget();
 			scheduleContradictionScrollMarkerRefresh();
 		};
+		const handleViewportResize = () => {
+			refreshViewportMode();
+			handleDocumentSelectionChange();
+			setRightPanelWidth(rightPanelWidth);
+		};
 
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
 		document.addEventListener('mouseup', handleDocumentSelectionChange);
 		document.addEventListener('keyup', handleDocumentSelectionChange);
-		window.addEventListener('resize', handleDocumentSelectionChange);
+		window.addEventListener('resize', handleViewportResize);
 		window.addEventListener('scroll', handleDocumentSelectionChange, true);
 		documentScrollHost?.addEventListener('scroll', handleDocumentSelectionChange, {
 			passive: true
 		});
+		refreshViewportMode();
+		setRightPanelWidth(rightPanelWidth);
 
 		if (typeof ResizeObserver !== 'undefined') {
 			contradictionMarkerResizeObserver = new ResizeObserver(() => {
@@ -1218,9 +1287,10 @@
 			document.removeEventListener('selectionchange', handleDocumentSelectionChange);
 			document.removeEventListener('mouseup', handleDocumentSelectionChange);
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
-			window.removeEventListener('resize', handleDocumentSelectionChange);
+			window.removeEventListener('resize', handleViewportResize);
 			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
+			stopRightPanelResize();
 			contradictionMarkerResizeObserver?.disconnect();
 			contradictionMarkerResizeObserver = null;
 			if (contradictionMarkerFrame != null) {
@@ -1234,7 +1304,8 @@
 
 <main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans max-lg:flex-col">
 	<div
-		class="flex w-[60%] min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
+		class="flex min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
+		style={isCompactLayout ? '' : `width: calc(100% - ${rightPanelWidth}px);`}
 	>
 		<header
 			class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3"
@@ -1320,174 +1391,213 @@
 		</div>
 	</div>
 
-	<aside
-		class="flex min-h-0 w-[40%] flex-col overflow-hidden bg-white shadow-xl max-lg:h-[42%] max-lg:w-full"
+	<div
+		role="separator"
+		aria-orientation="vertical"
+		aria-label="Resize right panel"
+		tabindex="0"
+		class="relative hidden w-1 flex-none cursor-col-resize bg-gray-200 transition hover:bg-blue-300 focus:bg-blue-400 focus:outline-none lg:block"
+		on:mousedown={startRightPanelResize}
+		on:keydown={handleRightPanelResizeKeydown}
 	>
-		<div class="flex flex-none flex-col border-b border-gray-200">
-			<header
-				class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
-			>
-				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Paragraph Revisions</h3>
-				<div class="group relative inline-flex">
-					<span
-						class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
-						title={COMMIT_SHORTCUT_HINT}
-					>
-						{COMMIT_SHORTCUT_LABEL}
-					</span>
-					<div
-						class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
-							? 'animate-bounce'
-							: ''}"
-					>
-						{COMMIT_SHORTCUT_TOOLTIP}
+		<span
+			class="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400/70"
+		></span>
+	</div>
+
+	<aside
+		class="flex min-h-0 flex-col overflow-hidden bg-white shadow-xl max-lg:h-[42%] max-lg:w-full"
+		style={isCompactLayout ? '' : `width: ${rightPanelWidth}px;`}
+	>
+		<header
+			role="tablist"
+			aria-label="Right panel tabs"
+			class="flex flex-none items-end border-b border-gray-300 bg-gray-100 px-2 pt-2"
+		>
+			{#each RIGHT_PANEL_TABS as tab (tab.id)}
+				<button
+					type="button"
+					role="tab"
+					aria-selected={activeRightPanelTab === tab.id}
+					on:click={() => (activeRightPanelTab = tab.id)}
+					class={`-mb-px mr-1 rounded-t-md border px-3 py-1.5 text-[10px] font-semibold transition focus:outline-none ${
+						activeRightPanelTab === tab.id
+							? 'border-gray-300 border-b-white bg-white text-gray-800'
+							: 'border-transparent bg-gray-200 text-gray-600 hover:bg-gray-300/60 hover:text-gray-800'
+					}`}
+				>
+					{tab.label}
+				</button>
+			{/each}
+		</header>
+
+		{#if activeRightPanelTab === 'revisions'}
+			<section class="flex min-h-0 flex-1 flex-col">
+				<header
+					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
+				>
+					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+						Paragraph Revisions
+					</h3>
+					<div class="group relative inline-flex">
+						<span
+							class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
+							title={COMMIT_SHORTCUT_HINT}
+						>
+							{COMMIT_SHORTCUT_LABEL}
+						</span>
+						<div
+							class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
+								? 'animate-bounce'
+								: ''}"
+						>
+							{COMMIT_SHORTCUT_TOOLTIP}
+						</div>
 					</div>
-				</div>
-			</header>
+				</header>
 
-			<div class="max-h-[35vh] overflow-y-auto p-3">
-				<div class="space-y-2">
-					{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
-						<div class="flex flex-col items-center justify-center py-2 text-gray-300">
-							<p class="text-[10px] italic">No active changes</p>
-						</div>
-					{:else}
-						<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-							<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-								<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
-								<p class="font-mono leading-relaxed text-red-700/80">
-									{#each selectedChangeLog.oldSegments as segment}
-										{#if segment.changed}
-											<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-										{:else}
-											<span>{segment.value}</span>
-										{/if}
-									{/each}
-								</p>
+				<div class="min-h-0 flex-1 overflow-y-auto p-3">
+					<div class="space-y-2">
+						{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
+							<div class="flex flex-col items-center justify-center py-2 text-gray-300">
+								<p class="text-[10px] italic">No active changes</p>
 							</div>
+						{:else}
+							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+								<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+									<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
+									<p class="font-mono leading-relaxed text-red-700/80">
+										{#each selectedChangeLog.oldSegments as segment}
+											{#if segment.changed}
+												<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+											{:else}
+												<span>{segment.value}</span>
+											{/if}
+										{/each}
+									</p>
+								</div>
 
-							<div class="bg-green-50/20 px-3 py-2">
-								<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
-									>Modified</span
-								>
-								<p class="font-mono leading-relaxed text-green-800">
-									{#each selectedChangeLog.newSegments as segment}
-										{#if segment.changed}
-											<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-										{:else}
-											<span>{segment.value}</span>
-										{/if}
-									{/each}
-								</p>
-							</div>
-						</div>
-					{/if}
-
-					{#if simplifyResult || simplifyLoading || simplifyError}
-						<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-							<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-1.5">
-								<span class="block text-[8px] font-bold text-gray-400 uppercase">
-									Simplify Selection
-								</span>
-							</div>
-
-							<div class="space-y-2 p-2.5">
-								{#if simplifyLoading}
-									<div
-										class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500"
+								<div class="bg-green-50/20 px-3 py-2">
+									<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
+										>Modified</span
 									>
-										Simplifying selected text...
-									</div>
-								{/if}
+									<p class="font-mono leading-relaxed text-green-800">
+										{#each selectedChangeLog.newSegments as segment}
+											{#if segment.changed}
+												<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+											{:else}
+												<span>{segment.value}</span>
+											{/if}
+										{/each}
+									</p>
+								</div>
+							</div>
+						{/if}
 
-								{#if simplifyError}
-									<div
-										class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700"
-									>
-										{simplifyError}
-									</div>
+						{#if simplifyResult || simplifyLoading || simplifyError}
+							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+								<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-1.5">
+									<span class="block text-[8px] font-bold text-gray-400 uppercase">
+										Simplify Selection
+									</span>
+								</div>
+
+								<div class="space-y-2 p-2.5">
+									{#if simplifyLoading}
+										<div
+											class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500"
+										>
+											Simplifying selected text...
+										</div>
+									{/if}
+
+									{#if simplifyError}
+										<div
+											class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700"
+										>
+											{simplifyError}
+										</div>
 									{/if}
 
 									{#if simplifyResult}
 										<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
 											<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
 												<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase"
-												>Original Diff</span
-											>
-											<p class="font-mono leading-relaxed whitespace-pre-wrap text-red-700/80">
-												{#each simplifyResultDiff.oldSegments as segment}
-													{#if segment.changed}
-														<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-													{:else}
-														<span>{segment.value}</span>
-													{/if}
-												{/each}
-											</p>
+													>Original Diff</span
+												>
+												<p class="font-mono leading-relaxed whitespace-pre-wrap text-red-700/80">
+													{#each simplifyResultDiff.oldSegments as segment}
+														{#if segment.changed}
+															<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+														{:else}
+															<span>{segment.value}</span>
+														{/if}
+													{/each}
+												</p>
+											</div>
+
+											<div class="bg-green-50/20 px-3 py-2">
+												<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
+													>Simplified Diff</span
+												>
+												<p class="font-mono leading-relaxed whitespace-pre-wrap text-green-800">
+													{#each simplifyResultDiff.newSegments as segment}
+														{#if segment.changed}
+															<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+														{:else}
+															<span>{segment.value}</span>
+														{/if}
+													{/each}
+												</p>
+											</div>
 										</div>
 
-										<div class="bg-green-50/20 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
-												>Simplified Diff</span
-											>
-											<p class="font-mono leading-relaxed whitespace-pre-wrap text-green-800">
-												{#each simplifyResultDiff.newSegments as segment}
-													{#if segment.changed}
-														<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-													{:else}
-														<span>{segment.value}</span>
-													{/if}
-												{/each}
+										<div
+											class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500"
+										>
+											<p>
+												evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
+												{simplifyResult.payload.evidence.selection_start}-
+												{simplifyResult.payload.evidence.selection_end}
 											</p>
+											<p class="mt-1 truncate" title={simplifyResult.payload.audit.user_prompt}>
+												audit: prompt/response captured ({simplifyResult.payload.provider})
+											</p>
+											<p class="mt-1">audit trail entries: {simplifyAuditTrail.length}</p>
 										</div>
-									</div>
 
-									<div
-										class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500"
-									>
-										<p>
-											evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
-											{simplifyResult.payload.evidence.selection_start}-
-											{simplifyResult.payload.evidence.selection_end}
-										</p>
-										<p class="mt-1 truncate" title={simplifyResult.payload.audit.user_prompt}>
-											audit: prompt/response captured ({simplifyResult.payload.provider})
-										</p>
-										<p class="mt-1">audit trail entries: {simplifyAuditTrail.length}</p>
-									</div>
-
-									<div class="flex flex-wrap items-center gap-1.5">
-										<button
-											type="button"
-											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-											on:click={replaceSelectionWithSimplifiedText}
-										>
-											Replace selection
-										</button>
-										<button
-											type="button"
-											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-											on:click={() => void copySimplifiedSnippet()}
-										>
-											Copy
-										</button>
-										<button
-											type="button"
-											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-											on:click={cancelSimplifyResult}
-										>
-											Cancel
-										</button>
-									</div>
-								{/if}
+										<div class="flex flex-wrap items-center gap-1.5">
+											<button
+												type="button"
+												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+												on:click={replaceSelectionWithSimplifiedText}
+											>
+												Replace selection
+											</button>
+											<button
+												type="button"
+												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+												on:click={() => void copySimplifiedSnippet()}
+											>
+												Copy
+											</button>
+											<button
+												type="button"
+												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+												on:click={cancelSimplifyResult}
+											>
+												Cancel
+											</button>
+										</div>
+									{/if}
+								</div>
 							</div>
-						</div>
-					{/if}
+						{/if}
+					</div>
 				</div>
-			</div>
-		</div>
-
-		<div class="grid min-h-0 flex-1 grid-rows-[minmax(0,1.15fr)_minmax(0,1fr)]">
-			<section class="flex min-h-0 flex-col border-b border-gray-200">
+			</section>
+		{:else if activeRightPanelTab === 'related'}
+			<section class="flex min-h-0 flex-1 flex-col">
 				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
 					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
 						Related Paragraphs
@@ -1556,8 +1666,8 @@
 					{/if}
 				</div>
 			</section>
-
-			<section class="flex min-h-0 flex-col bg-white">
+		{:else}
+			<section class="flex min-h-0 flex-1 flex-col bg-white">
 				<header
 					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
 				>
@@ -1702,7 +1812,7 @@
 					</div>
 				</form>
 			</section>
-		</div>
+		{/if}
 	</aside>
 
 	{#if simplifyToolbarVisible && simplifyTarget}
