@@ -126,11 +126,22 @@ class SimplifySelectionResponse(BaseModel):
     evidence: SimplifyEvidence
     audit: SimplifyAudit
 
+
+class ContradictionEvidence(BaseModel):
+    snippet_a: str = ""
+    snippet_b: str = ""
+    source_a: Literal["paragraph", "context", "unknown"] = "unknown"
+    source_b: Literal["paragraph", "context", "unknown"] = "unknown"
+    evidence_status: Literal["exact", "missing", "approximate"] = "missing"
+    evidence_note: str = ""
+
+
 class ContradictionParagraphResult(BaseModel):
     paragraph_id: str
     contradiction: bool
     confidence: int = Field(ge=0, le=100)
     brief_reason: str = ""
+    evidence: Optional[ContradictionEvidence] = None
 
 
 class ContradictionAnalysisRequest(BaseModel):

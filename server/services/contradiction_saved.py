@@ -159,6 +159,38 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
         confidence = max(0, min(100, confidence))
 
         brief_reason = str(row.get("brief_reason") or row.get("briefReason") or "").strip()
+        evidence_obj = row.get("evidence")
+        evidence = None
+        if isinstance(evidence_obj, dict):
+            snippet_a = str(evidence_obj.get("snippet_a") or "").strip()
+            snippet_b = str(evidence_obj.get("snippet_b") or "").strip()
+            source_a = str(evidence_obj.get("source_a") or "unknown").strip().lower()
+            source_b = str(evidence_obj.get("source_b") or "unknown").strip().lower()
+            evidence_status = str(evidence_obj.get("evidence_status") or "").strip().lower()
+            evidence_note = str(evidence_obj.get("evidence_note") or "").strip()
+            if source_a not in {"paragraph", "context", "unknown"}:
+                source_a = "unknown"
+            if source_b not in {"paragraph", "context", "unknown"}:
+                source_b = "unknown"
+            if evidence_status not in {"exact", "missing", "approximate"}:
+                evidence_status = "exact" if (snippet_a and snippet_b) else "missing"
+            evidence = {
+                "snippet_a": snippet_a,
+                "snippet_b": snippet_b,
+                "source_a": source_a,
+                "source_b": source_b,
+                "evidence_status": evidence_status,
+                "evidence_note": evidence_note,
+            }
+        elif contradiction:
+            evidence = {
+                "snippet_a": "",
+                "snippet_b": "",
+                "source_a": "unknown",
+                "source_b": "unknown",
+                "evidence_status": "missing",
+                "evidence_note": "",
+            }
 
         normalized.append(
             ContradictionParagraphResult(
@@ -166,6 +198,7 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
                 contradiction=contradiction,
                 confidence=confidence,
                 brief_reason=brief_reason,
+                evidence=evidence,
             )
         )
 

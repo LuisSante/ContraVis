@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from collections import defaultdict
 from typing import Any
@@ -17,12 +18,66 @@ logger = logging.getLogger(__name__)
 
 TARGET_BATCH_INPUT_TOKENS = 75_000
 ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH = 42
+HIGH_RECALL_MODE = os.getenv("CONTRADICTION_HIGH_RECALL", "1").strip().lower() not in {
+    "0",
+    "false",
+    "no",
+}
+HIGH_RECALL_NEGATIVE_FLIP_THRESHOLD = int(
+    os.getenv("CONTRADICTION_NEGATIVE_FLIP_THRESHOLD", "45")
+)
 
 MODEL_PRICING_USD_PER_1M: dict[str, dict[str, float]] = {
+    "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
     "gpt-4.1": {"input": 2.0, "output": 8.0},
     "gpt-4.1-2025-04-14": {"input": 2.0, "output": 8.0},
     "gpt-4_1-2025-04-14": {"input": 2.0, "output": 8.0},
 }
+
+# PROMPT_TEMPLATE = """
+# You are a legal expert analyzing contracts.
+
+# Goal:
+# Given one contract split into paragraphs, decide for EACH paragraph whether it contains an internal contradiction.
+
+# Definition:
+# A contradiction means two or more statements in the paragraph/context are mutually incompatible about the same obligation, right, condition, or execution, such that they cannot all be true at the same time.
+
+# Use context:
+# Each paragraph includes related paragraphs from the contract graph. Use them as context, but classify contradiction for the target paragraph.
+
+# Do NOT consider as contradiction by default:
+# - clarifications
+# - conditional amendments
+# - hierarchical clauses (e.g., "subject to", "except as provided")
+# - general-vs-specific unless irreconcilable
+
+# MANDATORY evidence rule (strict):
+# - If contradiction = true, you MUST provide both evidence.snippet_a and evidence.snippet_b.
+# - snippet_a and snippet_b MUST be exact contiguous substrings copied from the provided document JSON.
+# - Do NOT paraphrase, summarize, translate, normalize punctuation, or change capitalization.
+# - Do NOT add ellipsis (...) or surrounding commentary inside snippets.
+# - If source_a/source_b is "paragraph", the snippet must be copied from the target paragraph text.
+# - If source_a/source_b is "context", the snippet must be copied from one of related_paragraphs texts.
+# - If you cannot find exact substrings, set contradiction=false.
+
+# Return ONLY valid JSON (no markdown, no extra text) with this shape:
+# {{
+#   "paragraph_results": [
+#     {{
+#       "paragraph_id": "string or integer",
+#       "contradiction": true or false,
+#       "confidence": integer from 0 to 100,
+#       "brief_reason": "one short sentence",
+#       "evidence": {{
+#         "snippet_a": "exact short quote #1 that conflicts",
+#         "snippet_b": "exact short quote #2 that conflicts",
+#         "source_a": "paragraph | context | unknown",
+#         "source_b": "paragraph | context | unknown"
+#       }}
+#     }}
+#   ]
+# }}
 
 PROMPT_TEMPLATE = """
 You are a legal expert analyzing contracts.
@@ -54,13 +109,20 @@ Return ONLY valid JSON (no markdown, no extra text) with this shape:
   ]
 }}
 
+
+
 Document data (JSON):
 {document_json}
 """.strip()
 
 SYSTEM_PROMPT = (
     "You are a precise legal contradiction classifier. "
-    "Return only valid JSON and follow the required schema exactly."
+    "Return only valid JSON and follow the required schema exactly. "
+    "Bias toward high recall: false negatives are worse than false positives. "
+    "If uncertain, prefer contradiction=true with lower confidence. "
+    "For contradiction=true, evidence.snippet_a and evidence.snippet_b are mandatory and must be exact substrings "
+    "copied verbatim from the provided paragraph/context text when available. "
+    "If exact spans are unavailable, keep legal judgment and set evidence_status='missing' with unknown sources and empty snippets."
 )
 
 _TIKTOKEN_ENCODER: Any | None = None
@@ -179,6 +241,7 @@ def analyze_document_contradictions(
                     contradiction=False,
                     confidence=0,
                     brief_reason="",
+                    evidence=None,
                 )
             )
             continue
@@ -189,6 +252,7 @@ def analyze_document_contradictions(
                 contradiction=item["contradiction"],
                 confidence=item["confidence"],
                 brief_reason=item["brief_reason"],
+                evidence=item["evidence"],
             )
         )
 
@@ -535,10 +599,57 @@ def _parse_paragraph_results(raw_json: dict[str, Any] | list[Any]) -> dict[str, 
 
         brief_reason = str(row.get("brief_reason", "")).strip()
 
+        # High-recall mode: avoid low-confidence negatives.
+        if (
+            HIGH_RECALL_MODE
+            and not contradiction
+            and confidence <= max(0, min(100, HIGH_RECALL_NEGATIVE_FLIP_THRESHOLD))
+        ):
+            contradiction = True
+            if not brief_reason:
+                brief_reason = (
+                    "Converted from low-confidence negative to contradiction in high-recall mode."
+                )
+
+        evidence_obj = row.get("evidence")
+        evidence: dict[str, Any] | None = None
+        if isinstance(evidence_obj, dict):
+            snippet_a = str(evidence_obj.get("snippet_a", "")).strip()
+            snippet_b = str(evidence_obj.get("snippet_b", "")).strip()
+            source_a = str(evidence_obj.get("source_a", "unknown")).strip().lower()
+            source_b = str(evidence_obj.get("source_b", "unknown")).strip().lower()
+            evidence_status = str(evidence_obj.get("evidence_status", "")).strip().lower()
+            evidence_note = str(evidence_obj.get("evidence_note", "")).strip()
+            if source_a not in {"paragraph", "context", "unknown"}:
+                source_a = "unknown"
+            if source_b not in {"paragraph", "context", "unknown"}:
+                source_b = "unknown"
+            if evidence_status not in {"exact", "missing", "approximate"}:
+                evidence_status = "exact" if (snippet_a and snippet_b) else "missing"
+
+            evidence = {
+                "snippet_a": snippet_a,
+                "snippet_b": snippet_b,
+                "source_a": source_a,
+                "source_b": source_b,
+                "evidence_status": evidence_status,
+                "evidence_note": evidence_note,
+            }
+        elif contradiction:
+            evidence = {
+                "snippet_a": "",
+                "snippet_b": "",
+                "source_a": "unknown",
+                "source_b": "unknown",
+                "evidence_status": "missing",
+                "evidence_note": "Model did not return structured evidence object.",
+            }
+
         parsed[paragraph_id] = {
             "contradiction": contradiction,
             "confidence": confidence,
             "brief_reason": brief_reason,
+            "evidence": evidence,
         }
 
     return parsed
