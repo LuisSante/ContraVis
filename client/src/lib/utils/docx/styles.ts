@@ -11,6 +11,17 @@ import {
 	toTwipsPx
 } from '$lib/utils/docx/xml';
 
+const MIN_RUN_FONT_SIZE_PT = 6;
+const MIN_SUP_SUB_RUN_FONT_SIZE_PT = 5;
+const MAX_RUN_FONT_SIZE_PT = 72;
+const PARAGRAPH_SPACING_SCALE = 0.62;
+
+function clampRunFontSizePt(rawHalfPointSize: number, isSuperOrSub: boolean): number {
+	const resolvedPt = rawHalfPointSize / 2;
+	const minPt = isSuperOrSub ? MIN_SUP_SUB_RUN_FONT_SIZE_PT : MIN_RUN_FONT_SIZE_PT;
+	return Math.min(Math.max(resolvedPt, minPt), MAX_RUN_FONT_SIZE_PT);
+}
+
 export function hasOnlySectionBreak(pr?: XmlNode | null): boolean {
 	if (!pr?.children || pr.children.length !== 1) return false;
 	return localName(pr.children[0].name) === 'sectpr';
@@ -25,6 +36,7 @@ export function getParagraphStyles(pr?: XmlNode | null): Record<string, string> 
 	const style: Record<string, string> = {
 		'margin-top': '0',
 		'margin-bottom': '0',
+		'line-height': '1',
 		'white-space': 'pre-wrap',
 		'word-break': 'break-word'
 	};
@@ -41,8 +53,8 @@ export function getParagraphStyles(pr?: XmlNode | null): Record<string, string> 
 	const line = toNumber(getAttr(spacing, 'line'));
 	const lineRule = getAttr(spacing, 'lineRule')?.toLowerCase();
 
-	if (before != null) style['margin-top'] = `${before}px`;
-	if (after != null) style['margin-bottom'] = `${after}px`;
+	if (before != null) style['margin-top'] = `${Math.max(before * PARAGRAPH_SPACING_SCALE, 0)}px`;
+	if (after != null) style['margin-bottom'] = `${Math.max(after * PARAGRAPH_SPACING_SCALE, 0)}px`;
 	if (line != null) {
 		if (lineRule === 'auto') {
 			style['line-height'] = `${Math.max(1, line / 240)}`;
@@ -99,7 +111,10 @@ export function getRunStyles(pr?: XmlNode | null): Record<string, string> {
 	if (colorValue) style.color = colorValue;
 
 	const fontSize = toNumber(getAttr(size, 'val'));
-	if (fontSize != null) style['font-size'] = `${Math.max(fontSize / 2, 1)}pt`;
+	if (fontSize != null) {
+		const isSuperOrSub = va === 'superscript' || va === 'subscript';
+		style['font-size'] = `${clampRunFontSizePt(fontSize, isSuperOrSub)}pt`;
+	}
 
 	const fontFamily =
 		getAttr(fonts, 'ascii') ??
