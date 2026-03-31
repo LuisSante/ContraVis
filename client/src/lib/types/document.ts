@@ -230,6 +230,16 @@ export type ContradictionParagraphResult = {
 	contradiction: boolean;
 	confidence: number;
 	brief_reason: string;
+	evidence?: ContradictionEvidence | null;
+};
+
+export type ContradictionEvidence = {
+	snippet_a: string;
+	snippet_b: string;
+	source_a: 'paragraph' | 'context' | 'unknown';
+	source_b: 'paragraph' | 'context' | 'unknown';
+	evidence_status?: 'exact' | 'missing' | 'approximate';
+	evidence_note?: string;
 };
 
 export type ContradictionAnalysisRequest = {

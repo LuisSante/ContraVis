@@ -29,6 +29,7 @@ export const PROVIDER_OPTIONS: ReadonlyArray<{ value: AssistantProvider; label: 
 
 export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 	// { value: 'gpt-4o-mini', label: 'gpt-4o-mini (cheaper)' },
+	{ value: 'gpt-4.1-nano', label: 'gpt-4.1-nano' },
 	{ value: 'gpt-4.1-mini', label: 'gpt-4.1-mini' },
 	{ value: 'gpt-4.1', label: 'gpt-4.1' },
 	{ value: 'gpt-4o', label: 'gpt-4o' }

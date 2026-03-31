@@ -140,6 +140,8 @@
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
+	let selectedContradictionResult: ContradictionParagraphResult | null = null;
+	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	type RightPanelTab = 'related' | 'revisions' | 'assistant';
 	const RIGHT_PANEL_TABS: Array<{ id: RightPanelTab; label: string }> = [
 		{ id: 'related', label: 'Related Paragraphs' },
@@ -158,6 +160,13 @@
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
 		(row) => row.contradiction
 	).length;
+	$: selectedContradictionResult = $selectedParagraph
+		? contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null
+		: null;
+	$: selectedContradictionEvidence =
+		selectedContradictionResult?.contradiction && selectedContradictionResult.evidence
+			? selectedContradictionResult.evidence
+			: null;
 
 	$: simplifyResultDiff = simplifyResult
 		? buildChangeLog(
@@ -185,6 +194,7 @@
 		refreshInspector(nodeWithCurrent);
 		void tick().then(() => {
 			refreshSimplifyTarget();
+			applyContradictionHighlights();
 		});
 	}
 
@@ -238,9 +248,155 @@
 		assistantError = null;
 	}
 
+	function clearSnippetMarks(element: HTMLElement) {
+		const marks = element.querySelectorAll('mark.docx-contradiction-snippet');
+		for (const mark of marks) {
+			const parent = mark.parentNode;
+			if (!parent) continue;
+			while (mark.firstChild) {
+				parent.insertBefore(mark.firstChild, mark);
+			}
+			parent.removeChild(mark);
+		}
+	}
+
+	function findTextNodePosition(
+		segments: Array<{ node: Text; start: number; end: number }>,
+		index: number
+	): { node: Text; offset: number } | null {
+		for (const segment of segments) {
+			if (index >= segment.start && index <= segment.end) {
+				return { node: segment.node, offset: index - segment.start };
+			}
+		}
+		return null;
+	}
+
+	function highlightSnippetInElement(
+		element: HTMLElement,
+		rawSnippet: string,
+		meta?: { ownerParagraphId?: string; role?: 'a' | 'b' }
+	): boolean {
+		const snippet = rawSnippet.trim();
+		if (!snippet) return false;
+
+		const textContent = element.textContent ?? '';
+		if (!textContent) return false;
+
+		const matchStart = textContent.toLocaleLowerCase().indexOf(snippet.toLocaleLowerCase());
+		if (matchStart === -1) return false;
+		const matchEnd = matchStart + snippet.length;
+
+		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+		const segments: Array<{ node: Text; start: number; end: number }> = [];
+		let cursor = 0;
+		let current = walker.nextNode();
+		while (current) {
+			const textNode = current as Text;
+			const length = textNode.nodeValue?.length ?? 0;
+			if (length > 0) {
+				segments.push({ node: textNode, start: cursor, end: cursor + length });
+				cursor += length;
+			}
+			current = walker.nextNode();
+		}
+
+		const startPos = findTextNodePosition(segments, matchStart);
+		const endPos = findTextNodePosition(segments, matchEnd);
+		if (!startPos || !endPos) return false;
+
+		const range = document.createRange();
+		range.setStart(startPos.node, startPos.offset);
+		range.setEnd(endPos.node, endPos.offset);
+		if (range.collapsed) return false;
+
+		const mark = document.createElement('mark');
+		mark.className = 'docx-contradiction-snippet';
+		if (meta?.ownerParagraphId) {
+			mark.dataset.contradictionOwner = meta.ownerParagraphId;
+		}
+		if (meta?.role) {
+			mark.dataset.contradictionRole = meta.role;
+		}
+		try {
+			range.surroundContents(mark);
+		} catch {
+			const extracted = range.extractContents();
+			mark.appendChild(extracted);
+			range.insertNode(mark);
+		}
+
+		return true;
+	}
+
+	function highlightSnippetAcrossDocument(
+		snippet: string,
+		preferredElement?: HTMLElement,
+		meta?: { ownerParagraphId?: string; role?: 'a' | 'b' }
+	): boolean {
+		if (!snippet.trim()) return false;
+
+		if (preferredElement && highlightSnippetInElement(preferredElement, snippet, meta)) {
+			return true;
+		}
+
+		for (const element of paragraphElementById.values()) {
+			if (preferredElement && element === preferredElement) continue;
+			if (highlightSnippetInElement(element, snippet, meta)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function updateActiveContradictionSnippetMarks() {
+		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		for (const mark of allMarks) {
+			mark.classList.remove('docx-contradiction-snippet--active');
+		}
+
+		const selected = get(selectedParagraph);
+		if (!selected?.id) return;
+		if (!contradictionResultsByParagraphId.get(selected.id)?.contradiction) return;
+
+		for (const mark of allMarks) {
+			if (mark.dataset.contradictionOwner === selected.id) {
+				mark.classList.add('docx-contradiction-snippet--active');
+			}
+		}
+	}
+
+	function focusEvidenceSnippet(paragraphId: string, role: 'a' | 'b') {
+		let targetMark: HTMLElement | null = null;
+		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		for (const mark of allMarks) {
+			if (
+				mark.dataset.contradictionOwner === paragraphId &&
+				mark.dataset.contradictionRole === role
+			) {
+				targetMark = mark;
+				break;
+			}
+		}
+
+		if (targetMark) {
+			targetMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			targetMark.classList.add('docx-contradiction-snippet--active');
+			window.setTimeout(() => {
+				targetMark?.classList.remove('docx-citation-flash');
+				targetMark?.classList.add('docx-citation-flash');
+			}, 80);
+			return;
+		}
+
+		focusNodeFromPanel(paragraphId, true);
+	}
+
 	function clearContradictionHighlights() {
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+			clearSnippetMarks(element);
 			delete element.dataset.contradictionConfidenceBand;
 			delete element.dataset.contradictionConfidence;
 			delete element.dataset.contradictionReason;
@@ -319,12 +475,49 @@
 			element.dataset.contradictionConfidenceBand = confidenceBand;
 			element.dataset.contradictionConfidence = String(result.confidence);
 			element.dataset.contradictionReason = result.brief_reason ?? '';
+
+			const evidence = result.evidence;
+			if (evidence?.snippet_a?.trim()) {
+				if (evidence.source_a === 'context') {
+					highlightSnippetAcrossDocument(evidence.snippet_a, element, {
+						ownerParagraphId: paragraphId,
+						role: 'a'
+					});
+				} else {
+					highlightSnippetInElement(element, evidence.snippet_a, {
+						ownerParagraphId: paragraphId,
+						role: 'a'
+					}) ||
+						highlightSnippetAcrossDocument(evidence.snippet_a, element, {
+							ownerParagraphId: paragraphId,
+							role: 'a'
+						});
+				}
+			}
+			if (evidence?.snippet_b?.trim()) {
+				if (evidence.source_b === 'context') {
+					highlightSnippetAcrossDocument(evidence.snippet_b, element, {
+						ownerParagraphId: paragraphId,
+						role: 'b'
+					});
+				} else {
+					highlightSnippetInElement(element, evidence.snippet_b, {
+						ownerParagraphId: paragraphId,
+						role: 'b'
+					}) ||
+						highlightSnippetAcrossDocument(evidence.snippet_b, element, {
+							ownerParagraphId: paragraphId,
+							role: 'b'
+						});
+				}
+			}
 		}
 
 		const selected = get(selectedParagraph);
 		if (selected?.id && contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
 			paragraphElementById.get(selected.id)?.classList.add('docx-contradiction-selected');
 		}
+		updateActiveContradictionSnippetMarks();
 
 		scheduleContradictionScrollMarkerRefresh();
 	}
@@ -628,11 +821,20 @@
 			if (prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE) {
 				const reason = (contradiction.brief_reason || 'No brief reason is available.').trim();
 				const confidence = Number.isFinite(contradiction.confidence) ? contradiction.confidence : 0;
+				const evidence = contradiction.evidence;
+				const evidenceLines =
+					evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
+						? [
+								`Snippet A (${evidence.source_a}): "${evidence.snippet_a}"`,
+								`Snippet B (${evidence.source_b}): "${evidence.snippet_b}"`
+							]
+						: ['No structured evidence snippets were returned by the classifier.'];
 				appendAssistantQuickActionMessage(
 					[
 						`Free explanation for paragraph ${selected.id}:`,
 						reason,
 						`Confidence: ${confidence}%`,
+						...evidenceLines,
 						'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.'
 					].join('\n\n'),
 					selected.id
@@ -1458,6 +1660,53 @@
 
 				<div class="min-h-0 flex-1 overflow-y-auto p-3">
 					<div class="space-y-2">
+						{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+							<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+								<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+									<p class="text-[9px] font-bold tracking-widest text-red-700 uppercase">
+										Contradiction Evidence
+									</p>
+								</div>
+								<div class="space-y-2 p-2.5">
+									<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+										<div class="mb-1 flex items-center justify-between">
+											<span class="text-[9px] font-bold text-red-800 uppercase">Snippet A</span>
+											<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+												{selectedContradictionEvidence.source_a}
+											</span>
+										</div>
+										<button
+											type="button"
+											class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
+											on:click={() =>
+												selectedContradictionResult &&
+												focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+										>
+											{selectedContradictionEvidence.snippet_a}
+										</button>
+									</div>
+
+									<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+										<div class="mb-1 flex items-center justify-between">
+											<span class="text-[9px] font-bold text-red-800 uppercase">Snippet B</span>
+											<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+												{selectedContradictionEvidence.source_b}
+											</span>
+										</div>
+										<button
+											type="button"
+											class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
+											on:click={() =>
+												selectedContradictionResult &&
+												focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+										>
+											{selectedContradictionEvidence.snippet_b}
+										</button>
+									</div>
+								</div>
+							</div>
+						{/if}
+
 						{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
 							<div class="flex flex-col items-center justify-center py-2 text-gray-300">
 								<p class="text-[10px] italic">No active changes</p>
@@ -1953,22 +2202,38 @@
 	}
 
 	:global(.docx-contradiction-highlight) {
-		background: rgba(254, 226, 226, 0.58);
+		background: transparent;
 		box-shadow: inset 3px 0 0 #dc2626;
 	}
 
 	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='medium']) {
-		background: rgba(254, 242, 242, 0.66);
+		background: transparent;
 		box-shadow: inset 3px 0 0 #ef4444;
 	}
 
 	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='low']) {
-		background: rgba(255, 247, 237, 0.78);
+		background: transparent;
 		box-shadow: inset 3px 0 0 #f97316;
 	}
 
 	:global(.docx-contradiction-selected) {
-		outline: 1px solid #dc2626;
+		outline: none;
+	}
+
+	:global(mark.docx-contradiction-snippet) {
+		background: transparent;
+		color: #991b1b;
+		padding: 0 1px;
+		border-radius: 1px;
+		text-decoration: underline;
+		text-decoration-color: #dc2626;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 2px;
+	}
+
+	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active) {
+		background: rgba(254, 202, 202, 0.55);
+		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
 	}
 
 	:global(.docx-contradiction-scroll-marker) {
