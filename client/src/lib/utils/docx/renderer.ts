@@ -177,7 +177,7 @@ export function createRenderer(
 		if (!numberingNode?.children) return;
 
 		const abstractLevelsById = new Map<string, Map<number, ListLevelDefinition>>();
-		const abstractIdByNumId = new Map<string, string>();
+		const numNodesById = new Map<string, XmlNode>();
 
 		for (const child of numberingNode.children) {
 			const tag = localName(child.name);
@@ -205,17 +205,51 @@ export function createRenderer(
 			if (tag === 'num') {
 				const numId = getAttr(child, 'numId');
 				if (!numId) continue;
-				const abstractNumRef = getAttr(findChild(child, 'abstractNumId'), 'val');
-				if (abstractNumRef) {
-					abstractIdByNumId.set(numId, abstractNumRef);
-				}
+				numNodesById.set(numId, child);
 			}
 		}
 
-		for (const [numId, abstractId] of abstractIdByNumId.entries()) {
-			const levels = abstractLevelsById.get(abstractId);
-			if (!levels) continue;
-			listDefinitionsByNumId.set(numId, levels);
+		for (const [numId, numNode] of numNodesById.entries()) {
+			const abstractId = getAttr(findChild(numNode, 'abstractNumId'), 'val');
+			const baseLevels = abstractId ? abstractLevelsById.get(abstractId) : undefined;
+			const resolvedLevels = new Map<number, ListLevelDefinition>();
+			for (const [level, levelDef] of baseLevels?.entries() ?? []) {
+				resolvedLevels.set(level, { ...levelDef });
+			}
+
+			for (const overrideNode of numNode.children ?? []) {
+				if (localName(overrideNode.name) !== 'lvloverride') continue;
+				const rawLevel = toNumber(getAttr(overrideNode, 'ilvl'));
+				const level = rawLevel != null ? Math.max(Math.trunc(rawLevel), 0) : 0;
+				const existingLevel = resolvedLevels.get(level) ?? {
+					numFmt: 'decimal',
+					lvlText: `%${level + 1}`,
+					start: 1
+				};
+				const mergedLevel = { ...existingLevel };
+
+				const startOverrideRaw = toNumber(getAttr(findChild(overrideNode, 'startoverride'), 'val'));
+				if (startOverrideRaw != null) {
+					mergedLevel.start = Math.trunc(startOverrideRaw);
+				}
+
+				const inlineLevel = findChild(overrideNode, 'lvl');
+				if (inlineLevel) {
+					const numFmt = getAttr(findChild(inlineLevel, 'numfmt'), 'val');
+					const lvlText = getAttr(findChild(inlineLevel, 'lvltext'), 'val');
+					const startRaw = toNumber(getAttr(findChild(inlineLevel, 'start'), 'val'));
+
+					if (numFmt) mergedLevel.numFmt = numFmt;
+					if (lvlText != null) mergedLevel.lvlText = decodeDocxText(lvlText);
+					if (startRaw != null) mergedLevel.start = Math.trunc(startRaw);
+				}
+
+				resolvedLevels.set(level, mergedLevel);
+			}
+
+			if (resolvedLevels.size > 0) {
+				listDefinitionsByNumId.set(numId, resolvedLevels);
+			}
 		}
 	};
 
@@ -246,6 +280,29 @@ export function createRenderer(
 		return inherited;
 	};
 
+	const getParagraphTabStopsPx = (pr?: XmlNode | null): number[] => {
+		const tabsNode = findChild(pr, 'tabs');
+		if (!tabsNode?.children) return [];
+		const stops: number[] = [];
+		for (const child of tabsNode.children) {
+			if (localName(child.name) !== 'tab') continue;
+			const posPx = toTwipsPx(getAttr(child, 'pos'));
+			if (posPx == null || posPx < 0) continue;
+			stops.push(posPx);
+		}
+		stops.sort((left, right) => left - right);
+		return stops;
+	};
+
+	const applyParagraphTabStopMetadata = (element: HTMLElement, pr?: XmlNode | null) => {
+		const stops = getParagraphTabStopsPx(pr);
+		if (stops.length === 0) {
+			delete element.dataset.docxTabStops;
+			return;
+		}
+		element.dataset.docxTabStops = stops.map((stop) => `${Math.round(stop * 100) / 100}`).join(',');
+	};
+
 	const nextListMarker = (numId: string | undefined, level: number): string => {
 		if (!numId) return '•';
 		const key = String(numId);
@@ -262,8 +319,9 @@ export function createRenderer(
 
 		const marker = (levelDef.lvlText || `%${level + 1}`).replace(/%(\d+)/g, (_, rawIndex: string) => {
 			const levelIndex = Math.max(Number(rawIndex) - 1, 0);
-			const levelValue = counters[levelIndex] ?? 0;
-			const numberFormat = levels?.get(levelIndex)?.numFmt ?? levelDef.numFmt;
+			const referencedLevel = levels?.get(levelIndex);
+			const levelValue = counters[levelIndex] ?? referencedLevel?.start ?? 1;
+			const numberFormat = referencedLevel?.numFmt ?? levelDef.numFmt;
 			return formatCounter(levelValue, numberFormat);
 		});
 
@@ -415,6 +473,7 @@ export function createRenderer(
 					heading.className = 'font-bold whitespace-pre-wrap break-words [tab-size:4]';
 					setStyles(heading, getParagraphStyles(pr));
 					setStyles(heading, getParagraphInheritedRunStyles(pr));
+					applyParagraphTabStopMetadata(heading, pr);
 					appendChildren(heading, children);
 					attachParagraphEditor(heading, 'heading', heading, {
 						disabled: isHeaderOrFooterStyle(pr)
@@ -450,6 +509,7 @@ export function createRenderer(
 
 					setStyles(item, getParagraphStyles(pr));
 					setStyles(item, getParagraphInheritedRunStyles(pr));
+					applyParagraphTabStopMetadata(item, pr);
 					item.style.textIndent = '0';
 
 					const indent = findChild(pr, 'ind');
@@ -474,6 +534,7 @@ export function createRenderer(
 					paragraph.className = 'whitespace-pre-wrap break-words [tab-size:4]';
 					setStyles(paragraph, getParagraphStyles(pr));
 					setStyles(paragraph, getParagraphInheritedRunStyles(pr));
+					applyParagraphTabStopMetadata(paragraph, pr);
 					if (hasOnlySectionBreak(pr) && toNodeList(children).length === 0) {
 						paragraph.classList.add('min-h-[1px]');
 					}
@@ -498,8 +559,16 @@ export function createRenderer(
 								.join('')
 						)
 					);
-				case 'tab':
-					return document.createTextNode('\t');
+				case 'tab': {
+					const tab = document.createElement('span');
+					tab.dataset.docxTab = '1';
+					tab.style.display = 'inline-block';
+					tab.style.minWidth = '1ch';
+					tab.style.width = '1ch';
+					tab.style.verticalAlign = 'baseline';
+					tab.textContent = '\u00a0';
+					return tab;
+				}
 				case 'br':
 					return document.createElement('br');
 				case 'hyperlink': {
