@@ -20,7 +20,11 @@ from services.contradiction_saved import (
     load_saved_contradictions_for_document,
     save_analyzed_contradictions,
 )
-from services.contract_assistant import generate_assistant_response, simplify_paragraph_selection
+from services.contract_assistant import (
+    fix_contradiction_selection,
+    generate_assistant_response,
+    simplify_paragraph_selection,
+)
 from services.graph.relations import generate_graph_data
 from utils.document_store import DocumentStore
 
@@ -196,6 +200,17 @@ def assistant_simplify(payload: SimplifySelectionRequest):
     except Exception as exc:
         logger.exception("Unexpected simplify error")
         raise HTTPException(status_code=500, detail="Failed to simplify selection") from exc
+
+
+@router.post("/assistant/fix_contradiction", response_model=SimplifySelectionResponse)
+def assistant_fix_contradiction(payload: SimplifySelectionRequest):
+    try:
+        return fix_contradiction_selection(payload)
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Unexpected fix-contradiction error")
+        raise HTTPException(status_code=500, detail="Failed to fix contradiction") from exc
 
 
 @router.post("/contradictions/analyze", response_model=ContradictionAnalysisResponse)

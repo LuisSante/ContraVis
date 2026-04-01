@@ -1,6 +1,15 @@
 import type { AssistantMode, AssistantProvider, AssistantScope } from '$lib/types/document';
 
-export const QUICK_ACTIONS = ["What happens if I don't?", 'Can I terminate?', 'Who is liable?'];
+export const QUICK_ACTION_WHY_CONTRADICTION_FREE = 'Why is it a contradiction? (Free)';
+export const QUICK_ACTION_WHY_CONTRADICTION_AI = 'Why is it a contradiction? (AI cost)';
+
+export const QUICK_ACTIONS = [
+	QUICK_ACTION_WHY_CONTRADICTION_FREE,
+	QUICK_ACTION_WHY_CONTRADICTION_AI,
+	"What happens if I don't?",
+	'Can I terminate?',
+	'Who is liable?'
+];
 
 export const MODE_OPTIONS: ReadonlyArray<{ value: AssistantMode; label: string }> = [
 	{ value: 'explain', label: 'Explain' },
@@ -14,12 +23,13 @@ export const SCOPE_OPTIONS: ReadonlyArray<{ value: AssistantScope; label: string
 ];
 
 export const PROVIDER_OPTIONS: ReadonlyArray<{ value: AssistantProvider; label: string }> = [
+	{ value: 'openai', label: 'OpenAI' },
 	{ value: 'gemini', label: 'Gemini' },
-	{ value: 'openai', label: 'OpenAI' }
 ];
 
 export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
-	{ value: 'gpt-4o-mini', label: 'gpt-4o-mini (cheaper)' },
+	// { value: 'gpt-4o-mini', label: 'gpt-4o-mini (cheaper)' },
+	{ value: 'gpt-4.1-nano', label: 'gpt-4.1-nano' },
 	{ value: 'gpt-4.1-mini', label: 'gpt-4.1-mini' },
 	{ value: 'gpt-4.1', label: 'gpt-4.1' },
 	{ value: 'gpt-4o', label: 'gpt-4o' }

@@ -105,7 +105,7 @@ export type BuildRelatedOptions = {
 
 export type AssistantMode = 'explain' | 'quote' | 'suggest_questions';
 export type AssistantScope = 'selected' | 'full_contract';
-export type AssistantProvider = 'gemini' | 'openai';
+export type AssistantProvider = 'openai' | 'gemini';
 
 export type AssistantCitation = {
 	id: string;
@@ -176,6 +176,16 @@ export type SimplifyAudit = {
 	model_response: string;
 };
 
+export type SimplifyRelatedParagraph = {
+	id: string;
+	text: string;
+	paragraph_enum?: number;
+	page?: number;
+	relationTypes: RelationKind[];
+	semanticScore?: number;
+	references?: string[];
+};
+
 export type SimplifySelectionRequest = {
 	documentId: string;
 	provider: AssistantProvider;
@@ -183,6 +193,8 @@ export type SimplifySelectionRequest = {
 	paragraphText: string;
 	selectionStart: number;
 	selectionEnd: number;
+	contradictionReason?: string;
+	relatedParagraphs?: SimplifyRelatedParagraph[];
 };
 
 export type SimplifySelectionResponse = {
@@ -218,6 +230,16 @@ export type ContradictionParagraphResult = {
 	contradiction: boolean;
 	confidence: number;
 	brief_reason: string;
+	evidence?: ContradictionEvidence | null;
+};
+
+export type ContradictionEvidence = {
+	snippet_a: string;
+	snippet_b: string;
+	source_a: 'paragraph' | 'context' | 'unknown';
+	source_b: 'paragraph' | 'context' | 'unknown';
+	evidence_status?: 'exact' | 'missing' | 'approximate';
+	evidence_note?: string;
 };
 
 export type ContradictionAnalysisRequest = {

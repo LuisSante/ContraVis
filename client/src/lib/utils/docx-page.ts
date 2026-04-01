@@ -163,6 +163,13 @@ export async function fetchSimplifySelection(
 	return response.data;
 }
 
+export async function fetchFixContradictionSelection(
+	payload: SimplifySelectionRequest
+): Promise<SimplifySelectionResponse> {
+	const response = await api.post<SimplifySelectionResponse>('/assistant/fix_contradiction', payload);
+	return response.data;
+}
+
 export async function fetchSavedContradictions(
 	documentId: string
 ): Promise<SavedContradictionsResponse> {

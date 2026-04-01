@@ -34,7 +34,7 @@ class Graph(BaseModel):
 
 AssistantMode = Literal["explain", "quote", "suggest_questions"]
 AssistantScope = Literal["selected", "full_contract"]
-AssistantProvider = Literal["gemini", "openai"]
+AssistantProvider = Literal["openai", "gemini"]
 AssistantMessageRole = Literal["user", "assistant"]
 
 
@@ -97,6 +97,16 @@ class SimplifyAudit(BaseModel):
     model_response: str
 
 
+class SimplifyRelatedParagraph(BaseModel):
+    id: str
+    text: str
+    paragraph_enum: Optional[int] = None
+    page: Optional[int] = None
+    relationTypes: List[Literal["reference", "semantic_similarity"]] = Field(default_factory=list)
+    semanticScore: Optional[float] = None
+    references: List[str] = Field(default_factory=list)
+
+
 class SimplifySelectionRequest(BaseModel):
     documentId: str
     provider: AssistantProvider = "gemini"
@@ -104,6 +114,8 @@ class SimplifySelectionRequest(BaseModel):
     paragraphText: str
     selectionStart: int = 0
     selectionEnd: int = 0
+    contradictionReason: Optional[str] = None
+    relatedParagraphs: List[SimplifyRelatedParagraph] = Field(default_factory=list)
 
 
 class SimplifySelectionResponse(BaseModel):
@@ -114,11 +126,22 @@ class SimplifySelectionResponse(BaseModel):
     evidence: SimplifyEvidence
     audit: SimplifyAudit
 
+
+class ContradictionEvidence(BaseModel):
+    snippet_a: str = ""
+    snippet_b: str = ""
+    source_a: Literal["paragraph", "context", "unknown"] = "unknown"
+    source_b: Literal["paragraph", "context", "unknown"] = "unknown"
+    evidence_status: Literal["exact", "missing", "approximate"] = "missing"
+    evidence_note: str = ""
+
+
 class ContradictionParagraphResult(BaseModel):
     paragraph_id: str
     contradiction: bool
     confidence: int = Field(ge=0, le=100)
     brief_reason: str = ""
+    evidence: Optional[ContradictionEvidence] = None
 
 
 class ContradictionAnalysisRequest(BaseModel):

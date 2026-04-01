@@ -3,33 +3,87 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
-	import { currentDocument, error, loading, paragraphs, selectedParagraph } from '$lib/stores/document';
+	import {
+		currentDocument,
+		error,
+		loading,
+		paragraphs,
+		selectedParagraph
+	} from '$lib/stores/document';
 	import { getAxiosErrorMessage } from '$lib/utils/http-error';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
 	import { detectDocxNoiseNodeIds } from '$lib/utils/docx/noise';
-	import type { 
-		AssistantChatMessage, AssistantChatRequest, AssistantContextNode, AssistantContextRelation, AssistantMode, 
-		AssistantProvider, AssistantScope, ChangeLogState, ContradictionAnalysisRequest, ContradictionParagraphResult, Edge as GraphEdge, Node as ParagraphNode, ParagraphEditState, 
-		RelatedParagraph, XmlNode, SimplifyResultState, SimplifyAuditRecord 
+	import type {
+		AssistantChatMessage,
+		AssistantChatRequest,
+		AssistantContextNode,
+		AssistantContextRelation,
+		AssistantMode,
+		AssistantProvider,
+		AssistantScope,
+		ChangeLogState,
+		ContradictionAnalysisRequest,
+		ContradictionParagraphResult,
+		Edge as GraphEdge,
+		Node as ParagraphNode,
+		ParagraphEditState,
+		RelatedParagraph,
+		SimplifyRelatedParagraph,
+		XmlNode,
+		SimplifyResultState,
+		SimplifyAuditRecord
 	} from '$lib/types/document';
-	import { buildInspectorState, createEmptyInspectorState, 
-		focusNodeFromPanel as focusNodeFromInspectorPanel, toSelectedParagraphNode 
+	import {
+		buildInspectorState,
+		createEmptyInspectorState,
+		focusNodeFromPanel as focusNodeFromInspectorPanel,
+		toSelectedParagraphNode
 	} from '$lib/utils/docx/inspector';
 	import {
-		fetchAssistantResponse, fetchBackendGraph, fetchContradictionAnalysis, fetchSavedContradictions, fetchSimplifySelection, loadBrowserDocx4js, resolveDocumentMeta, updateRelationBadge
+		fetchAssistantResponse,
+		fetchBackendGraph,
+		fetchContradictionAnalysis,
+		fetchFixContradictionSelection,
+		fetchSavedContradictions,
+		fetchSimplifySelection,
+		loadBrowserDocx4js,
+		resolveDocumentMeta,
+		updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
-		buildChangeLog, ensureNodeEditState, formatReferenceSummary, getNodeCurrentText, truncateText
+		buildChangeLog,
+		ensureNodeEditState,
+		formatReferenceSummary,
+		getNodeCurrentText,
+		truncateText
 	} from '$lib/utils/edit';
-	import { 
-		COMMIT_SHORTCUT_HINT, COMMIT_SHORTCUT_LABEL, COMMIT_SHORTCUT_TOOLTIP, EDITABLE_PARAGRAPH_CLASSES, MAX_SIMPLIFY_AUDIT_TRAIL, 
-		CONTRADICTION_OPENAI_MODEL_OPTIONS, MODE_OPTIONS, PROVIDER_OPTIONS, QUICK_ACTIONS, SCOPE_OPTIONS
+	import {
+		COMMIT_SHORTCUT_HINT,
+		COMMIT_SHORTCUT_LABEL,
+		COMMIT_SHORTCUT_TOOLTIP,
+		EDITABLE_PARAGRAPH_CLASSES,
+		MAX_SIMPLIFY_AUDIT_TRAIL,
+		CONTRADICTION_OPENAI_MODEL_OPTIONS,
+		MODE_OPTIONS,
+		PROVIDER_OPTIONS,
+		QUICK_ACTIONS,
+		QUICK_ACTION_WHY_CONTRADICTION_AI,
+		QUICK_ACTION_WHY_CONTRADICTION_FREE,
+		SCOPE_OPTIONS
 	} from '$lib/constants/docx-viewer';
-	import { 
-		buildTargetForWholeParagraph, buildTargetFromSelectionRange, computeSimplifyToolbarPosition, 
-		normalizeBounds, preserveBoundaryWhitespace, replaceParagraphTextRange, type SimplifyTarget
+	import {
+		buildTargetForWholeParagraph,
+		buildTargetFromSelectionRange,
+		computeSimplifyToolbarPosition,
+		normalizeBounds,
+		preserveBoundaryWhitespace,
+		replaceParagraphTextRange,
+		type SimplifyTarget
 	} from '$lib/utils/docx/simplify-selection';
+	import HammerShieldIcon from '$lib/icons/HammerShieldIcon.svelte';
+	import LightningBoltIcon from '$lib/icons/LightningBoltIcon.svelte';
+	import SimplifyWandIcon from '$lib/icons/SimplifyWandIcon.svelte';
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -54,7 +108,7 @@
 
 	let assistantMode: AssistantMode = 'explain';
 	let assistantScope: AssistantScope = 'selected';
-	let assistantProvider: AssistantProvider = 'gemini';
+	let assistantProvider: AssistantProvider = 'openai';
 	let assistantInput = '';
 	let assistantMessages: AssistantChatMessage[] = [];
 	let assistantLoading = false;
@@ -68,13 +122,15 @@
 	let simplifyResult: SimplifyResultState | null = null;
 	let simplifyResultDiff: ChangeLogState = { hasChanges: false, oldSegments: [], newSegments: [] };
 	let simplifyLoading = false;
+	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
 	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+	const FIX_CONTRADICTION_TOP_RELATED = 3;
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
-	let contradictionModel = CONTRADICTION_OPENAI_MODEL_OPTIONS[0]?.value ?? 'gpt-4o-mini';
+	let contradictionModel = 'gpt-4.1';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	type ContradictionScrollMarker = {
 		paragraphId: string;
@@ -84,11 +140,39 @@
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
+	let selectedContradictionResult: ContradictionParagraphResult | null = null;
+	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
+	type RightPanelTab = 'related' | 'revisions' | 'assistant';
+	const RIGHT_PANEL_TABS: Array<{ id: RightPanelTab; label: string }> = [
+		{ id: 'related', label: 'Related Paragraphs' },
+		{ id: 'revisions', label: 'Paragraph Revisions' },
+		{ id: 'assistant', label: 'Contract Chat Assistant' }
+	];
+	const RIGHT_PANEL_MIN_WIDTH = 360;
+	const RIGHT_PANEL_DEFAULT_WIDTH = 540;
+	const RIGHT_PANEL_MAX_RATIO = 0.68;
+	const RIGHT_PANEL_KEYBOARD_STEP = 24;
+	let activeRightPanelTab: RightPanelTab = 'related';
+	let rightPanelWidth = RIGHT_PANEL_DEFAULT_WIDTH;
+	let isResizingRightPanel = false;
+	let isCompactLayout = false;
 
-	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter((row) => row.contradiction).length;
+	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
+		(row) => row.contradiction
+	).length;
+	$: selectedContradictionResult = $selectedParagraph
+		? contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null
+		: null;
+	$: selectedContradictionEvidence =
+		selectedContradictionResult?.contradiction && selectedContradictionResult.evidence
+			? selectedContradictionResult.evidence
+			: null;
 
 	$: simplifyResultDiff = simplifyResult
-		? buildChangeLog(simplifyResult.payload.originalSnippet, simplifyResult.payload.simplifiedSnippet)
+		? buildChangeLog(
+				simplifyResult.payload.originalSnippet,
+				simplifyResult.payload.simplifiedSnippet
+			)
 		: { hasChanges: false, oldSegments: [], newSegments: [] };
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
@@ -110,6 +194,7 @@
 		refreshInspector(nodeWithCurrent);
 		void tick().then(() => {
 			refreshSimplifyTarget();
+			applyContradictionHighlights();
 		});
 	}
 
@@ -163,16 +248,164 @@
 		assistantError = null;
 	}
 
+	function clearSnippetMarks(element: HTMLElement) {
+		const marks = element.querySelectorAll('mark.docx-contradiction-snippet');
+		for (const mark of marks) {
+			const parent = mark.parentNode;
+			if (!parent) continue;
+			while (mark.firstChild) {
+				parent.insertBefore(mark.firstChild, mark);
+			}
+			parent.removeChild(mark);
+		}
+	}
+
+	function findTextNodePosition(
+		segments: Array<{ node: Text; start: number; end: number }>,
+		index: number
+	): { node: Text; offset: number } | null {
+		for (const segment of segments) {
+			if (index >= segment.start && index <= segment.end) {
+				return { node: segment.node, offset: index - segment.start };
+			}
+		}
+		return null;
+	}
+
+	function highlightSnippetInElement(
+		element: HTMLElement,
+		rawSnippet: string,
+		meta?: { ownerParagraphId?: string; role?: 'a' | 'b' }
+	): boolean {
+		const snippet = rawSnippet.trim();
+		if (!snippet) return false;
+
+		const textContent = element.textContent ?? '';
+		if (!textContent) return false;
+
+		const matchStart = textContent.toLocaleLowerCase().indexOf(snippet.toLocaleLowerCase());
+		if (matchStart === -1) return false;
+		const matchEnd = matchStart + snippet.length;
+
+		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+		const segments: Array<{ node: Text; start: number; end: number }> = [];
+		let cursor = 0;
+		let current = walker.nextNode();
+		while (current) {
+			const textNode = current as Text;
+			const length = textNode.nodeValue?.length ?? 0;
+			if (length > 0) {
+				segments.push({ node: textNode, start: cursor, end: cursor + length });
+				cursor += length;
+			}
+			current = walker.nextNode();
+		}
+
+		const startPos = findTextNodePosition(segments, matchStart);
+		const endPos = findTextNodePosition(segments, matchEnd);
+		if (!startPos || !endPos) return false;
+
+		const range = document.createRange();
+		range.setStart(startPos.node, startPos.offset);
+		range.setEnd(endPos.node, endPos.offset);
+		if (range.collapsed) return false;
+
+		const mark = document.createElement('mark');
+		mark.className = 'docx-contradiction-snippet';
+		if (meta?.ownerParagraphId) {
+			mark.dataset.contradictionOwner = meta.ownerParagraphId;
+		}
+		if (meta?.role) {
+			mark.dataset.contradictionRole = meta.role;
+		}
+		try {
+			range.surroundContents(mark);
+		} catch {
+			const extracted = range.extractContents();
+			mark.appendChild(extracted);
+			range.insertNode(mark);
+		}
+
+		return true;
+	}
+
+	function highlightSnippetAcrossDocument(
+		snippet: string,
+		preferredElement?: HTMLElement,
+		meta?: { ownerParagraphId?: string; role?: 'a' | 'b' }
+	): boolean {
+		if (!snippet.trim()) return false;
+
+		if (preferredElement && highlightSnippetInElement(preferredElement, snippet, meta)) {
+			return true;
+		}
+
+		for (const element of paragraphElementById.values()) {
+			if (preferredElement && element === preferredElement) continue;
+			if (highlightSnippetInElement(element, snippet, meta)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function updateActiveContradictionSnippetMarks() {
+		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		for (const mark of allMarks) {
+			mark.classList.remove('docx-contradiction-snippet--active');
+		}
+
+		const selected = get(selectedParagraph);
+		if (!selected?.id) return;
+		if (!contradictionResultsByParagraphId.get(selected.id)?.contradiction) return;
+
+		for (const mark of allMarks) {
+			if (mark.dataset.contradictionOwner === selected.id) {
+				mark.classList.add('docx-contradiction-snippet--active');
+			}
+		}
+	}
+
+	function focusEvidenceSnippet(paragraphId: string, role: 'a' | 'b') {
+		let targetMark: HTMLElement | null = null;
+		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		for (const mark of allMarks) {
+			if (
+				mark.dataset.contradictionOwner === paragraphId &&
+				mark.dataset.contradictionRole === role
+			) {
+				targetMark = mark;
+				break;
+			}
+		}
+
+		if (targetMark) {
+			targetMark.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			targetMark.classList.add('docx-contradiction-snippet--active');
+			window.setTimeout(() => {
+				targetMark?.classList.remove('docx-citation-flash');
+				targetMark?.classList.add('docx-citation-flash');
+			}, 80);
+			return;
+		}
+
+		focusNodeFromPanel(paragraphId, true);
+	}
+
 	function clearContradictionHighlights() {
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+			clearSnippetMarks(element);
 			delete element.dataset.contradictionConfidenceBand;
 			delete element.dataset.contradictionConfidence;
 			delete element.dataset.contradictionReason;
 		}
 	}
 
-	function resolveContradictionConfidenceBand(confidence: number): ContradictionScrollMarker['confidenceBand'] {
+	function resolveContradictionConfidenceBand(
+		confidence: number
+	): ContradictionScrollMarker['confidenceBand'] {
 		let confidenceBand: ContradictionScrollMarker['confidenceBand'] = 'low';
 		if (confidence >= 80) confidenceBand = 'high';
 		else if (confidence >= 50) confidenceBand = 'medium';
@@ -242,12 +475,49 @@
 			element.dataset.contradictionConfidenceBand = confidenceBand;
 			element.dataset.contradictionConfidence = String(result.confidence);
 			element.dataset.contradictionReason = result.brief_reason ?? '';
+
+			const evidence = result.evidence;
+			if (evidence?.snippet_a?.trim()) {
+				if (evidence.source_a === 'context') {
+					highlightSnippetAcrossDocument(evidence.snippet_a, element, {
+						ownerParagraphId: paragraphId,
+						role: 'a'
+					});
+				} else {
+					highlightSnippetInElement(element, evidence.snippet_a, {
+						ownerParagraphId: paragraphId,
+						role: 'a'
+					}) ||
+						highlightSnippetAcrossDocument(evidence.snippet_a, element, {
+							ownerParagraphId: paragraphId,
+							role: 'a'
+						});
+				}
+			}
+			if (evidence?.snippet_b?.trim()) {
+				if (evidence.source_b === 'context') {
+					highlightSnippetAcrossDocument(evidence.snippet_b, element, {
+						ownerParagraphId: paragraphId,
+						role: 'b'
+					});
+				} else {
+					highlightSnippetInElement(element, evidence.snippet_b, {
+						ownerParagraphId: paragraphId,
+						role: 'b'
+					}) ||
+						highlightSnippetAcrossDocument(evidence.snippet_b, element, {
+							ownerParagraphId: paragraphId,
+							role: 'b'
+						});
+				}
+			}
 		}
 
 		const selected = get(selectedParagraph);
 		if (selected?.id && contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
 			paragraphElementById.get(selected.id)?.classList.add('docx-contradiction-selected');
 		}
+		updateActiveContradictionSnippetMarks();
 
 		scheduleContradictionScrollMarkerRefresh();
 	}
@@ -370,6 +640,24 @@
 		}));
 	}
 
+	function buildFixRelatedContext(
+		limit: number = FIX_CONTRADICTION_TOP_RELATED
+	): SimplifyRelatedParagraph[] {
+		if (limit <= 0) return [];
+		return selectedRelatedParagraphs
+			.slice(0, limit)
+			.map((related) => ({
+				id: related.node.id,
+				text: getNodeCurrentText(nodeEditStateById, related.node),
+				paragraph_enum: related.node.paragraph_enum,
+				page: related.node.page,
+				relationTypes: related.relationTypes,
+				semanticScore: related.semanticScore,
+				references: related.references.map((reference) => `${reference.label} ${reference.value}`)
+			}))
+			.filter((related) => related.text.trim().length > 0);
+	}
+
 	function buildAssistantHistoryPayload() {
 		return assistantMessages.slice(-8).map((message) => ({
 			role: message.role,
@@ -388,7 +676,15 @@
 		void submitAssistantQuestion();
 	}
 
-	async function submitAssistantQuestion(questionOverride?: string) {
+	type SubmitAssistantQuestionOptions = {
+		mode?: AssistantMode;
+		scope?: AssistantScope;
+	};
+
+	async function submitAssistantQuestion(
+		questionOverride?: string,
+		options?: SubmitAssistantQuestionOptions
+	) {
 		if (assistantLoading) return;
 
 		const question = (questionOverride ?? assistantInput).trim();
@@ -405,7 +701,9 @@
 		}
 
 		const selected = get(selectedParagraph);
-		if (assistantScope === 'selected' && !selected) {
+		const resolvedScope = options?.scope ?? assistantScope;
+		const resolvedMode = options?.mode ?? assistantMode;
+		if (resolvedScope === 'selected' && !selected) {
 			assistantError = 'Select a paragraph before asking in selected-paragraph mode.';
 			return;
 		}
@@ -426,8 +724,8 @@
 		const payload: AssistantChatRequest = {
 			documentId: activeDocumentId,
 			question,
-			mode: assistantMode,
-			scope: assistantScope,
+			mode: resolvedMode,
+			scope: resolvedScope,
 			provider: assistantProvider,
 			selectedParagraphId: selected?.id ?? null,
 			relatedParagraphs: buildAssistantRelatedContext(),
@@ -435,7 +733,6 @@
 			history: buildAssistantHistoryPayload()
 		};
 
-		console.log("select", payload)
 		try {
 			const response = await fetchAssistantResponse(payload);
 			assistantMessages = [
@@ -449,10 +746,7 @@
 				}
 			];
 		} catch (assistantRequestError) {
-			const message = getAxiosErrorMessage(
-				assistantRequestError,
-				'Failed to generate a response.'
-			);
+			const message = getAxiosErrorMessage(assistantRequestError, 'Failed to generate a response.');
 			assistantError = message;
 			assistantMessages = [
 				...assistantMessages,
@@ -468,13 +762,106 @@
 		}
 	}
 
-	function askQuickAction(prompt: string) {
-		void submitAssistantQuestion(prompt);
+	function appendAssistantQuickActionMessage(content: string, citationId?: string) {
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'assistant',
+				content,
+				citations: citationId ? [{ id: citationId, excerpt: '(selected paragraph)' }] : undefined
+			}
+		];
+	}
+
+	async function askQuickAction(prompt: string) {
+		if (assistantLoading) return;
+		if (
+			prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
+			prompt === QUICK_ACTION_WHY_CONTRADICTION_AI
+		) {
+			const selected = get(selectedParagraph);
+			assistantError = null;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'user',
+					content: prompt
+				}
+			];
+
+			if (!selected) {
+				appendAssistantQuickActionMessage(
+					'Select a highlighted paragraph first, then run this contradiction quick action.'
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			const contradiction = contradictionResultsByParagraphId.get(selected.id);
+			if (!contradiction) {
+				appendAssistantQuickActionMessage(
+					'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.',
+					selected.id
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			if (!contradiction.contradiction) {
+				appendAssistantQuickActionMessage(
+					'This paragraph is not currently classified as contradiction.',
+					selected.id
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			if (prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE) {
+				const reason = (contradiction.brief_reason || 'No brief reason is available.').trim();
+				const confidence = Number.isFinite(contradiction.confidence) ? contradiction.confidence : 0;
+				const evidence = contradiction.evidence;
+				const evidenceLines =
+					evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
+						? [
+								`Snippet A (${evidence.source_a}): "${evidence.snippet_a}"`,
+								`Snippet B (${evidence.source_b}): "${evidence.snippet_b}"`
+							]
+						: ['No structured evidence snippets were returned by the classifier.'];
+				appendAssistantQuickActionMessage(
+					[
+						`Free explanation for paragraph ${selected.id}:`,
+						reason,
+						`Confidence: ${confidence}%`,
+						...evidenceLines,
+						'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.'
+					].join('\n\n'),
+					selected.id
+				);
+				await scrollAssistantToBottom();
+				return;
+			}
+
+			const aiWhyQuestion = [
+				`Why is selected paragraph ${selected.id} a contradiction?`,
+				'Point to exact conflicting statements and explain why they cannot both be true.',
+				'Cite paragraph IDs from the selected paragraph and its related context.'
+			].join(' ');
+
+			await submitAssistantQuestion(aiWhyQuestion, {
+				mode: 'explain',
+				scope: 'selected'
+			});
+			return;
+		}
+
+		await submitAssistantQuestion(prompt);
 	}
 
 	function handleQuickActionSelectionChange() {
 		if (!selectedQuickAction) return;
-		askQuickAction(selectedQuickAction);
+		void askQuickAction(selectedQuickAction);
 		selectedQuickAction = '';
 	}
 
@@ -493,7 +880,11 @@
 	}
 
 	function setSimplifyToolbarPosition(anchorRect: DOMRect) {
-		const { left, top } = computeSimplifyToolbarPosition(anchorRect, window.innerWidth);
+		const { left, top } = computeSimplifyToolbarPosition(
+			anchorRect,
+			window.innerWidth,
+			window.innerHeight
+		);
 		simplifyToolbarLeft = left;
 		simplifyToolbarTop = top;
 	}
@@ -537,6 +928,90 @@
 		return simplifyTarget;
 	}
 
+	async function runFixContradiction() {
+		if (fixContradictionLoading || assistantLoading || simplifyLoading) return;
+		if (!activeDocumentId) {
+			simplifyError = 'No document is loaded.';
+			return;
+		}
+
+		const target = resolveActiveSimplifyTarget();
+		if (!target) {
+			simplifyError = 'Select text in a paragraph or focus a paragraph to fix contradictions.';
+			return;
+		}
+
+		const paragraphNode = get(paragraphs).find((node) => node.id === target.paragraphId) ?? null;
+		if (paragraphNode) setSelectedParagraphNode(paragraphNode);
+
+		const contradiction = contradictionResultsByParagraphId.get(target.paragraphId);
+		if (!contradiction) {
+			simplifyError =
+				'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.';
+			return;
+		}
+
+		if (!contradiction.contradiction) {
+			simplifyError = 'This paragraph is not currently classified as contradiction.';
+			return;
+		}
+
+		const bounds = normalizeBounds(
+			target.selectionStart,
+			target.selectionEnd,
+			target.paragraphText.length
+		);
+		const selectionStart = bounds.start;
+		const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
+
+		fixContradictionLoading = true;
+		simplifyError = null;
+		try {
+			const response = await fetchFixContradictionSelection({
+				documentId: activeDocumentId,
+				provider: assistantProvider,
+				paragraphId: target.paragraphId,
+				paragraphText: target.paragraphText,
+				selectionStart,
+				selectionEnd,
+				contradictionReason: contradiction.brief_reason,
+				relatedParagraphs: buildFixRelatedContext()
+			});
+
+			simplifyResult = {
+				payload: response,
+				paragraphTextSnapshot: target.paragraphText,
+				createdAt: new Date().toISOString()
+			};
+
+			simplifyAuditTrail.unshift({
+				documentId: activeDocumentId,
+				provider: response.provider,
+				paragraphId: response.evidence.paragraph_id,
+				selectionStart: response.evidence.selection_start,
+				selectionEnd: response.evidence.selection_end,
+				originalSnippet: response.originalSnippet,
+				simplifiedSnippet: response.simplifiedSnippet,
+				systemPrompt: response.audit.system_prompt,
+				userPrompt: response.audit.user_prompt,
+				modelResponse: response.audit.model_response,
+				timestamp: new Date().toISOString()
+			});
+
+			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
+				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
+			}
+		} catch (fixRequestError) {
+			simplifyError = getAxiosErrorMessage(
+				fixRequestError,
+				'Failed to fix contradiction for selected text.'
+			);
+		} finally {
+			fixContradictionLoading = false;
+			refreshSimplifyTarget();
+		}
+	}
+
 	async function runSimplify() {
 		if (simplifyLoading) return;
 		if (!activeDocumentId) {
@@ -556,7 +1031,8 @@
 			target.paragraphText.length
 		);
 		const selectionStart = safeBounds.start;
-		const selectionEnd = safeBounds.end === safeBounds.start ? target.paragraphText.length : safeBounds.end;
+		const selectionEnd =
+			safeBounds.end === safeBounds.start ? target.paragraphText.length : safeBounds.end;
 
 		simplifyLoading = true;
 		simplifyError = null;
@@ -740,6 +1216,396 @@
 		}
 	}
 
+	const PAGE_OVERFLOW_TOLERANCE_PX = 10;
+	const PAGE_SPLIT_GUARD_LIMIT = 180;
+	const PAGE_HEIGHT_CALIBRATION_PX = 28;
+	const PAGE_SOFT_OVERFLOW_ALLOWANCE_PX = 24;
+	const DOCX_DEFAULT_TAB_INTERVAL_PX = 48;
+
+	function parsePxValue(rawValue?: string | null): number | null {
+		if (!rawValue) return null;
+		const parsed = Number.parseFloat(rawValue);
+		return Number.isFinite(parsed) ? parsed : null;
+	}
+
+	function isIgnorableTextNode(node: Node): boolean {
+		return node.nodeType === Node.TEXT_NODE && !(node.textContent ?? '').trim();
+	}
+
+	function getMeaningfulNodes(parent: HTMLElement): Node[] {
+		return Array.from(parent.childNodes).filter((child) => !isIgnorableTextNode(child));
+	}
+
+	function countMeaningfulChildren(parent: HTMLElement): number {
+		let count = 0;
+		for (const child of Array.from(parent.childNodes)) {
+			if (isIgnorableTextNode(child)) continue;
+			count += 1;
+		}
+		return count;
+	}
+
+	function getLastMeaningfulElement(parent: HTMLElement): HTMLElement | null {
+		const children = Array.from(parent.childNodes);
+		for (let i = children.length - 1; i >= 0; i -= 1) {
+			const node = children[i];
+			if (isIgnorableTextNode(node)) continue;
+			if (node instanceof HTMLElement) return node;
+			break;
+		}
+		return null;
+	}
+
+	function getPreviousMeaningfulSibling(node: Node | null): HTMLElement | null {
+		let current = node?.previousSibling ?? null;
+		while (current) {
+			if (!isIgnorableTextNode(current)) {
+				return current instanceof HTMLElement ? current : null;
+			}
+			current = current.previousSibling;
+		}
+		return null;
+	}
+
+	function parseDocxTabStops(rawStops: string | undefined): number[] {
+		if (!rawStops) return [];
+		return rawStops
+			.split(',')
+			.map((value) => Number.parseFloat(value))
+			.filter((value) => Number.isFinite(value) && value >= 0)
+			.sort((left, right) => left - right);
+	}
+
+	function splitNodesByDocxTabs(container: HTMLElement): Node[][] {
+		const segments: Node[][] = [[]];
+		for (const node of Array.from(container.childNodes)) {
+			if (node instanceof HTMLElement && node.dataset.docxTab === '1') {
+				segments.push([]);
+				continue;
+			}
+			segments[segments.length - 1].push(node);
+		}
+		return segments;
+	}
+
+	function segmentText(nodes: Node[]): string {
+		return normalizeEditableText(nodes.map((node) => node.textContent ?? '').join('')).trim();
+	}
+
+	function buildDocxTabGridTemplate(stops: number[], segmentsCount: number): string {
+		const requiredFixedCols = Math.max(segmentsCount - 1, 1);
+		const fixedCols: number[] = [];
+		let previousStop = 0;
+		for (const stop of stops) {
+			const width = Math.max(stop - previousStop, 2);
+			fixedCols.push(width);
+			previousStop = stop;
+			if (fixedCols.length >= requiredFixedCols) break;
+		}
+		while (fixedCols.length < requiredFixedCols) {
+			fixedCols.push(DOCX_DEFAULT_TAB_INTERVAL_PX);
+		}
+		const fixedTemplate = fixedCols.map((width) => `${Math.round(width)}px`).join(' ');
+		return `${fixedTemplate} minmax(0, 1fr)`;
+	}
+
+	function shouldUseDocxTabGridLayout(container: HTMLElement, stops: number[], segments: Node[][]): boolean {
+		if (container.dataset.docxListItem === 'true') return false;
+		if (stops.length === 0 || segments.length < 2) return false;
+		if (stops[0] < 120) return false;
+
+		const leadingText = segmentText(segments[0]);
+		const rightText = segmentText(segments[1]);
+		if (!leadingText && !rightText) return false;
+
+		const tabCount = segments.length - 1;
+		if (tabCount > 10) return false;
+		return true;
+	}
+
+	function applyDocxTabGridLayout(container: HTMLElement, stops: number[], segments: Node[][]) {
+		const totalColumns = Math.max(segments.length, 2);
+		const fragment = document.createDocumentFragment();
+		for (let index = 0; index < totalColumns; index += 1) {
+			const cell = document.createElement('span');
+			cell.dataset.docxTabCell = String(index + 1);
+			cell.style.display = 'block';
+			cell.style.minWidth = '0';
+			cell.style.whiteSpace = 'pre-wrap';
+			cell.style.wordBreak = 'break-word';
+			cell.style.gridColumn = String(index + 1);
+			const nodes = segments[index] ?? [];
+			for (const node of nodes) {
+				cell.appendChild(node);
+			}
+			fragment.appendChild(cell);
+		}
+
+		container.replaceChildren(fragment);
+		container.dataset.docxTabLayout = 'grid';
+		container.style.display = 'grid';
+		container.style.gridTemplateColumns = buildDocxTabGridTemplate(stops, segments.length);
+		container.style.columnGap = '0px';
+		container.style.alignItems = 'start';
+	}
+
+	function applyDocxTabStops(targetViewer: HTMLElement) {
+		const containers = targetViewer.querySelectorAll<HTMLElement>('[data-docx-tab-stops]');
+		for (const container of containers) {
+			const stops = parseDocxTabStops(container.dataset.docxTabStops);
+			if (stops.length === 0) continue;
+
+			const tabs = container.querySelectorAll<HTMLElement>('span[data-docx-tab=\"1\"]');
+			if (tabs.length === 0) continue;
+
+			const segments = splitNodesByDocxTabs(container);
+			if (shouldUseDocxTabGridLayout(container, stops, segments)) {
+				applyDocxTabGridLayout(container, stops, segments);
+				continue;
+			}
+
+			const containerRect = container.getBoundingClientRect();
+			for (const tab of tabs) {
+				tab.style.display = 'inline-block';
+				tab.style.minWidth = '0';
+				tab.style.width = '0';
+				tab.style.verticalAlign = 'baseline';
+
+				const tabRect = tab.getBoundingClientRect();
+				const currentX = Math.max(0, tabRect.left - containerRect.left);
+				let targetStop = stops.find((stop) => stop > currentX + 0.5);
+				if (targetStop == null) {
+					targetStop =
+						(Math.floor(currentX / DOCX_DEFAULT_TAB_INTERVAL_PX) + 1) * DOCX_DEFAULT_TAB_INTERVAL_PX;
+				}
+
+				const width = Math.max(2, targetStop - currentX);
+				tab.style.width = `${width}px`;
+				tab.style.minWidth = `${width}px`;
+				tab.textContent = '\u00a0';
+			}
+		}
+	}
+
+	function lockSectionHeight(section: HTMLElement, pageHeight: number) {
+		section.style.height = `${pageHeight}px`;
+		section.style.minHeight = `${pageHeight}px`;
+		section.style.maxHeight = `${pageHeight}px`;
+		section.style.overflow = 'hidden';
+	}
+
+	function createContinuationSection(section: HTMLElement): HTMLElement {
+		const continuation = section.cloneNode(false) as HTMLElement;
+		continuation.replaceChildren();
+		return continuation;
+	}
+
+	function splitSingleOversizedTableSection(
+		section: HTMLElement,
+		pageHeight: number
+	): HTMLElement | null {
+		const meaningfulNodes = getMeaningfulNodes(section);
+		if (meaningfulNodes.length !== 1) return null;
+		const soleNode = meaningfulNodes[0];
+		if (!(soleNode instanceof HTMLTableElement)) return null;
+
+		const sourceTable = soleNode;
+		const sourceBodies = Array.from(sourceTable.tBodies);
+		if (sourceBodies.length === 0) return null;
+		const initialBodyRows = sourceBodies.reduce((sum, body) => sum + body.rows.length, 0);
+		if (initialBodyRows <= 1) return null;
+
+		const continuationSection = createContinuationSection(section);
+		lockSectionHeight(continuationSection, pageHeight);
+
+		const continuationTable = sourceTable.cloneNode(false) as HTMLTableElement;
+		const continuationBodyBySource = new Map<HTMLTableSectionElement, HTMLTableSectionElement>();
+		for (const child of Array.from(sourceTable.children)) {
+			if (!(child instanceof HTMLElement)) continue;
+			const tag = child.tagName.toLowerCase();
+			if (tag === 'tbody') {
+				const clonedBody = child.cloneNode(false) as HTMLTableSectionElement;
+				continuationTable.appendChild(clonedBody);
+				continuationBodyBySource.set(child as HTMLTableSectionElement, clonedBody);
+				continue;
+			}
+			if (tag === 'tfoot') continue;
+			continuationTable.appendChild(child.cloneNode(true));
+		}
+
+		const targetBodies = Array.from(continuationTable.tBodies);
+		if (targetBodies.length === 0) {
+			const fallbackBody = document.createElement('tbody');
+			continuationTable.appendChild(fallbackBody);
+			const firstSourceBody = sourceBodies[0];
+			if (firstSourceBody) {
+				continuationBodyBySource.set(firstSourceBody, fallbackBody);
+			}
+		}
+
+		continuationSection.appendChild(continuationTable);
+		section.insertAdjacentElement('afterend', continuationSection);
+
+		let movedAny = false;
+		while (section.scrollHeight - section.clientHeight > PAGE_OVERFLOW_TOLERANCE_PX) {
+			const remainingRows = sourceBodies.reduce((sum, body) => sum + body.rows.length, 0);
+			if (remainingRows <= 1) break;
+
+			let sourceBodyToMove: HTMLTableSectionElement | null = null;
+			for (let i = sourceBodies.length - 1; i >= 0; i -= 1) {
+				if (sourceBodies[i].rows.length > 0) {
+					sourceBodyToMove = sourceBodies[i];
+					break;
+				}
+			}
+			if (!sourceBodyToMove) break;
+
+			const rowToMove = sourceBodyToMove.rows.item(sourceBodyToMove.rows.length - 1);
+			if (!rowToMove) break;
+
+			const targetBody = continuationBodyBySource.get(sourceBodyToMove);
+			if (!targetBody) break;
+
+			targetBody.prepend(rowToMove);
+			movedAny = true;
+		}
+
+		if (!movedAny) {
+			continuationSection.remove();
+			return null;
+		}
+
+		return continuationSection;
+	}
+
+	function splitSectionIntoPages(section: HTMLElement, pageHeight: number) {
+		lockSectionHeight(section, pageHeight);
+
+		let current = section;
+		let guard = 0;
+
+		while (
+			current.scrollHeight - current.clientHeight > PAGE_OVERFLOW_TOLERANCE_PX &&
+			guard < PAGE_SPLIT_GUARD_LIMIT
+		) {
+			const overflowPx = current.scrollHeight - current.clientHeight;
+			let softAllowancePx = PAGE_SOFT_OVERFLOW_ALLOWANCE_PX;
+			const lastMeaningfulElement = getLastMeaningfulElement(current);
+			if (lastMeaningfulElement && lastMeaningfulElement.tagName.toLowerCase() === 'p') {
+				const lastParagraphHeight = Math.ceil(lastMeaningfulElement.getBoundingClientRect().height);
+				softAllowancePx = Math.min(
+					Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, lastParagraphHeight + 12),
+					48
+				);
+			}
+			if (overflowPx <= softAllowancePx) {
+				lockSectionHeight(current, pageHeight + overflowPx);
+				break;
+			}
+
+			guard += 1;
+
+			if (countMeaningfulChildren(current) <= 1) {
+				const continuationFromTableSplit = splitSingleOversizedTableSection(current, pageHeight);
+				if (continuationFromTableSplit) {
+					current = continuationFromTableSplit;
+					continue;
+				}
+				// A single oversized block (usually a large table/image) cannot be split safely here.
+				current.style.height = 'auto';
+				current.style.maxHeight = 'none';
+				current.style.overflow = 'visible';
+				break;
+			}
+
+				const continuation = createContinuationSection(current);
+				current.insertAdjacentElement('afterend', continuation);
+				lockSectionHeight(continuation, pageHeight);
+
+				let movedAny = false;
+				let keptCurrentPageByAllowance = false;
+				while (current.scrollHeight - current.clientHeight > PAGE_OVERFLOW_TOLERANCE_PX) {
+					if (countMeaningfulChildren(current) <= 1) break;
+					const lastNode = current.lastChild;
+					if (!lastNode) break;
+					if (lastNode instanceof HTMLElement) {
+						const overflowPx = current.scrollHeight - current.clientHeight;
+						const isListItem = lastNode.dataset.docxListItem === 'true';
+						if (isListItem) {
+							const listItemHeight = Math.ceil(lastNode.getBoundingClientRect().height);
+							const keepListItemAllowance = Math.min(
+								Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, listItemHeight + 56),
+								120
+							);
+							if (overflowPx <= keepListItemAllowance) {
+								lockSectionHeight(current, pageHeight + overflowPx);
+								keptCurrentPageByAllowance = true;
+								break;
+							}
+						}
+
+						const previousMeaningful = getPreviousMeaningfulSibling(lastNode);
+						const isListContinuationBoundary =
+							lastNode.tagName.toLowerCase() === 'p' &&
+							previousMeaningful?.dataset.docxListItem === 'true';
+						if (isListContinuationBoundary) {
+							const continuationHeight = Math.ceil(lastNode.getBoundingClientRect().height);
+							const keepWithMarkerAllowance = Math.min(
+								Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, continuationHeight + 28),
+								96
+							);
+							if (overflowPx <= keepWithMarkerAllowance) {
+								lockSectionHeight(current, pageHeight + overflowPx);
+								keptCurrentPageByAllowance = true;
+								break;
+							}
+						}
+					}
+					continuation.prepend(lastNode);
+					movedAny = true;
+				}
+
+				if (!movedAny) {
+					continuation.remove();
+					if (keptCurrentPageByAllowance) {
+						break;
+					}
+					current.style.height = 'auto';
+					current.style.maxHeight = 'none';
+					current.style.overflow = 'visible';
+					break;
+				}
+
+			current = continuation;
+		}
+	}
+
+	function paginateRenderedSections(targetViewer: HTMLElement) {
+		const root = targetViewer.firstElementChild;
+		if (!(root instanceof HTMLElement)) return;
+
+		const sections = Array.from(root.children).filter(
+			(node): node is HTMLElement =>
+				node instanceof HTMLElement && node.tagName.toLowerCase() === 'section'
+		);
+
+		for (const section of sections) {
+			const declaredHeight =
+				parsePxValue(section.style.height) ?? parsePxValue(section.style.minHeight);
+			const measuredHeight = Math.round(section.getBoundingClientRect().height);
+			const pageHeight =
+				declaredHeight != null && declaredHeight > 0
+					? declaredHeight
+					: measuredHeight > 0
+						? measuredHeight
+						: null;
+			if (!pageHeight) continue;
+			// Word and browser font metrics differ slightly; use a small calibrated height
+			// to avoid premature splits that leave a mostly empty trailing area.
+			splitSectionIntoPages(section, pageHeight + PAGE_HEIGHT_CALIBRATION_PX);
+		}
+	}
+
 	async function renderDocument(docId: string) {
 		const token = ++renderToken;
 		loading.set(true);
@@ -772,7 +1638,9 @@
 			const nodesById = new Map<string, ParagraphNode>();
 			const syncParagraphNodeStore = () => {
 				paragraphs.set(
-					Array.from(nodesById.values()).sort((left, right) => left.paragraph_enum - right.paragraph_enum)
+					Array.from(nodesById.values()).sort(
+						(left, right) => left.paragraph_enum - right.paragraph_enum
+					)
 				);
 			};
 			const removeParagraphNode = (
@@ -804,6 +1672,42 @@
 					syncParagraphNodeStore();
 				}
 				return removed;
+			};
+			const pruneBlankSections = () => {
+				if (!viewer) return;
+				const root = viewer.firstElementChild;
+				if (!(root instanceof HTMLElement)) return;
+
+				const sections = Array.from(root.children).filter(
+					(node): node is HTMLElement =>
+						node instanceof HTMLElement && node.tagName.toLowerCase() === 'section'
+				);
+				if (sections.length === 0) return;
+
+				let removedAnyNode = false;
+				for (const section of sections) {
+					const hasMediaContent = Boolean(
+						section.querySelector('img,table,svg,canvas,video,audio,object,iframe')
+					);
+					const visibleText = normalizeEditableText(section.innerText ?? '').trim();
+					if (hasMediaContent || visibleText.length > 0) continue;
+
+					const nodeElements = section.querySelectorAll<HTMLElement>('[data-node-id]');
+					for (const nodeElement of nodeElements) {
+						const nodeId = nodeElement.dataset.nodeId;
+						if (!nodeId) continue;
+						const removed = removeParagraphNode(nodeId, {
+							freezeElement: true,
+							deferStoreSync: true
+						});
+						removedAnyNode = removedAnyNode || removed;
+					}
+					section.remove();
+				}
+
+				if (removedAnyNode) {
+					syncParagraphNodeStore();
+				}
 			};
 
 			const upsertParagraphNode = (node: ParagraphNode) => {
@@ -841,8 +1745,6 @@
 					constructor: { identify: (node: XmlNode, officeDocument: unknown) => unknown };
 				}
 			) => {
-				const tag = localName(node.name);
-				if (tag === 'styles' || tag === 'numbering') return null;
 				return officeDocument.constructor.identify(node, officeDocument);
 			};
 
@@ -871,6 +1773,14 @@
 
 			viewer.replaceChildren();
 			appendChildren(viewer, renderedRoot);
+			await tick();
+			if (document.fonts?.status !== 'loaded') {
+				await document.fonts.ready;
+				if (token !== renderToken || !viewer) return;
+			}
+			applyDocxTabStops(viewer);
+			paginateRenderedSections(viewer);
+			pruneBlankSections();
 			applyContradictionHighlights();
 
 			const structuralNoiseNodeIds = detectDocxNoiseNodeIds(viewer);
@@ -887,6 +1797,7 @@
 					syncParagraphNodeStore();
 				}
 			}
+			pruneBlankSections();
 
 			refreshSimplifyTarget();
 
@@ -922,20 +1833,75 @@
 		await renderDocument(docId);
 	}
 
+	function clampRightPanelWidth(nextWidth: number): number {
+		const viewportWidth = window.innerWidth || RIGHT_PANEL_DEFAULT_WIDTH;
+		const maxWidth = Math.max(RIGHT_PANEL_MIN_WIDTH, Math.floor(viewportWidth * RIGHT_PANEL_MAX_RATIO));
+		return Math.min(Math.max(nextWidth, RIGHT_PANEL_MIN_WIDTH), maxWidth);
+	}
+
+	function setRightPanelWidth(nextWidth: number) {
+		rightPanelWidth = clampRightPanelWidth(nextWidth);
+	}
+
+	function refreshViewportMode() {
+		isCompactLayout = window.innerWidth < 1024;
+	}
+
+	function stopRightPanelResize() {
+		if (!isResizingRightPanel) return;
+		isResizingRightPanel = false;
+		window.removeEventListener('mousemove', handleRightPanelResizeMove);
+		window.removeEventListener('mouseup', stopRightPanelResize);
+		document.body.style.userSelect = '';
+	}
+
+	function handleRightPanelResizeMove(event: MouseEvent) {
+		const desiredWidth = window.innerWidth - event.clientX;
+		setRightPanelWidth(desiredWidth);
+	}
+
+	function startRightPanelResize(event: MouseEvent) {
+		if (window.innerWidth < 1024) return;
+		event.preventDefault();
+		isResizingRightPanel = true;
+		document.body.style.userSelect = 'none';
+		window.addEventListener('mousemove', handleRightPanelResizeMove);
+		window.addEventListener('mouseup', stopRightPanelResize);
+	}
+
+	function handleRightPanelResizeKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			setRightPanelWidth(rightPanelWidth + RIGHT_PANEL_KEYBOARD_STEP);
+			return;
+		}
+		if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			setRightPanelWidth(rightPanelWidth - RIGHT_PANEL_KEYBOARD_STEP);
+		}
+	}
+
 	onMount(() => {
 		const handleDocumentSelectionChange = () => {
 			refreshSimplifyTarget();
 			scheduleContradictionScrollMarkerRefresh();
 		};
+		const handleViewportResize = () => {
+			refreshViewportMode();
+			handleDocumentSelectionChange();
+			setRightPanelWidth(rightPanelWidth);
+		};
 
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
 		document.addEventListener('mouseup', handleDocumentSelectionChange);
 		document.addEventListener('keyup', handleDocumentSelectionChange);
-		window.addEventListener('resize', handleDocumentSelectionChange);
+		window.addEventListener('resize', handleViewportResize);
 		window.addEventListener('scroll', handleDocumentSelectionChange, true);
 		documentScrollHost?.addEventListener('scroll', handleDocumentSelectionChange, {
 			passive: true
 		});
+		refreshViewportMode();
+		setRightPanelWidth(rightPanelWidth);
 
 		if (typeof ResizeObserver !== 'undefined') {
 			contradictionMarkerResizeObserver = new ResizeObserver(() => {
@@ -956,9 +1922,10 @@
 			document.removeEventListener('selectionchange', handleDocumentSelectionChange);
 			document.removeEventListener('mouseup', handleDocumentSelectionChange);
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
-			window.removeEventListener('resize', handleDocumentSelectionChange);
+			window.removeEventListener('resize', handleViewportResize);
 			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
+			stopRightPanelResize();
 			contradictionMarkerResizeObserver?.disconnect();
 			contradictionMarkerResizeObserver = null;
 			if (contradictionMarkerFrame != null) {
@@ -972,9 +1939,12 @@
 
 <main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans max-lg:flex-col">
 	<div
-		class="flex w-[60%] min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
+		class="flex min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
+		style={isCompactLayout ? '' : `width: calc(100% - ${rightPanelWidth}px);`}
 	>
-		<header class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3">
+		<header
+			class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3"
+		>
 			<div class="min-w-0">
 				<div class="truncate text-sm font-semibold text-gray-800">
 					{activeDocumentName || 'No document selected'}
@@ -1011,7 +1981,9 @@
 		</header>
 
 		{#if contradictionLoading || contradictionError || contradictionResultsByParagraphId.size > 0}
-			<div class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600">
+			<div
+				class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600"
+			>
 				{#if contradictionLoading}
 					<p>Processing contradiction classification...</p>
 				{:else if contradictionError}
@@ -1054,177 +2026,260 @@
 		</div>
 	</div>
 
-	<aside
-		class="flex min-h-0 w-[40%] flex-col overflow-hidden bg-white shadow-xl max-lg:h-[42%] max-lg:w-full"
+	<div
+		role="separator"
+		aria-orientation="vertical"
+		aria-label="Resize right panel"
+		tabindex="0"
+		class="relative hidden w-1 flex-none cursor-col-resize bg-gray-200 transition hover:bg-blue-300 focus:bg-blue-400 focus:outline-none lg:block"
+		on:mousedown={startRightPanelResize}
+		on:keydown={handleRightPanelResizeKeydown}
 	>
-		<div class="flex flex-none flex-col border-b border-gray-200">
-			<header
-				class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
-			>
-				<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">Node Diff</h3>
-				<div class="group relative inline-flex">
-					<span
-						class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
-						title={COMMIT_SHORTCUT_HINT}
-					>
-						{COMMIT_SHORTCUT_LABEL}
-					</span>
-					<div
-						class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
-							? 'animate-bounce'
-							: ''}"
-					>
-						{COMMIT_SHORTCUT_TOOLTIP}
+		<span
+			class="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400/70"
+		></span>
+	</div>
+
+	<aside
+		class="flex min-h-0 flex-col overflow-hidden bg-white shadow-xl max-lg:h-[42%] max-lg:w-full"
+		style={isCompactLayout ? '' : `width: ${rightPanelWidth}px;`}
+	>
+		<header
+			role="tablist"
+			aria-label="Right panel tabs"
+			class="flex flex-none items-end border-b border-gray-300 bg-gray-100 px-2 pt-2"
+		>
+			{#each RIGHT_PANEL_TABS as tab (tab.id)}
+				<button
+					type="button"
+					role="tab"
+					aria-selected={activeRightPanelTab === tab.id}
+					on:click={() => (activeRightPanelTab = tab.id)}
+					class={`-mb-px mr-1 rounded-t-md border px-3 py-1.5 text-[10px] font-semibold transition focus:outline-none ${
+						activeRightPanelTab === tab.id
+							? 'border-gray-300 border-b-white bg-white text-gray-800'
+							: 'border-transparent bg-gray-200 text-gray-600 hover:bg-gray-300/60 hover:text-gray-800'
+					}`}
+				>
+					{tab.label}
+				</button>
+			{/each}
+		</header>
+
+		{#if activeRightPanelTab === 'revisions'}
+			<section class="flex min-h-0 flex-1 flex-col">
+				<header
+					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
+				>
+					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
+						Paragraph Revisions
+					</h3>
+					<div class="group relative inline-flex">
+						<span
+							class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
+							title={COMMIT_SHORTCUT_HINT}
+						>
+							{COMMIT_SHORTCUT_LABEL}
+						</span>
+						<div
+							class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
+								? 'animate-bounce'
+								: ''}"
+						>
+							{COMMIT_SHORTCUT_TOOLTIP}
+						</div>
+					</div>
+				</header>
+
+				<div class="min-h-0 flex-1 overflow-y-auto p-3">
+					<div class="space-y-2">
+						{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+							<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+								<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+									<p class="text-[9px] font-bold tracking-widest text-red-700 uppercase">
+										Contradiction Evidence
+									</p>
+								</div>
+								<div class="space-y-2 p-2.5">
+									<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+										<div class="mb-1 flex items-center justify-between">
+											<span class="text-[9px] font-bold text-red-800 uppercase">Snippet A</span>
+											<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+												{selectedContradictionEvidence.source_a}
+											</span>
+										</div>
+										<button
+											type="button"
+											class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
+											on:click={() =>
+												selectedContradictionResult &&
+												focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+										>
+											{selectedContradictionEvidence.snippet_a}
+										</button>
+									</div>
+
+									<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+										<div class="mb-1 flex items-center justify-between">
+											<span class="text-[9px] font-bold text-red-800 uppercase">Snippet B</span>
+											<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+												{selectedContradictionEvidence.source_b}
+											</span>
+										</div>
+										<button
+											type="button"
+											class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
+											on:click={() =>
+												selectedContradictionResult &&
+												focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+										>
+											{selectedContradictionEvidence.snippet_b}
+										</button>
+									</div>
+								</div>
+							</div>
+						{/if}
+
+						{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
+							<div class="flex flex-col items-center justify-center py-2 text-gray-300">
+								<p class="text-[10px] italic">No active changes</p>
+							</div>
+						{:else}
+							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+								<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+									<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
+									<p class="font-mono leading-relaxed text-red-700/80">
+										{#each selectedChangeLog.oldSegments as segment}
+											{#if segment.changed}
+												<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+											{:else}
+												<span>{segment.value}</span>
+											{/if}
+										{/each}
+									</p>
+								</div>
+
+								<div class="bg-green-50/20 px-3 py-2">
+									<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
+										>Modified</span
+									>
+									<p class="font-mono leading-relaxed text-green-800">
+										{#each selectedChangeLog.newSegments as segment}
+											{#if segment.changed}
+												<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+											{:else}
+												<span>{segment.value}</span>
+											{/if}
+										{/each}
+									</p>
+								</div>
+							</div>
+						{/if}
+
+						{#if simplifyResult || simplifyLoading || simplifyError}
+							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+								<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-1.5">
+									<span class="block text-[8px] font-bold text-gray-400 uppercase">
+										Simplify Selection
+									</span>
+								</div>
+
+								<div class="space-y-2 p-2.5">
+									{#if simplifyLoading}
+										<div
+											class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500"
+										>
+											Simplifying selected text...
+										</div>
+									{/if}
+
+									{#if simplifyError}
+										<div
+											class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700"
+										>
+											{simplifyError}
+										</div>
+									{/if}
+
+									{#if simplifyResult}
+										<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
+											<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
+												<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase"
+													>Original Diff</span
+												>
+												<p class="font-mono leading-relaxed whitespace-pre-wrap text-red-700/80">
+													{#each simplifyResultDiff.oldSegments as segment}
+														{#if segment.changed}
+															<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+														{:else}
+															<span>{segment.value}</span>
+														{/if}
+													{/each}
+												</p>
+											</div>
+
+											<div class="bg-green-50/20 px-3 py-2">
+												<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
+													>Simplified Diff</span
+												>
+												<p class="font-mono leading-relaxed whitespace-pre-wrap text-green-800">
+													{#each simplifyResultDiff.newSegments as segment}
+														{#if segment.changed}
+															<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+														{:else}
+															<span>{segment.value}</span>
+														{/if}
+													{/each}
+												</p>
+											</div>
+										</div>
+
+										<div
+											class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500"
+										>
+											<p>
+												evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
+												{simplifyResult.payload.evidence.selection_start}-
+												{simplifyResult.payload.evidence.selection_end}
+											</p>
+											<p class="mt-1 truncate" title={simplifyResult.payload.audit.user_prompt}>
+												audit: prompt/response captured ({simplifyResult.payload.provider})
+											</p>
+											<p class="mt-1">audit trail entries: {simplifyAuditTrail.length}</p>
+										</div>
+
+										<div class="flex flex-wrap items-center gap-1.5">
+											<button
+												type="button"
+												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+												on:click={replaceSelectionWithSimplifiedText}
+											>
+												Replace selection
+											</button>
+											<button
+												type="button"
+												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+												on:click={() => void copySimplifiedSnippet()}
+											>
+												Copy
+											</button>
+											<button
+												type="button"
+												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
+												on:click={cancelSimplifyResult}
+											>
+												Cancel
+											</button>
+										</div>
+									{/if}
+								</div>
+							</div>
+						{/if}
 					</div>
 				</div>
-			</header>
-
-			<div class="max-h-[35vh] overflow-y-auto p-3">
-				<div class="space-y-2">
-					{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
-						<div class="flex flex-col items-center justify-center py-2 text-gray-300">
-							<p class="text-[10px] italic">No active changes</p>
-						</div>
-					{:else}
-						<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-							<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-								<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
-								<p class="font-mono leading-relaxed text-red-700/80">
-									{#each selectedChangeLog.oldSegments as segment}
-										{#if segment.changed}
-											<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-										{:else}
-											<span>{segment.value}</span>
-										{/if}
-									{/each}
-								</p>
-							</div>
-
-							<div class="bg-green-50/20 px-3 py-2">
-								<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Modified</span>
-								<p class="font-mono leading-relaxed text-green-800">
-									{#each selectedChangeLog.newSegments as segment}
-										{#if segment.changed}
-											<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-										{:else}
-											<span>{segment.value}</span>
-										{/if}
-									{/each}
-								</p>
-							</div>
-						</div>
-					{/if}
-
-					{#if simplifyResult || simplifyLoading || simplifyError}
-						<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-							<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-1.5">
-								<span class="block text-[8px] font-bold text-gray-400 uppercase">
-									Simplify Selection
-								</span>
-							</div>
-
-							<div class="space-y-2 p-2.5">
-								{#if simplifyLoading}
-									<div class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500">
-										Simplifying selected text...
-									</div>
-								{/if}
-
-								{#if simplifyError}
-									<div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700">
-										{simplifyError}
-									</div>
-								{/if}
-
-								{#if simplifyResult}
-									<div class="rounded border border-gray-100 text-[11px]">
-										<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-gray-400 uppercase">Original</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-gray-700">
-												{simplifyResult.payload.originalSnippet}
-											</p>
-										</div>
-										<div class="px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-blue-300 uppercase">Simplified</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-blue-900">
-												{simplifyResult.payload.simplifiedSnippet}
-											</p>
-										</div>
-									</div>
-
-									<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-										<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original Diff</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-red-700/80">
-												{#each simplifyResultDiff.oldSegments as segment}
-													{#if segment.changed}
-														<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-													{:else}
-														<span>{segment.value}</span>
-													{/if}
-												{/each}
-											</p>
-										</div>
-
-										<div class="bg-green-50/20 px-3 py-2">
-											<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase">Simplified Diff</span>
-											<p class="whitespace-pre-wrap font-mono leading-relaxed text-green-800">
-												{#each simplifyResultDiff.newSegments as segment}
-													{#if segment.changed}
-														<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-													{:else}
-														<span>{segment.value}</span>
-													{/if}
-												{/each}
-											</p>
-										</div>
-									</div>
-
-									<div class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500">
-										<p>
-											evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
-											{simplifyResult.payload.evidence.selection_start}-
-											{simplifyResult.payload.evidence.selection_end}
-										</p>
-										<p class="mt-1 truncate" title={simplifyResult.payload.audit.user_prompt}>
-											audit: prompt/response captured ({simplifyResult.payload.provider})
-										</p>
-										<p class="mt-1">audit trail entries: {simplifyAuditTrail.length}</p>
-									</div>
-
-									<div class="flex flex-wrap items-center gap-1.5">
-										<button
-											type="button"
-											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-											on:click={replaceSelectionWithSimplifiedText}
-										>
-											Replace selection
-										</button>
-										<button
-											type="button"
-											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-											on:click={() => void copySimplifiedSnippet()}
-										>
-											Copy
-										</button>
-										<button
-											type="button"
-											class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-											on:click={cancelSimplifyResult}
-										>
-											Cancel
-										</button>
-									</div>
-								{/if}
-							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
-		</div>
-
-			<div class="grid min-h-0 flex-1 grid-rows-[minmax(0,1.15fr)_minmax(0,1fr)]">
-			<section class="flex min-h-0 flex-col border-b border-gray-200">
+			</section>
+		{:else if activeRightPanelTab === 'related'}
+			<section class="flex min-h-0 flex-1 flex-col">
 				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
 					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
 						Related Paragraphs
@@ -1236,20 +2291,10 @@
 				>
 					{#if !$selectedParagraph}
 						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-							<svg
-								class="mb-2 h-6 w-6 opacity-20"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-							>
-								<path
-									stroke-linecap="round"
-									stroke-linejoin="round"
-									stroke-width="2"
-									d="M13 10V3L4 14h7v7l9-11h-7z"
-								/>
-							</svg>
-							<p class="text-[10px] font-medium tracking-widest uppercase">Select text to analyze</p>
+							<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
+							<p class="text-[10px] font-medium tracking-widest uppercase">
+								Select text to analyze
+							</p>
 						</div>
 					{:else if selectedRelatedParagraphs.length === 0}
 						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
@@ -1303,11 +2348,13 @@
 					{/if}
 				</div>
 			</section>
-
-			<section class="flex min-h-0 flex-col bg-white">
-				<header class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+		{:else}
+			<section class="flex min-h-0 flex-1 flex-col bg-white">
+				<header
+					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
+				>
 					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-						What-if Contract Assistant
+						Contract Chat Assistant
 					</h3>
 					<select
 						bind:value={assistantProvider}
@@ -1319,38 +2366,36 @@
 					</select>
 				</header>
 
-					<div
-						class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2"
+				<div class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2">
+					<select
+						bind:value={assistantMode}
+						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
 					>
-						<select
-							bind:value={assistantMode}
-							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-						>
-							{#each MODE_OPTIONS as option}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
+						{#each MODE_OPTIONS as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
 
-						<select
-							bind:value={assistantScope}
-							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-						>
-							{#each SCOPE_OPTIONS as option}
-								<option value={option.value}>{option.label}</option>
-							{/each}
-						</select>
+					<select
+						bind:value={assistantScope}
+						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+					>
+						{#each SCOPE_OPTIONS as option}
+							<option value={option.value}>{option.label}</option>
+						{/each}
+					</select>
 
-						<select
-							bind:value={selectedQuickAction}
-							on:change={handleQuickActionSelectionChange}
-							class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-						>
-							<option value="">Quick Action</option>
-							{#each QUICK_ACTIONS as action}
-								<option value={action}>{action}</option>
-							{/each}
-						</select>
-					</div>
+					<select
+						bind:value={selectedQuickAction}
+						on:change={handleQuickActionSelectionChange}
+						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+					>
+						<option value="">Quick Action</option>
+						{#each QUICK_ACTIONS as action}
+							<option value={action}>{action}</option>
+						{/each}
+					</select>
+				</div>
 
 				<div
 					bind:this={assistantThread}
@@ -1358,7 +2403,7 @@
 				>
 					{#if assistantMessages.length === 0 && !assistantLoading}
 						<div class="flex flex-1 flex-col items-center justify-center text-gray-300">
-							<p class="text-[10px] italic">Ask what-if questions about this contract</p>
+							<p class="text-[10px] italic">Chat about this contract</p>
 						</div>
 					{/if}
 
@@ -1411,7 +2456,9 @@
 
 					{#if assistantLoading}
 						<div class="flex justify-start">
-							<div class="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[11px] text-gray-500">
+							<div
+								class="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[11px] text-gray-500"
+							>
 								Analyzing contract context...
 							</div>
 						</div>
@@ -1430,39 +2477,80 @@
 				>
 					<textarea
 						rows="2"
-						placeholder="What happens if I don't?, Can I terminate?, Who is liable?"
+						placeholder="Ask about this contract or paragraph..."
 						bind:value={assistantInput}
 						on:keydown={handleAssistantInputKeydown}
-						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 outline-none transition focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
+						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 transition outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
 					></textarea>
 					<div class="mt-1.5 flex items-center justify-between">
-							<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
+						<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
 						<button
 							type="submit"
 							disabled={assistantLoading || !assistantInput.trim()}
-							class="rounded border border-gray-200 bg-white px-3 py-1 text-[10px] font-bold text-gray-600 transition disabled:cursor-not-allowed disabled:opacity-40 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+							class="rounded border border-gray-200 bg-white px-3 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
 						>
 							Ask
 						</button>
 					</div>
 				</form>
 			</section>
-		</div>
+		{/if}
 	</aside>
 
 	{#if simplifyToolbarVisible && simplifyTarget}
 		<div
-			class="fixed z-40 rounded-md border border-gray-200 bg-white p-1 shadow-lg"
+			class="fixed z-40 w-52 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
 			style={`top: ${simplifyToolbarTop}px; left: ${simplifyToolbarLeft}px;`}
 		>
+			<p class="px-1 pb-1 text-[9px] font-bold tracking-[0.12em] text-slate-400 uppercase">
+				Paragraph Tools
+			</p>
+			<div class="flex flex-col gap-1.5">
+				<button
+					type="button"
+					class="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-800 transition hover:border-amber-300 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+					disabled={fixContradictionLoading || assistantLoading || simplifyLoading}
+					on:mousedown|preventDefault
+					on:click={() => void runFixContradiction()}
+				>
+					<span class="inline-flex items-center gap-1.5">
+						<HammerShieldIcon className="h-3.5 w-3.5" />
+						<span>{fixContradictionLoading ? 'Fixing...' : 'Fix contradiction'}</span>
+					</span>
+					<!-- <span
+						class="rounded border border-amber-300 bg-white px-1 py-0.5 text-[8px] font-black text-amber-700"
+					>
+						AI
+					</span> -->
+				</button>
+
+				<button
+					type="button"
+					class="flex items-center justify-between rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+					disabled={simplifyLoading || fixContradictionLoading}
+					on:mousedown|preventDefault
+					on:click={() => void runSimplify()}
+				>
+					<span class="inline-flex items-center gap-1.5">
+						<SimplifyWandIcon className="h-3.5 w-3.5" />
+						<span>{simplifyLoading ? 'Simplifying...' : 'Simplify'}</span>
+					</span>
+					<!-- <span
+						class="rounded border border-sky-300 bg-white px-1 py-0.5 text-[8px] font-black text-sky-700"
+					>
+						AI
+					</span> -->
+				</button>
+			</div>
 			<button
+				class="mt-2 w-full rounded border border-gray-200 bg-white px-2 py-1 text-[9px] font-semibold text-gray-500 transition hover:border-gray-300 hover:bg-gray-50"
 				type="button"
-				class="rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-bold text-gray-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-				disabled={simplifyLoading}
 				on:mousedown|preventDefault
-				on:click={() => void runSimplify()}
+				on:click={() => {
+					simplifyToolbarVisible = false;
+				}}
 			>
-				{simplifyLoading ? 'Simplifying...' : 'Simplify'}
+				Close tools
 			</button>
 		</div>
 	{/if}
@@ -1547,22 +2635,38 @@
 	}
 
 	:global(.docx-contradiction-highlight) {
-		background: rgba(254, 226, 226, 0.58);
+		background: transparent;
 		box-shadow: inset 3px 0 0 #dc2626;
 	}
 
 	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='medium']) {
-		background: rgba(254, 242, 242, 0.66);
+		background: transparent;
 		box-shadow: inset 3px 0 0 #ef4444;
 	}
 
 	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='low']) {
-		background: rgba(255, 247, 237, 0.78);
+		background: transparent;
 		box-shadow: inset 3px 0 0 #f97316;
 	}
 
 	:global(.docx-contradiction-selected) {
-		outline: 1px solid #dc2626;
+		outline: none;
+	}
+
+	:global(mark.docx-contradiction-snippet) {
+		background: transparent;
+		color: #991b1b;
+		padding: 0 1px;
+		border-radius: 1px;
+		text-decoration: underline;
+		text-decoration-color: #dc2626;
+		text-decoration-thickness: 2px;
+		text-underline-offset: 2px;
+	}
+
+	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active) {
+		background: rgba(254, 202, 202, 0.55);
+		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
 	}
 
 	:global(.docx-contradiction-scroll-marker) {
