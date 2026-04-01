@@ -6,7 +6,7 @@ class Config:
   # CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf")
   # CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx")
   CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf_contradictions")
-  CUAD_DOC_DIR = Path("../infra/CUAD_v1/reviewed_contract_docx_contradictions")
+  CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx_contradictions")
   EDITED_PDF_DIR = Path("../infra/edited_pdfs")
   EDITED_DOC_DIR = Path("../infra/edited_docs")
   SAVED_CONTRADICTIONS_DIR = Path(
