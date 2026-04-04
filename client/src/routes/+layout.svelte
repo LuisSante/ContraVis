@@ -1,6 +1,6 @@
 <script lang="ts">
 	import './layout.css';
-	import favicon from '$lib/icons/favicon.svg';
+	import favicon from '$lib/icons/icons8-justiça-100.png';
 	import { loading } from '$lib/stores/document';
 	import { fade } from 'svelte/transition';
 
