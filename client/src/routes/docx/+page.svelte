@@ -52,7 +52,6 @@
 		updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
-		buildChangeLog,
 		ensureNodeEditState,
 		formatReferenceSummary,
 		getNodeCurrentText,
@@ -120,7 +119,6 @@
 	let simplifyToolbarLeft = 0;
 	let simplifyTarget: SimplifyTarget | null = null;
 	let simplifyResult: SimplifyResultState | null = null;
-	let simplifyResultDiff: ChangeLogState = { hasChanges: false, oldSegments: [], newSegments: [] };
 	let simplifyLoading = false;
 	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
@@ -142,20 +140,34 @@
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
-	type RightPanelTab = 'related' | 'revisions' | 'assistant';
-	const RIGHT_PANEL_TABS: Array<{ id: RightPanelTab; label: string }> = [
+	type RightPanelTab =
+		| 'related'
+		| 'analysis'
+		| 'redundancy'
+		| 'summarize'
+		| 'ambiguity'
+		| 'revisions'
+		| 'assistant';
+	const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
 		{ id: 'related', label: 'Related Paragraphs' },
+		{ id: 'analysis', label: 'Contradiction Analysis' },
+		{ id: 'redundancy', label: 'Redundancy Analysis' },
+		{ id: 'summarize', label: 'Summarize & Simplify' },
+		{ id: 'ambiguity', label: 'Ambiguity Analysis' },
 		{ id: 'revisions', label: 'Paragraph Revisions' },
 		{ id: 'assistant', label: 'Contract Chat Assistant' }
 	];
-	const RIGHT_PANEL_MIN_WIDTH = 360;
-	const RIGHT_PANEL_DEFAULT_WIDTH = 540;
-	const RIGHT_PANEL_MAX_RATIO = 0.68;
-	const RIGHT_PANEL_KEYBOARD_STEP = 24;
+	const RIGHT_TOOLBAR_WIDTH = 58;
+	const RIGHT_DRAWER_MIN_WIDTH = 360;
+	const RIGHT_DRAWER_DEFAULT_WIDTH = 520;
+	const RIGHT_DRAWER_MAX_RATIO = 0.68;
+	const RIGHT_DRAWER_KEYBOARD_STEP = 24;
 	let activeRightPanelTab: RightPanelTab = 'related';
-	let rightPanelWidth = RIGHT_PANEL_DEFAULT_WIDTH;
-	let isResizingRightPanel = false;
+	let isRightDrawerOpen = true;
 	let isCompactLayout = false;
+	let rightDrawerWidth = RIGHT_DRAWER_DEFAULT_WIDTH;
+	let isResizingRightDrawer = false;
+	$: activeDrawerWidth = !isCompactLayout && isRightDrawerOpen ? rightDrawerWidth : 0;
 
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
 		(row) => row.contradiction
@@ -167,13 +179,34 @@
 		selectedContradictionResult?.contradiction && selectedContradictionResult.evidence
 			? selectedContradictionResult.evidence
 			: null;
-
-	$: simplifyResultDiff = simplifyResult
-		? buildChangeLog(
-				simplifyResult.payload.originalSnippet,
-				simplifyResult.payload.simplifiedSnippet
-			)
-		: { hasChanges: false, oldSegments: [], newSegments: [] };
+	$: relatedProcessingSteps = [
+		{
+			label: 'Scanning document structure',
+			active: backendGraphLoading
+		},
+		{
+			label: 'Analyzing paragraph relations',
+			active: backendGraphLoading
+		},
+		{
+			label: 'Searching linked context',
+			active: backendGraphLoading
+		}
+	];
+	$: revisionProcessingSteps = [
+		{
+			label: 'Scanning selected paragraph',
+			active: contradictionLoading
+		},
+		{
+			label: 'Analyzing conflict candidates',
+			active: contradictionLoading
+		},
+		{
+			label: 'Searching contradiction evidence',
+			active: contradictionLoading
+		}
+	];
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
 		const nextState = buildInspectorState({
@@ -557,6 +590,9 @@
 	}
 
 	async function loadSavedContradictions() {
+		activeRightPanelTab = 'analysis';
+		isRightDrawerOpen = true;
+
 		if (!activeDocumentId) {
 			contradictionError = 'No document is loaded.';
 			return;
@@ -575,6 +611,9 @@
 	}
 
 	async function searchContradictionsWithLlm() {
+		activeRightPanelTab = 'analysis';
+		isRightDrawerOpen = true;
+
 		if (backendGraphLoading) {
 			contradictionError = 'Wait until graph generation finishes before searching contradictions.';
 			return;
@@ -1400,52 +1439,62 @@
 		await renderDocument(docId);
 	}
 
-	function clampRightPanelWidth(nextWidth: number): number {
-		const viewportWidth = window.innerWidth || RIGHT_PANEL_DEFAULT_WIDTH;
-		const maxWidth = Math.max(RIGHT_PANEL_MIN_WIDTH, Math.floor(viewportWidth * RIGHT_PANEL_MAX_RATIO));
-		return Math.min(Math.max(nextWidth, RIGHT_PANEL_MIN_WIDTH), maxWidth);
-	}
-
-	function setRightPanelWidth(nextWidth: number) {
-		rightPanelWidth = clampRightPanelWidth(nextWidth);
-	}
-
 	function refreshViewportMode() {
 		isCompactLayout = window.innerWidth < 1024;
 	}
 
-	function stopRightPanelResize() {
-		if (!isResizingRightPanel) return;
-		isResizingRightPanel = false;
-		window.removeEventListener('mousemove', handleRightPanelResizeMove);
-		window.removeEventListener('mouseup', stopRightPanelResize);
+	function clampRightDrawerWidth(nextWidth: number): number {
+		const viewportWidth = window.innerWidth || RIGHT_DRAWER_DEFAULT_WIDTH;
+		const maxWidth = Math.max(RIGHT_DRAWER_MIN_WIDTH, Math.floor(viewportWidth * RIGHT_DRAWER_MAX_RATIO));
+		return Math.min(Math.max(nextWidth, RIGHT_DRAWER_MIN_WIDTH), maxWidth);
+	}
+
+	function setRightDrawerWidth(nextWidth: number) {
+		rightDrawerWidth = clampRightDrawerWidth(nextWidth);
+	}
+
+	function stopRightDrawerResize() {
+		if (!isResizingRightDrawer) return;
+		isResizingRightDrawer = false;
+		window.removeEventListener('mousemove', handleRightDrawerResizeMove);
+		window.removeEventListener('mouseup', stopRightDrawerResize);
 		document.body.style.userSelect = '';
 	}
 
-	function handleRightPanelResizeMove(event: MouseEvent) {
-		const desiredWidth = window.innerWidth - event.clientX;
-		setRightPanelWidth(desiredWidth);
+	function handleRightDrawerResizeMove(event: MouseEvent) {
+		const desiredWidth = window.innerWidth - RIGHT_TOOLBAR_WIDTH - event.clientX;
+		setRightDrawerWidth(desiredWidth);
 	}
 
-	function startRightPanelResize(event: MouseEvent) {
-		if (window.innerWidth < 1024) return;
+	function startRightDrawerResize(event: MouseEvent) {
+		if (window.innerWidth < 1024 || !isRightDrawerOpen) return;
 		event.preventDefault();
-		isResizingRightPanel = true;
+		isResizingRightDrawer = true;
 		document.body.style.userSelect = 'none';
-		window.addEventListener('mousemove', handleRightPanelResizeMove);
-		window.addEventListener('mouseup', stopRightPanelResize);
+		window.addEventListener('mousemove', handleRightDrawerResizeMove);
+		window.addEventListener('mouseup', stopRightDrawerResize);
 	}
 
-	function handleRightPanelResizeKeydown(event: KeyboardEvent) {
+	function handleRightDrawerResizeKeydown(event: KeyboardEvent) {
+		if (!isRightDrawerOpen) return;
 		if (event.key === 'ArrowLeft') {
 			event.preventDefault();
-			setRightPanelWidth(rightPanelWidth + RIGHT_PANEL_KEYBOARD_STEP);
+			setRightDrawerWidth(rightDrawerWidth + RIGHT_DRAWER_KEYBOARD_STEP);
 			return;
 		}
 		if (event.key === 'ArrowRight') {
 			event.preventDefault();
-			setRightPanelWidth(rightPanelWidth - RIGHT_PANEL_KEYBOARD_STEP);
+			setRightDrawerWidth(rightDrawerWidth - RIGHT_DRAWER_KEYBOARD_STEP);
 		}
+	}
+
+	function selectRightTool(tabId: RightPanelTab) {
+		if (activeRightPanelTab === tabId && isRightDrawerOpen) {
+			isRightDrawerOpen = false;
+			return;
+		}
+		activeRightPanelTab = tabId;
+		isRightDrawerOpen = true;
 	}
 
 	onMount(() => {
@@ -1456,7 +1505,7 @@
 		const handleViewportResize = () => {
 			refreshViewportMode();
 			handleDocumentSelectionChange();
-			setRightPanelWidth(rightPanelWidth);
+			setRightDrawerWidth(rightDrawerWidth);
 		};
 
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
@@ -1468,7 +1517,7 @@
 			passive: true
 		});
 		refreshViewportMode();
-		setRightPanelWidth(rightPanelWidth);
+		setRightDrawerWidth(rightDrawerWidth);
 
 		if (typeof ResizeObserver !== 'undefined') {
 			contradictionMarkerResizeObserver = new ResizeObserver(() => {
@@ -1492,7 +1541,7 @@
 			window.removeEventListener('resize', handleViewportResize);
 			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
-			stopRightPanelResize();
+			stopRightDrawerResize();
 			contradictionMarkerResizeObserver?.disconnect();
 			contradictionMarkerResizeObserver = null;
 			if (contradictionMarkerFrame != null) {
@@ -1504,10 +1553,12 @@
 	});
 </script>
 
-<main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans max-lg:flex-col">
+<main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans">
 	<div
-		class="flex min-w-0 flex-col border-r border-gray-300 max-lg:h-[58%] max-lg:w-full max-lg:border-r-0 max-lg:border-b"
-		style={isCompactLayout ? '' : `width: calc(100% - ${rightPanelWidth}px);`}
+		class="flex min-w-0 flex-col border-r border-gray-300"
+		style={isCompactLayout
+			? ''
+			: `width: calc(100% - ${RIGHT_TOOLBAR_WIDTH + activeDrawerWidth}px);`}
 	>
 		<header
 			class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3"
@@ -1547,13 +1598,11 @@
 			</div>
 		</header>
 
-		{#if contradictionLoading || contradictionError || contradictionResultsByParagraphId.size > 0}
+		{#if contradictionError || contradictionResultsByParagraphId.size > 0}
 			<div
 				class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600"
 			>
-				{#if contradictionLoading}
-					<p>Processing contradiction classification...</p>
-				{:else if contradictionError}
+				{#if contradictionError}
 					<p class="text-red-700">{contradictionError}</p>
 				{:else}
 					<p>
@@ -1593,54 +1642,295 @@
 		</div>
 	</div>
 
-	<div
-		role="separator"
-		aria-orientation="vertical"
-		aria-label="Resize right panel"
-		tabindex="0"
-		class="relative hidden w-1 flex-none cursor-col-resize bg-gray-200 transition hover:bg-blue-300 focus:bg-blue-400 focus:outline-none lg:block"
-		on:mousedown={startRightPanelResize}
-		on:keydown={handleRightPanelResizeKeydown}
-	>
-		<span
-			class="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400/70"
-		></span>
-	</div>
+	{#if isCompactLayout && isRightDrawerOpen}
+		<button
+			type="button"
+			class="absolute inset-0 z-30 bg-slate-900/25"
+			on:click={() => (isRightDrawerOpen = false)}
+			aria-label="Close side panel"
+		></button>
+	{/if}
+
+	{#if !isCompactLayout && isRightDrawerOpen}
+		<div
+			role="separator"
+			aria-orientation="vertical"
+			aria-label="Resize side panel"
+			tabindex="0"
+			class="absolute top-0 bottom-0 z-50 w-1 cursor-col-resize bg-gray-200/80 transition hover:bg-teal-300 focus:bg-teal-400 focus:outline-none"
+			style={`right: ${RIGHT_TOOLBAR_WIDTH + rightDrawerWidth}px;`}
+			on:mousedown={startRightDrawerResize}
+			on:keydown={handleRightDrawerResizeKeydown}
+		>
+			<span
+				class="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400/70"
+			></span>
+		</div>
+	{/if}
 
 	<aside
-		class="flex min-h-0 flex-col overflow-hidden bg-white shadow-xl max-lg:h-[42%] max-lg:w-full"
-		style={isCompactLayout ? '' : `width: ${rightPanelWidth}px;`}
+		class={`right-drawer absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-gray-200 bg-white transition-transform duration-300 ${
+			isCompactLayout ? 'right-16 w-[min(92vw,430px)]' : ''
+		} ${isRightDrawerOpen ? 'right-drawer--open shadow-2xl' : 'right-drawer--closed'}`}
+		style={isCompactLayout
+			? ''
+			: `right: ${RIGHT_TOOLBAR_WIDTH}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${RIGHT_TOOLBAR_WIDTH}px;`}
 	>
-		<header
-			role="tablist"
-			aria-label="Right panel tabs"
-			class="flex flex-none items-end border-b border-gray-300 bg-gray-100 px-2 pt-2"
-		>
-			{#each RIGHT_PANEL_TABS as tab (tab.id)}
-				<button
-					type="button"
-					role="tab"
-					aria-selected={activeRightPanelTab === tab.id}
-					on:click={() => (activeRightPanelTab = tab.id)}
-					class={`-mb-px mr-1 rounded-t-md border px-3 py-1.5 text-[10px] font-semibold transition focus:outline-none ${
-						activeRightPanelTab === tab.id
-							? 'border-gray-300 border-b-white bg-white text-gray-800'
-							: 'border-transparent bg-gray-200 text-gray-600 hover:bg-gray-300/60 hover:text-gray-800'
-					}`}
+		<header class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+			<div class="min-w-0">
+				<h2 class="inline-flex items-center gap-1.5 truncate text-[11px] font-bold tracking-[0.16em] text-gray-700 uppercase">
+					<span class="shrink-0 text-blue-700">
+					{#if activeRightPanelTab === 'related'}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<path d="M8 7h8M8 12h8M8 17h5" stroke-linecap="round" />
+							<rect x="4" y="4" width="16" height="16" rx="3" />
+						</svg>
+					{:else if activeRightPanelTab === 'analysis'}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<circle cx="12" cy="12" r="8" />
+							<path d="m9.5 9.5 5 5M14.5 9.5l-5 5" stroke-linecap="round" />
+						</svg>
+					{:else if activeRightPanelTab === 'redundancy'}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<rect x="5" y="6" width="10" height="7" rx="1.5" />
+							<rect x="9" y="11" width="10" height="7" rx="1.5" />
+						</svg>
+					{:else if activeRightPanelTab === 'summarize'}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<path d="M6 7h12M6 11h9M6 15h7" stroke-linecap="round" />
+							<path d="M18 18l2-2" stroke-linecap="round" />
+						</svg>
+					{:else if activeRightPanelTab === 'ambiguity'}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<path d="M12 17v.01" stroke-linecap="round" />
+							<path d="M9.3 9a2.7 2.7 0 0 1 5.4 0c0 1.6-1.35 2.1-2.2 2.8-.58.47-.8.84-.8 1.4" stroke-linecap="round" />
+							<circle cx="12" cy="12" r="9" />
+						</svg>
+					{:else if activeRightPanelTab === 'revisions'}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<path d="m7 16 3-3 2 2 5-5" stroke-linecap="round" stroke-linejoin="round" />
+							<path d="M5 20h14" stroke-linecap="round" />
+							<path d="M5 4h14" stroke-linecap="round" />
+						</svg>
+					{:else}
+						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
+							<path d="M6 18h4l3 2v-2h5a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z" />
+							<path d="M8 10h8M8 13h5" stroke-linecap="round" />
+						</svg>
+					{/if}
+					</span>
+					<span>{RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label}</span>
+				</h2>
+			</div>
+			<button
+				type="button"
+				class="rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-500 transition hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
+				on:click={() => (isRightDrawerOpen = false)}
+				aria-label="Close"
+				title="Close"
+			>
+				<svg
+					viewBox="0 0 24 24"
+					fill="none"
+					class="h-4 w-4"
+					stroke="currentColor"
+					stroke-width="2"
+					aria-hidden="true"
 				>
-					{tab.label}
-				</button>
-			{/each}
+					<path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
+				</svg>
+			</button>
 		</header>
 
-		{#if activeRightPanelTab === 'revisions'}
+		{#if activeRightPanelTab === 'analysis'}
+			<section class="flex min-h-0 flex-1 flex-col">
+				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+					<p class="text-[11px] text-gray-500">
+						Inspect contradictions, confidence, and evidence for the selected paragraph.
+					</p>
+				</header>
+
+				<div class="min-h-0 flex-1 overflow-y-auto p-3">
+					<div class="space-y-2">
+						{#if contradictionLoading}
+							<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
+								<p class="mb-2 text-[10px] font-bold tracking-[0.14em] text-gray-500 uppercase">
+									Processing Panel
+								</p>
+								<ul class="space-y-1.5 text-[12px] text-gray-600">
+									{#each revisionProcessingSteps as step, index}
+										<li class="processing-step flex items-center gap-2" style={`--step-delay: ${index * 220}ms;`}>
+											<span class="processing-dot" aria-hidden="true"></span>
+											<span class="processing-label">
+												{step.label}
+												<span class="processing-ellipsis" aria-hidden="true">
+													<span>.</span><span>.</span><span>.</span>
+												</span>
+											</span>
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{/if}
+
+						{#if !$selectedParagraph}
+							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+								<p class="text-[10px] font-medium tracking-wide uppercase">
+									Select a paragraph to analyze contradictions
+								</p>
+								<p class="mt-1 text-[10px] text-gray-400">
+									Choose a paragraph in the document on the left.
+								</p>
+							</div>
+						{:else if !selectedContradictionResult}
+							<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
+								No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.
+							</div>
+						{:else if !selectedContradictionResult.contradiction}
+							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+								<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
+							</div>
+						{:else}
+							<div class="rounded border border-red-200 bg-red-50/65 px-3 py-2 text-[11px] text-red-800">
+								<p>
+									Confidence: {selectedContradictionResult.confidence}% · {selectedContradictionResult.brief_reason}
+								</p>
+							</div>
+
+							{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+								<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+									<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+										<p class="text-[9px] font-bold tracking-widest text-red-700 uppercase">
+											Contradiction Evidence
+										</p>
+									</div>
+									<div class="space-y-2 p-2.5">
+										<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+											<div class="mb-1 flex items-center justify-between">
+												<span class="text-[9px] font-bold text-red-800 uppercase">Snippet A</span>
+												<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+													{selectedContradictionEvidence.source_a}
+												</span>
+											</div>
+											<button
+												type="button"
+												class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
+												on:click={() =>
+													selectedContradictionResult &&
+													focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+											>
+												{selectedContradictionEvidence.snippet_a}
+											</button>
+										</div>
+
+										<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+											<div class="mb-1 flex items-center justify-between">
+												<span class="text-[9px] font-bold text-red-800 uppercase">Snippet B</span>
+												<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+													{selectedContradictionEvidence.source_b}
+												</span>
+											</div>
+											<button
+												type="button"
+												class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
+												on:click={() =>
+													selectedContradictionResult &&
+													focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+											>
+												{selectedContradictionEvidence.snippet_b}
+											</button>
+										</div>
+									</div>
+								</div>
+							{:else}
+								<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
+									Evidence snippets are unavailable for this contradiction.
+								</div>
+							{/if}
+						{/if}
+					</div>
+				</div>
+			</section>
+		{:else if activeRightPanelTab === 'redundancy'}
+			<section class="flex min-h-0 flex-1 flex-col">
+				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+					<p class="text-[11px] text-gray-500">
+						Inspect repetitive statements and overlapping ideas in the selected paragraph.
+					</p>
+				</header>
+				<div class="min-h-0 flex-1 overflow-y-auto p-3">
+					{#if !$selectedParagraph}
+						<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+							<p class="text-[10px] font-medium tracking-wide uppercase">
+								Select a paragraph to analyze redundancies
+							</p>
+							<p class="mt-1 text-[10px] text-gray-400">
+								Choose a paragraph in the document on the left.
+							</p>
+						</div>
+					{:else}
+						<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
+							Redundancy analysis UI is ready. Backend processing will be connected in a future step.
+						</div>
+					{/if}
+				</div>
+			</section>
+		{:else if activeRightPanelTab === 'summarize'}
+			<section class="flex min-h-0 flex-1 flex-col">
+				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+					<p class="text-[11px] text-gray-500">
+						Get concise rewrite suggestions to summarize and simplify the selected paragraph.
+					</p>
+				</header>
+				<div class="min-h-0 flex-1 overflow-y-auto p-3">
+					{#if !$selectedParagraph}
+						<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+							<p class="text-[10px] font-medium tracking-wide uppercase">
+								Select a paragraph to summarize and simplify
+							</p>
+							<p class="mt-1 text-[10px] text-gray-400">
+								Choose a paragraph in the document on the left.
+							</p>
+						</div>
+					{:else}
+						<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
+							Summarization and simplification panel is available in the UI. Backend suggestions will be added next.
+						</div>
+					{/if}
+				</div>
+			</section>
+		{:else if activeRightPanelTab === 'ambiguity'}
+			<section class="flex min-h-0 flex-1 flex-col">
+				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+					<p class="text-[11px] text-gray-500">
+						Inspect ambiguous wording and unclear obligations in the selected paragraph.
+					</p>
+				</header>
+				<div class="min-h-0 flex-1 overflow-y-auto p-3">
+					{#if !$selectedParagraph}
+						<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+							<p class="text-[10px] font-medium tracking-wide uppercase">
+								Select a paragraph to analyze ambiguities
+							</p>
+							<p class="mt-1 text-[10px] text-gray-400">
+								Choose a paragraph in the document on the left.
+							</p>
+						</div>
+					{:else}
+						<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
+							Ambiguity analysis UI is ready. Backend detection will be connected in a future step.
+						</div>
+					{/if}
+				</div>
+			</section>
+		{:else if activeRightPanelTab === 'revisions'}
 			<section class="flex min-h-0 flex-1 flex-col">
 				<header
 					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
 				>
-					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-						Paragraph Revisions
-					</h3>
+					<p class="text-[11px] text-gray-500">
+						View modification history and compare original versus edited content.
+					</p>
 					<div class="group relative inline-flex">
 						<span
 							class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
@@ -1660,56 +1950,18 @@
 
 				<div class="min-h-0 flex-1 overflow-y-auto p-3">
 					<div class="space-y-2">
-						{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-							<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-								<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-									<p class="text-[9px] font-bold tracking-widest text-red-700 uppercase">
-										Contradiction Evidence
-									</p>
-								</div>
-								<div class="space-y-2 p-2.5">
-									<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-										<div class="mb-1 flex items-center justify-between">
-											<span class="text-[9px] font-bold text-red-800 uppercase">Snippet A</span>
-											<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
-												{selectedContradictionEvidence.source_a}
-											</span>
-										</div>
-										<button
-											type="button"
-											class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
-											on:click={() =>
-												selectedContradictionResult &&
-												focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
-										>
-											{selectedContradictionEvidence.snippet_a}
-										</button>
-									</div>
-
-									<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-										<div class="mb-1 flex items-center justify-between">
-											<span class="text-[9px] font-bold text-red-800 uppercase">Snippet B</span>
-											<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
-												{selectedContradictionEvidence.source_b}
-											</span>
-										</div>
-										<button
-											type="button"
-											class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
-											on:click={() =>
-												selectedContradictionResult &&
-												focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
-										>
-											{selectedContradictionEvidence.snippet_b}
-										</button>
-									</div>
-								</div>
+						{#if !$selectedParagraph}
+							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+								<p class="text-[10px] font-medium tracking-wide uppercase">
+									Select a paragraph to view revision history
+								</p>
+								<p class="mt-1 text-[10px] text-gray-400">
+									Choose a paragraph in the document on the left.
+								</p>
 							</div>
-						{/if}
-
-						{#if !$selectedParagraph || !selectedChangeLog.hasChanges}
+						{:else if !selectedChangeLog.hasChanges}
 							<div class="flex flex-col items-center justify-center py-2 text-gray-300">
-								<p class="text-[10px] italic">No active changes</p>
+								<p class="text-[10px] italic">No modifications recorded for this paragraph.</p>
 							</div>
 						{:else}
 							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
@@ -1742,125 +1994,47 @@
 								</div>
 							</div>
 						{/if}
-
-						{#if simplifyResult || simplifyLoading || simplifyError}
-							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-								<div class="border-b border-gray-50 bg-gray-50/60 px-3 py-1.5">
-									<span class="block text-[8px] font-bold text-gray-400 uppercase">
-										Simplify Selection
-									</span>
-								</div>
-
-								<div class="space-y-2 p-2.5">
-									{#if simplifyLoading}
-										<div
-											class="rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-500"
-										>
-											Simplifying selected text...
-										</div>
-									{/if}
-
-									{#if simplifyError}
-										<div
-											class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700"
-										>
-											{simplifyError}
-										</div>
-									{/if}
-
-									{#if simplifyResult}
-										<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-											<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-												<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase"
-													>Original Diff</span
-												>
-												<p class="font-mono leading-relaxed whitespace-pre-wrap text-red-700/80">
-													{#each simplifyResultDiff.oldSegments as segment}
-														{#if segment.changed}
-															<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-														{:else}
-															<span>{segment.value}</span>
-														{/if}
-													{/each}
-												</p>
-											</div>
-
-											<div class="bg-green-50/20 px-3 py-2">
-												<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
-													>Simplified Diff</span
-												>
-												<p class="font-mono leading-relaxed whitespace-pre-wrap text-green-800">
-													{#each simplifyResultDiff.newSegments as segment}
-														{#if segment.changed}
-															<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-														{:else}
-															<span>{segment.value}</span>
-														{/if}
-													{/each}
-												</p>
-											</div>
-										</div>
-
-										<div
-											class="rounded border border-gray-100 bg-gray-50 px-2.5 py-2 text-[9px] text-gray-500"
-										>
-											<p>
-												evidence: {simplifyResult.payload.evidence.paragraph_id} Â·
-												{simplifyResult.payload.evidence.selection_start}-
-												{simplifyResult.payload.evidence.selection_end}
-											</p>
-											<p class="mt-1 truncate" title={simplifyResult.payload.audit.user_prompt}>
-												audit: prompt/response captured ({simplifyResult.payload.provider})
-											</p>
-											<p class="mt-1">audit trail entries: {simplifyAuditTrail.length}</p>
-										</div>
-
-										<div class="flex flex-wrap items-center gap-1.5">
-											<button
-												type="button"
-												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-												on:click={replaceSelectionWithSimplifiedText}
-											>
-												Replace selection
-											</button>
-											<button
-												type="button"
-												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-												on:click={() => void copySimplifiedSnippet()}
-											>
-												Copy
-											</button>
-											<button
-												type="button"
-												class="rounded border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-bold text-gray-600 transition hover:border-red-300 hover:bg-red-50 hover:text-red-700"
-												on:click={cancelSimplifyResult}
-											>
-												Cancel
-											</button>
-										</div>
-									{/if}
-								</div>
-							</div>
-						{/if}
 					</div>
 				</div>
 			</section>
 		{:else if activeRightPanelTab === 'related'}
 			<section class="flex min-h-0 flex-1 flex-col">
 				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-						Related Paragraphs
-					</h3>
+					<p class="text-[11px] text-gray-500">
+						View linked paragraphs, relation types, and semantic similarity context.
+					</p>
 				</header>
 
 				<div
 					class="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2"
 				>
-					{#if !$selectedParagraph}
+					{#if backendGraphLoading}
+						<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
+							<p class="mb-2 text-[10px] font-bold tracking-[0.14em] text-gray-500 uppercase">
+								Processing Panel
+							</p>
+							<ul class="space-y-1.5 text-[12px] text-gray-600">
+								{#each relatedProcessingSteps as step, index}
+									<li class="processing-step flex items-center gap-2" style={`--step-delay: ${index * 220}ms;`}>
+										<span class="processing-dot" aria-hidden="true"></span>
+										<span class="processing-label">
+											{step.label}
+											<span class="processing-ellipsis" aria-hidden="true">
+												<span>.</span><span>.</span><span>.</span>
+											</span>
+										</span>
+									</li>
+								{/each}
+							</ul>
+						</div>
+					{:else if !$selectedParagraph}
 						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
 							<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
-							<p class="text-[10px] font-medium tracking-widest uppercase">
-								Select text to analyze
+							<p class="text-center text-[10px] font-medium tracking-widest uppercase">
+								Select a paragraph to view related items
+							</p>
+							<p class="mt-1 text-center text-[10px] text-gray-400">
+								Choose a paragraph in the document on the left.
 							</p>
 						</div>
 					{:else if selectedRelatedParagraphs.length === 0}
@@ -1920,9 +2094,9 @@
 				<header
 					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
 				>
-					<h3 class="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-						Contract Chat Assistant
-					</h3>
+					<p class="text-[11px] text-gray-500">
+						Ask questions and get contextual help grounded in the selected contract.
+					</p>
 					<select
 						bind:value={assistantProvider}
 						class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-600"
@@ -2064,6 +2238,117 @@
 		{/if}
 	</aside>
 
+	<aside
+		class="grammarly-rail absolute top-0 right-0 bottom-0 z-50"
+		aria-label="Tools sidebar"
+	>
+		<div class="grammarly-rail__inner">
+			{#each RIGHT_PANEL_TOOLS as item (item.id)}
+				<div class="grammarly-rail__item group relative">
+					<button
+						type="button"
+						on:click={() => selectRightTool(item.id)}
+						class={`grammarly-rail__button ${
+							activeRightPanelTab === item.id && isRightDrawerOpen
+								? 'grammarly-rail__button--active'
+								: 'grammarly-rail__button--idle'
+						}`}
+						aria-label={item.label}
+						title={item.label}
+					>
+						{#if item.id === 'related'}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<path d="M8 7h8M8 12h8M8 17h5" stroke-linecap="round" />
+								<rect x="4" y="4" width="16" height="16" rx="3" />
+							</svg>
+						{:else if item.id === 'analysis'}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<circle cx="12" cy="12" r="8" />
+								<path d="m9.5 9.5 5 5M14.5 9.5l-5 5" stroke-linecap="round" />
+							</svg>
+						{:else if item.id === 'redundancy'}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<rect x="5" y="6" width="10" height="7" rx="1.5" />
+								<rect x="9" y="11" width="10" height="7" rx="1.5" />
+							</svg>
+						{:else if item.id === 'summarize'}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<path d="M6 7h12M6 11h9M6 15h7" stroke-linecap="round" />
+								<path d="M18 18l2-2" stroke-linecap="round" />
+							</svg>
+						{:else if item.id === 'ambiguity'}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<path d="M12 17v.01" stroke-linecap="round" />
+								<path d="M9.3 9a2.7 2.7 0 0 1 5.4 0c0 1.6-1.35 2.1-2.2 2.8-.58.47-.8.84-.8 1.4" stroke-linecap="round" />
+								<circle cx="12" cy="12" r="9" />
+							</svg>
+						{:else if item.id === 'revisions'}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<path d="m7 16 3-3 2 2 5-5" stroke-linecap="round" stroke-linejoin="round" />
+								<path d="M5 20h14" stroke-linecap="round" />
+								<path d="M5 4h14" stroke-linecap="round" />
+							</svg>
+						{:else}
+							<svg
+								viewBox="0 0 24 24"
+								fill="none"
+								class="h-[18px] w-[18px]"
+								stroke="currentColor"
+								stroke-width="1.8"
+							>
+								<path d="M6 18h4l3 2v-2h5a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z" />
+								<path d="M8 10h8M8 13h5" stroke-linecap="round" />
+							</svg>
+						{/if}
+					</button>
+					<div
+						class={`grammarly-rail__tooltip pointer-events-none absolute top-1/2 right-full mr-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold shadow-md ${
+							activeRightPanelTab === item.id ? 'text-slate-900' : 'text-slate-500'
+						}`}
+					>
+						{item.label}
+					</div>
+				</div>
+			{/each}
+		</div>
+	</aside>
+
 	{#if simplifyToolbarVisible && simplifyTarget}
 		<div
 			class="fixed z-40 w-52 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
@@ -2122,25 +2407,6 @@
 		</div>
 	{/if}
 
-	{#if backendGraphLoading}
-		<div
-			class="absolute inset-0 z-50 flex items-center justify-center bg-white/65 backdrop-blur-[1.5px]"
-		>
-			<div
-				class="backend-loader-card flex items-center gap-3 rounded-md border border-gray-200 bg-white px-4 py-3 shadow-xl"
-			>
-				<div class="relative h-5 w-5" aria-hidden="true">
-					<span class="absolute inset-0 rounded-full border-2 border-gray-200"></span>
-					<span
-						class="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-blue-500 border-r-blue-500"
-					></span>
-				</div>
-				<p class="text-[11px] font-semibold tracking-tight text-gray-600">
-					Loading backend relationships...
-				</p>
-			</div>
-		</div>
-	{/if}
 </main>
 
 <style>
@@ -2269,6 +2535,143 @@
 		border-radius: 10px;
 	}
 
+	.grammarly-rail {
+		width: 58px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px 8px;
+	}
+
+	.grammarly-rail__inner {
+		display: flex;
+		height: 100%;
+		width: 44px;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 0;
+		border: 1px solid #e5e7eb;
+		border-radius: 22px;
+		background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+		box-shadow:
+			0 1px 2px rgba(15, 23, 42, 0.08),
+			0 10px 24px rgba(15, 23, 42, 0.07);
+	}
+
+	.grammarly-rail__item {
+		position: relative;
+	}
+
+	.grammarly-rail__button {
+		display: inline-flex;
+		height: 30px;
+		width: 30px;
+		align-items: center;
+		justify-content: center;
+		border-radius: 9999px;
+		border: 1px solid transparent;
+		transition:
+			transform 150ms cubic-bezier(0.2, 0.85, 0.2, 1),
+			background-color 150ms ease,
+			border-color 150ms ease,
+			color 150ms ease,
+			box-shadow 160ms ease;
+	}
+
+	.grammarly-rail__button--idle {
+		color: #1d4ed8;
+		background: transparent;
+	}
+
+	.grammarly-rail__item:hover .grammarly-rail__button--idle {
+		border-color: #bfdbfe;
+		background: #eff6ff;
+		color: #1d4ed8;
+		transform: translateX(-1px) scale(1.03);
+		box-shadow: 0 6px 14px rgba(59, 130, 246, 0.22);
+	}
+
+	.grammarly-rail__button--active {
+		border-color: #93c5fd;
+		background: #dbeafe;
+		color: #1d4ed8;
+		box-shadow:
+			0 0 0 2px rgba(147, 197, 253, 0.55),
+			0 7px 16px rgba(29, 78, 216, 0.25);
+	}
+
+	.grammarly-rail__tooltip {
+		opacity: 0;
+		transform: translate(-4px, -50%);
+		transition:
+			opacity 140ms ease,
+			transform 170ms cubic-bezier(0.2, 0.85, 0.2, 1);
+	}
+
+	.grammarly-rail:hover .grammarly-rail__tooltip {
+		opacity: 1;
+		transform: translate(0, -50%);
+	}
+
+	.right-drawer--open {
+		transform: translateX(0);
+		pointer-events: auto;
+		opacity: 1;
+		visibility: visible;
+	}
+
+	.right-drawer--closed {
+		transform: translateX(calc(100% + var(--drawer-rail-offset, 58px) + 20px));
+		pointer-events: none;
+		box-shadow: none;
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.processing-step {
+		opacity: 0.45;
+		animation: processing-step-fade 1.35s ease-in-out infinite;
+		animation-delay: var(--step-delay, 0ms);
+	}
+
+	.processing-dot {
+		height: 6px;
+		width: 6px;
+		border-radius: 9999px;
+		background: #6b7280;
+		opacity: 0.35;
+		animation: processing-dot-pulse 1.2s ease-in-out infinite;
+		animation-delay: var(--step-delay, 0ms);
+	}
+
+	.processing-label {
+		color: #4b5563;
+	}
+
+	.processing-ellipsis {
+		display: inline-flex;
+		min-width: 14px;
+		margin-left: 1px;
+	}
+
+	.processing-ellipsis > span {
+		opacity: 0.18;
+		animation: processing-ellipsis-dot 0.95s ease-in-out infinite;
+	}
+
+	.processing-ellipsis > span:nth-child(1) {
+		animation-delay: 0ms;
+	}
+
+	.processing-ellipsis > span:nth-child(2) {
+		animation-delay: 140ms;
+	}
+
+	.processing-ellipsis > span:nth-child(3) {
+		animation-delay: 280ms;
+	}
+
 	@keyframes bounce {
 		0%,
 		100% {
@@ -2295,6 +2698,38 @@
 		100% {
 			background-color: transparent;
 			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+		}
+	}
+
+	@keyframes processing-dot-pulse {
+		0%,
+		100% {
+			opacity: 0.2;
+			transform: scale(0.85);
+		}
+		45% {
+			opacity: 0.95;
+			transform: scale(1.06);
+		}
+	}
+
+	@keyframes processing-step-fade {
+		0%,
+		100% {
+			opacity: 0.42;
+		}
+		50% {
+			opacity: 0.95;
+		}
+	}
+
+	@keyframes processing-ellipsis-dot {
+		0%,
+		100% {
+			opacity: 0.15;
+		}
+		50% {
+			opacity: 1;
 		}
 	}
 </style>

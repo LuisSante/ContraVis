@@ -91,11 +91,6 @@ A contradiction means two or more statements in the paragraph/context are mutual
 Use context:
 Each paragraph includes related paragraphs from the contract graph. Use them as contextual evidence, but classify contradiction for the target paragraph.
 
-Do NOT consider as contradiction by default:
-- clarifications
-- conditional amendments
-- hierarchical clauses (e.g., "subject to", "except as provided")
-- general-vs-specific unless irreconcilable
 
 Return ONLY valid JSON (no markdown, no extra text) with this shape:
 {{
@@ -104,7 +99,13 @@ Return ONLY valid JSON (no markdown, no extra text) with this shape:
       "paragraph_id": "string or integer",
       "contradiction": true or false,
       "confidence": integer from 0 to 100,
-      "brief_reason": "one short sentence"
+      "brief_reason": "one short sentence",
+      "evidence": {{
+        "snippet_a": "exact short quote #1 that conflicts",
+        "snippet_b": "exact short quote #2 that conflicts",
+        "source_a": "paragraph | context | unknown",
+        "source_b": "paragraph | context | unknown"
+      }}
     }}
   ]
 }}
