@@ -3,13 +3,7 @@
 	import { page } from '$app/stores';
 	import { get } from 'svelte/store';
 	import { api } from '$lib/api/client';
-	import {
-		currentDocument,
-		error,
-		loading,
-		paragraphs,
-		selectedParagraph
-	} from '$lib/stores/document';
+	import { currentDocument, error, loading, paragraphs, selectedParagraph } from '$lib/stores/document';
 	import { getAxiosErrorMessage } from '$lib/utils/http-error';
 	import { appendChildren, localName, normalizeEditableText } from '$lib/utils/paragraph';
 	import { createRenderer } from '$lib/utils/docx/renderer';
@@ -23,6 +17,7 @@
 		AssistantProvider,
 		AssistantScope,
 		ChangeLogState,
+		ContradictionTaxonomyType,
 		ContradictionAnalysisRequest,
 		ContradictionParagraphResult,
 		Edge as GraphEdge,
@@ -30,9 +25,13 @@
 		ParagraphEditState,
 		RelatedParagraph,
 		SimplifyRelatedParagraph,
+		StructuredContradictionAnalysis,
 		XmlNode,
 		SimplifyResultState,
-		SimplifyAuditRecord
+		SimplifyAuditRecord,
+		RightPanelTab,
+		ChatHighlightSegment,
+		ContradictionScrollMarker
 	} from '$lib/types/document';
 	import {
 		buildInspectorState,
@@ -64,12 +63,22 @@
 		EDITABLE_PARAGRAPH_CLASSES,
 		MAX_SIMPLIFY_AUDIT_TRAIL,
 		CONTRADICTION_OPENAI_MODEL_OPTIONS,
+		CONTRADICTION_TAXONOMY_COLORS,
+		CONTRADICTION_TAXONOMY_ORDER,
+		CONTRADICTION_TAXONOMY_LABELS,
 		MODE_OPTIONS,
 		PROVIDER_OPTIONS,
 		QUICK_ACTIONS,
 		QUICK_ACTION_WHY_CONTRADICTION_AI,
 		QUICK_ACTION_WHY_CONTRADICTION_FREE,
-		SCOPE_OPTIONS
+		SCOPE_OPTIONS, 
+		RIGHT_DRAWER_DEFAULT_WIDTH,
+		RIGHT_TOOLBAR_WIDTH,
+		RIGHT_DRAWER_KEYBOARD_STEP,
+		RIGHT_DRAWER_MIN_WIDTH,
+		RIGHT_DRAWER_MAX_RATIO,
+		RIGHT_PANEL_TOOLS,
+		FIX_CONTRADICTION_TOP_RELATED
 	} from '$lib/constants/docx-viewer';
 	import {
 		buildTargetForWholeParagraph,
@@ -92,6 +101,13 @@
 	import SimplifyWandIcon from '$lib/icons/SimplifyWandIcon.svelte';
 	import SummarizeSimplifyIcon from '$lib/icons/SummarizeSimplifyIcon.svelte';
 
+	const initialInspectorState = createEmptyInspectorState();
+	const nodeEditStateById = new Map<string, ParagraphEditState>();
+	const paragraphElementById = new Map<string, HTMLElement>();
+	const paragraphRelationHostById = new Map<string, HTMLElement>();
+	const relationsCountByNodeId = new Map<string, number>();
+	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
 	let assistantThread: HTMLDivElement | null = null;
@@ -100,18 +116,12 @@
 	let localError: string | null = null;
 	let renderToken = 0;
 	let releaseDoc: (() => void) | null = null;
-	const initialInspectorState = createEmptyInspectorState();
 	let selectedNodeId: string | null = initialInspectorState.selectedNodeId;
 	let selectedChangeLog: ChangeLogState = initialInspectorState.selectedChangeLog;
-	let selectedRelatedParagraphs: RelatedParagraph[] =
-		initialInspectorState.selectedRelatedParagraphs;
+	let selectedRelatedParagraphs: RelatedParagraph[] = initialInspectorState.selectedRelatedParagraphs;
 	let backendEdges: GraphEdge[] = [];
 	let backendGraphLoading = false;
 	let graphComputationToken = 0;
-	const nodeEditStateById = new Map<string, ParagraphEditState>();
-	const paragraphElementById = new Map<string, HTMLElement>();
-	const paragraphRelationHostById = new Map<string, HTMLElement>();
-	const relationsCountByNodeId = new Map<string, number>();
 
 	let assistantMode: AssistantMode = 'explain';
 	let assistantScope: AssistantScope = 'selected';
@@ -130,48 +140,18 @@
 	let simplifyLoading = false;
 	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
-	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
-	const FIX_CONTRADICTION_TOP_RELATED = 3;
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
 	let contradictionModel = 'gpt-4.1';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
-	type ContradictionScrollMarker = {
-		paragraphId: string;
-		topPercent: number;
-		confidenceBand: 'high' | 'medium' | 'low';
-	};
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
-   
-	type RightPanelTab =
-		| 'related'
-		| 'analysis'
-		| 'redundancy'
-		| 'summarize'
-		| 'ambiguity'
-		| 'revisions'
-		| 'assistant';
-	const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
-		{ id: 'related', label: 'Related Paragraphs' },
-		{ id: 'analysis', label: 'Contradiction Analysis' },
-		{ id: 'redundancy', label: 'Redundancy Analysis' },
-		{ id: 'summarize', label: 'Summarize & Simplify' },
-		{ id: 'ambiguity', label: 'Ambiguity Analysis' },
-		{ id: 'revisions', label: 'Paragraph Revisions' },
-		{ id: 'assistant', label: 'Contract Chat Assistant' }
-	];
-   
-	const RIGHT_TOOLBAR_WIDTH = 58;
-	const RIGHT_DRAWER_MIN_WIDTH = 360;
-	const RIGHT_DRAWER_DEFAULT_WIDTH = 520;
-	const RIGHT_DRAWER_MAX_RATIO = 0.68;
-	const RIGHT_DRAWER_KEYBOARD_STEP = 24;
+
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
 	let isCompactLayout = false;
@@ -715,6 +695,527 @@
 		}));
 	}
 
+	function extractObjectFromText(text: string): Record<string, unknown> | null {
+		const raw = (text || '').trim();
+		if (!raw) return null;
+
+		const fenced = raw
+			.replace(/^```(?:json)?\s*/i, '')
+			.replace(/\s*```$/i, '')
+			.trim();
+
+		const candidates = [raw, fenced];
+		for (const candidate of candidates) {
+			try {
+				const parsed = JSON.parse(candidate);
+				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return parsed as Record<string, unknown>;
+				}
+			} catch {
+				// ignore parse errors and continue with fallback extraction
+			}
+		}
+
+		const objectMatch = fenced.match(/\{[\s\S]*\}/);
+		if (objectMatch) {
+			try {
+				const parsed = JSON.parse(objectMatch[0]);
+				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return parsed as Record<string, unknown>;
+				}
+			} catch {
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	function normalizeHighlightCategory(raw: unknown): ContradictionTaxonomyType {
+		const normalized = toNonEmptyString(raw).toLowerCase().replace(/[\s-]+/g, '_');
+		const direct = normalizeContradictionType(normalized);
+		if (direct !== 'other') return direct;
+
+		// Backward compatibility for old highlight categories
+		if (
+			normalized === 'party' ||
+			normalized === 'parties' ||
+			normalized === 'role' ||
+			normalized === 'roles' ||
+			normalized === 'parties_and_roles' ||
+			normalized === 'fundamental_entities'
+		) {
+			return 'authority';
+		}
+		if (
+			normalized === 'obligation' ||
+			normalized === 'obligations' ||
+			normalized === 'prohibition' ||
+			normalized === 'prohibitions' ||
+			normalized === 'duty' ||
+			normalized === 'duties' ||
+			normalized === 'obligations_and_prohibitions' ||
+			normalized === 'rights_and_permissions' ||
+			normalized === 'individual_behaviors' ||
+			normalized === 'motion_descriptors'
+		) {
+			return 'policy_reversal';
+		}
+		if (
+			normalized === 'condition' ||
+			normalized === 'conditions' ||
+			normalized === 'exception' ||
+			normalized === 'exceptions' ||
+			normalized === 'conditions_and_exceptions' ||
+			normalized === 'safety_situations'
+		) {
+			return 'specificity';
+		}
+		if (
+			normalized === 'amount' ||
+			normalized === 'amounts' ||
+			normalized === 'amounts_and_timing' ||
+			normalized === 'environment_entities'
+		) {
+			return 'numerical';
+		}
+		return 'other';
+	}
+
+	function toNonEmptyString(raw: unknown): string {
+		return typeof raw === 'string' ? raw.trim() : '';
+	}
+
+	function clampConfidence(raw: unknown): number {
+		if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
+		return Math.max(0, Math.min(100, Math.round(raw)));
+	}
+
+	function normalizeClaimSource(raw: unknown): 'paragraph' | 'context' | 'unknown' {
+		const value = toNonEmptyString(raw);
+		if (value === 'paragraph' || value === 'context') return value;
+		return 'unknown';
+	}
+
+	function normalizeClaimPolarity(raw: unknown): 'affirmed' | 'negated' | 'unknown' {
+		const value = toNonEmptyString(raw);
+		if (value === 'affirmed' || value === 'negated') return value;
+		return 'unknown';
+	}
+
+	function normalizeHighlightClaimSide(raw: unknown): 'a' | 'b' | 'both' | 'unknown' | undefined {
+		const value = toNonEmptyString(raw).toLowerCase().replace(/[\s-]+/g, '_');
+		if (!value) return undefined;
+		if (value === 'a' || value === 'claim_a') return 'a';
+		if (value === 'b' || value === 'claim_b') return 'b';
+		if (value === 'both') return 'both';
+		return 'unknown';
+	}
+
+	function normalizeContradictionType(raw: unknown): ContradictionTaxonomyType {
+		const value = toNonEmptyString(raw).toLowerCase().replace(/[\s-]+/g, '_');
+		if (!value) return 'other';
+
+		if (value === 'temporal' || value === 'time' || value === 'date') return 'temporal';
+		if (
+			value === 'numerical' ||
+			value === 'numeric' ||
+			value === 'amount' ||
+			value === 'amounts' ||
+			value === 'value' ||
+			value === 'values' ||
+			value === 'percentage' ||
+			value === 'percentages'
+		) {
+			return 'numerical';
+		}
+		if (value === 'authority' || value === 'issuer' || value === 'source') return 'authority';
+		if (value === 'process' || value === 'procedure' || value === 'workflow') return 'process';
+		if (
+			value === 'policy_reversal' ||
+			value === 'negation' ||
+			value === 'direct_negation' ||
+			value === 'reversal'
+		) {
+			return 'policy_reversal';
+		}
+		if (
+			value === 'specificity' ||
+			value === 'scope' ||
+			value === 'general_vs_specific' ||
+			value === 'specific'
+		) {
+			return 'specificity';
+		}
+		return 'other';
+	}
+
+	function normalizeStructuredContradiction(
+		raw: unknown,
+		fallbackParagraphId: string,
+		highlightSourceText: string
+	): StructuredContradictionAnalysis | null {
+		if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+		const source = raw as Record<string, unknown>;
+
+		const rawContradictions = Array.isArray(source.contradictions) ? source.contradictions : [];
+		const contradictions = rawContradictions
+			.map((entry, index) => {
+				if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+				const item = entry as Record<string, unknown>;
+				const rawClaimA =
+					item.claim_a && typeof item.claim_a === 'object' && !Array.isArray(item.claim_a)
+						? (item.claim_a as Record<string, unknown>)
+						: {};
+				const rawClaimB =
+					item.claim_b && typeof item.claim_b === 'object' && !Array.isArray(item.claim_b)
+						? (item.claim_b as Record<string, unknown>)
+						: {};
+
+				const claimA = {
+					text: toNonEmptyString(rawClaimA.text),
+					source: normalizeClaimSource(rawClaimA.source),
+					paragraph_id: toNonEmptyString(rawClaimA.paragraph_id) || undefined,
+					subject: toNonEmptyString(rawClaimA.subject) || undefined,
+					relation: toNonEmptyString(rawClaimA.relation) || undefined,
+					object: toNonEmptyString(rawClaimA.object) || undefined,
+					polarity: normalizeClaimPolarity(rawClaimA.polarity)
+				};
+
+				const claimB = {
+					text: toNonEmptyString(rawClaimB.text),
+					source: normalizeClaimSource(rawClaimB.source),
+					paragraph_id: toNonEmptyString(rawClaimB.paragraph_id) || undefined,
+					subject: toNonEmptyString(rawClaimB.subject) || undefined,
+					relation: toNonEmptyString(rawClaimB.relation) || undefined,
+					object: toNonEmptyString(rawClaimB.object) || undefined,
+					polarity: normalizeClaimPolarity(rawClaimB.polarity)
+				};
+
+				return {
+					id: toNonEmptyString(item.id) || `c${index + 1}`,
+					contradiction_type: normalizeContradictionType(item.contradiction_type),
+					why: toNonEmptyString(item.why) || 'Potential contradiction detected.',
+					claim_a: claimA,
+					claim_b: claimB,
+					conflicting_fields: Array.isArray(item.conflicting_fields)
+						? item.conflicting_fields
+								.map((field) => (typeof field === 'string' ? field.trim() : ''))
+								.filter((field) => field.length > 0)
+						: [],
+					confidence: clampConfidence(item.confidence)
+				};
+			})
+			.filter((item): item is NonNullable<typeof item> => item !== null);
+
+		const rawHighlights = Array.isArray(source.highlights) ? source.highlights : [];
+		const highlights = rawHighlights
+			.map((entry) => {
+				if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+				const item = entry as Record<string, unknown>;
+				const phrase = toNonEmptyString(item.phrase);
+				if (!phrase) return null;
+				return {
+					phrase,
+					category: normalizeHighlightCategory(item.category),
+					claim_id: toNonEmptyString(item.claim_id) || undefined,
+					claim_side: normalizeHighlightClaimSide(item.claim_side),
+					source: normalizeClaimSource(item.source)
+				};
+			})
+			.filter((item): item is NonNullable<typeof item> => item !== null);
+
+		if (contradictions.length === 0 && highlights.length === 0) {
+			return null;
+		}
+
+		const contradictionCount =
+			typeof source.contradiction_count === 'number' && Number.isFinite(source.contradiction_count)
+				? Math.max(contradictions.length, Math.round(source.contradiction_count))
+				: contradictions.length;
+		const notes = Array.isArray(source.notes)
+			? source.notes
+					.map((note) => (typeof note === 'string' ? note.trim() : ''))
+					.filter((note) => note.length > 0)
+			: undefined;
+
+		return {
+			version: toNonEmptyString(source.version) || undefined,
+			paragraph_id: toNonEmptyString(source.paragraph_id) || fallbackParagraphId,
+			overall_summary:
+				toNonEmptyString(source.overall_summary) ||
+				`Detected ${contradictionCount} contradiction candidate(s).`,
+			contradiction_count: contradictionCount,
+			contradictions,
+			highlights,
+			notes,
+			highlight_source_text: highlightSourceText
+		};
+	}
+
+	function parseStructuredContradictionFromAnswer(
+		answer: string,
+		fallbackParagraphId: string,
+		highlightSourceText: string
+	): StructuredContradictionAnalysis | null {
+		const objectCandidate = extractObjectFromText(answer);
+		if (!objectCandidate) return null;
+		return normalizeStructuredContradiction(
+			objectCandidate,
+			fallbackParagraphId,
+			highlightSourceText
+		);
+	}
+
+	function buildContradictionAiCostQuestion(
+		paragraphId: string,
+		paragraphText: string,
+		contradiction: ContradictionParagraphResult
+	): string {
+		const evidence = contradiction.evidence;
+		const evidenceA = evidence?.snippet_a?.trim() || '(missing)';
+		const evidenceB = evidence?.snippet_b?.trim() || '(missing)';
+		const sourceA = evidence?.source_a || 'unknown';
+		const sourceB = evidence?.source_b || 'unknown';
+
+		return [
+			`Provide structured contradiction analysis for selected paragraph ${paragraphId}.`,
+			'Return JSON only inside the "answer" field. Do not use markdown.',
+			'JSON schema:',
+			'{',
+			'  "paragraph_id": "string",',
+			'  "overall_summary": "string",',
+			'  "contradiction_count": 0,',
+			'  "contradictions": [',
+			'    {',
+			'      "id": "c1",',
+			'      "contradiction_type": "temporal|numerical|authority|process|policy_reversal|specificity|other",',
+			'      "why": "string",',
+			'      "claim_a": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
+			'      "claim_b": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
+			'      "conflicting_fields": ["polarity","time","quantity","scope"],',
+			'      "confidence": 0',
+			'    }',
+			'  ],',
+			'  "highlights": [',
+			'    {"phrase":"string","category":"temporal|numerical|authority|process|policy_reversal|specificity|other","claim_id":"c1","claim_side":"a|b|both|unknown","source":"paragraph|context|unknown"}',
+			'  ]',
+			'}',
+			'Rules:',
+			'- Use contradiction_type taxonomy from Table 1:',
+			'  temporal: contradicts date/time of event.',
+			'  numerical: conflicting numbers/values/percentages.',
+			'  authority: conflicting issuer/source of statement.',
+			'  process: conflicting procedures/operational routes.',
+			'  policy_reversal: one statement directly negates the other.',
+			'  specificity: one statement is broader/narrower than the other.',
+			'- Ground every contradiction only on provided paragraph/context.',
+			'- Prefer exact quoted claim text.',
+			'- Keep contradiction_count equal to contradictions.length.',
+			'- Include at least 3 highlights when possible.',
+			'- For each highlight, set claim_side as a or b when it belongs to Claim A/B.',
+			'- If uncertain, return fewer contradictions.',
+			`Known classifier signal: contradiction=true, confidence=${Math.round(contradiction.confidence || 0)}, reason="${(contradiction.brief_reason || '').trim()}".`,
+			`Evidence A (${sourceA}): "${evidenceA}"`,
+			`Evidence B (${sourceB}): "${evidenceB}"`,
+			'Selected paragraph text:',
+			`"""${paragraphText}"""`
+		].join('\n');
+	}
+
+	function buildChatHighlightSegments(
+		analysis: StructuredContradictionAnalysis | undefined
+	): ChatHighlightSegment[] {
+		if (!analysis) return [];
+
+		const sourceText = (analysis.highlight_source_text || '').trim();
+		if (!sourceText) return [];
+
+		type HighlightSpan = {
+			start: number;
+			end: number;
+			category: ContradictionTaxonomyType;
+			claimId?: string;
+			claimSide?: 'a' | 'b';
+			contradictionType?: ContradictionTaxonomyType;
+			contradictionWhy?: string;
+		};
+		type ClaimSpan = {
+			start: number;
+			end: number;
+			claimId: string;
+			claimSide: 'a' | 'b';
+		};
+
+		const textLower = sourceText.toLowerCase();
+		const contradictionById = new Map<
+			string,
+			StructuredContradictionAnalysis['contradictions'][number]
+		>();
+		for (const contradiction of analysis.contradictions) {
+			const key = toNonEmptyString(contradiction.id).toLowerCase();
+			if (!key) continue;
+			contradictionById.set(key, contradiction);
+		}
+		const singleContradiction = analysis.contradictions.length === 1 ? analysis.contradictions[0] : null;
+
+		const claimSpans: ClaimSpan[] = [];
+		const pushClaimSpan = (claimId: string, claimSide: 'a' | 'b', rawClaimText: string) => {
+			const phrase = rawClaimText.trim();
+			if (phrase.length < 6) return;
+			const phraseLower = phrase.toLowerCase();
+			let fromIndex = 0;
+			let hitCount = 0;
+			while (fromIndex < textLower.length && hitCount < 1) {
+				const start = textLower.indexOf(phraseLower, fromIndex);
+				if (start < 0) break;
+				claimSpans.push({
+					start,
+					end: start + phrase.length,
+					claimId,
+					claimSide
+				});
+				fromIndex = start + phrase.length;
+				hitCount += 1;
+			}
+		};
+
+		for (const contradiction of analysis.contradictions) {
+			const claimId = toNonEmptyString(contradiction.id);
+			if (!claimId) continue;
+			pushClaimSpan(claimId, 'a', contradiction.claim_a.text || '');
+			pushClaimSpan(claimId, 'b', contradiction.claim_b.text || '');
+		}
+
+		const highlightSpans: HighlightSpan[] = [];
+		for (const highlight of analysis.highlights) {
+			const phrase = highlight.phrase.trim();
+			if (phrase.length < 2) continue;
+			const phraseLower = phrase.toLowerCase();
+			const rawClaimId = toNonEmptyString(highlight.claim_id);
+			const mappedContradiction = rawClaimId
+				? contradictionById.get(rawClaimId.toLowerCase())
+				: singleContradiction;
+			const claimId = mappedContradiction?.id || rawClaimId || undefined;
+			const claimSide =
+				highlight.claim_side === 'a' || highlight.claim_side === 'b'
+					? highlight.claim_side
+					: undefined;
+			const contradictionType = mappedContradiction?.contradiction_type;
+			const contradictionWhy = mappedContradiction?.why;
+
+			let fromIndex = 0;
+			let hitCount = 0;
+			while (fromIndex < textLower.length && hitCount < 3) {
+				const start = textLower.indexOf(phraseLower, fromIndex);
+				if (start < 0) break;
+				highlightSpans.push({
+					start,
+					end: start + phrase.length,
+					category: highlight.category,
+					claimId,
+					claimSide,
+					contradictionType,
+					contradictionWhy
+				});
+				fromIndex = start + phrase.length;
+				hitCount += 1;
+			}
+		}
+
+		if (highlightSpans.length === 0 && claimSpans.length === 0) {
+			return [{ text: sourceText, category: null, interactive: false }];
+		}
+
+		const boundaries = new Set<number>([0, sourceText.length]);
+		for (const span of highlightSpans) {
+			boundaries.add(Math.max(0, Math.min(sourceText.length, span.start)));
+			boundaries.add(Math.max(0, Math.min(sourceText.length, span.end)));
+		}
+		for (const span of claimSpans) {
+			boundaries.add(Math.max(0, Math.min(sourceText.length, span.start)));
+			boundaries.add(Math.max(0, Math.min(sourceText.length, span.end)));
+		}
+		const sortedBoundaries = Array.from(boundaries).sort((left, right) => left - right);
+
+		const segments: ChatHighlightSegment[] = [];
+		for (let index = 0; index < sortedBoundaries.length - 1; index += 1) {
+			const start = sortedBoundaries[index];
+			const end = sortedBoundaries[index + 1];
+			if (end <= start) continue;
+			const text = sourceText.slice(start, end);
+			if (!text) continue;
+
+			const claimSpan = claimSpans.find((span) => start >= span.start && end <= span.end);
+			const highlightSpan = highlightSpans
+				.filter((span) => start >= span.start && end <= span.end)
+				.sort((left, right) => {
+					const leftLen = left.end - left.start;
+					const rightLen = right.end - right.start;
+					return leftLen - rightLen;
+				})[0];
+
+			let claimId = highlightSpan?.claimId || claimSpan?.claimId;
+			if (!claimId) {
+				const overlapClaim = claimSpans.find((span) => start < span.end && end > span.start);
+				claimId = overlapClaim?.claimId;
+			}
+
+			const contradiction = claimId ? contradictionById.get(claimId.toLowerCase()) : undefined;
+			const nextSegment: ChatHighlightSegment = {
+				text,
+				category: highlightSpan?.category ?? null,
+				claimId,
+				claimSide: claimSpan?.claimSide || highlightSpan?.claimSide,
+				contradictionType: contradiction?.contradiction_type || highlightSpan?.contradictionType,
+				contradictionWhy: contradiction?.why || highlightSpan?.contradictionWhy,
+				interactive: Boolean(highlightSpan || claimSpan || claimId)
+			};
+
+			const previous = segments[segments.length - 1];
+			const canMerge =
+				previous &&
+				previous.category === nextSegment.category &&
+				previous.claimId === nextSegment.claimId &&
+				previous.claimSide === nextSegment.claimSide &&
+				previous.contradictionType === nextSegment.contradictionType &&
+				previous.contradictionWhy === nextSegment.contradictionWhy &&
+				previous.interactive === nextSegment.interactive;
+			if (canMerge) {
+				previous.text += nextSegment.text;
+			} else {
+				segments.push(nextSegment);
+			}
+		}
+
+		return segments;
+	}
+
+	function resolveChatHighlightSegmentStyle(segment: ChatHighlightSegment): string {
+		if (segment.category) {
+			const color = CONTRADICTION_TAXONOMY_COLORS[segment.category];
+			return `background: ${color}22; border-bottom: 1.5px solid ${color};`;
+		}
+		return '';
+	}
+
+	function resolveChatHighlightSegmentTooltip(segment: ChatHighlightSegment): string | undefined {
+		if (segment.category && segment.claimId) {
+			const typeLabel = CONTRADICTION_TAXONOMY_LABELS[segment.contradictionType || segment.category];
+			const header = `${segment.claimId.toUpperCase()} · ${typeLabel}`;
+			if (segment.contradictionWhy) {
+				return `${header}\n${segment.contradictionWhy}`;
+			}
+			return header;
+		}
+		if (segment.claimSide) {
+			const claimLabel = segment.claimSide === 'a' ? 'Claim A' : 'Claim B';
+			return segment.claimId ? `${claimLabel} (${segment.claimId.toUpperCase()})` : claimLabel;
+		}
+		if (segment.category) return CONTRADICTION_TAXONOMY_LABELS[segment.category];
+		return undefined;
+	}
+
 	async function scrollAssistantToBottom() {
 		await tick();
 		assistantThread?.scrollTo({ top: assistantThread.scrollHeight, behavior: 'smooth' });
@@ -793,6 +1294,81 @@
 					content: response.answer,
 					citations: response.citations,
 					suggestedQuestions: response.suggestedQuestions
+				}
+			];
+		} catch (assistantRequestError) {
+			const message = getAxiosErrorMessage(assistantRequestError, 'Failed to generate a response.');
+			assistantError = message;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `I could not complete this request: ${message}`
+				}
+			];
+		} finally {
+			assistantLoading = false;
+			await scrollAssistantToBottom();
+		}
+	}
+
+	async function submitStructuredContradictionWhy(
+		selected: ParagraphNode,
+		contradiction: ContradictionParagraphResult
+	) {
+		if (assistantLoading) return;
+		if (!activeDocumentId) {
+			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		const paragraphNodes = buildAssistantNodeSnapshot();
+		if (paragraphNodes.length === 0) {
+			assistantError = 'The contract is still loading.';
+			return;
+		}
+
+		const selectedText = getNodeCurrentText(nodeEditStateById, selected);
+		const question = buildContradictionAiCostQuestion(
+			selected.id,
+			selectedText,
+			contradiction
+		);
+
+		assistantLoading = true;
+		assistantError = null;
+		await scrollAssistantToBottom();
+
+		const payload: AssistantChatRequest = {
+			documentId: activeDocumentId,
+			question,
+			mode: 'explain',
+			scope: 'selected',
+			provider: assistantProvider,
+			selectedParagraphId: selected.id,
+			relatedParagraphs: buildAssistantRelatedContext(),
+			paragraphNodes,
+			history: buildAssistantHistoryPayload()
+		};
+
+		try {
+			const response = await fetchAssistantResponse(payload);
+			const structured = parseStructuredContradictionFromAnswer(
+				response.answer,
+				selected.id,
+				selectedText
+			);
+
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: structured?.overall_summary?.trim() || response.answer,
+					citations: response.citations,
+					suggestedQuestions: response.suggestedQuestions,
+					structuredContradiction: structured ?? undefined
 				}
 			];
 		} catch (assistantRequestError) {
@@ -893,16 +1469,7 @@
 				return;
 			}
 
-			const aiWhyQuestion = [
-				`Why is selected paragraph ${selected.id} a contradiction?`,
-				'Point to exact conflicting statements and explain why they cannot both be true.',
-				'Cite paragraph IDs from the selected paragraph and its related context.'
-			].join(' ');
-
-			await submitAssistantQuestion(aiWhyQuestion, {
-				mode: 'explain',
-				scope: 'selected'
-			});
+			await submitStructuredContradictionWhy(selected, contradiction);
 			return;
 		}
 
@@ -2571,7 +3138,88 @@
 									? 'border-blue-200 bg-blue-50 text-blue-900'
 									: 'border-gray-200 bg-white text-gray-700'}"
 							>
-								<p class="whitespace-pre-wrap">{message.content}</p>
+								{#if message.structuredContradiction}
+									<div class="space-y-2">
+										<p class="whitespace-pre-wrap">{message.content}</p>
+
+										{#if message.structuredContradiction.highlight_source_text?.trim()}
+											<div class="rounded border border-gray-200 bg-gray-50 px-2 py-2">
+												<p class="mb-1 text-[9px] font-bold tracking-tight text-gray-500 uppercase">
+													KG Highlight Preview
+												</p>
+												<p class="leading-relaxed text-gray-700">
+													{#each buildChatHighlightSegments(message.structuredContradiction) as segment}
+														{#if segment.interactive}
+															<span
+																class="inline rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left text-inherit"
+																style={resolveChatHighlightSegmentStyle(segment)}
+																title={resolveChatHighlightSegmentTooltip(segment)}
+															>
+																{segment.text}
+															</span>
+														{:else}
+															<span>{segment.text}</span>
+														{/if}
+													{/each}
+												</p>
+
+												<div class="mt-2 flex flex-wrap gap-2">
+													{#each CONTRADICTION_TAXONOMY_ORDER as category}
+														<span
+															class="inline-flex items-center gap-1 rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[9px] text-gray-600"
+														>
+															<span
+																class="inline-flex h-2 w-2 rounded-full"
+																style={`background: ${CONTRADICTION_TAXONOMY_COLORS[category]};`}
+															></span>
+															{CONTRADICTION_TAXONOMY_LABELS[category]}
+														</span>
+													{/each}
+												</div>
+											</div>
+										{/if}
+
+										{#if message.structuredContradiction.contradictions.length > 0}
+											<div class="space-y-1.5">
+												{#each message.structuredContradiction.contradictions as contradictionItem}
+													<div class="rounded border border-red-200 bg-red-50/55 px-2 py-2">
+														<div class="mb-1 flex items-center justify-between gap-2">
+															<p class="text-[9px] font-bold tracking-tight text-red-700 uppercase">
+																{contradictionItem.id} · {CONTRADICTION_TAXONOMY_LABELS[
+																	contradictionItem.contradiction_type
+																]}
+															</p>
+															{#if Number.isFinite(contradictionItem.confidence)}
+																<p class="text-[9px] font-bold text-red-700">
+																	{Math.round(contradictionItem.confidence)}%
+																</p>
+															{/if}
+														</div>
+														<div class="mt-1 space-y-1 text-[10px] text-red-900">
+															<p>{contradictionItem.why || 'No explanation returned.'}</p>
+															<p>
+																<span class="font-bold">Claim A:</span>
+																{contradictionItem.claim_a.text || '(missing)'}
+															</p>
+															<p>
+																<span class="font-bold">Claim B:</span>
+																{contradictionItem.claim_b.text || '(missing)'}
+															</p>
+															{#if contradictionItem.conflicting_fields.length > 0}
+																<p class="text-[9px] text-red-700">
+																	Conflict fields: {contradictionItem.conflicting_fields.join(', ')}
+																</p>
+															{/if}
+														</div>
+													</div>
+												{/each}
+											</div>
+										{/if}
+
+									</div>
+								{:else}
+									<p class="whitespace-pre-wrap">{message.content}</p>
+								{/if}
 
 								{#if message.citations?.length}
 									<div class="mt-2 flex flex-wrap gap-1">

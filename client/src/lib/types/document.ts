@@ -116,12 +116,61 @@ export type AssistantCitation = {
 
 export type AssistantMessageRole = 'user' | 'assistant';
 
+export type ContradictionTaxonomyType =
+	| 'temporal'
+	| 'numerical'
+	| 'authority'
+	| 'process'
+	| 'policy_reversal'
+	| 'specificity'
+	| 'other';
+
+export type StructuredContradictionClaim = {
+	text: string;
+	source: 'paragraph' | 'context' | 'unknown';
+	paragraph_id?: string;
+	subject?: string;
+	relation?: string;
+	object?: string;
+	polarity?: 'affirmed' | 'negated' | 'unknown';
+};
+
+export type StructuredContradictionItem = {
+	id: string;
+	contradiction_type: ContradictionTaxonomyType;
+	why: string;
+	claim_a: StructuredContradictionClaim;
+	claim_b: StructuredContradictionClaim;
+	conflicting_fields: string[];
+	confidence: number;
+};
+
+export type StructuredContradictionHighlight = {
+	phrase: string;
+	category: ContradictionTaxonomyType;
+	claim_id?: string;
+	claim_side?: 'a' | 'b' | 'both' | 'unknown';
+	source: 'paragraph' | 'context' | 'unknown';
+};
+
+export type StructuredContradictionAnalysis = {
+	version?: string;
+	paragraph_id: string;
+	overall_summary: string;
+	contradiction_count: number;
+	contradictions: StructuredContradictionItem[];
+	highlights: StructuredContradictionHighlight[];
+	notes?: string[];
+	highlight_source_text?: string;
+};
+
 export type AssistantChatMessage = {
 	id: string;
 	role: AssistantMessageRole;
 	content: string;
 	citations?: AssistantCitation[];
 	suggestedQuestions?: string[];
+	structuredContradiction?: StructuredContradictionAnalysis;
 };
 
 export type AssistantContextNode = {
@@ -264,3 +313,35 @@ export type SavedContradictionsResponse = {
 	sourceFile: string;
 	paragraphResults: ContradictionParagraphResult[];
 };
+
+export type ContradictionScrollMarker = {
+	paragraphId: string;
+	topPercent: number;
+	confidenceBand: 'high' | 'medium' | 'low';
+};
+
+export type ChatHighlightSegment = {
+	text: string;
+	category: ContradictionTaxonomyType | null;
+	claimId?: string;
+	claimSide?: 'a' | 'b';
+	contradictionType?: ContradictionTaxonomyType;
+	contradictionWhy?: string;
+	interactive?: boolean;
+};
+
+export type RightPanelTab =
+	| 'related'
+	| 'analysis'
+	| 'redundancy'
+	| 'summarize'
+	| 'ambiguity'
+	| 'revisions'
+	| 'assistant';
+
+export type ChatPreviewHoverState = {
+		messageId: string;
+		contradictionId: string;
+		claimSide: 'a' | 'b' | null;
+		kind: 'claim' | 'highlight';
+	};
