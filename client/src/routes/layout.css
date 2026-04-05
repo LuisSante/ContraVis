@@ -1,3 +1,52 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@font-face {
+	font-family: 'Avenir Web';
+	src: url('/fonts/Avenir/Regular/avenirnextregular.woff') format('woff');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Avenir Web';
+	src: url('/fonts/Avenir/Medium/avenirnextmedium.woff') format('woff');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Avenir Web';
+	src: url('/fonts/Avenir/DemiBold/avenirnextdemibold.woff') format('woff');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Avenir Web';
+	src: url('/fonts/Avenir/Bold/avenirnextbold.woff') format('woff');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@theme {
+	--font-sans:
+		'Avenir Web',
+		'Avenir Next',
+		'Avenir',
+		'Helvetica Neue',
+		Helvetica,
+		Arial,
+		sans-serif;
+}
+
+@layer base {
+	body {
+		font-family: var(--font-sans);
+	}
+}

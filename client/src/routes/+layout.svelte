@@ -12,7 +12,7 @@
 {#if $loading}
 	<div
 		transition:fade
-		class="fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-lg"
+		class="pointer-events-none fixed top-4 right-4 z-50 flex items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-xl ring-1 ring-black/5"
 	>
 		<div
 			class="h-4 w-4 animate-spin rounded-full border-2 border-gray-600 border-t-transparent"
