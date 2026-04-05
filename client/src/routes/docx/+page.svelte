@@ -80,9 +80,17 @@
 		replaceParagraphTextRange,
 		type SimplifyTarget
 	} from '$lib/utils/docx/simplify-selection';
+	import AmbiguityAnalysisIcon from '$lib/icons/AmbiguityAnalysisIcon.svelte';
+	import CloseIcon from '$lib/icons/CloseIcon.svelte';
+	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
+	import ContradictionAnalysisIcon from '$lib/icons/ContradictionAnalysisIcon.svelte';
 	import HammerShieldIcon from '$lib/icons/HammerShieldIcon.svelte';
 	import LightningBoltIcon from '$lib/icons/LightningBoltIcon.svelte';
+	import ParagraphRevisionsIcon from '$lib/icons/ParagraphRevisionsIcon.svelte';
+	import RedundancyAnalysisIcon from '$lib/icons/RedundancyAnalysisIcon.svelte';
+	import RelatedParagraphsIcon from '$lib/icons/RelatedParagraphsIcon.svelte';
 	import SimplifyWandIcon from '$lib/icons/SimplifyWandIcon.svelte';
+	import SummarizeSimplifyIcon from '$lib/icons/SummarizeSimplifyIcon.svelte';
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -2060,7 +2068,10 @@
 		<div class="relative flex min-h-0 flex-1">
 			<section
 				bind:this={documentScrollHost}
-				class="flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner"
+				inert={backendGraphLoading}
+				class={`flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner ${
+					backendGraphLoading ? 'pointer-events-none select-none opacity-60' : ''
+				}`}
 			>
 				<div bind:this={viewer} class="min-h-full w-full"></div>
 			</section>
@@ -2117,42 +2128,19 @@
 				<h2 class="inline-flex items-center gap-1.5 truncate text-[11px] font-bold tracking-[0.16em] text-gray-700 uppercase">
 					<span class="shrink-0 text-blue-700">
 					{#if activeRightPanelTab === 'related'}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<path d="M8 7h8M8 12h8M8 17h5" stroke-linecap="round" />
-							<rect x="4" y="4" width="16" height="16" rx="3" />
-						</svg>
+						<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
 					{:else if activeRightPanelTab === 'analysis'}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<circle cx="12" cy="12" r="8" />
-							<path d="m9.5 9.5 5 5M14.5 9.5l-5 5" stroke-linecap="round" />
-						</svg>
+						<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
 					{:else if activeRightPanelTab === 'redundancy'}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<rect x="5" y="6" width="10" height="7" rx="1.5" />
-							<rect x="9" y="11" width="10" height="7" rx="1.5" />
-						</svg>
+						<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
 					{:else if activeRightPanelTab === 'summarize'}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<path d="M6 7h12M6 11h9M6 15h7" stroke-linecap="round" />
-							<path d="M18 18l2-2" stroke-linecap="round" />
-						</svg>
+						<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
 					{:else if activeRightPanelTab === 'ambiguity'}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<path d="M12 17v.01" stroke-linecap="round" />
-							<path d="M9.3 9a2.7 2.7 0 0 1 5.4 0c0 1.6-1.35 2.1-2.2 2.8-.58.47-.8.84-.8 1.4" stroke-linecap="round" />
-							<circle cx="12" cy="12" r="9" />
-						</svg>
+						<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
 					{:else if activeRightPanelTab === 'revisions'}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<path d="m7 16 3-3 2 2 5-5" stroke-linecap="round" stroke-linejoin="round" />
-							<path d="M5 20h14" stroke-linecap="round" />
-							<path d="M5 4h14" stroke-linecap="round" />
-						</svg>
+						<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
 					{:else}
-						<svg viewBox="0 0 24 24" fill="none" class="h-4 w-4" stroke="currentColor" stroke-width="1.9" aria-hidden="true">
-							<path d="M6 18h4l3 2v-2h5a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z" />
-							<path d="M8 10h8M8 13h5" stroke-linecap="round" />
-						</svg>
+						<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
 					{/if}
 					</span>
 					<span>{RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label}</span>
@@ -2165,16 +2153,7 @@
 				aria-label="Close"
 				title="Close"
 			>
-				<svg
-					viewBox="0 0 24 24"
-					fill="none"
-					class="h-4 w-4"
-					stroke="currentColor"
-					stroke-width="2"
-					aria-hidden="true"
-				>
-					<path d="M6 6l12 12M18 6 6 18" stroke-linecap="round" />
-				</svg>
+				<CloseIcon className="h-4 w-4" />
 			</button>
 		</header>
 
@@ -2690,91 +2669,25 @@
 								: 'grammarly-rail__button--idle'
 						}`}
 						aria-label={item.label}
-						title={item.label}
 					>
 						{#if item.id === 'related'}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<path d="M8 7h8M8 12h8M8 17h5" stroke-linecap="round" />
-								<rect x="4" y="4" width="16" height="16" rx="3" />
-							</svg>
+							<RelatedParagraphsIcon className="h-[18px] w-[18px]" />
 						{:else if item.id === 'analysis'}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<circle cx="12" cy="12" r="8" />
-								<path d="m9.5 9.5 5 5M14.5 9.5l-5 5" stroke-linecap="round" />
-							</svg>
+							<ContradictionAnalysisIcon className="h-[18px] w-[18px]" />
 						{:else if item.id === 'redundancy'}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<rect x="5" y="6" width="10" height="7" rx="1.5" />
-								<rect x="9" y="11" width="10" height="7" rx="1.5" />
-							</svg>
+							<RedundancyAnalysisIcon className="h-[18px] w-[18px]" />
 						{:else if item.id === 'summarize'}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<path d="M6 7h12M6 11h9M6 15h7" stroke-linecap="round" />
-								<path d="M18 18l2-2" stroke-linecap="round" />
-							</svg>
+							<SummarizeSimplifyIcon className="h-[18px] w-[18px]" />
 						{:else if item.id === 'ambiguity'}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<path d="M12 17v.01" stroke-linecap="round" />
-								<path d="M9.3 9a2.7 2.7 0 0 1 5.4 0c0 1.6-1.35 2.1-2.2 2.8-.58.47-.8.84-.8 1.4" stroke-linecap="round" />
-								<circle cx="12" cy="12" r="9" />
-							</svg>
+							<AmbiguityAnalysisIcon className="h-[18px] w-[18px]" />
 						{:else if item.id === 'revisions'}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<path d="m7 16 3-3 2 2 5-5" stroke-linecap="round" stroke-linejoin="round" />
-								<path d="M5 20h14" stroke-linecap="round" />
-								<path d="M5 4h14" stroke-linecap="round" />
-							</svg>
+							<ParagraphRevisionsIcon className="h-[18px] w-[18px]" />
 						{:else}
-							<svg
-								viewBox="0 0 24 24"
-								fill="none"
-								class="h-[18px] w-[18px]"
-								stroke="currentColor"
-								stroke-width="1.8"
-							>
-								<path d="M6 18h4l3 2v-2h5a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2Z" />
-								<path d="M8 10h8M8 13h5" stroke-linecap="round" />
-							</svg>
+							<ContractChatAssistantIcon className="h-[18px] w-[18px]" />
 						{/if}
 					</button>
 					<div
-						class={`grammarly-rail__tooltip pointer-events-none absolute top-1/2 right-full mr-2 -translate-y-1/2 whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold shadow-md ${
+						class={`grammarly-rail__tooltip pointer-events-none absolute whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold shadow-md ${
 							activeRightPanelTab === item.id ? 'text-slate-900' : 'text-slate-500'
 						}`}
 					>
@@ -2805,11 +2718,6 @@
 						<HammerShieldIcon className="h-3.5 w-3.5" />
 						<span>{fixContradictionLoading ? 'Fixing...' : 'Fix contradiction'}</span>
 					</span>
-					<!-- <span
-						class="rounded border border-amber-300 bg-white px-1 py-0.5 text-[8px] font-black text-amber-700"
-					>
-						AI
-					</span> -->
 				</button>
 
 				<button
@@ -2823,11 +2731,6 @@
 						<SimplifyWandIcon className="h-3.5 w-3.5" />
 						<span>{simplifyLoading ? 'Simplifying...' : 'Simplify'}</span>
 					</span>
-					<!-- <span
-						class="rounded border border-sky-300 bg-white px-1 py-0.5 text-[8px] font-black text-sky-700"
-					>
-						AI
-					</span> -->
 				</button>
 			</div>
 			<button
@@ -2971,33 +2874,39 @@
 		border-radius: 10px;
 	}
 
-	.grammarly-rail {
-		width: 58px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		padding: 10px 8px;
-	}
+		.grammarly-rail {
+			width: 58px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: 12px 8px;
+		}
 
-	.grammarly-rail__inner {
-		display: flex;
-		height: 100%;
-		width: 44px;
-		flex-direction: column;
-		align-items: center;
-		gap: 10px;
-		padding: 10px 0;
-		border: 1px solid #e5e7eb;
-		border-radius: 22px;
-		background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-		box-shadow:
-			0 1px 2px rgba(15, 23, 42, 0.08),
-			0 10px 24px rgba(15, 23, 42, 0.07);
-	}
+		.grammarly-rail__inner {
+			display: flex;
+			width: 44px;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			padding: 12px 0;
+			border: 1px solid #e5e7eb;
+			border-radius: 22px;
+			background: #ffffff;
+			box-shadow:
+				0 1px 2px rgba(15, 23, 42, 0.08),
+				0 10px 24px rgba(15, 23, 42, 0.07);
+		}
 
-	.grammarly-rail__item {
-		position: relative;
-	}
+		.grammarly-rail__item {
+			position: relative;
+			display: flex;
+			height: 34px;
+			width: 100%;
+			flex: 0 0 34px;
+			align-items: center;
+			justify-content: center;
+		}
 
 	.grammarly-rail__button {
 		display: inline-flex;
@@ -3038,6 +2947,8 @@
 	}
 
 	.grammarly-rail__tooltip {
+		top: 50%;
+		right: calc(100% + 8px);
 		opacity: 0;
 		transform: translate(-4px, -50%);
 		transition:
@@ -3045,10 +2956,11 @@
 			transform 170ms cubic-bezier(0.2, 0.85, 0.2, 1);
 	}
 
-	.grammarly-rail:hover .grammarly-rail__tooltip {
-		opacity: 1;
-		transform: translate(0, -50%);
-	}
+		.grammarly-rail__inner:hover .grammarly-rail__tooltip,
+		.grammarly-rail__item:focus-within .grammarly-rail__tooltip {
+			opacity: 1;
+			transform: translate(0, -50%);
+		}
 
 	.right-drawer--open {
 		transform: translateX(0);
