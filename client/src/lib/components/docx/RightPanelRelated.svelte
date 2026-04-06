@@ -1,0 +1,136 @@
+<script lang="ts">
+	import type {
+		Node as ParagraphNode,
+		ParagraphEditState,
+		RelatedParagraph
+	} from '$lib/types/document';
+	import { formatReferenceSummary, getNodeCurrentText, truncateText } from '$lib/utils/edit';
+	import LightningBoltIcon from '$lib/icons/LightningBoltIcon.svelte';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+
+	type ProcessingStep = {
+		label: string;
+		active: boolean;
+	};
+
+	export let selectedParagraph: ParagraphNode | null = null;
+	export let backendGraphLoading = false;
+	export let relatedProcessingSteps: ProcessingStep[] = [];
+	export let selectedRelatedParagraphs: RelatedParagraph[] = [];
+	export let nodeEditStateById: Map<string, ParagraphEditState> = new Map();
+	export let onFocusNodeFromPanel: (nodeId: string) => void = () => {};
+</script>
+
+<section class="flex min-h-0 flex-1 flex-col">
+	<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
+		<p class="text-[11px] text-gray-500">
+			View linked paragraphs, relation types, and semantic similarity context.
+		</p>
+	</header>
+
+	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
+		<div class="flex min-h-full flex-col space-y-2 p-2">
+			{#if backendGraphLoading}
+				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
+					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
+					<ul class="space-y-1.5 text-[12px] text-gray-600">
+						{#each relatedProcessingSteps as step, index}
+							<li
+								class="flex [animation:processing-step-fade_1.35s_ease-in-out_infinite] items-center gap-2 opacity-[0.45]"
+								style={`animation-delay: ${index * 220}ms;`}
+							>
+								<span
+									class="h-1.5 w-1.5 [animation:processing-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-gray-500 opacity-[0.35]"
+									style={`animation-delay: ${index * 220}ms;`}
+									aria-hidden="true"
+								></span>
+								<span class="text-gray-600">
+									{step.label}
+									<span class="ml-px inline-flex min-w-[14px]" aria-hidden="true">
+										<span
+											class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+											style="animation-delay: 0ms;">.</span
+										>
+										<span
+											class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+											style="animation-delay: 140ms;">.</span
+										>
+										<span
+											class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+											style="animation-delay: 280ms;">.</span
+										>
+									</span>
+								</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{:else if !selectedParagraph}
+				<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+					<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
+					<p class="text-center text-[10px] font-medium">
+						Select a paragraph to view related items
+					</p>
+					<p class="mt-1 text-center text-[10px] text-gray-400">
+						Choose a paragraph in the document on the left.
+					</p>
+				</div>
+			{:else if selectedRelatedParagraphs.length === 0}
+				<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+					<p class="text-[10px] italic">No relations found for this element</p>
+				</div>
+			{:else}
+				{#each selectedRelatedParagraphs as related}
+					<button
+						type="button"
+						class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+						on:click={() => onFocusNodeFromPanel(related.node.id)}
+					>
+						<div class="mb-2 flex items-center justify-between">
+							<div class="flex flex-wrap items-center gap-1.5">
+								{#if related.relationTypes.includes('semantic_similarity')}
+									<Badge
+										variant="outline"
+										class="h-4 border-green-100 bg-green-50 px-1.5 text-[9px] font-semibold text-green-600"
+									>
+										Similarity
+									</Badge>
+								{/if}
+								{#if related.relationTypes.includes('reference')}
+									<Badge
+										variant="outline"
+										class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
+									>
+										Reference
+									</Badge>
+								{/if}
+								{#if related.semanticScore != null}
+									<Badge
+										variant="outline"
+										class="h-4 border-gray-200 bg-white px-1.5 text-[9px] font-semibold text-gray-500"
+									>
+										{(related.semanticScore * 100).toFixed(1)}%
+									</Badge>
+								{/if}
+							</div>
+							<span class="text-[9px] font-semibold tracking-tight text-gray-400">
+								Page {related.node.page}
+							</span>
+						</div>
+
+						<p class="text-[11px] leading-relaxed text-gray-600">
+							{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
+						</p>
+
+						{#if related.references.length}
+							<p class="mt-2 text-[10px] text-gray-500">
+								Refs: {formatReferenceSummary(related.references)}
+							</p>
+						{/if}
+					</button>
+				{/each}
+			{/if}
+		</div>
+	</ScrollArea>
+</section>

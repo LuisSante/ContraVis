@@ -17,28 +17,21 @@
 	import type {
 		AssistantChatMessage,
 		AssistantChatRequest,
-		AssistantContextNode,
-		AssistantContextRelation,
 		AssistantMode,
 		AssistantProvider,
 		AssistantScope,
 		ChangeLogState,
-		ContradictionTaxonomyType,
 		ContradictionAnalysisRequest,
 		ContradictionParagraphResult,
 		Edge as GraphEdge,
 		Node as ParagraphNode,
 		ParagraphEditState,
 		RelatedParagraph,
-		SimplifyRelatedParagraph,
-		StructuredContradictionAnalysis,
 		XmlNode,
 		SimplifyResultState,
 		SimplifyAuditRecord,
 		RightPanelTab,
-		ChatHighlightSegment,
-		ContradictionScrollMarker,
-		ChatPreviewHoverState
+		ContradictionScrollMarker
 	} from '$lib/types/document';
 	import {
 		buildInspectorState,
@@ -50,18 +43,22 @@
 		fetchAssistantResponse,
 		fetchBackendGraph,
 		fetchContradictionAnalysis,
-		fetchFixContradictionSelection,
 		fetchSavedContradictions,
-		fetchSimplifySelection,
 		loadBrowserDocx4js,
 		resolveDocumentMeta,
 		updateRelationBadge
 	} from '$lib/utils/docx-page';
 	import {
+		buildAssistantHistoryPayload,
+		buildAssistantNodeSnapshot,
+		buildAssistantRelatedContext,
+		buildContradictionAiCostQuestion,
+		parseStructuredContradictionFromAnswer,
+		resolveAssistantSuggestedQuestions
+	} from '$lib/utils/docx/assistant';
+	import {
 		ensureNodeEditState,
-		formatReferenceSummary,
-		getNodeCurrentText,
-		truncateText
+		getNodeCurrentText
 	} from '$lib/utils/edit';
 	import {
 		COMMIT_SHORTCUT_HINT,
@@ -89,48 +86,39 @@
 		FIX_CONTRADICTION_TOP_RELATED
 	} from '$lib/constants/docx-viewer';
 	import {
-		buildTargetForWholeParagraph,
-		buildTargetFromSelectionRange,
-		computeSimplifyToolbarPosition,
-		normalizeBounds,
-		preserveBoundaryWhitespace,
-		replaceParagraphTextRange,
 		type SimplifyTarget
 	} from '$lib/utils/docx/simplify-selection';
+	import {
+		applyRewriteToParagraph,
+		copyRewriteSnippetToClipboard,
+		executeFixContradictionRewrite,
+		executeSimplifyRewrite,
+		getRewriteToolbarPosition,
+		resolveActiveRewriteTarget
+	} from '$lib/utils/docx/rewrite';
 	import AmbiguityAnalysisIcon from '$lib/icons/AmbiguityAnalysisIcon.svelte';
 	import CloseIcon from '$lib/icons/CloseIcon.svelte';
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 	import ContradictionAnalysisIcon from '$lib/icons/ContradictionAnalysisIcon.svelte';
-	import HammerShieldIcon from '$lib/icons/HammerShieldIcon.svelte';
-	import LightningBoltIcon from '$lib/icons/LightningBoltIcon.svelte';
 	import ParagraphRevisionsIcon from '$lib/icons/ParagraphRevisionsIcon.svelte';
 	import RedundancyAnalysisIcon from '$lib/icons/RedundancyAnalysisIcon.svelte';
 	import RelatedParagraphsIcon from '$lib/icons/RelatedParagraphsIcon.svelte';
-	import SimplifyWandIcon from '$lib/icons/SimplifyWandIcon.svelte';
 	import SummarizeSimplifyIcon from '$lib/icons/SummarizeSimplifyIcon.svelte';
+	import {
+		ParagraphRewriteActions,
+		RightPanelAmbiguity,
+		RightPanelAnalysis,
+		RightPanelAssistant,
+		RightPanelRedundancy,
+		RightPanelRelated,
+		RightPanelRevisions,
+		RightPanelSummarize
+	} from '$lib/components/docx';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
-	import * as Tabs from '$lib/components/ui/tabs/index.js';
-	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 
 	const initialInspectorState = createEmptyInspectorState();
-	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<
-		Record<ContradictionTaxonomyType, string>
-	> = {
-		temporal: 'The claims conflict on timing, dates, or sequence of events.',
-		numerical: 'The claims conflict on numbers, amounts, percentages, or quantities.',
-		authority: 'The claims conflict on who has authority or who issues the statement.',
-		process: 'The claims conflict on operational steps, method, or procedure.',
-		policy_reversal:
-			'One claim allows or affirms something and the other directly prohibits or negates it.',
-		specificity: 'One claim is broader while the other is narrower in scope.',
-		other: 'The claims conflict, but not under the main taxonomy categories.'
-	};
 	const nodeEditStateById = new Map<string, ParagraphEditState>();
 	const paragraphElementById = new Map<string, HTMLElement>();
 	const paragraphRelationHostById = new Map<string, HTMLElement>();
@@ -167,6 +155,7 @@
 	let simplifyToolbarLeft = 0;
 	let simplifyTarget: SimplifyTarget | null = null;
 	let simplifyResult: SimplifyResultState | null = null;
+	let latestRewriteSource: 'simplify' | 'fix' | null = null;
 	let simplifyLoading = false;
 	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
@@ -182,8 +171,6 @@
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	let contradictionSummaryVisible = true;
-	let chatPreviewHover: ChatPreviewHoverState | null = null;
-	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
 
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
@@ -708,830 +695,6 @@
 		return `assistant-${assistantMessageCounter}`;
 	}
 
-	function buildAssistantNodeSnapshot(): AssistantContextNode[] {
-		return get(paragraphs).map((node) => ({
-			id: node.id,
-			text: getNodeCurrentText(nodeEditStateById, node),
-			paragraph_enum: node.paragraph_enum,
-			page: node.page
-		}));
-	}
-
-	function buildAssistantRelatedContext(): AssistantContextRelation[] {
-		return selectedRelatedParagraphs.map((related) => ({
-			id: related.node.id,
-			relationTypes: related.relationTypes,
-			semanticScore: related.semanticScore,
-			references: related.references.map((reference) => `${reference.label} ${reference.value}`)
-		}));
-	}
-
-	function buildFixRelatedContext(
-		limit: number = FIX_CONTRADICTION_TOP_RELATED
-	): SimplifyRelatedParagraph[] {
-		if (limit <= 0) return [];
-		return selectedRelatedParagraphs
-			.slice(0, limit)
-			.map((related) => ({
-				id: related.node.id,
-				text: getNodeCurrentText(nodeEditStateById, related.node),
-				paragraph_enum: related.node.paragraph_enum,
-				page: related.node.page,
-				relationTypes: related.relationTypes,
-				semanticScore: related.semanticScore,
-				references: related.references.map((reference) => `${reference.label} ${reference.value}`)
-			}))
-			.filter((related) => related.text.trim().length > 0);
-	}
-
-	function buildAssistantHistoryPayload() {
-		return assistantMessages.slice(-8).map((message) => ({
-			role: message.role,
-			content: message.content
-		}));
-	}
-
-	function extractObjectFromText(text: string): Record<string, unknown> | null {
-		const raw = (text || '').trim();
-		if (!raw) return null;
-
-		const fenced = raw
-			.replace(/^```(?:json)?\s*/i, '')
-			.replace(/\s*```$/i, '')
-			.trim();
-
-		const candidates = [raw, fenced];
-		for (const candidate of candidates) {
-			try {
-				const parsed = JSON.parse(candidate);
-				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-					return parsed as Record<string, unknown>;
-				}
-			} catch {
-				// ignore parse errors and continue with fallback extraction
-			}
-		}
-
-		const objectMatch = fenced.match(/\{[\s\S]*\}/);
-		if (objectMatch) {
-			try {
-				const parsed = JSON.parse(objectMatch[0]);
-				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-					return parsed as Record<string, unknown>;
-				}
-			} catch {
-				return null;
-			}
-		}
-
-		return null;
-	}
-
-	function normalizeHighlightCategory(raw: unknown): ContradictionTaxonomyType {
-		const normalized = toNonEmptyString(raw)
-			.toLowerCase()
-			.replace(/[\s-]+/g, '_');
-		const direct = normalizeContradictionType(normalized);
-		if (direct !== 'other') return direct;
-
-		// Backward compatibility for old highlight categories
-		if (
-			normalized === 'party' ||
-			normalized === 'parties' ||
-			normalized === 'role' ||
-			normalized === 'roles' ||
-			normalized === 'parties_and_roles' ||
-			normalized === 'fundamental_entities'
-		) {
-			return 'authority';
-		}
-		if (
-			normalized === 'obligation' ||
-			normalized === 'obligations' ||
-			normalized === 'prohibition' ||
-			normalized === 'prohibitions' ||
-			normalized === 'duty' ||
-			normalized === 'duties' ||
-			normalized === 'obligations_and_prohibitions' ||
-			normalized === 'rights_and_permissions' ||
-			normalized === 'individual_behaviors' ||
-			normalized === 'motion_descriptors'
-		) {
-			return 'policy_reversal';
-		}
-		if (
-			normalized === 'condition' ||
-			normalized === 'conditions' ||
-			normalized === 'exception' ||
-			normalized === 'exceptions' ||
-			normalized === 'conditions_and_exceptions' ||
-			normalized === 'safety_situations'
-		) {
-			return 'specificity';
-		}
-		if (
-			normalized === 'amount' ||
-			normalized === 'amounts' ||
-			normalized === 'amounts_and_timing' ||
-			normalized === 'environment_entities'
-		) {
-			return 'numerical';
-		}
-		return 'other';
-	}
-
-	function toNonEmptyString(raw: unknown): string {
-		return typeof raw === 'string' ? raw.trim() : '';
-	}
-
-	function clampConfidence(raw: unknown): number {
-		if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
-		return Math.max(0, Math.min(100, Math.round(raw)));
-	}
-
-	function normalizeClaimSource(raw: unknown): 'paragraph' | 'context' | 'unknown' {
-		const value = toNonEmptyString(raw);
-		if (value === 'paragraph' || value === 'context') return value;
-		return 'unknown';
-	}
-
-	function normalizeClaimPolarity(raw: unknown): 'affirmed' | 'negated' | 'unknown' {
-		const value = toNonEmptyString(raw);
-		if (value === 'affirmed' || value === 'negated') return value;
-		return 'unknown';
-	}
-
-	function normalizeHighlightClaimSide(raw: unknown): 'a' | 'b' | 'both' | 'unknown' | undefined {
-		const value = toNonEmptyString(raw)
-			.toLowerCase()
-			.replace(/[\s-]+/g, '_');
-		if (!value) return undefined;
-		if (value === 'a' || value === 'claim_a') return 'a';
-		if (value === 'b' || value === 'claim_b') return 'b';
-		if (value === 'both') return 'both';
-		return 'unknown';
-	}
-
-	function normalizeContradictionType(raw: unknown): ContradictionTaxonomyType {
-		const value = toNonEmptyString(raw)
-			.toLowerCase()
-			.replace(/[\s-]+/g, '_');
-		if (!value) return 'other';
-
-		if (value === 'temporal' || value === 'time' || value === 'date') return 'temporal';
-		if (
-			value === 'numerical' ||
-			value === 'numeric' ||
-			value === 'amount' ||
-			value === 'amounts' ||
-			value === 'value' ||
-			value === 'values' ||
-			value === 'percentage' ||
-			value === 'percentages'
-		) {
-			return 'numerical';
-		}
-		if (value === 'authority' || value === 'issuer' || value === 'source') return 'authority';
-		if (value === 'process' || value === 'procedure' || value === 'workflow') return 'process';
-		if (
-			value === 'policy_reversal' ||
-			value === 'negation' ||
-			value === 'direct_negation' ||
-			value === 'reversal'
-		) {
-			return 'policy_reversal';
-		}
-		if (
-			value === 'specificity' ||
-			value === 'scope' ||
-			value === 'general_vs_specific' ||
-			value === 'specific'
-		) {
-			return 'specificity';
-		}
-		return 'other';
-	}
-
-	function normalizeStructuredContradiction(
-		raw: unknown,
-		fallbackParagraphId: string,
-		highlightSourceText: string
-	): StructuredContradictionAnalysis | null {
-		if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
-		const source = raw as Record<string, unknown>;
-
-		const rawContradictions = Array.isArray(source.contradictions) ? source.contradictions : [];
-		const contradictions = rawContradictions
-			.map((entry, index) => {
-				if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
-				const item = entry as Record<string, unknown>;
-				const rawClaimA =
-					item.claim_a && typeof item.claim_a === 'object' && !Array.isArray(item.claim_a)
-						? (item.claim_a as Record<string, unknown>)
-						: {};
-				const rawClaimB =
-					item.claim_b && typeof item.claim_b === 'object' && !Array.isArray(item.claim_b)
-						? (item.claim_b as Record<string, unknown>)
-						: {};
-
-				const claimA = {
-					text: toNonEmptyString(rawClaimA.text),
-					source: normalizeClaimSource(rawClaimA.source),
-					paragraph_id: toNonEmptyString(rawClaimA.paragraph_id) || undefined,
-					subject: toNonEmptyString(rawClaimA.subject) || undefined,
-					relation: toNonEmptyString(rawClaimA.relation) || undefined,
-					object: toNonEmptyString(rawClaimA.object) || undefined,
-					polarity: normalizeClaimPolarity(rawClaimA.polarity)
-				};
-
-				const claimB = {
-					text: toNonEmptyString(rawClaimB.text),
-					source: normalizeClaimSource(rawClaimB.source),
-					paragraph_id: toNonEmptyString(rawClaimB.paragraph_id) || undefined,
-					subject: toNonEmptyString(rawClaimB.subject) || undefined,
-					relation: toNonEmptyString(rawClaimB.relation) || undefined,
-					object: toNonEmptyString(rawClaimB.object) || undefined,
-					polarity: normalizeClaimPolarity(rawClaimB.polarity)
-				};
-
-				return {
-					id: toNonEmptyString(item.id) || `c${index + 1}`,
-					contradiction_type: normalizeContradictionType(item.contradiction_type),
-					why: toNonEmptyString(item.why) || 'Potential contradiction detected.',
-					claim_a: claimA,
-					claim_b: claimB,
-					conflicting_fields: Array.isArray(item.conflicting_fields)
-						? item.conflicting_fields
-								.map((field) => (typeof field === 'string' ? field.trim() : ''))
-								.filter((field) => field.length > 0)
-						: [],
-					confidence: clampConfidence(item.confidence)
-				};
-			})
-			.filter((item): item is NonNullable<typeof item> => item !== null);
-
-		const rawHighlights = Array.isArray(source.highlights) ? source.highlights : [];
-		const highlights = rawHighlights
-			.map((entry) => {
-				if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
-				const item = entry as Record<string, unknown>;
-				const phrase = toNonEmptyString(item.phrase);
-				if (!phrase) return null;
-				return {
-					phrase,
-					category: normalizeHighlightCategory(item.category),
-					claim_id: toNonEmptyString(item.claim_id) || undefined,
-					claim_side: normalizeHighlightClaimSide(item.claim_side),
-					source: normalizeClaimSource(item.source)
-				};
-			})
-			.filter((item): item is NonNullable<typeof item> => item !== null);
-
-		if (contradictions.length === 0 && highlights.length === 0) {
-			return null;
-		}
-
-		const contradictionCount =
-			typeof source.contradiction_count === 'number' && Number.isFinite(source.contradiction_count)
-				? Math.max(contradictions.length, Math.round(source.contradiction_count))
-				: contradictions.length;
-		const notes = Array.isArray(source.notes)
-			? source.notes
-					.map((note) => (typeof note === 'string' ? note.trim() : ''))
-					.filter((note) => note.length > 0)
-			: undefined;
-
-		return {
-			version: toNonEmptyString(source.version) || undefined,
-			paragraph_id: toNonEmptyString(source.paragraph_id) || fallbackParagraphId,
-			overall_summary:
-				toNonEmptyString(source.overall_summary) ||
-				`Detected ${contradictionCount} contradiction candidate(s).`,
-			contradiction_count: contradictionCount,
-			contradictions,
-			highlights,
-			notes,
-			highlight_source_text: highlightSourceText
-		};
-	}
-
-	function parseStructuredContradictionFromAnswer(
-		answer: string,
-		fallbackParagraphId: string,
-		highlightSourceText: string
-	): StructuredContradictionAnalysis | null {
-		const objectCandidate = extractObjectFromText(answer);
-		if (!objectCandidate) return null;
-		return normalizeStructuredContradiction(
-			objectCandidate,
-			fallbackParagraphId,
-			highlightSourceText
-		);
-	}
-
-	function buildContradictionAiCostQuestion(
-		paragraphId: string,
-		paragraphText: string,
-		contradiction: ContradictionParagraphResult
-	): string {
-		const evidence = contradiction.evidence;
-		const evidenceA = evidence?.snippet_a?.trim() || '(missing)';
-		const evidenceB = evidence?.snippet_b?.trim() || '(missing)';
-		const sourceA = evidence?.source_a || 'unknown';
-		const sourceB = evidence?.source_b || 'unknown';
-
-		return [
-			`Provide structured contradiction analysis for selected paragraph ${paragraphId}.`,
-			'Return JSON only inside the "answer" field. Do not use markdown.',
-			'JSON schema:',
-			'{',
-			'  "paragraph_id": "string",',
-			'  "overall_summary": "string",',
-			'  "contradiction_count": 0,',
-			'  "contradictions": [',
-			'    {',
-			'      "id": "c1",',
-			'      "contradiction_type": "temporal|numerical|authority|process|policy_reversal|specificity|other",',
-			'      "why": "string",',
-			'      "claim_a": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
-			'      "claim_b": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
-			'      "conflicting_fields": ["polarity","time","quantity","scope"],',
-			'      "confidence": 0',
-			'    }',
-			'  ],',
-			'  "highlights": [',
-			'    {"phrase":"string","category":"temporal|numerical|authority|process|policy_reversal|specificity|other","claim_id":"c1","claim_side":"a|b|both|unknown","source":"paragraph|context|unknown"}',
-			'  ]',
-			'}',
-			'Rules:',
-			'- Use contradiction_type taxonomy from Table 1:',
-			'  temporal: contradicts date/time of event.',
-			'  numerical: conflicting numbers/values/percentages.',
-			'  authority: conflicting issuer/source of statement.',
-			'  process: conflicting procedures/operational routes.',
-			'  policy_reversal: one statement directly negates the other.',
-			'  specificity: one statement is broader/narrower than the other.',
-			'- Ground every contradiction only on provided paragraph/context.',
-			'- Prefer exact quoted claim text.',
-			'- Keep contradiction_count equal to contradictions.length.',
-			'- Include at least 3 highlights when possible.',
-			'- For each highlight, set claim_side as a or b when it belongs to Claim A/B.',
-			'- If uncertain, return fewer contradictions.',
-			`Known classifier signal: contradiction=true, confidence=${Math.round(contradiction.confidence || 0)}, reason="${(contradiction.brief_reason || '').trim()}".`,
-			`Evidence A (${sourceA}): "${evidenceA}"`,
-			`Evidence B (${sourceB}): "${evidenceB}"`,
-			'Selected paragraph text:',
-			`"""${paragraphText}"""`
-		].join('\n');
-	}
-
-	function buildChatHighlightSegments(
-		analysis: StructuredContradictionAnalysis | undefined
-	): ChatHighlightSegment[] {
-		if (!analysis) return [];
-
-		const sourceText = normalizeChatPreviewText(analysis.highlight_source_text || '');
-		if (!sourceText) return [];
-
-		const textLower = sourceText.toLowerCase();
-		const contradictionById = new Map<
-			string,
-			StructuredContradictionAnalysis['contradictions'][number]
-		>();
-		for (const contradiction of analysis.contradictions) {
-			const key = toNonEmptyString(contradiction.id).toLowerCase();
-			if (!key) continue;
-			contradictionById.set(key, contradiction);
-		}
-		const singleContradiction =
-			analysis.contradictions.length === 1 ? analysis.contradictions[0] : null;
-		const singleContradictionId = singleContradiction
-			? toNonEmptyString(singleContradiction.id) || null
-			: null;
-
-		type HighlightSpan = {
-			start: number;
-			end: number;
-			length: number;
-			category: ContradictionTaxonomyType;
-			claimId?: string;
-			claimSide?: 'a' | 'b';
-			contradictionType?: ContradictionTaxonomyType;
-			contradictionWhy?: string;
-		};
-		type SegmentMeta = Omit<ChatHighlightSegment, 'text'>;
-
-		function findPhraseRanges(phrase: string, maxMatches: number): Array<{ start: number; end: number }> {
-			if (!phrase) return [];
-			const ranges: Array<{ start: number; end: number }> = [];
-			const phraseLower = phrase.toLowerCase();
-			let fromIndex = 0;
-			while (fromIndex < textLower.length && ranges.length < maxMatches) {
-				const start = textLower.indexOf(phraseLower, fromIndex);
-				if (start < 0) break;
-				ranges.push({ start, end: start + phrase.length });
-				fromIndex = start + Math.max(1, phrase.length);
-			}
-			return ranges;
-		}
-
-		const claimIdByChar = new Array<string | null>(sourceText.length).fill(null);
-		const claimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
-		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
-			null
-		);
-		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(null);
-		const highlightWhyByChar = new Array<string | null>(sourceText.length).fill(null);
-		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(Number.POSITIVE_INFINITY);
-		const highlightClaimIdByChar = new Array<string | null>(sourceText.length).fill(null);
-		const highlightClaimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
-
-		const assignClaimRange = (start: number, end: number, claimId: string, claimSide: 'a' | 'b') => {
-			const safeStart = Math.max(0, Math.min(sourceText.length, start));
-			const safeEnd = Math.max(0, Math.min(sourceText.length, end));
-			for (let index = safeStart; index < safeEnd; index += 1) {
-				if (!claimIdByChar[index]) claimIdByChar[index] = claimId;
-				if (!claimSideByChar[index]) claimSideByChar[index] = claimSide;
-			}
-		};
-
-		const assignHighlightRange = (span: HighlightSpan) => {
-			const safeStart = Math.max(0, Math.min(sourceText.length, span.start));
-			const safeEnd = Math.max(0, Math.min(sourceText.length, span.end));
-			for (let index = safeStart; index < safeEnd; index += 1) {
-				const currentSpanLength = highlightSpanLengthByChar[index];
-				const shouldReplace = span.length < currentSpanLength;
-				if (shouldReplace) {
-					highlightCategoryByChar[index] = span.category;
-					highlightTypeByChar[index] = span.contradictionType || null;
-					highlightWhyByChar[index] = span.contradictionWhy || null;
-					highlightClaimIdByChar[index] = span.claimId || null;
-					highlightClaimSideByChar[index] = span.claimSide || null;
-					highlightSpanLengthByChar[index] = span.length;
-				}
-				if (span.claimId && !claimIdByChar[index]) claimIdByChar[index] = span.claimId;
-				if (span.claimSide && !claimSideByChar[index]) claimSideByChar[index] = span.claimSide;
-			}
-		};
-
-		const claimTextToRanges = (rawClaimText: string): Array<{ start: number; end: number }> => {
-			const phrase = normalizeChatPreviewText(rawClaimText);
-			if (phrase.length < 6) return [];
-			const exact = findPhraseRanges(phrase, 2);
-			if (exact.length > 0) return exact;
-
-			// Fallback when LLM claim text has punctuation drift relative to source text.
-			const fragments = phrase
-				.split(/[,:;()]/)
-				.map((part) => part.trim())
-				.filter((part) => part.length >= Math.max(12, Math.floor(phrase.length * 0.35)))
-				.sort((left, right) => right.length - left.length);
-			for (const fragment of fragments.slice(0, 3)) {
-				const fragmentHits = findPhraseRanges(fragment, 2);
-				if (fragmentHits.length > 0) return fragmentHits;
-			}
-			return [];
-		};
-
-		for (const contradiction of analysis.contradictions) {
-			const claimId = toNonEmptyString(contradiction.id);
-			if (!claimId) continue;
-			for (const range of claimTextToRanges(contradiction.claim_a.text || '')) {
-				assignClaimRange(range.start, range.end, claimId, 'a');
-			}
-			for (const range of claimTextToRanges(contradiction.claim_b.text || '')) {
-				assignClaimRange(range.start, range.end, claimId, 'b');
-			}
-		}
-
-		for (const highlight of analysis.highlights) {
-			const phrase = normalizeChatPreviewText(highlight.phrase);
-			if (phrase.length < 2) continue;
-			const rawClaimId = toNonEmptyString(highlight.claim_id);
-			const mappedContradiction = rawClaimId
-				? contradictionById.get(rawClaimId.toLowerCase())
-				: singleContradiction;
-			const claimId = mappedContradiction?.id || rawClaimId || undefined;
-			const claimSide =
-				highlight.claim_side === 'a' || highlight.claim_side === 'b'
-					? highlight.claim_side
-					: undefined;
-			const contradictionType = mappedContradiction?.contradiction_type;
-			const contradictionWhy = mappedContradiction?.why;
-			const phraseRanges = findPhraseRanges(phrase, 4);
-			for (const range of phraseRanges) {
-				assignHighlightRange({
-					start: range.start,
-					end: range.end,
-					length: range.end - range.start,
-					category: highlight.category,
-					claimId,
-					claimSide,
-					contradictionType,
-					contradictionWhy
-				});
-			}
-		}
-
-		for (let index = 0; index < sourceText.length; index += 1) {
-			if (!claimIdByChar[index]) {
-				if (claimSideByChar[index] && singleContradictionId) {
-					claimIdByChar[index] = singleContradictionId;
-				} else if (highlightClaimIdByChar[index]) {
-					claimIdByChar[index] = highlightClaimIdByChar[index];
-				} else if (highlightCategoryByChar[index] && singleContradictionId) {
-					claimIdByChar[index] = singleContradictionId;
-				}
-			}
-			if (!claimSideByChar[index] && highlightClaimSideByChar[index]) {
-				claimSideByChar[index] = highlightClaimSideByChar[index];
-			}
-		}
-
-		const hasMetadata = claimIdByChar.some(Boolean) || highlightCategoryByChar.some(Boolean);
-		if (!hasMetadata) {
-			return [{ text: sourceText, category: null, interactive: false }];
-		}
-
-		const getMetaForCharIndex = (index: number): SegmentMeta => {
-			const claimId = claimIdByChar[index] || undefined;
-			const claimSide = claimSideByChar[index] || undefined;
-			const category = highlightCategoryByChar[index];
-			const contradiction = claimId ? contradictionById.get(claimId.toLowerCase()) : undefined;
-			const contradictionType =
-				contradiction?.contradiction_type || highlightTypeByChar[index] || undefined;
-			const contradictionWhy = contradiction?.why || highlightWhyByChar[index] || undefined;
-			const interactive = Boolean(category || claimId || claimSide);
-			return {
-				category,
-				claimId,
-				claimSide,
-				contradictionType,
-				contradictionWhy,
-				interactive
-			};
-		};
-
-		const metaEquals = (left: SegmentMeta, right: SegmentMeta): boolean =>
-			left.category === right.category &&
-			left.claimId === right.claimId &&
-			left.claimSide === right.claimSide &&
-			left.contradictionType === right.contradictionType &&
-			left.contradictionWhy === right.contradictionWhy &&
-			left.interactive === right.interactive;
-
-		const segments: ChatHighlightSegment[] = [];
-		let segmentStart = 0;
-		let segmentMeta = getMetaForCharIndex(0);
-		for (let index = 1; index < sourceText.length; index += 1) {
-			const nextMeta = getMetaForCharIndex(index);
-			if (metaEquals(segmentMeta, nextMeta)) continue;
-			segments.push({
-				text: sourceText.slice(segmentStart, index),
-				...segmentMeta
-			});
-			segmentStart = index;
-			segmentMeta = nextMeta;
-		}
-		segments.push({
-			text: sourceText.slice(segmentStart),
-			...segmentMeta
-		});
-
-		return segments;
-	}
-
-	function normalizeChatPreviewText(value: string): string {
-		return value
-			.replace(/\u00a0/g, ' ')
-			.replace(/\r\n?/g, '\n')
-			.replace(/[ \t]*\n+[ \t]*/g, ' ')
-			.replace(/[ \t]{2,}/g, ' ')
-			.trim();
-	}
-
-	type ChatHighlightTooltip = {
-		kind: 'claim' | 'highlight';
-		badgeText: string;
-		badgeStyle: string;
-		description?: string;
-	};
-	type ChatPreviewTab = 'contradiction' | 'claims';
-
-	function getChatPreviewTab(messageId: string): ChatPreviewTab {
-		return chatPreviewTabByMessageId[messageId] ?? 'contradiction';
-	}
-
-	function setChatPreviewTab(messageId: string, value: string) {
-		const nextTab: ChatPreviewTab = value === 'claims' ? 'claims' : 'contradiction';
-		if (getChatPreviewTab(messageId) === nextTab) return;
-		chatPreviewTabByMessageId = {
-			...chatPreviewTabByMessageId,
-			[messageId]: nextTab
-		};
-		if (nextTab !== 'contradiction') clearChatPreviewHover(messageId);
-	}
-
-	function getChatPreviewHover(messageId: string): ChatPreviewHoverState | null {
-		if (!chatPreviewHover) return null;
-		return chatPreviewHover.messageId === messageId ? chatPreviewHover : null;
-	}
-
-	function clearChatPreviewHover(messageId?: string) {
-		if (!chatPreviewHover) return;
-		if (messageId && chatPreviewHover.messageId !== messageId) return;
-		chatPreviewHover = null;
-	}
-
-	function handleChatPreviewSegmentMouseEnter(
-		messageId: string,
-		segment: ChatHighlightSegment,
-		segmentKey: string
-	) {
-		const contradictionId = toNonEmptyString(segment.claimId);
-		if (!contradictionId) {
-			clearChatPreviewHover(messageId);
-			return;
-		}
-
-		if (segment.claimSide) {
-			chatPreviewHover = {
-				messageId,
-				segmentKey,
-				contradictionId,
-				claimSide: segment.claimSide,
-				kind: 'claim'
-			};
-			return;
-		}
-
-		if (segment.category) {
-			chatPreviewHover = {
-				messageId,
-				segmentKey,
-				contradictionId,
-				claimSide: segment.claimSide ?? null,
-				kind: 'highlight'
-			};
-			return;
-		}
-	}
-
-	function isChatPreviewTooltipOpen(messageId: string, segmentKey: string): boolean {
-		const hover = getChatPreviewHover(messageId);
-		if (!hover) return false;
-		return hover.segmentKey === segmentKey;
-	}
-
-	function isHoveringContradiction(messageId: string, contradictionId?: string): boolean {
-		const hover = getChatPreviewHover(messageId);
-		if (!hover || !contradictionId) return false;
-		return hover.contradictionId.toLowerCase() === contradictionId.toLowerCase();
-	}
-
-	function resolveChatHighlightSegmentStyle(
-		segment: ChatHighlightSegment,
-		messageId: string
-	): string {
-		const hover = getChatPreviewHover(messageId);
-		const hoverMatchesContradiction = isHoveringContradiction(messageId, segment.claimId);
-
-		if (hover?.kind === 'claim' && hover.claimSide) {
-			const claimColor = CONTRADICTION_CLAIM_SIDE_COLORS[hover.claimSide];
-
-			if (segment.claimSide === hover.claimSide) {
-				return [
-					`background: ${claimColor}3a;`,
-					`border-bottom: 2px solid ${claimColor};`,
-					`box-shadow: 0 0 0 1px ${claimColor}70, 0 0 10px ${claimColor}3d;`
-				].join(' ');
-			}
-
-			if (!segment.claimSide && hoverMatchesContradiction) {
-				return [
-					`background: ${claimColor}36;`,
-					`border-bottom: 2px solid ${claimColor};`,
-					`box-shadow: inset 0 0 0 1px ${claimColor}55;`
-				].join(' ');
-			}
-
-			if (segment.category) {
-				return 'background: transparent; border-bottom: 1.5px solid transparent; box-shadow: none;';
-			}
-
-			return '';
-		}
-
-		if (hover?.kind === 'highlight' && hoverMatchesContradiction && segment.category) {
-			const contradictionType = segment.contradictionType || segment.category;
-			const color = CONTRADICTION_TAXONOMY_COLORS[contradictionType];
-			return [
-				`background: ${color}3a;`,
-				`border-bottom: 2px solid ${color};`,
-				`box-shadow: 0 0 0 1px ${color}70, 0 0 12px ${color}55;`
-			].join(' ');
-		}
-
-		if (segment.category) {
-			const color = CONTRADICTION_TAXONOMY_COLORS[segment.category];
-			return `background: ${color}22; border-bottom: 1.5px solid ${color};`;
-		}
-
-		return '';
-	}
-
-	function resolveChatClaimSegmentStyle(segment: ChatHighlightSegment): string {
-		if (!segment.claimSide) return '';
-		const color = CONTRADICTION_CLAIM_SIDE_COLORS[segment.claimSide];
-		return [
-			`background: ${color}26;`,
-			`border-bottom: 1.5px solid ${color};`,
-			`box-shadow: inset 0 0 0 1px ${color}45;`
-		].join(' ');
-	}
-
-	function resolveChatHighlightSegmentTooltip(segment: ChatHighlightSegment): ChatHighlightTooltip | null {
-		if (segment.category) {
-			const contradictionType = segment.contradictionType || segment.category;
-			const color = CONTRADICTION_TAXONOMY_COLORS[contradictionType];
-			const typeLabel = CONTRADICTION_TAXONOMY_LABELS[contradictionType];
-			return {
-				kind: 'highlight',
-				badgeText: typeLabel,
-				badgeStyle: `border-color: ${color}55; background: ${color}1f; color: ${color};`,
-				description:
-					segment.contradictionWhy || CONTRADICTION_TAXONOMY_DESCRIPTIONS[contradictionType]
-			};
-		}
-
-		if (segment.claimSide) {
-			const claimLabel = segment.claimSide === 'a' ? 'Claim A' : 'Claim B';
-			const color = CONTRADICTION_CLAIM_SIDE_COLORS[segment.claimSide];
-			return {
-				kind: 'claim',
-				badgeText: claimLabel,
-				badgeStyle: `border-color: ${color}55; background: ${color}1f; color: ${color};`,
-			};
-		}
-
-		return null;
-	}
-
-	function sanitizeSuggestedQuestions(value: unknown): string[] {
-		if (!Array.isArray(value)) return [];
-		const cleaned = value
-			.map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
-			.filter((entry) => entry.length > 0);
-		return Array.from(new Set(cleaned)).slice(0, 4);
-	}
-
-	function getFallbackSuggestedQuestions(options?: {
-		mode?: AssistantMode;
-		scope?: AssistantScope;
-		contradiction?: boolean;
-	}): string[] {
-		if (options?.contradiction) {
-			return [
-				'How can I rewrite this paragraph to remove the contradiction?',
-				'Which claim is riskier to keep and why?',
-				'Show a safer clause version preserving business intent.'
-			];
-		}
-		if (options?.mode === 'quote') {
-			return [
-				'Can you show the exact sentence that supports your answer?',
-				'What is the key obligation in this paragraph?',
-				'What term could create legal risk here?'
-			];
-		}
-		if (options?.scope === 'full_contract') {
-			return [
-				'What are the most important risks in this contract?',
-				'Which clauses should we renegotiate first?',
-				'Where do obligations conflict across sections?'
-			];
-		}
-		return [
-			'Can you simplify this paragraph in plain English?',
-			'What happens if this clause is breached?',
-			'Which related clause should I read next?'
-		];
-	}
-
-	function resolveAssistantSuggestedQuestions(
-		value: unknown,
-		options?: {
-			mode?: AssistantMode;
-			scope?: AssistantScope;
-			contradiction?: boolean;
-		}
-	): string[] | undefined {
-		const normalized = sanitizeSuggestedQuestions(value);
-		if (normalized.length > 0) return normalized;
-		const fallback = getFallbackSuggestedQuestions(options);
-		return fallback.length > 0 ? fallback : undefined;
-	}
-
 	async function scrollAssistantToBottom() {
 		await tick();
 		assistantThread?.scrollTo({ top: assistantThread.scrollHeight, behavior: 'smooth' });
@@ -1561,7 +724,7 @@
 			return;
 		}
 
-		const paragraphNodes = buildAssistantNodeSnapshot();
+		const paragraphNodes = buildAssistantNodeSnapshot(get(paragraphs), nodeEditStateById);
 		if (paragraphNodes.length === 0) {
 			assistantError = 'The contract is still loading.';
 			return;
@@ -1595,9 +758,9 @@
 			scope: resolvedScope,
 			provider: assistantProvider,
 			selectedParagraphId: selected?.id ?? null,
-			relatedParagraphs: buildAssistantRelatedContext(),
+			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
 			paragraphNodes,
-			history: buildAssistantHistoryPayload()
+			history: buildAssistantHistoryPayload(assistantMessages)
 		};
 
 		try {
@@ -1642,7 +805,7 @@
 			return;
 		}
 
-		const paragraphNodes = buildAssistantNodeSnapshot();
+		const paragraphNodes = buildAssistantNodeSnapshot(get(paragraphs), nodeEditStateById);
 		if (paragraphNodes.length === 0) {
 			assistantError = 'The contract is still loading.';
 			return;
@@ -1662,9 +825,9 @@
 			scope: 'selected',
 			provider: assistantProvider,
 			selectedParagraphId: selected.id,
-			relatedParagraphs: buildAssistantRelatedContext(),
+			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
 			paragraphNodes,
-			history: buildAssistantHistoryPayload()
+			history: buildAssistantHistoryPayload(assistantMessages)
 		};
 
 		try {
@@ -1811,137 +974,84 @@
 		simplifyToolbarLeft = 0;
 		simplifyTarget = null;
 		simplifyResult = null;
+		latestRewriteSource = null;
 		simplifyLoading = false;
 		simplifyError = null;
 	}
 
 	function setSimplifyToolbarPosition(anchorRect: DOMRect) {
-		const { left, top } = computeSimplifyToolbarPosition(
-			anchorRect,
-			window.innerWidth,
-			window.innerHeight
-		);
+		const { left, top } = getRewriteToolbarPosition(anchorRect);
 		simplifyToolbarLeft = left;
 		simplifyToolbarTop = top;
 	}
 
 	function refreshSimplifyTarget() {
-		const rangeTarget = buildTargetFromSelectionRange({ viewer });
-		if (rangeTarget) {
-			simplifyTarget = rangeTarget;
+		const selectedParagraphId = get(selectedParagraph)?.id ?? null;
+		const nextTarget = resolveActiveRewriteTarget({
+			viewer,
+			selectedParagraphId,
+			paragraphElementById,
+			fallbackTarget: null
+		});
+		if (nextTarget) {
+			simplifyTarget = nextTarget;
 			simplifyToolbarVisible = true;
-			setSimplifyToolbarPosition(rangeTarget.anchorRect);
-			return;
+			setSimplifyToolbarPosition(nextTarget.anchorRect);
+		} else {
+			simplifyToolbarVisible = false;
+			simplifyTarget = null;
 		}
-
-		const selected = get(selectedParagraph);
-		const activeElement = document.activeElement;
-		const activeInViewer = Boolean(activeElement && viewer?.contains(activeElement));
-		if (selected?.id && activeInViewer) {
-			const paragraphTarget = buildTargetForWholeParagraph(selected.id, paragraphElementById);
-			if (paragraphTarget) {
-				simplifyTarget = paragraphTarget;
-				simplifyToolbarVisible = true;
-				setSimplifyToolbarPosition(paragraphTarget.anchorRect);
-				return;
-			}
-		}
-
-		simplifyToolbarVisible = false;
-		simplifyTarget = null;
 	}
 
 	function resolveActiveSimplifyTarget(): SimplifyTarget | null {
-		const rangeTarget = buildTargetFromSelectionRange({ viewer });
-		if (rangeTarget) return rangeTarget;
-
-		const selected = get(selectedParagraph);
-		if (selected?.id) {
-			const paragraphTarget = buildTargetForWholeParagraph(selected.id, paragraphElementById);
-			if (paragraphTarget) return paragraphTarget;
-		}
-
-		return simplifyTarget;
+		const selectedParagraphId = get(selectedParagraph)?.id ?? null;
+		return resolveActiveRewriteTarget({
+			viewer,
+			selectedParagraphId,
+			paragraphElementById,
+			fallbackTarget: simplifyTarget
+		});
 	}
 
 	async function runFixContradiction() {
 		if (fixContradictionLoading || assistantLoading || simplifyLoading) return;
-		if (!activeDocumentId) {
-			simplifyError = 'No document is loaded.';
-			return;
-		}
-
 		const target = resolveActiveSimplifyTarget();
-		if (!target) {
-			simplifyError = 'Select text in a paragraph or focus a paragraph to fix contradictions.';
-			return;
-		}
-
-		const paragraphNode = get(paragraphs).find((node) => node.id === target.paragraphId) ?? null;
+		const paragraphNode = target
+			? (get(paragraphs).find((node) => node.id === target.paragraphId) ?? null)
+			: null;
 		if (paragraphNode) setSelectedParagraphNode(paragraphNode);
-
-		const contradiction = contradictionResultsByParagraphId.get(target.paragraphId);
-		if (!contradiction) {
-			simplifyError =
-				'No contradiction result is available for this paragraph yet. Run "Search contradictions" first.';
-			return;
-		}
-
-		if (!contradiction.contradiction) {
-			simplifyError = 'This paragraph is not currently classified as contradiction.';
-			return;
-		}
-
-		const bounds = normalizeBounds(
-			target.selectionStart,
-			target.selectionEnd,
-			target.paragraphText.length
-		);
-		const selectionStart = bounds.start;
-		const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
 
 		fixContradictionLoading = true;
 		simplifyError = null;
 		try {
-			const response = await fetchFixContradictionSelection({
-				documentId: activeDocumentId,
-				provider: assistantProvider,
-				paragraphId: target.paragraphId,
-				paragraphText: target.paragraphText,
-				selectionStart,
-				selectionEnd,
-				contradictionReason: contradiction.brief_reason,
-				relatedParagraphs: buildFixRelatedContext()
+			const execution = await executeFixContradictionRewrite({
+				activeDocumentId,
+				assistantProvider,
+				contradictionResultsByParagraphId,
+				selectedRelatedParagraphs,
+				nodeEditStateById,
+				fixRelatedLimit: FIX_CONTRADICTION_TOP_RELATED,
+				viewer,
+				selectedParagraphId: get(selectedParagraph)?.id ?? null,
+				paragraphElementById,
+				fallbackTarget: target ?? simplifyTarget,
+				resolveErrorMessage: getAxiosErrorMessage
 			});
+			if (!execution.ok) {
+				simplifyError = execution.error;
+				return;
+			}
 
-			simplifyResult = {
-				payload: response,
-				paragraphTextSnapshot: target.paragraphText,
-				createdAt: new Date().toISOString()
-			};
+			simplifyResult = execution.result;
+			latestRewriteSource = 'fix';
+			activeRightPanelTab = 'revisions';
+			isRightDrawerOpen = true;
 
-			simplifyAuditTrail.unshift({
-				documentId: activeDocumentId,
-				provider: response.provider,
-				paragraphId: response.evidence.paragraph_id,
-				selectionStart: response.evidence.selection_start,
-				selectionEnd: response.evidence.selection_end,
-				originalSnippet: response.originalSnippet,
-				simplifiedSnippet: response.simplifiedSnippet,
-				systemPrompt: response.audit.system_prompt,
-				userPrompt: response.audit.user_prompt,
-				modelResponse: response.audit.model_response,
-				timestamp: new Date().toISOString()
-			});
+			simplifyAuditTrail.unshift(execution.auditRecord);
 
 			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
 				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
 			}
-		} catch (fixRequestError) {
-			simplifyError = getAxiosErrorMessage(
-				fixRequestError,
-				'Failed to fix contradiction for selected text.'
-			);
 		} finally {
 			fixContradictionLoading = false;
 			refreshSimplifyTarget();
@@ -1950,67 +1060,36 @@
 
 	async function runSimplify() {
 		if (simplifyLoading) return;
-		if (!activeDocumentId) {
-			simplifyError = 'No document is loaded.';
-			return;
-		}
-
 		const target = resolveActiveSimplifyTarget();
-		if (!target) {
-			simplifyError = 'Select text in a paragraph or focus a paragraph to simplify.';
-			return;
-		}
-
-		const safeBounds = normalizeBounds(
-			target.selectionStart,
-			target.selectionEnd,
-			target.paragraphText.length
-		);
-		const selectionStart = safeBounds.start;
-		const selectionEnd =
-			safeBounds.end === safeBounds.start ? target.paragraphText.length : safeBounds.end;
 
 		simplifyLoading = true;
 		simplifyError = null;
 
 		try {
-			const response = await fetchSimplifySelection({
-				documentId: activeDocumentId,
-				provider: assistantProvider,
-				paragraphId: target.paragraphId,
-				paragraphText: target.paragraphText,
-				selectionStart,
-				selectionEnd
+			const execution = await executeSimplifyRewrite({
+				activeDocumentId,
+				assistantProvider,
+				viewer,
+				selectedParagraphId: get(selectedParagraph)?.id ?? null,
+				paragraphElementById,
+				fallbackTarget: target ?? simplifyTarget,
+				resolveErrorMessage: getAxiosErrorMessage
 			});
+			if (!execution.ok) {
+				simplifyError = execution.error;
+				return;
+			}
 
-			simplifyResult = {
-				payload: response,
-				paragraphTextSnapshot: target.paragraphText,
-				createdAt: new Date().toISOString()
-			};
+			simplifyResult = execution.result;
+			latestRewriteSource = 'simplify';
+			activeRightPanelTab = 'revisions';
+			isRightDrawerOpen = true;
 
-			simplifyAuditTrail.unshift({
-				documentId: activeDocumentId,
-				provider: response.provider,
-				paragraphId: response.evidence.paragraph_id,
-				selectionStart: response.evidence.selection_start,
-				selectionEnd: response.evidence.selection_end,
-				originalSnippet: response.originalSnippet,
-				simplifiedSnippet: response.simplifiedSnippet,
-				systemPrompt: response.audit.system_prompt,
-				userPrompt: response.audit.user_prompt,
-				modelResponse: response.audit.model_response,
-				timestamp: new Date().toISOString()
-			});
+			simplifyAuditTrail.unshift(execution.auditRecord);
 
 			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
 				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
 			}
-		} catch (simplifyRequestError) {
-			simplifyError = getAxiosErrorMessage(
-				simplifyRequestError,
-				'Failed to simplify the selected text.'
-			);
 		} finally {
 			simplifyLoading = false;
 			refreshSimplifyTarget();
@@ -2018,69 +1097,31 @@
 	}
 
 	async function copySimplifiedSnippet() {
-		if (!simplifyResult) return;
-		if (!navigator.clipboard) {
-			simplifyError = 'Clipboard access is unavailable in this browser.';
-			return;
-		}
-
-		try {
-			await navigator.clipboard.writeText(simplifyResult.payload.simplifiedSnippet);
-		} catch (copyError) {
-			simplifyError = copyError instanceof Error ? copyError.message : 'Failed to copy text.';
-		}
+		const copyError = await copyRewriteSnippetToClipboard(simplifyResult);
+		if (copyError) simplifyError = copyError;
 	}
 
 	function cancelSimplifyResult() {
 		simplifyResult = null;
+		latestRewriteSource = null;
 		simplifyError = null;
 	}
 
 	function replaceSelectionWithSimplifiedText() {
-		if (!simplifyResult) return;
-
-		const payload = simplifyResult.payload;
-		const paragraphId = payload.evidence.paragraph_id;
-		const paragraphElement = paragraphElementById.get(paragraphId);
-		if (!paragraphElement) {
-			simplifyError = 'Could not find the paragraph to replace.';
+		const applied = applyRewriteToParagraph({
+			simplifyResult,
+			paragraphElementById
+		});
+		if (!applied.ok) {
+			if (applied.error) simplifyError = applied.error;
 			return;
 		}
 
-		const currentParagraphText = normalizeEditableText(paragraphElement.innerText ?? '');
-		let bounds = normalizeBounds(
-			payload.evidence.selection_start,
-			payload.evidence.selection_end,
-			currentParagraphText.length
-		);
-
-		const snapshotText = simplifyResult.paragraphTextSnapshot;
-		if (snapshotText !== currentParagraphText) {
-			const locatedStart = currentParagraphText.indexOf(payload.originalSnippet);
-			if (locatedStart >= 0) {
-				bounds = {
-					start: locatedStart,
-					end: locatedStart + payload.originalSnippet.length
-				};
-			} else {
-				simplifyError =
-					'The paragraph changed after simplification. Please run Simplify again on the latest text.';
-				return;
-			}
-		}
-
-		const replacement = preserveBoundaryWhitespace(
-			payload.originalSnippet,
-			payload.simplifiedSnippet
-		);
-		replaceParagraphTextRange(paragraphElement, bounds.start, bounds.end, replacement);
-		paragraphElement.dispatchEvent(new Event('input', { bubbles: true }));
-		paragraphElement.focus();
-
-		const selectedNode = get(paragraphs).find((node) => node.id === paragraphId) ?? null;
+		const selectedNode = get(paragraphs).find((node) => node.id === applied.paragraphId) ?? null;
 		if (selectedNode) setSelectedParagraphNode(selectedNode);
 
 		simplifyResult = null;
+		latestRewriteSource = null;
 		simplifyError = null;
 		refreshSimplifyTarget();
 	}
@@ -3086,788 +2127,74 @@
 		</header>
 
 		{#if activeRightPanelTab === 'analysis'}
-			<section class="flex min-h-0 flex-1 flex-col">
-				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-					<p class="text-[11px] text-gray-500">
-						Inspect contradictions, confidence, and evidence for the selected paragraph.
-					</p>
-				</header>
-
-				<ScrollArea class="min-h-0 flex-1">
-					<div class="space-y-2 p-3">
-						{#if contradictionLoading}
-							<div
-								class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700"
-							>
-								<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
-								<ul class="space-y-1.5 text-[12px] text-gray-600">
-									{#each revisionProcessingSteps as step, index}
-										<li
-											class="flex [animation:processing-step-fade_1.35s_ease-in-out_infinite] items-center gap-2 opacity-[0.45]"
-											style={`animation-delay: ${index * 220}ms;`}
-										>
-											<span
-												class="h-1.5 w-1.5 [animation:processing-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-gray-500 opacity-[0.35]"
-												style={`animation-delay: ${index * 220}ms;`}
-												aria-hidden="true"
-											></span>
-											<span class="text-gray-600">
-												{step.label}
-												<span class="ml-px inline-flex min-w-[14px]" aria-hidden="true">
-													<span
-														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-														style="animation-delay: 0ms;">.</span
-													>
-													<span
-														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-														style="animation-delay: 140ms;">.</span
-													>
-													<span
-														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-														style="animation-delay: 280ms;">.</span
-													>
-												</span>
-											</span>
-										</li>
-									{/each}
-								</ul>
-							</div>
-						{/if}
-
-						{#if !$selectedParagraph}
-							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium">Select a paragraph to analyze contradictions</p>
-								<p class="mt-1 text-[10px] text-gray-400">
-									Choose a paragraph in the document on the left.
-								</p>
-							</div>
-						{:else if !selectedContradictionResult}
-							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-gray-600">
-									No contradiction result is available for this paragraph yet. Run "Search
-									contradictions" first.
-								</Card.Content>
-							</Card.Root>
-						{:else if !selectedContradictionResult.contradiction}
-							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
-							</div>
-						{:else}
-							<Card.Root size="sm" class="border-red-200 bg-red-50/65 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-red-800">
-									<p>
-										Confidence: {selectedContradictionResult.confidence}% · {selectedContradictionResult.brief_reason}
-									</p>
-								</Card.Content>
-							</Card.Root>
-
-							{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-								<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-									<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-										<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
-									</div>
-									<div class="space-y-2 p-2.5">
-										<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
-												<Badge
-													variant="outline"
-													class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
-												>
-													{selectedContradictionEvidence.source_a}
-												</Badge>
-											</div>
-											<Button
-												variant="ghost"
-												class="h-auto w-full justify-start px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
-												onclick={() =>
-													selectedContradictionResult &&
-													focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
-											>
-												{selectedContradictionEvidence.snippet_a}
-											</Button>
-										</div>
-
-										<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-semibold text-red-800">Snippet B</span>
-												<Badge
-													variant="outline"
-													class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
-												>
-													{selectedContradictionEvidence.source_b}
-												</Badge>
-											</div>
-											<Button
-												variant="ghost"
-												class="h-auto w-full justify-start px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
-												onclick={() =>
-													selectedContradictionResult &&
-													focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
-											>
-												{selectedContradictionEvidence.snippet_b}
-											</Button>
-										</div>
-									</div>
-								</div>
-							{:else}
-								<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-									<Card.Content class="px-3 py-2 text-gray-600">
-										Evidence snippets are unavailable for this contradiction.
-									</Card.Content>
-								</Card.Root>
-							{/if}
-						{/if}
-					</div>
-				</ScrollArea>
-			</section>
+			<RightPanelAnalysis
+				selectedParagraph={$selectedParagraph}
+				contradictionLoading={contradictionLoading}
+				revisionProcessingSteps={revisionProcessingSteps}
+				selectedContradictionResult={selectedContradictionResult}
+				selectedContradictionEvidence={selectedContradictionEvidence}
+				onFocusEvidenceSnippet={focusEvidenceSnippet}
+			/>
 		{:else if activeRightPanelTab === 'redundancy'}
-			<section class="flex min-h-0 flex-1 flex-col">
-				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-					<p class="text-[11px] text-gray-500">
-						Inspect repetitive statements and overlapping ideas in the selected paragraph.
-					</p>
-				</header>
-				<ScrollArea class="min-h-0 flex-1">
-					<div class="p-3">
-						{#if !$selectedParagraph}
-							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium">Select a paragraph to analyze redundancies</p>
-								<p class="mt-1 text-[10px] text-gray-400">
-									Choose a paragraph in the document on the left.
-								</p>
-							</div>
-						{:else}
-							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-gray-600">
-									Redundancy analysis UI is ready. Backend processing will be connected in a future
-									step.
-								</Card.Content>
-							</Card.Root>
-						{/if}
-					</div>
-				</ScrollArea>
-			</section>
+			<RightPanelRedundancy selectedParagraph={$selectedParagraph} />
 		{:else if activeRightPanelTab === 'summarize'}
-			<section class="flex min-h-0 flex-1 flex-col">
-				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-					<p class="text-[11px] text-gray-500">
-						Get concise rewrite suggestions to summarize and simplify the selected paragraph.
-					</p>
-				</header>
-				<ScrollArea class="min-h-0 flex-1">
-					<div class="p-3">
-						{#if !$selectedParagraph}
-							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium">Select a paragraph to summarize and simplify</p>
-								<p class="mt-1 text-[10px] text-gray-400">
-									Choose a paragraph in the document on the left.
-								</p>
-							</div>
-						{:else}
-							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-gray-600">
-									Summarization and simplification panel is available in the UI. Backend suggestions
-									will be added next.
-								</Card.Content>
-							</Card.Root>
-						{/if}
-					</div>
-				</ScrollArea>
-			</section>
+			<RightPanelSummarize selectedParagraph={$selectedParagraph} />
 		{:else if activeRightPanelTab === 'ambiguity'}
-			<section class="flex min-h-0 flex-1 flex-col">
-				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-					<p class="text-[11px] text-gray-500">
-						Inspect ambiguous wording and unclear obligations in the selected paragraph.
-					</p>
-				</header>
-				<ScrollArea class="min-h-0 flex-1">
-					<div class="p-3">
-						{#if !$selectedParagraph}
-							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium">Select a paragraph to analyze ambiguities</p>
-								<p class="mt-1 text-[10px] text-gray-400">
-									Choose a paragraph in the document on the left.
-								</p>
-							</div>
-						{:else}
-							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-gray-600">
-									Ambiguity analysis UI is ready. Backend detection will be connected in a future
-									step.
-								</Card.Content>
-							</Card.Root>
-						{/if}
-					</div>
-				</ScrollArea>
-			</section>
+			<RightPanelAmbiguity selectedParagraph={$selectedParagraph} />
 		{:else if activeRightPanelTab === 'revisions'}
-			<section class="flex min-h-0 flex-1 flex-col">
-				<header
-					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
-				>
-					<p class="text-[11px] text-gray-500">
-						View modification history and compare original versus edited content.
-					</p>
-					<div class="group relative inline-flex">
-						<Badge
-							variant="outline"
-							class="h-5 cursor-help border-gray-200 bg-white px-2 text-[9px] font-bold tracking-tight text-gray-600"
-							title={COMMIT_SHORTCUT_HINT}
-						>
-							{COMMIT_SHORTCUT_LABEL}
-						</Badge>
-						<div
-							class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
-								? 'animate-bounce'
-								: ''}"
-						>
-							{COMMIT_SHORTCUT_TOOLTIP}
-						</div>
-					</div>
-				</header>
-
-				<ScrollArea class="min-h-0 flex-1">
-					<div class="space-y-2 p-3">
-						{#if !$selectedParagraph}
-							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium">Select a paragraph to view revision history</p>
-								<p class="mt-1 text-[10px] text-gray-400">
-									Choose a paragraph in the document on the left.
-								</p>
-							</div>
-						{:else if !selectedChangeLog.hasChanges}
-							<div class="flex flex-col items-center justify-center py-2 text-gray-300">
-								<p class="text-[10px] italic">No modifications recorded for this paragraph.</p>
-							</div>
-						{:else}
-							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-								<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-									<span class="mb-1 block text-[8px] font-semibold text-red-300">Original</span>
-									<p class="font-mono leading-relaxed text-red-700/80">
-										{#each selectedChangeLog.oldSegments as segment}
-											{#if segment.changed}
-												<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
-											{:else}
-												<span>{segment.value}</span>
-											{/if}
-										{/each}
-									</p>
-								</div>
-
-								<div class="bg-green-50/20 px-3 py-2">
-									<span class="mb-1 block text-[8px] font-semibold text-green-300">Modified</span>
-									<p class="font-mono leading-relaxed text-green-800">
-										{#each selectedChangeLog.newSegments as segment}
-											{#if segment.changed}
-												<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
-											{:else}
-												<span>{segment.value}</span>
-											{/if}
-										{/each}
-									</p>
-								</div>
-							</div>
-						{/if}
-					</div>
-				</ScrollArea>
-			</section>
+			<RightPanelRevisions
+				selectedParagraph={$selectedParagraph}
+				selectedChangeLog={selectedChangeLog}
+				simplifyResult={simplifyResult}
+				simplifyError={simplifyError}
+				rewriteSource={latestRewriteSource}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
+				onReplaceRewrite={replaceSelectionWithSimplifiedText}
+				onCopyRewrite={copySimplifiedSnippet}
+				onRejectRewrite={cancelSimplifyResult}
+				onFocusParagraph={focusNodeFromPanel}
+				commitShortcutHint={COMMIT_SHORTCUT_HINT}
+				commitShortcutLabel={COMMIT_SHORTCUT_LABEL}
+				commitShortcutTooltip={COMMIT_SHORTCUT_TOOLTIP}
+			/>
 		{:else if activeRightPanelTab === 'related'}
-			<section class="flex min-h-0 flex-1 flex-col">
-				<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-					<p class="text-[11px] text-gray-500">
-						View linked paragraphs, relation types, and semantic similarity context.
-					</p>
-				</header>
-
-				<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
-					<div class="flex min-h-full flex-col space-y-2 p-2">
-						{#if backendGraphLoading}
-							<div
-								class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700"
-							>
-								<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
-								<ul class="space-y-1.5 text-[12px] text-gray-600">
-									{#each relatedProcessingSteps as step, index}
-										<li
-											class="flex [animation:processing-step-fade_1.35s_ease-in-out_infinite] items-center gap-2 opacity-[0.45]"
-											style={`animation-delay: ${index * 220}ms;`}
-										>
-											<span
-												class="h-1.5 w-1.5 [animation:processing-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-gray-500 opacity-[0.35]"
-												style={`animation-delay: ${index * 220}ms;`}
-												aria-hidden="true"
-											></span>
-											<span class="text-gray-600">
-												{step.label}
-												<span class="ml-px inline-flex min-w-[14px]" aria-hidden="true">
-													<span
-														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-														style="animation-delay: 0ms;">.</span
-													>
-													<span
-														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-														style="animation-delay: 140ms;">.</span
-													>
-													<span
-														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-														style="animation-delay: 280ms;">.</span
-													>
-												</span>
-											</span>
-										</li>
-									{/each}
-								</ul>
-							</div>
-						{:else if !$selectedParagraph}
-							<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-								<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
-								<p class="text-center text-[10px] font-medium">
-									Select a paragraph to view related items
-								</p>
-								<p class="mt-1 text-center text-[10px] text-gray-400">
-									Choose a paragraph in the document on the left.
-								</p>
-							</div>
-						{:else if selectedRelatedParagraphs.length === 0}
-							<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-								<p class="text-[10px] italic">No relations found for this element</p>
-							</div>
-						{:else}
-							{#each selectedRelatedParagraphs as related}
-								<button
-									type="button"
-									class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-									on:click={() => focusNodeFromPanel(related.node.id)}
-								>
-									<div class="mb-2 flex items-center justify-between">
-										<div class="flex flex-wrap items-center gap-1.5">
-											{#if related.relationTypes.includes('semantic_similarity')}
-												<Badge
-													variant="outline"
-													class="h-4 border-green-100 bg-green-50 px-1.5 text-[9px] font-semibold text-green-600"
-												>
-													Similarity
-												</Badge>
-											{/if}
-											{#if related.relationTypes.includes('reference')}
-												<Badge
-													variant="outline"
-													class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
-												>
-													Reference
-												</Badge>
-											{/if}
-											{#if related.semanticScore != null}
-												<Badge
-													variant="outline"
-													class="h-4 border-gray-200 bg-white px-1.5 text-[9px] font-semibold text-gray-500"
-												>
-													{(related.semanticScore * 100).toFixed(1)}%
-												</Badge>
-											{/if}
-										</div>
-										<span class="text-[9px] font-semibold tracking-tight text-gray-400">
-											Page {related.node.page}
-										</span>
-									</div>
-
-									<p class="text-[11px] leading-relaxed text-gray-600">
-										{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
-									</p>
-
-									{#if related.references.length}
-										<p class="mt-2 text-[10px] text-gray-500">
-											Refs: {formatReferenceSummary(related.references)}
-										</p>
-									{/if}
-								</button>
-							{/each}
-						{/if}
-					</div>
-				</ScrollArea>
-			</section>
+			<RightPanelRelated
+				selectedParagraph={$selectedParagraph}
+				backendGraphLoading={backendGraphLoading}
+				relatedProcessingSteps={relatedProcessingSteps}
+				selectedRelatedParagraphs={selectedRelatedParagraphs}
+				nodeEditStateById={nodeEditStateById}
+				onFocusNodeFromPanel={focusNodeFromPanel}
+			/>
 		{:else}
-			<section class="flex min-h-0 flex-1 flex-col bg-white">
-				<header
-					class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2"
-				>
-					<p class="text-[11px] text-gray-500">
-						Ask questions and get contextual help grounded in the selected contract.
-					</p>
-					<Select.Root type="single" bind:value={assistantProvider}>
-						<Select.Trigger
-							size="sm"
-							class="h-6 w-[130px] border-gray-200 bg-white px-1.5 text-[10px] font-semibold text-gray-600"
-						>
-							{assistantProviderLabel}
-						</Select.Trigger>
-						<Select.Content>
-							{#each PROVIDER_OPTIONS as option}
-								<Select.Item
-									value={option.value}
-									label={option.label}
-									class="text-[10px] font-semibold"
-								>
-									{option.label}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				</header>
-
-				<div class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2">
-					<Select.Root type="single" bind:value={assistantMode}>
-						<Select.Trigger
-							size="sm"
-							class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-						>
-							{assistantModeLabel}
-						</Select.Trigger>
-						<Select.Content>
-							{#each MODE_OPTIONS as option}
-								<Select.Item
-									value={option.value}
-									label={option.label}
-									class="text-[10px] font-semibold"
-								>
-									{option.label}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-
-					<Select.Root type="single" bind:value={assistantScope}>
-						<Select.Trigger
-							size="sm"
-							class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-						>
-							{assistantScopeLabel}
-						</Select.Trigger>
-						<Select.Content>
-							{#each SCOPE_OPTIONS as option}
-								<Select.Item
-									value={option.value}
-									label={option.label}
-									class="text-[10px] font-semibold"
-								>
-									{option.label}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-
-					<Select.Root
-						type="single"
-						bind:value={selectedQuickAction}
-						onValueChange={() => handleQuickActionSelectionChange()}
-					>
-						<Select.Trigger
-							size="sm"
-							class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-						>
-							{quickActionLabel}
-						</Select.Trigger>
-						<Select.Content>
-							{#each QUICK_ACTIONS as action}
-								<Select.Item value={action} label={action} class="text-[10px] font-semibold">
-									{action}
-								</Select.Item>
-							{/each}
-						</Select.Content>
-					</Select.Root>
-				</div>
-
-				<ScrollArea class="min-h-0 flex-1 bg-gray-50/30" bind:viewportRef={assistantThread}>
-					<div class="flex min-h-full flex-col gap-2 p-2">
-						{#if assistantMessages.length === 0 && !assistantLoading}
-							<div class="flex flex-1 flex-col items-center justify-center text-gray-300">
-								<p class="text-[10px] italic">Chat about this contract</p>
-							</div>
-						{/if}
-
-						{#each assistantMessages as message (message.id)}
-							<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
-								<div
-									class="max-w-[92%] rounded-lg border px-2.5 py-2 text-[11px] leading-relaxed shadow-sm {message.role ===
-									'user'
-										? 'border-blue-200 bg-blue-50 text-blue-900'
-										: 'border-gray-200 bg-white text-gray-700'}"
-								>
-									{#if message.structuredContradiction}
-										<div class="space-y-2">
-											<p class="whitespace-pre-wrap">{message.content}</p>
-
-											{#if message.structuredContradiction.highlight_source_text?.trim()}
-												{@const chatSegments = buildChatHighlightSegments(
-													message.structuredContradiction
-												)}
-												<div
-													class="rounded-xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/65 to-sky-50/35 px-2.5 py-2.5 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)]"
-												>
-													<Tabs.Root
-														value={getChatPreviewTab(message.id)}
-														onValueChange={(value) => setChatPreviewTab(message.id, value)}
-														class="gap-1.5"
-													>
-														<Tabs.List class="h-6 w-full border border-gray-200 bg-white p-[2px]">
-															<Tabs.Trigger value="contradiction" class="text-[9px] font-semibold">
-																Contradiction
-															</Tabs.Trigger>
-															<Tabs.Trigger value="claims" class="text-[9px] font-semibold">
-																Claims
-															</Tabs.Trigger>
-														</Tabs.List>
-
-														<Tabs.Content value="contradiction" class="text-[11px]">
-															<p
-																class="break-words whitespace-normal leading-relaxed text-gray-700"
-																on:mouseleave={() => clearChatPreviewHover(message.id)}
-															>
-																{#each chatSegments as segment, segmentIndex}
-																	{#if segment.interactive}
-																		{@const tooltipData = resolveChatHighlightSegmentTooltip(segment)}
-																		{@const segmentKey = `${message.id}:${segmentIndex}`}
-																		{#if tooltipData}
-																			<Tooltip.Root
-																				open={isChatPreviewTooltipOpen(message.id, segmentKey)}
-																				onOpenChange={(open) => {
-																					if (open) {
-																						handleChatPreviewSegmentMouseEnter(
-																							message.id,
-																							segment,
-																							segmentKey
-																						);
-																						return;
-																					}
-																					if (isChatPreviewTooltipOpen(message.id, segmentKey)) {
-																						clearChatPreviewHover(message.id);
-																					}
-																				}}
-																			>
-																				<Tooltip.Trigger>
-																					{#snippet child({ props })}
-																						<span
-																							{...props}
-																							class="inline bg-transparent p-0 text-left align-baseline leading-[inherit] whitespace-normal text-inherit transition-[background-color,border-color,box-shadow,color] duration-150 ease-out hover:cursor-help focus-visible:outline-none"
-																							on:mouseenter={() =>
-																								handleChatPreviewSegmentMouseEnter(
-																									message.id,
-																									segment,
-																									segmentKey
-																								)}
-																							on:mouseleave={() => clearChatPreviewHover(message.id)}
-																							on:focus={() =>
-																								handleChatPreviewSegmentMouseEnter(
-																									message.id,
-																									segment,
-																									segmentKey
-																								)}
-																							on:blur={() => clearChatPreviewHover(message.id)}
-																						>
-																							<span
-																								class="inline rounded-[3px] px-[2px] py-[1px]"
-																								style={resolveChatHighlightSegmentStyle(segment, message.id)}
-																							>
-																								{segment.text}
-																							</span>
-																						</span>
-																					{/snippet}
-																				</Tooltip.Trigger>
-																				<Tooltip.Content
-																					side="top"
-																					sideOffset={6}
-																					class="max-w-[290px] border border-gray-200 bg-white px-2 py-1.5 text-gray-700 shadow-md"
-																				>
-																					<div class="space-y-1">
-																						<Badge
-																							variant="outline"
-																							class="h-4 px-1.5 text-[9px] font-semibold"
-																							style={tooltipData.badgeStyle}
-																						>
-																							{tooltipData.badgeText}
-																						</Badge>
-																						{#if tooltipData.description}
-																							<p class="text-[9px] leading-relaxed text-gray-600">
-																								{tooltipData.description}
-																							</p>
-																						{/if}
-																					</div>
-																				</Tooltip.Content>
-																			</Tooltip.Root>
-																		{:else}
-																			<button
-																				type="button"
-																				class="inline appearance-none rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left align-baseline leading-[inherit] whitespace-normal text-inherit"
-																				style={resolveChatHighlightSegmentStyle(segment, message.id)}
-																				on:mouseenter={() =>
-																					handleChatPreviewSegmentMouseEnter(
-																						message.id,
-																						segment,
-																						segmentKey
-																					)}
-																				on:mouseleave={() => clearChatPreviewHover(message.id)}
-																			>
-																				{segment.text}
-																			</button>
-																		{/if}
-																	{:else}
-																		<span>{segment.text}</span>
-																	{/if}
-																{/each}
-															</p>
-
-															<div class="mt-2 flex flex-wrap gap-2">
-																{#each CONTRADICTION_TAXONOMY_ORDER as category}
-																	<Badge
-																		variant="outline"
-																		class="h-4 items-center gap-1 border-gray-200 bg-white px-1.5 text-[9px] text-gray-600"
-																	>
-																		<span
-																			class="inline-flex h-2 w-2 rounded-full"
-																			style={`background: ${CONTRADICTION_TAXONOMY_COLORS[category]};`}
-																		></span>
-																		{CONTRADICTION_TAXONOMY_LABELS[category]}
-																	</Badge>
-																{/each}
-															</div>
-														</Tabs.Content>
-
-														<Tabs.Content value="claims" class="text-[11px]">
-															<p class="break-words whitespace-normal leading-relaxed text-gray-700">
-																{#each chatSegments as segment}
-																	{#if segment.claimSide}
-																		<span
-																			class="inline rounded-[3px] px-[2px] py-[1px]"
-																			style={resolveChatClaimSegmentStyle(segment)}
-																		>
-																			{segment.text}
-																		</span>
-																	{:else}
-																		<span>{segment.text}</span>
-																	{/if}
-																{/each}
-															</p>
-
-															<div class="mt-2 flex flex-wrap gap-1.5">
-																<Badge
-																	variant="outline"
-																	class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
-																	style={`border-color: ${CONTRADICTION_CLAIM_SIDE_COLORS.a}55; background: ${CONTRADICTION_CLAIM_SIDE_COLORS.a}14; color: ${CONTRADICTION_CLAIM_SIDE_COLORS.a};`}
-																>
-																	<span
-																		class="inline-flex h-2 w-2 rounded-full"
-																		style={`background: ${CONTRADICTION_CLAIM_SIDE_COLORS.a};`}
-																	></span>
-																	Claim A
-																</Badge>
-																<Badge
-																	variant="outline"
-																	class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
-																	style={`border-color: ${CONTRADICTION_CLAIM_SIDE_COLORS.b}55; background: ${CONTRADICTION_CLAIM_SIDE_COLORS.b}14; color: ${CONTRADICTION_CLAIM_SIDE_COLORS.b};`}
-																>
-																	<span
-																		class="inline-flex h-2 w-2 rounded-full"
-																		style={`background: ${CONTRADICTION_CLAIM_SIDE_COLORS.b};`}
-																	></span>
-																	Claim B
-																</Badge>
-															</div>
-														</Tabs.Content>
-													</Tabs.Root>
-												</div>
-											{/if}
-										</div>
-									{:else}
-										<p class="whitespace-pre-wrap">{message.content}</p>
-									{/if}
-
-									{#if message.suggestedQuestions?.length}
-										<div class="mt-2">
-											<p class="mb-1 text-[9px] font-semibold text-gray-500">Suggested questions</p>
-											<div class="flex flex-wrap gap-1">
-												{#each message.suggestedQuestions as suggestedQuestion}
-													<Button
-														variant="outline"
-														size="xs"
-														class="h-5 border-gray-200 bg-gray-50 px-1.5 text-[9px] text-gray-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-														onclick={() => onSuggestedQuestionClick(suggestedQuestion)}
-													>
-														{suggestedQuestion}
-													</Button>
-												{/each}
-											</div>
-										</div>
-									{/if}
-
-									{#if message.citations?.length}
-										<div class="mt-2 flex flex-wrap gap-1">
-											{#each message.citations as citation}
-												<Button
-													variant="outline"
-													size="xs"
-													class="h-5 border-amber-200 bg-amber-50 px-1.5 text-[9px] font-bold text-amber-700 hover:border-amber-300"
-													title={citation.excerpt}
-													onclick={() => focusNodeFromPanel(citation.id, true)}
-												>
-													{citation.id}
-												</Button>
-											{/each}
-										</div>
-									{/if}
-								</div>
-							</div>
-						{/each}
-
-						{#if assistantLoading}
-							<div class="flex justify-start">
-								<div
-									class="w-[82%] max-w-[92%] rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
-								>
-									<div class="space-y-2">
-										<Skeleton class="h-3.5 w-28" />
-										<Skeleton class="h-3 w-full" />
-										<Skeleton class="h-3 w-[92%]" />
-										<Skeleton class="h-3 w-[70%]" />
-									</div>
-								</div>
-							</div>
-						{/if}
-					</div>
-				</ScrollArea>
-
-				{#if assistantError}
-					<div class="border-t border-red-100 bg-red-50 px-3 py-1.5 text-[10px] text-red-700">
-						{assistantError}
-					</div>
-				{/if}
-
-				<form
-					class="border-t border-gray-200 bg-white p-2"
-					on:submit|preventDefault={() => void submitAssistantQuestion()}
-				>
-					<Textarea
-						rows={2}
-						placeholder="Ask about this contract or paragraph..."
-						bind:value={assistantInput}
-						onkeydown={handleAssistantInputKeydown}
-						class="min-h-[52px] resize-none border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700"
-					></Textarea>
-					<div class="mt-1.5 flex items-center justify-between">
-						<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
-						<Button
-							type="submit"
-							variant="outline"
-							size="sm"
-							disabled={assistantLoading || !assistantInput.trim()}
-							class="h-7 border-gray-200 bg-white px-3 text-[10px] font-bold text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-						>
-							Ask
-						</Button>
-					</div>
-				</form>
-			</section>
+			<RightPanelAssistant
+				bind:assistantProvider
+				bind:assistantMode
+				bind:assistantScope
+				bind:selectedQuickAction
+				bind:assistantInput
+				bind:assistantThread
+				assistantProviderLabel={assistantProviderLabel}
+				assistantModeLabel={assistantModeLabel}
+				assistantScopeLabel={assistantScopeLabel}
+				quickActionLabel={quickActionLabel}
+				providerOptions={PROVIDER_OPTIONS}
+				modeOptions={MODE_OPTIONS}
+				scopeOptions={SCOPE_OPTIONS}
+				quickActions={QUICK_ACTIONS}
+				assistantMessages={assistantMessages}
+				assistantLoading={assistantLoading}
+				assistantError={assistantError}
+				contradictionTaxonomyOrder={CONTRADICTION_TAXONOMY_ORDER}
+				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
+				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
+				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
+				onHandleQuickActionSelectionChange={handleQuickActionSelectionChange}
+				onSuggestedQuestionClick={onSuggestedQuestionClick}
+				onFocusNodeFromPanel={focusNodeFromPanel}
+				onSubmitAssistantQuestion={submitAssistantQuestion}
+				onHandleAssistantInputKeydown={handleAssistantInputKeydown}
+			/>
 		{/if}
 	</aside>
 
@@ -3920,54 +2247,19 @@
 		</div>
 	</aside>
 
-	{#if simplifyToolbarVisible && simplifyTarget}
-		<div
-			class="fixed z-40 w-52 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
-			style={`top: ${simplifyToolbarTop}px; left: ${simplifyToolbarLeft}px;`}
-		>
-			<p class="px-1 pb-1 text-[9px] font-semibold text-slate-400">Paragraph tools</p>
-			<div class="flex flex-col gap-1.5">
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-auto justify-between border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-800 hover:border-amber-300 hover:bg-amber-100"
-					disabled={fixContradictionLoading || assistantLoading || simplifyLoading}
-					onmousedown={(event) => event.preventDefault()}
-					onclick={() => void runFixContradiction()}
-				>
-					<span class="inline-flex items-center gap-1.5">
-						<HammerShieldIcon className="h-3.5 w-3.5" />
-						<span>{fixContradictionLoading ? 'Fixing...' : 'Fix contradiction'}</span>
-					</span>
-				</Button>
-
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-auto justify-between border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800 hover:border-sky-300 hover:bg-sky-100"
-					disabled={simplifyLoading || fixContradictionLoading}
-					onmousedown={(event) => event.preventDefault()}
-					onclick={() => void runSimplify()}
-				>
-					<span class="inline-flex items-center gap-1.5">
-						<SimplifyWandIcon className="h-3.5 w-3.5" />
-						<span>{simplifyLoading ? 'Simplifying...' : 'Simplify'}</span>
-					</span>
-				</Button>
-			</div>
-			<Button
-				class="mt-2 h-6 w-full border-gray-200 bg-white px-2 text-[9px] font-semibold text-gray-500 hover:border-gray-300 hover:bg-gray-50"
-				variant="outline"
-				size="sm"
-				onmousedown={(event) => event.preventDefault()}
-				onclick={() => {
-					simplifyToolbarVisible = false;
-				}}
-			>
-				Close tools
-			</Button>
-		</div>
-	{/if}
+	<ParagraphRewriteActions
+		visible={simplifyToolbarVisible && Boolean(simplifyTarget)}
+		top={simplifyToolbarTop}
+		left={simplifyToolbarLeft}
+		simplifyLoading={simplifyLoading}
+		fixContradictionLoading={fixContradictionLoading}
+		assistantLoading={assistantLoading}
+		onFixContradiction={runFixContradiction}
+		onSimplify={runSimplify}
+		onClose={() => {
+			simplifyToolbarVisible = false;
+		}}
+	/>
 </main>
 
 <style>
