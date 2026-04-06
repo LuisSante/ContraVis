@@ -23,6 +23,7 @@
 		AssistantProvider,
 		AssistantScope,
 		ChangeLogState,
+		ContradictionTaxonomyType,
 		ContradictionAnalysisRequest,
 		ContradictionParagraphResult,
 		Edge as GraphEdge,
@@ -30,9 +31,14 @@
 		ParagraphEditState,
 		RelatedParagraph,
 		SimplifyRelatedParagraph,
+		StructuredContradictionAnalysis,
 		XmlNode,
 		SimplifyResultState,
-		SimplifyAuditRecord
+		SimplifyAuditRecord,
+		RightPanelTab,
+		ChatHighlightSegment,
+		ContradictionScrollMarker,
+		ChatPreviewHoverState
 	} from '$lib/types/document';
 	import {
 		buildInspectorState,
@@ -64,12 +70,23 @@
 		EDITABLE_PARAGRAPH_CLASSES,
 		MAX_SIMPLIFY_AUDIT_TRAIL,
 		CONTRADICTION_OPENAI_MODEL_OPTIONS,
+		CONTRADICTION_TAXONOMY_COLORS,
+		CONTRADICTION_TAXONOMY_ORDER,
+		CONTRADICTION_TAXONOMY_LABELS,
+		CONTRADICTION_CLAIM_SIDE_COLORS,
 		MODE_OPTIONS,
 		PROVIDER_OPTIONS,
 		QUICK_ACTIONS,
 		QUICK_ACTION_WHY_CONTRADICTION_AI,
 		QUICK_ACTION_WHY_CONTRADICTION_FREE,
-		SCOPE_OPTIONS
+		SCOPE_OPTIONS,
+		RIGHT_DRAWER_DEFAULT_WIDTH,
+		RIGHT_TOOLBAR_WIDTH,
+		RIGHT_DRAWER_KEYBOARD_STEP,
+		RIGHT_DRAWER_MIN_WIDTH,
+		RIGHT_DRAWER_MAX_RATIO,
+		RIGHT_PANEL_TOOLS,
+		FIX_CONTRADICTION_TOP_RELATED
 	} from '$lib/constants/docx-viewer';
 	import {
 		buildTargetForWholeParagraph,
@@ -91,16 +108,43 @@
 	import RelatedParagraphsIcon from '$lib/icons/RelatedParagraphsIcon.svelte';
 	import SimplifyWandIcon from '$lib/icons/SimplifyWandIcon.svelte';
 	import SummarizeSimplifyIcon from '$lib/icons/SummarizeSimplifyIcon.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
+	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
+
+	const initialInspectorState = createEmptyInspectorState();
+	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<
+		Record<ContradictionTaxonomyType, string>
+	> = {
+		temporal: 'The claims conflict on timing, dates, or sequence of events.',
+		numerical: 'The claims conflict on numbers, amounts, percentages, or quantities.',
+		authority: 'The claims conflict on who has authority or who issues the statement.',
+		process: 'The claims conflict on operational steps, method, or procedure.',
+		policy_reversal:
+			'One claim allows or affirms something and the other directly prohibits or negates it.',
+		specificity: 'One claim is broader while the other is narrower in scope.',
+		other: 'The claims conflict, but not under the main taxonomy categories.'
+	};
+	const nodeEditStateById = new Map<string, ParagraphEditState>();
+	const paragraphElementById = new Map<string, HTMLElement>();
+	const paragraphRelationHostById = new Map<string, HTMLElement>();
+	const relationsCountByNodeId = new Map<string, number>();
+	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
-	let assistantThread: HTMLDivElement | null = null;
+	let assistantThread: HTMLElement | null = null;
 	let activeDocumentId: string | null = null;
 	let activeDocumentName = '';
 	let localError: string | null = null;
 	let renderToken = 0;
 	let releaseDoc: (() => void) | null = null;
-	const initialInspectorState = createEmptyInspectorState();
 	let selectedNodeId: string | null = initialInspectorState.selectedNodeId;
 	let selectedChangeLog: ChangeLogState = initialInspectorState.selectedChangeLog;
 	let selectedRelatedParagraphs: RelatedParagraph[] =
@@ -108,10 +152,6 @@
 	let backendEdges: GraphEdge[] = [];
 	let backendGraphLoading = false;
 	let graphComputationToken = 0;
-	const nodeEditStateById = new Map<string, ParagraphEditState>();
-	const paragraphElementById = new Map<string, HTMLElement>();
-	const paragraphRelationHostById = new Map<string, HTMLElement>();
-	const relationsCountByNodeId = new Map<string, number>();
 
 	let assistantMode: AssistantMode = 'explain';
 	let assistantScope: AssistantScope = 'selected';
@@ -130,48 +170,21 @@
 	let simplifyLoading = false;
 	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
-	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
-	const FIX_CONTRADICTION_TOP_RELATED = 3;
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
 	let contradictionModel = 'gpt-4.1';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
-	type ContradictionScrollMarker = {
-		paragraphId: string;
-		topPercent: number;
-		confidenceBand: 'high' | 'medium' | 'low';
-	};
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
-   
-	type RightPanelTab =
-		| 'related'
-		| 'analysis'
-		| 'redundancy'
-		| 'summarize'
-		| 'ambiguity'
-		| 'revisions'
-		| 'assistant';
-	const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
-		{ id: 'related', label: 'Related Paragraphs' },
-		{ id: 'analysis', label: 'Contradiction Analysis' },
-		{ id: 'redundancy', label: 'Redundancy Analysis' },
-		{ id: 'summarize', label: 'Summarize & Simplify' },
-		{ id: 'ambiguity', label: 'Ambiguity Analysis' },
-		{ id: 'revisions', label: 'Paragraph Revisions' },
-		{ id: 'assistant', label: 'Contract Chat Assistant' }
-	];
-   
-	const RIGHT_TOOLBAR_WIDTH = 58;
-	const RIGHT_DRAWER_MIN_WIDTH = 360;
-	const RIGHT_DRAWER_DEFAULT_WIDTH = 520;
-	const RIGHT_DRAWER_MAX_RATIO = 0.68;
-	const RIGHT_DRAWER_KEYBOARD_STEP = 24;
+	let contradictionSummaryVisible = true;
+	let chatPreviewHover: ChatPreviewHoverState | null = null;
+	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
+
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
 	let isCompactLayout = false;
@@ -183,7 +196,7 @@
 		(row) => row.contradiction
 	).length;
 	$: selectedContradictionResult = $selectedParagraph
-		? contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null
+		? (contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null)
 		: null;
 	$: selectedContradictionEvidence =
 		selectedContradictionResult?.contradiction && selectedContradictionResult.evidence
@@ -218,6 +231,20 @@
 			active: contradictionLoading
 		}
 	];
+	$: contradictionModelLabel =
+		CONTRADICTION_OPENAI_MODEL_OPTIONS.find((option) => option.value === contradictionModel)
+			?.label ?? 'gpt-4.1';
+	$: assistantProviderLabel =
+		PROVIDER_OPTIONS.find((option) => option.value === assistantProvider)?.label ?? 'Provider';
+	$: assistantModeLabel =
+		MODE_OPTIONS.find((option) => option.value === assistantMode)?.label ?? 'Mode';
+	$: assistantScopeLabel =
+		SCOPE_OPTIONS.find((option) => option.value === assistantScope)?.label ?? 'Scope';
+	$: quickActionLabel = selectedQuickAction || 'Quick action';
+
+	function toTitleCaseLabel(label: string): string {
+		return label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
+	}
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
 		const nextState = buildInspectorState({
@@ -573,7 +600,13 @@
 		}
 		contradictionResultsByParagraphId = next;
 		contradictionSource = source;
+		contradictionSummaryVisible = true;
 		applyContradictionHighlights();
+	}
+
+	function setContradictionErrorMessage(message: string | null) {
+		contradictionError = message;
+		if (message) contradictionSummaryVisible = true;
 	}
 
 	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
@@ -605,17 +638,19 @@
 		isRightDrawerOpen = true;
 
 		if (!activeDocumentId) {
-			contradictionError = 'No document is loaded.';
+			setContradictionErrorMessage('No document is loaded.');
 			return;
 		}
 
 		contradictionLoading = true;
-		contradictionError = null;
+		setContradictionErrorMessage(null);
 		try {
 			const response = await fetchSavedContradictions(activeDocumentId);
 			setContradictionResults(response.paragraphResults ?? [], response.sourceFile);
 		} catch (savedError) {
-			contradictionError = getAxiosErrorMessage(savedError, 'Failed to load saved contradictions.');
+			setContradictionErrorMessage(
+				getAxiosErrorMessage(savedError, 'Failed to load saved contradictions.')
+			);
 		} finally {
 			contradictionLoading = false;
 		}
@@ -626,26 +661,27 @@
 		isRightDrawerOpen = true;
 
 		if (backendGraphLoading) {
-			contradictionError = 'Wait until graph generation finishes before searching contradictions.';
+			setContradictionErrorMessage(
+				'Wait until graph generation finishes before searching contradictions.'
+			);
 			return;
 		}
 
 		const payload = buildContradictionAnalysisPayload();
 		if (!payload) {
-			contradictionError = 'No paragraph context is available yet.';
+			setContradictionErrorMessage('No paragraph context is available yet.');
 			return;
 		}
 
 		contradictionLoading = true;
-		contradictionError = null;
+		setContradictionErrorMessage(null);
 		try {
 			const response = await fetchContradictionAnalysis(payload);
 			const resolvedModel = response.model?.trim() || payload.model || 'default';
 			setContradictionResults(response.paragraphResults ?? [], `llm:openai:${resolvedModel}`);
 		} catch (analysisError) {
-			contradictionError = getAxiosErrorMessage(
-				analysisError,
-				'Failed to search contradictions with LLM.'
+			setContradictionErrorMessage(
+				getAxiosErrorMessage(analysisError, 'Failed to search contradictions with LLM.')
 			);
 		} finally {
 			contradictionLoading = false;
@@ -713,6 +749,787 @@
 			role: message.role,
 			content: message.content
 		}));
+	}
+
+	function extractObjectFromText(text: string): Record<string, unknown> | null {
+		const raw = (text || '').trim();
+		if (!raw) return null;
+
+		const fenced = raw
+			.replace(/^```(?:json)?\s*/i, '')
+			.replace(/\s*```$/i, '')
+			.trim();
+
+		const candidates = [raw, fenced];
+		for (const candidate of candidates) {
+			try {
+				const parsed = JSON.parse(candidate);
+				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return parsed as Record<string, unknown>;
+				}
+			} catch {
+				// ignore parse errors and continue with fallback extraction
+			}
+		}
+
+		const objectMatch = fenced.match(/\{[\s\S]*\}/);
+		if (objectMatch) {
+			try {
+				const parsed = JSON.parse(objectMatch[0]);
+				if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+					return parsed as Record<string, unknown>;
+				}
+			} catch {
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	function normalizeHighlightCategory(raw: unknown): ContradictionTaxonomyType {
+		const normalized = toNonEmptyString(raw)
+			.toLowerCase()
+			.replace(/[\s-]+/g, '_');
+		const direct = normalizeContradictionType(normalized);
+		if (direct !== 'other') return direct;
+
+		// Backward compatibility for old highlight categories
+		if (
+			normalized === 'party' ||
+			normalized === 'parties' ||
+			normalized === 'role' ||
+			normalized === 'roles' ||
+			normalized === 'parties_and_roles' ||
+			normalized === 'fundamental_entities'
+		) {
+			return 'authority';
+		}
+		if (
+			normalized === 'obligation' ||
+			normalized === 'obligations' ||
+			normalized === 'prohibition' ||
+			normalized === 'prohibitions' ||
+			normalized === 'duty' ||
+			normalized === 'duties' ||
+			normalized === 'obligations_and_prohibitions' ||
+			normalized === 'rights_and_permissions' ||
+			normalized === 'individual_behaviors' ||
+			normalized === 'motion_descriptors'
+		) {
+			return 'policy_reversal';
+		}
+		if (
+			normalized === 'condition' ||
+			normalized === 'conditions' ||
+			normalized === 'exception' ||
+			normalized === 'exceptions' ||
+			normalized === 'conditions_and_exceptions' ||
+			normalized === 'safety_situations'
+		) {
+			return 'specificity';
+		}
+		if (
+			normalized === 'amount' ||
+			normalized === 'amounts' ||
+			normalized === 'amounts_and_timing' ||
+			normalized === 'environment_entities'
+		) {
+			return 'numerical';
+		}
+		return 'other';
+	}
+
+	function toNonEmptyString(raw: unknown): string {
+		return typeof raw === 'string' ? raw.trim() : '';
+	}
+
+	function clampConfidence(raw: unknown): number {
+		if (typeof raw !== 'number' || !Number.isFinite(raw)) return 0;
+		return Math.max(0, Math.min(100, Math.round(raw)));
+	}
+
+	function normalizeClaimSource(raw: unknown): 'paragraph' | 'context' | 'unknown' {
+		const value = toNonEmptyString(raw);
+		if (value === 'paragraph' || value === 'context') return value;
+		return 'unknown';
+	}
+
+	function normalizeClaimPolarity(raw: unknown): 'affirmed' | 'negated' | 'unknown' {
+		const value = toNonEmptyString(raw);
+		if (value === 'affirmed' || value === 'negated') return value;
+		return 'unknown';
+	}
+
+	function normalizeHighlightClaimSide(raw: unknown): 'a' | 'b' | 'both' | 'unknown' | undefined {
+		const value = toNonEmptyString(raw)
+			.toLowerCase()
+			.replace(/[\s-]+/g, '_');
+		if (!value) return undefined;
+		if (value === 'a' || value === 'claim_a') return 'a';
+		if (value === 'b' || value === 'claim_b') return 'b';
+		if (value === 'both') return 'both';
+		return 'unknown';
+	}
+
+	function normalizeContradictionType(raw: unknown): ContradictionTaxonomyType {
+		const value = toNonEmptyString(raw)
+			.toLowerCase()
+			.replace(/[\s-]+/g, '_');
+		if (!value) return 'other';
+
+		if (value === 'temporal' || value === 'time' || value === 'date') return 'temporal';
+		if (
+			value === 'numerical' ||
+			value === 'numeric' ||
+			value === 'amount' ||
+			value === 'amounts' ||
+			value === 'value' ||
+			value === 'values' ||
+			value === 'percentage' ||
+			value === 'percentages'
+		) {
+			return 'numerical';
+		}
+		if (value === 'authority' || value === 'issuer' || value === 'source') return 'authority';
+		if (value === 'process' || value === 'procedure' || value === 'workflow') return 'process';
+		if (
+			value === 'policy_reversal' ||
+			value === 'negation' ||
+			value === 'direct_negation' ||
+			value === 'reversal'
+		) {
+			return 'policy_reversal';
+		}
+		if (
+			value === 'specificity' ||
+			value === 'scope' ||
+			value === 'general_vs_specific' ||
+			value === 'specific'
+		) {
+			return 'specificity';
+		}
+		return 'other';
+	}
+
+	function normalizeStructuredContradiction(
+		raw: unknown,
+		fallbackParagraphId: string,
+		highlightSourceText: string
+	): StructuredContradictionAnalysis | null {
+		if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+		const source = raw as Record<string, unknown>;
+
+		const rawContradictions = Array.isArray(source.contradictions) ? source.contradictions : [];
+		const contradictions = rawContradictions
+			.map((entry, index) => {
+				if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+				const item = entry as Record<string, unknown>;
+				const rawClaimA =
+					item.claim_a && typeof item.claim_a === 'object' && !Array.isArray(item.claim_a)
+						? (item.claim_a as Record<string, unknown>)
+						: {};
+				const rawClaimB =
+					item.claim_b && typeof item.claim_b === 'object' && !Array.isArray(item.claim_b)
+						? (item.claim_b as Record<string, unknown>)
+						: {};
+
+				const claimA = {
+					text: toNonEmptyString(rawClaimA.text),
+					source: normalizeClaimSource(rawClaimA.source),
+					paragraph_id: toNonEmptyString(rawClaimA.paragraph_id) || undefined,
+					subject: toNonEmptyString(rawClaimA.subject) || undefined,
+					relation: toNonEmptyString(rawClaimA.relation) || undefined,
+					object: toNonEmptyString(rawClaimA.object) || undefined,
+					polarity: normalizeClaimPolarity(rawClaimA.polarity)
+				};
+
+				const claimB = {
+					text: toNonEmptyString(rawClaimB.text),
+					source: normalizeClaimSource(rawClaimB.source),
+					paragraph_id: toNonEmptyString(rawClaimB.paragraph_id) || undefined,
+					subject: toNonEmptyString(rawClaimB.subject) || undefined,
+					relation: toNonEmptyString(rawClaimB.relation) || undefined,
+					object: toNonEmptyString(rawClaimB.object) || undefined,
+					polarity: normalizeClaimPolarity(rawClaimB.polarity)
+				};
+
+				return {
+					id: toNonEmptyString(item.id) || `c${index + 1}`,
+					contradiction_type: normalizeContradictionType(item.contradiction_type),
+					why: toNonEmptyString(item.why) || 'Potential contradiction detected.',
+					claim_a: claimA,
+					claim_b: claimB,
+					conflicting_fields: Array.isArray(item.conflicting_fields)
+						? item.conflicting_fields
+								.map((field) => (typeof field === 'string' ? field.trim() : ''))
+								.filter((field) => field.length > 0)
+						: [],
+					confidence: clampConfidence(item.confidence)
+				};
+			})
+			.filter((item): item is NonNullable<typeof item> => item !== null);
+
+		const rawHighlights = Array.isArray(source.highlights) ? source.highlights : [];
+		const highlights = rawHighlights
+			.map((entry) => {
+				if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+				const item = entry as Record<string, unknown>;
+				const phrase = toNonEmptyString(item.phrase);
+				if (!phrase) return null;
+				return {
+					phrase,
+					category: normalizeHighlightCategory(item.category),
+					claim_id: toNonEmptyString(item.claim_id) || undefined,
+					claim_side: normalizeHighlightClaimSide(item.claim_side),
+					source: normalizeClaimSource(item.source)
+				};
+			})
+			.filter((item): item is NonNullable<typeof item> => item !== null);
+
+		if (contradictions.length === 0 && highlights.length === 0) {
+			return null;
+		}
+
+		const contradictionCount =
+			typeof source.contradiction_count === 'number' && Number.isFinite(source.contradiction_count)
+				? Math.max(contradictions.length, Math.round(source.contradiction_count))
+				: contradictions.length;
+		const notes = Array.isArray(source.notes)
+			? source.notes
+					.map((note) => (typeof note === 'string' ? note.trim() : ''))
+					.filter((note) => note.length > 0)
+			: undefined;
+
+		return {
+			version: toNonEmptyString(source.version) || undefined,
+			paragraph_id: toNonEmptyString(source.paragraph_id) || fallbackParagraphId,
+			overall_summary:
+				toNonEmptyString(source.overall_summary) ||
+				`Detected ${contradictionCount} contradiction candidate(s).`,
+			contradiction_count: contradictionCount,
+			contradictions,
+			highlights,
+			notes,
+			highlight_source_text: highlightSourceText
+		};
+	}
+
+	function parseStructuredContradictionFromAnswer(
+		answer: string,
+		fallbackParagraphId: string,
+		highlightSourceText: string
+	): StructuredContradictionAnalysis | null {
+		const objectCandidate = extractObjectFromText(answer);
+		if (!objectCandidate) return null;
+		return normalizeStructuredContradiction(
+			objectCandidate,
+			fallbackParagraphId,
+			highlightSourceText
+		);
+	}
+
+	function buildContradictionAiCostQuestion(
+		paragraphId: string,
+		paragraphText: string,
+		contradiction: ContradictionParagraphResult
+	): string {
+		const evidence = contradiction.evidence;
+		const evidenceA = evidence?.snippet_a?.trim() || '(missing)';
+		const evidenceB = evidence?.snippet_b?.trim() || '(missing)';
+		const sourceA = evidence?.source_a || 'unknown';
+		const sourceB = evidence?.source_b || 'unknown';
+
+		return [
+			`Provide structured contradiction analysis for selected paragraph ${paragraphId}.`,
+			'Return JSON only inside the "answer" field. Do not use markdown.',
+			'JSON schema:',
+			'{',
+			'  "paragraph_id": "string",',
+			'  "overall_summary": "string",',
+			'  "contradiction_count": 0,',
+			'  "contradictions": [',
+			'    {',
+			'      "id": "c1",',
+			'      "contradiction_type": "temporal|numerical|authority|process|policy_reversal|specificity|other",',
+			'      "why": "string",',
+			'      "claim_a": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
+			'      "claim_b": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
+			'      "conflicting_fields": ["polarity","time","quantity","scope"],',
+			'      "confidence": 0',
+			'    }',
+			'  ],',
+			'  "highlights": [',
+			'    {"phrase":"string","category":"temporal|numerical|authority|process|policy_reversal|specificity|other","claim_id":"c1","claim_side":"a|b|both|unknown","source":"paragraph|context|unknown"}',
+			'  ]',
+			'}',
+			'Rules:',
+			'- Use contradiction_type taxonomy from Table 1:',
+			'  temporal: contradicts date/time of event.',
+			'  numerical: conflicting numbers/values/percentages.',
+			'  authority: conflicting issuer/source of statement.',
+			'  process: conflicting procedures/operational routes.',
+			'  policy_reversal: one statement directly negates the other.',
+			'  specificity: one statement is broader/narrower than the other.',
+			'- Ground every contradiction only on provided paragraph/context.',
+			'- Prefer exact quoted claim text.',
+			'- Keep contradiction_count equal to contradictions.length.',
+			'- Include at least 3 highlights when possible.',
+			'- For each highlight, set claim_side as a or b when it belongs to Claim A/B.',
+			'- If uncertain, return fewer contradictions.',
+			`Known classifier signal: contradiction=true, confidence=${Math.round(contradiction.confidence || 0)}, reason="${(contradiction.brief_reason || '').trim()}".`,
+			`Evidence A (${sourceA}): "${evidenceA}"`,
+			`Evidence B (${sourceB}): "${evidenceB}"`,
+			'Selected paragraph text:',
+			`"""${paragraphText}"""`
+		].join('\n');
+	}
+
+	function buildChatHighlightSegments(
+		analysis: StructuredContradictionAnalysis | undefined
+	): ChatHighlightSegment[] {
+		if (!analysis) return [];
+
+		const sourceText = normalizeChatPreviewText(analysis.highlight_source_text || '');
+		if (!sourceText) return [];
+
+		const textLower = sourceText.toLowerCase();
+		const contradictionById = new Map<
+			string,
+			StructuredContradictionAnalysis['contradictions'][number]
+		>();
+		for (const contradiction of analysis.contradictions) {
+			const key = toNonEmptyString(contradiction.id).toLowerCase();
+			if (!key) continue;
+			contradictionById.set(key, contradiction);
+		}
+		const singleContradiction =
+			analysis.contradictions.length === 1 ? analysis.contradictions[0] : null;
+		const singleContradictionId = singleContradiction
+			? toNonEmptyString(singleContradiction.id) || null
+			: null;
+
+		type HighlightSpan = {
+			start: number;
+			end: number;
+			length: number;
+			category: ContradictionTaxonomyType;
+			claimId?: string;
+			claimSide?: 'a' | 'b';
+			contradictionType?: ContradictionTaxonomyType;
+			contradictionWhy?: string;
+		};
+		type SegmentMeta = Omit<ChatHighlightSegment, 'text'>;
+
+		function findPhraseRanges(phrase: string, maxMatches: number): Array<{ start: number; end: number }> {
+			if (!phrase) return [];
+			const ranges: Array<{ start: number; end: number }> = [];
+			const phraseLower = phrase.toLowerCase();
+			let fromIndex = 0;
+			while (fromIndex < textLower.length && ranges.length < maxMatches) {
+				const start = textLower.indexOf(phraseLower, fromIndex);
+				if (start < 0) break;
+				ranges.push({ start, end: start + phrase.length });
+				fromIndex = start + Math.max(1, phrase.length);
+			}
+			return ranges;
+		}
+
+		const claimIdByChar = new Array<string | null>(sourceText.length).fill(null);
+		const claimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
+		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
+			null
+		);
+		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(null);
+		const highlightWhyByChar = new Array<string | null>(sourceText.length).fill(null);
+		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(Number.POSITIVE_INFINITY);
+		const highlightClaimIdByChar = new Array<string | null>(sourceText.length).fill(null);
+		const highlightClaimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
+
+		const assignClaimRange = (start: number, end: number, claimId: string, claimSide: 'a' | 'b') => {
+			const safeStart = Math.max(0, Math.min(sourceText.length, start));
+			const safeEnd = Math.max(0, Math.min(sourceText.length, end));
+			for (let index = safeStart; index < safeEnd; index += 1) {
+				if (!claimIdByChar[index]) claimIdByChar[index] = claimId;
+				if (!claimSideByChar[index]) claimSideByChar[index] = claimSide;
+			}
+		};
+
+		const assignHighlightRange = (span: HighlightSpan) => {
+			const safeStart = Math.max(0, Math.min(sourceText.length, span.start));
+			const safeEnd = Math.max(0, Math.min(sourceText.length, span.end));
+			for (let index = safeStart; index < safeEnd; index += 1) {
+				const currentSpanLength = highlightSpanLengthByChar[index];
+				const shouldReplace = span.length < currentSpanLength;
+				if (shouldReplace) {
+					highlightCategoryByChar[index] = span.category;
+					highlightTypeByChar[index] = span.contradictionType || null;
+					highlightWhyByChar[index] = span.contradictionWhy || null;
+					highlightClaimIdByChar[index] = span.claimId || null;
+					highlightClaimSideByChar[index] = span.claimSide || null;
+					highlightSpanLengthByChar[index] = span.length;
+				}
+				if (span.claimId && !claimIdByChar[index]) claimIdByChar[index] = span.claimId;
+				if (span.claimSide && !claimSideByChar[index]) claimSideByChar[index] = span.claimSide;
+			}
+		};
+
+		const claimTextToRanges = (rawClaimText: string): Array<{ start: number; end: number }> => {
+			const phrase = normalizeChatPreviewText(rawClaimText);
+			if (phrase.length < 6) return [];
+			const exact = findPhraseRanges(phrase, 2);
+			if (exact.length > 0) return exact;
+
+			// Fallback when LLM claim text has punctuation drift relative to source text.
+			const fragments = phrase
+				.split(/[,:;()]/)
+				.map((part) => part.trim())
+				.filter((part) => part.length >= Math.max(12, Math.floor(phrase.length * 0.35)))
+				.sort((left, right) => right.length - left.length);
+			for (const fragment of fragments.slice(0, 3)) {
+				const fragmentHits = findPhraseRanges(fragment, 2);
+				if (fragmentHits.length > 0) return fragmentHits;
+			}
+			return [];
+		};
+
+		for (const contradiction of analysis.contradictions) {
+			const claimId = toNonEmptyString(contradiction.id);
+			if (!claimId) continue;
+			for (const range of claimTextToRanges(contradiction.claim_a.text || '')) {
+				assignClaimRange(range.start, range.end, claimId, 'a');
+			}
+			for (const range of claimTextToRanges(contradiction.claim_b.text || '')) {
+				assignClaimRange(range.start, range.end, claimId, 'b');
+			}
+		}
+
+		for (const highlight of analysis.highlights) {
+			const phrase = normalizeChatPreviewText(highlight.phrase);
+			if (phrase.length < 2) continue;
+			const rawClaimId = toNonEmptyString(highlight.claim_id);
+			const mappedContradiction = rawClaimId
+				? contradictionById.get(rawClaimId.toLowerCase())
+				: singleContradiction;
+			const claimId = mappedContradiction?.id || rawClaimId || undefined;
+			const claimSide =
+				highlight.claim_side === 'a' || highlight.claim_side === 'b'
+					? highlight.claim_side
+					: undefined;
+			const contradictionType = mappedContradiction?.contradiction_type;
+			const contradictionWhy = mappedContradiction?.why;
+			const phraseRanges = findPhraseRanges(phrase, 4);
+			for (const range of phraseRanges) {
+				assignHighlightRange({
+					start: range.start,
+					end: range.end,
+					length: range.end - range.start,
+					category: highlight.category,
+					claimId,
+					claimSide,
+					contradictionType,
+					contradictionWhy
+				});
+			}
+		}
+
+		for (let index = 0; index < sourceText.length; index += 1) {
+			if (!claimIdByChar[index]) {
+				if (claimSideByChar[index] && singleContradictionId) {
+					claimIdByChar[index] = singleContradictionId;
+				} else if (highlightClaimIdByChar[index]) {
+					claimIdByChar[index] = highlightClaimIdByChar[index];
+				} else if (highlightCategoryByChar[index] && singleContradictionId) {
+					claimIdByChar[index] = singleContradictionId;
+				}
+			}
+			if (!claimSideByChar[index] && highlightClaimSideByChar[index]) {
+				claimSideByChar[index] = highlightClaimSideByChar[index];
+			}
+		}
+
+		const hasMetadata = claimIdByChar.some(Boolean) || highlightCategoryByChar.some(Boolean);
+		if (!hasMetadata) {
+			return [{ text: sourceText, category: null, interactive: false }];
+		}
+
+		const getMetaForCharIndex = (index: number): SegmentMeta => {
+			const claimId = claimIdByChar[index] || undefined;
+			const claimSide = claimSideByChar[index] || undefined;
+			const category = highlightCategoryByChar[index];
+			const contradiction = claimId ? contradictionById.get(claimId.toLowerCase()) : undefined;
+			const contradictionType =
+				contradiction?.contradiction_type || highlightTypeByChar[index] || undefined;
+			const contradictionWhy = contradiction?.why || highlightWhyByChar[index] || undefined;
+			const interactive = Boolean(category || claimId || claimSide);
+			return {
+				category,
+				claimId,
+				claimSide,
+				contradictionType,
+				contradictionWhy,
+				interactive
+			};
+		};
+
+		const metaEquals = (left: SegmentMeta, right: SegmentMeta): boolean =>
+			left.category === right.category &&
+			left.claimId === right.claimId &&
+			left.claimSide === right.claimSide &&
+			left.contradictionType === right.contradictionType &&
+			left.contradictionWhy === right.contradictionWhy &&
+			left.interactive === right.interactive;
+
+		const segments: ChatHighlightSegment[] = [];
+		let segmentStart = 0;
+		let segmentMeta = getMetaForCharIndex(0);
+		for (let index = 1; index < sourceText.length; index += 1) {
+			const nextMeta = getMetaForCharIndex(index);
+			if (metaEquals(segmentMeta, nextMeta)) continue;
+			segments.push({
+				text: sourceText.slice(segmentStart, index),
+				...segmentMeta
+			});
+			segmentStart = index;
+			segmentMeta = nextMeta;
+		}
+		segments.push({
+			text: sourceText.slice(segmentStart),
+			...segmentMeta
+		});
+
+		return segments;
+	}
+
+	function normalizeChatPreviewText(value: string): string {
+		return value
+			.replace(/\u00a0/g, ' ')
+			.replace(/\r\n?/g, '\n')
+			.replace(/[ \t]*\n+[ \t]*/g, ' ')
+			.replace(/[ \t]{2,}/g, ' ')
+			.trim();
+	}
+
+	type ChatHighlightTooltip = {
+		kind: 'claim' | 'highlight';
+		badgeText: string;
+		badgeStyle: string;
+		description?: string;
+	};
+	type ChatPreviewTab = 'contradiction' | 'claims';
+
+	function getChatPreviewTab(messageId: string): ChatPreviewTab {
+		return chatPreviewTabByMessageId[messageId] ?? 'contradiction';
+	}
+
+	function setChatPreviewTab(messageId: string, value: string) {
+		const nextTab: ChatPreviewTab = value === 'claims' ? 'claims' : 'contradiction';
+		if (getChatPreviewTab(messageId) === nextTab) return;
+		chatPreviewTabByMessageId = {
+			...chatPreviewTabByMessageId,
+			[messageId]: nextTab
+		};
+		if (nextTab !== 'contradiction') clearChatPreviewHover(messageId);
+	}
+
+	function getChatPreviewHover(messageId: string): ChatPreviewHoverState | null {
+		if (!chatPreviewHover) return null;
+		return chatPreviewHover.messageId === messageId ? chatPreviewHover : null;
+	}
+
+	function clearChatPreviewHover(messageId?: string) {
+		if (!chatPreviewHover) return;
+		if (messageId && chatPreviewHover.messageId !== messageId) return;
+		chatPreviewHover = null;
+	}
+
+	function handleChatPreviewSegmentMouseEnter(
+		messageId: string,
+		segment: ChatHighlightSegment,
+		segmentKey: string
+	) {
+		const contradictionId = toNonEmptyString(segment.claimId);
+		if (!contradictionId) {
+			clearChatPreviewHover(messageId);
+			return;
+		}
+
+		if (segment.claimSide) {
+			chatPreviewHover = {
+				messageId,
+				segmentKey,
+				contradictionId,
+				claimSide: segment.claimSide,
+				kind: 'claim'
+			};
+			return;
+		}
+
+		if (segment.category) {
+			chatPreviewHover = {
+				messageId,
+				segmentKey,
+				contradictionId,
+				claimSide: segment.claimSide ?? null,
+				kind: 'highlight'
+			};
+			return;
+		}
+	}
+
+	function isChatPreviewTooltipOpen(messageId: string, segmentKey: string): boolean {
+		const hover = getChatPreviewHover(messageId);
+		if (!hover) return false;
+		return hover.segmentKey === segmentKey;
+	}
+
+	function isHoveringContradiction(messageId: string, contradictionId?: string): boolean {
+		const hover = getChatPreviewHover(messageId);
+		if (!hover || !contradictionId) return false;
+		return hover.contradictionId.toLowerCase() === contradictionId.toLowerCase();
+	}
+
+	function resolveChatHighlightSegmentStyle(
+		segment: ChatHighlightSegment,
+		messageId: string
+	): string {
+		const hover = getChatPreviewHover(messageId);
+		const hoverMatchesContradiction = isHoveringContradiction(messageId, segment.claimId);
+
+		if (hover?.kind === 'claim' && hover.claimSide) {
+			const claimColor = CONTRADICTION_CLAIM_SIDE_COLORS[hover.claimSide];
+
+			if (segment.claimSide === hover.claimSide) {
+				return [
+					`background: ${claimColor}3a;`,
+					`border-bottom: 2px solid ${claimColor};`,
+					`box-shadow: 0 0 0 1px ${claimColor}70, 0 0 10px ${claimColor}3d;`
+				].join(' ');
+			}
+
+			if (!segment.claimSide && hoverMatchesContradiction) {
+				return [
+					`background: ${claimColor}36;`,
+					`border-bottom: 2px solid ${claimColor};`,
+					`box-shadow: inset 0 0 0 1px ${claimColor}55;`
+				].join(' ');
+			}
+
+			if (segment.category) {
+				return 'background: transparent; border-bottom: 1.5px solid transparent; box-shadow: none;';
+			}
+
+			return '';
+		}
+
+		if (hover?.kind === 'highlight' && hoverMatchesContradiction && segment.category) {
+			const contradictionType = segment.contradictionType || segment.category;
+			const color = CONTRADICTION_TAXONOMY_COLORS[contradictionType];
+			return [
+				`background: ${color}3a;`,
+				`border-bottom: 2px solid ${color};`,
+				`box-shadow: 0 0 0 1px ${color}70, 0 0 12px ${color}55;`
+			].join(' ');
+		}
+
+		if (segment.category) {
+			const color = CONTRADICTION_TAXONOMY_COLORS[segment.category];
+			return `background: ${color}22; border-bottom: 1.5px solid ${color};`;
+		}
+
+		return '';
+	}
+
+	function resolveChatClaimSegmentStyle(segment: ChatHighlightSegment): string {
+		if (!segment.claimSide) return '';
+		const color = CONTRADICTION_CLAIM_SIDE_COLORS[segment.claimSide];
+		return [
+			`background: ${color}26;`,
+			`border-bottom: 1.5px solid ${color};`,
+			`box-shadow: inset 0 0 0 1px ${color}45;`
+		].join(' ');
+	}
+
+	function resolveChatHighlightSegmentTooltip(segment: ChatHighlightSegment): ChatHighlightTooltip | null {
+		if (segment.category) {
+			const contradictionType = segment.contradictionType || segment.category;
+			const color = CONTRADICTION_TAXONOMY_COLORS[contradictionType];
+			const typeLabel = CONTRADICTION_TAXONOMY_LABELS[contradictionType];
+			return {
+				kind: 'highlight',
+				badgeText: typeLabel,
+				badgeStyle: `border-color: ${color}55; background: ${color}1f; color: ${color};`,
+				description:
+					segment.contradictionWhy || CONTRADICTION_TAXONOMY_DESCRIPTIONS[contradictionType]
+			};
+		}
+
+		if (segment.claimSide) {
+			const claimLabel = segment.claimSide === 'a' ? 'Claim A' : 'Claim B';
+			const color = CONTRADICTION_CLAIM_SIDE_COLORS[segment.claimSide];
+			return {
+				kind: 'claim',
+				badgeText: claimLabel,
+				badgeStyle: `border-color: ${color}55; background: ${color}1f; color: ${color};`,
+			};
+		}
+
+		return null;
+	}
+
+	function sanitizeSuggestedQuestions(value: unknown): string[] {
+		if (!Array.isArray(value)) return [];
+		const cleaned = value
+			.map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+			.filter((entry) => entry.length > 0);
+		return Array.from(new Set(cleaned)).slice(0, 4);
+	}
+
+	function getFallbackSuggestedQuestions(options?: {
+		mode?: AssistantMode;
+		scope?: AssistantScope;
+		contradiction?: boolean;
+	}): string[] {
+		if (options?.contradiction) {
+			return [
+				'How can I rewrite this paragraph to remove the contradiction?',
+				'Which claim is riskier to keep and why?',
+				'Show a safer clause version preserving business intent.'
+			];
+		}
+		if (options?.mode === 'quote') {
+			return [
+				'Can you show the exact sentence that supports your answer?',
+				'What is the key obligation in this paragraph?',
+				'What term could create legal risk here?'
+			];
+		}
+		if (options?.scope === 'full_contract') {
+			return [
+				'What are the most important risks in this contract?',
+				'Which clauses should we renegotiate first?',
+				'Where do obligations conflict across sections?'
+			];
+		}
+		return [
+			'Can you simplify this paragraph in plain English?',
+			'What happens if this clause is breached?',
+			'Which related clause should I read next?'
+		];
+	}
+
+	function resolveAssistantSuggestedQuestions(
+		value: unknown,
+		options?: {
+			mode?: AssistantMode;
+			scope?: AssistantScope;
+			contradiction?: boolean;
+		}
+	): string[] | undefined {
+		const normalized = sanitizeSuggestedQuestions(value);
+		if (normalized.length > 0) return normalized;
+		const fallback = getFallbackSuggestedQuestions(options);
+		return fallback.length > 0 ? fallback : undefined;
 	}
 
 	async function scrollAssistantToBottom() {
@@ -792,7 +1609,85 @@
 					role: 'assistant',
 					content: response.answer,
 					citations: response.citations,
-					suggestedQuestions: response.suggestedQuestions
+					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
+						mode: resolvedMode,
+						scope: resolvedScope
+					})
+				}
+			];
+		} catch (assistantRequestError) {
+			const message = getAxiosErrorMessage(assistantRequestError, 'Failed to generate a response.');
+			assistantError = message;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `I could not complete this request: ${message}`
+				}
+			];
+		} finally {
+			assistantLoading = false;
+			await scrollAssistantToBottom();
+		}
+	}
+
+	async function submitStructuredContradictionWhy(
+		selected: ParagraphNode,
+		contradiction: ContradictionParagraphResult
+	) {
+		if (assistantLoading) return;
+		if (!activeDocumentId) {
+			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		const paragraphNodes = buildAssistantNodeSnapshot();
+		if (paragraphNodes.length === 0) {
+			assistantError = 'The contract is still loading.';
+			return;
+		}
+
+		const selectedText = getNodeCurrentText(nodeEditStateById, selected);
+		const question = buildContradictionAiCostQuestion(selected.id, selectedText, contradiction);
+
+		assistantLoading = true;
+		assistantError = null;
+		await scrollAssistantToBottom();
+
+		const payload: AssistantChatRequest = {
+			documentId: activeDocumentId,
+			question,
+			mode: 'explain',
+			scope: 'selected',
+			provider: assistantProvider,
+			selectedParagraphId: selected.id,
+			relatedParagraphs: buildAssistantRelatedContext(),
+			paragraphNodes,
+			history: buildAssistantHistoryPayload()
+		};
+
+		try {
+			const response = await fetchAssistantResponse(payload);
+			const structured = parseStructuredContradictionFromAnswer(
+				response.answer,
+				selected.id,
+				selectedText
+			);
+
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: structured?.overall_summary?.trim() || response.answer,
+					citations: response.citations,
+					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
+						mode: 'explain',
+						scope: 'selected',
+						contradiction: true
+					}),
+					structuredContradiction: structured ?? undefined
 				}
 			];
 		} catch (assistantRequestError) {
@@ -852,7 +1747,7 @@
 			const contradiction = contradictionResultsByParagraphId.get(selected.id);
 			if (!contradiction) {
 				appendAssistantQuickActionMessage(
-					'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.',
+					'No contradiction result is available for this paragraph yet. Run "Search contradictions" first.',
 					selected.id
 				);
 				await scrollAssistantToBottom();
@@ -893,16 +1788,7 @@
 				return;
 			}
 
-			const aiWhyQuestion = [
-				`Why is selected paragraph ${selected.id} a contradiction?`,
-				'Point to exact conflicting statements and explain why they cannot both be true.',
-				'Cite paragraph IDs from the selected paragraph and its related context.'
-			].join(' ');
-
-			await submitAssistantQuestion(aiWhyQuestion, {
-				mode: 'explain',
-				scope: 'selected'
-			});
+			await submitStructuredContradictionWhy(selected, contradiction);
 			return;
 		}
 
@@ -997,7 +1883,7 @@
 		const contradiction = contradictionResultsByParagraphId.get(target.paragraphId);
 		if (!contradiction) {
 			simplifyError =
-				'No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.';
+				'No contradiction result is available for this paragraph yet. Run "Search contradictions" first.';
 			return;
 		}
 
@@ -1359,7 +2245,11 @@
 		return `${fixedTemplate} minmax(0, 1fr)`;
 	}
 
-	function shouldUseDocxTabGridLayout(container: HTMLElement, stops: number[], segments: Node[][]): boolean {
+	function shouldUseDocxTabGridLayout(
+		container: HTMLElement,
+		stops: number[],
+		segments: Node[][]
+	): boolean {
 		if (container.dataset.docxListItem === 'true') return false;
 		if (stops.length === 0 || segments.length < 2) return false;
 		if (stops[0] < 120) return false;
@@ -1426,7 +2316,8 @@
 				let targetStop = stops.find((stop) => stop > currentX + 0.5);
 				if (targetStop == null) {
 					targetStop =
-						(Math.floor(currentX / DOCX_DEFAULT_TAB_INTERVAL_PX) + 1) * DOCX_DEFAULT_TAB_INTERVAL_PX;
+						(Math.floor(currentX / DOCX_DEFAULT_TAB_INTERVAL_PX) + 1) *
+						DOCX_DEFAULT_TAB_INTERVAL_PX;
 				}
 
 				const width = Math.max(2, targetStop - currentX);
@@ -1568,63 +2459,63 @@
 				break;
 			}
 
-				const continuation = createContinuationSection(current);
-				current.insertAdjacentElement('afterend', continuation);
-				lockSectionHeight(continuation, pageHeight);
+			const continuation = createContinuationSection(current);
+			current.insertAdjacentElement('afterend', continuation);
+			lockSectionHeight(continuation, pageHeight);
 
-				let movedAny = false;
-				let keptCurrentPageByAllowance = false;
-				while (current.scrollHeight - current.clientHeight > PAGE_OVERFLOW_TOLERANCE_PX) {
-					if (countMeaningfulChildren(current) <= 1) break;
-					const lastNode = current.lastChild;
-					if (!lastNode) break;
-					if (lastNode instanceof HTMLElement) {
-						const overflowPx = current.scrollHeight - current.clientHeight;
-						const isListItem = lastNode.dataset.docxListItem === 'true';
-						if (isListItem) {
-							const listItemHeight = Math.ceil(lastNode.getBoundingClientRect().height);
-							const keepListItemAllowance = Math.min(
-								Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, listItemHeight + 56),
-								120
-							);
-							if (overflowPx <= keepListItemAllowance) {
-								lockSectionHeight(current, pageHeight + overflowPx);
-								keptCurrentPageByAllowance = true;
-								break;
-							}
-						}
-
-						const previousMeaningful = getPreviousMeaningfulSibling(lastNode);
-						const isListContinuationBoundary =
-							lastNode.tagName.toLowerCase() === 'p' &&
-							previousMeaningful?.dataset.docxListItem === 'true';
-						if (isListContinuationBoundary) {
-							const continuationHeight = Math.ceil(lastNode.getBoundingClientRect().height);
-							const keepWithMarkerAllowance = Math.min(
-								Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, continuationHeight + 28),
-								96
-							);
-							if (overflowPx <= keepWithMarkerAllowance) {
-								lockSectionHeight(current, pageHeight + overflowPx);
-								keptCurrentPageByAllowance = true;
-								break;
-							}
+			let movedAny = false;
+			let keptCurrentPageByAllowance = false;
+			while (current.scrollHeight - current.clientHeight > PAGE_OVERFLOW_TOLERANCE_PX) {
+				if (countMeaningfulChildren(current) <= 1) break;
+				const lastNode = current.lastChild;
+				if (!lastNode) break;
+				if (lastNode instanceof HTMLElement) {
+					const overflowPx = current.scrollHeight - current.clientHeight;
+					const isListItem = lastNode.dataset.docxListItem === 'true';
+					if (isListItem) {
+						const listItemHeight = Math.ceil(lastNode.getBoundingClientRect().height);
+						const keepListItemAllowance = Math.min(
+							Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, listItemHeight + 56),
+							120
+						);
+						if (overflowPx <= keepListItemAllowance) {
+							lockSectionHeight(current, pageHeight + overflowPx);
+							keptCurrentPageByAllowance = true;
+							break;
 						}
 					}
-					continuation.prepend(lastNode);
-					movedAny = true;
+
+					const previousMeaningful = getPreviousMeaningfulSibling(lastNode);
+					const isListContinuationBoundary =
+						lastNode.tagName.toLowerCase() === 'p' &&
+						previousMeaningful?.dataset.docxListItem === 'true';
+					if (isListContinuationBoundary) {
+						const continuationHeight = Math.ceil(lastNode.getBoundingClientRect().height);
+						const keepWithMarkerAllowance = Math.min(
+							Math.max(PAGE_SOFT_OVERFLOW_ALLOWANCE_PX, continuationHeight + 28),
+							96
+						);
+						if (overflowPx <= keepWithMarkerAllowance) {
+							lockSectionHeight(current, pageHeight + overflowPx);
+							keptCurrentPageByAllowance = true;
+							break;
+						}
+					}
 				}
+				continuation.prepend(lastNode);
+				movedAny = true;
+			}
 
-				if (!movedAny) {
-					continuation.remove();
-					if (keptCurrentPageByAllowance) {
-						break;
-					}
-					current.style.height = 'auto';
-					current.style.maxHeight = 'none';
-					current.style.overflow = 'visible';
+			if (!movedAny) {
+				continuation.remove();
+				if (keptCurrentPageByAllowance) {
 					break;
 				}
+				current.style.height = 'auto';
+				current.style.maxHeight = 'none';
+				current.style.overflow = 'visible';
+				break;
+			}
 
 			current = continuation;
 		}
@@ -1889,7 +2780,10 @@
 
 	function clampRightDrawerWidth(nextWidth: number): number {
 		const viewportWidth = window.innerWidth || RIGHT_DRAWER_DEFAULT_WIDTH;
-		const maxWidth = Math.max(RIGHT_DRAWER_MIN_WIDTH, Math.floor(viewportWidth * RIGHT_DRAWER_MAX_RATIO));
+		const maxWidth = Math.max(
+			RIGHT_DRAWER_MIN_WIDTH,
+			Math.floor(viewportWidth * RIGHT_DRAWER_MAX_RATIO)
+		);
 		return Math.min(Math.max(nextWidth, RIGHT_DRAWER_MIN_WIDTH), maxWidth);
 	}
 
@@ -2005,58 +2899,81 @@
 			: `width: calc(100% - ${RIGHT_TOOLBAR_WIDTH + activeDrawerWidth}px);`}
 	>
 		<header
-			class="flex flex-none items-center justify-between gap-3 border-b border-gray-300 bg-gray-50 px-4 py-3"
+			class="flex flex-none items-center justify-between gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
 		>
 			<div class="min-w-0">
-				<div class="truncate text-sm font-semibold text-gray-800">
+				<p class="text-[11px] text-gray-500">Document</p>
+				<div class="truncate text-sm font-medium text-gray-800">
 					{activeDocumentName || 'No document selected'}
 				</div>
 			</div>
-			<div class="flex items-center gap-2">
-				<button
-					type="button"
-					on:click={() => void loadSavedContradictions()}
-					disabled={!activeDocumentId || contradictionLoading || $loading}
-					class="rounded border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-semibold text-amber-700 transition hover:border-amber-300 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
-				>
-					Saved Contradictions
-				</button>
-				<select
+			<div class="flex items-center gap-1.5">
+				<Select.Root
+					type="single"
 					bind:value={contradictionModel}
 					disabled={contradictionLoading || $loading || backendGraphLoading}
-					class="max-w-[170px] rounded border border-gray-200 bg-white px-1.5 py-1 text-[10px] font-semibold text-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
-					title="Realtime contradiction model"
 				>
-					{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
-						<option value={option.value}>{option.label}</option>
-					{/each}
-				</select>
-				<button
-					type="button"
-					on:click={() => void searchContradictionsWithLlm()}
+					<Select.Trigger
+						size="sm"
+						class="h-7 w-[170px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+						title="Realtime contradiction model"
+					>
+						{contradictionModelLabel}
+					</Select.Trigger>
+					<Select.Content>
+						{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
+							<Select.Item value={option.value} label={option.label} class="text-[10px]">
+								{option.label}
+							</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => void loadSavedContradictions()}
+					disabled={!activeDocumentId || contradictionLoading || $loading}
+					class="h-7 border-amber-200 bg-amber-50 px-2.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
+				>
+					Saved Contradictions
+				</Button>
+				<Button
+					variant="destructive"
+					size="sm"
+					onclick={() => void searchContradictionsWithLlm()}
 					disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
-					class="rounded border border-red-200 bg-red-50 px-2.5 py-1 text-[10px] font-semibold text-red-700 transition hover:border-red-300 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+					class="h-7 border-red-200 bg-red-50 px-2.5 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
 				>
-					Searching for contradictions
-				</button>
+					Search contradictions
+				</Button>
 			</div>
 		</header>
 
-		{#if contradictionError || contradictionResultsByParagraphId.size > 0}
-			<div
-				class="mx-4 mt-2 rounded border border-gray-200 bg-white px-3 py-2 text-[11px] text-gray-600"
-			>
-				{#if contradictionError}
-					<p class="text-red-700">{contradictionError}</p>
-				{:else}
-					<p>
-						{contradictionCount} paragraph(s) with highlighted contradiction(s).
-						{#if contradictionSource}
-							<span class="text-gray-500"> Source: {contradictionSource}</span>
+		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
+			<Card.Root size="sm" class="mx-4 mt-2 border-gray-200 py-0 text-[10px]">
+				<Card.Content class="px-2.5 py-1.5 text-gray-600">
+					<div class="flex items-start justify-between gap-2">
+						{#if contradictionError}
+							<p class="min-w-0 leading-snug text-red-700">{contradictionError}</p>
+						{:else}
+							<p class="min-w-0 leading-snug">
+								{contradictionCount} paragraph(s) with highlighted contradiction(s).
+								{#if contradictionSource}
+									<span class="text-gray-500"> Source: {contradictionSource}</span>
+								{/if}
+							</p>
 						{/if}
-					</p>
-				{/if}
-			</div>
+						<button
+							type="button"
+							class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
+							aria-label="Close contradiction summary"
+							on:click={() => (contradictionSummaryVisible = false)}
+						>
+							<CloseIcon className="h-3 w-3" />
+						</button>
+					</div>
+				</Card.Content>
+			</Card.Root>
 		{/if}
 
 		{#if localError || $error}
@@ -2070,7 +2987,7 @@
 				bind:this={documentScrollHost}
 				inert={backendGraphLoading}
 				class={`flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner ${
-					backendGraphLoading ? 'pointer-events-none select-none opacity-60' : ''
+					backendGraphLoading ? 'pointer-events-none opacity-60 select-none' : ''
 				}`}
 			>
 				<div bind:this={viewer} class="min-h-full w-full"></div>
@@ -2116,45 +3033,56 @@
 	{/if}
 
 	<aside
-		class={`right-drawer absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-gray-200 bg-white transition-transform duration-300 ${
+		class={`absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-gray-200 bg-white transition-transform duration-300 ${
 			isCompactLayout ? 'right-16 w-[min(92vw,430px)]' : ''
-		} ${isRightDrawerOpen ? 'right-drawer--open shadow-2xl' : 'right-drawer--closed'}`}
+		} ${
+			isRightDrawerOpen
+				? 'pointer-events-auto visible translate-x-0 opacity-100 shadow-2xl'
+				: 'pointer-events-none invisible translate-x-[calc(100%+var(--drawer-rail-offset,58px)+20px)] opacity-0 shadow-none'
+		}`}
 		style={isCompactLayout
 			? ''
 			: `right: ${RIGHT_TOOLBAR_WIDTH}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${RIGHT_TOOLBAR_WIDTH}px;`}
 	>
-		<header class="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2.5">
+		<header
+			class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5"
+		>
 			<div class="min-w-0">
-				<h2 class="inline-flex items-center gap-1.5 truncate text-[11px] font-bold tracking-[0.16em] text-gray-700 uppercase">
+				<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
 					<span class="shrink-0 text-blue-700">
-					{#if activeRightPanelTab === 'related'}
-						<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
-					{:else if activeRightPanelTab === 'analysis'}
-						<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-					{:else if activeRightPanelTab === 'redundancy'}
-						<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-					{:else if activeRightPanelTab === 'summarize'}
-						<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
-					{:else if activeRightPanelTab === 'ambiguity'}
-						<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-					{:else if activeRightPanelTab === 'revisions'}
-						<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
-					{:else}
-						<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
-					{/if}
+						{#if activeRightPanelTab === 'related'}
+							<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'analysis'}
+							<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'redundancy'}
+							<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'summarize'}
+							<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'ambiguity'}
+							<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'revisions'}
+							<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else}
+							<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
+						{/if}
 					</span>
-					<span>{RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label}</span>
+					<span>
+						{toTitleCaseLabel(
+							RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
+						)}
+					</span>
 				</h2>
 			</div>
-			<button
-				type="button"
-				class="rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-500 transition hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
-				on:click={() => (isRightDrawerOpen = false)}
+			<Button
+				variant="outline"
+				size="icon-sm"
+				class="h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
+				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
 			>
 				<CloseIcon className="h-4 w-4" />
-			</button>
+			</Button>
 		</header>
 
 		{#if activeRightPanelTab === 'analysis'}
@@ -2165,21 +3093,39 @@
 					</p>
 				</header>
 
-				<div class="min-h-0 flex-1 overflow-y-auto p-3">
-					<div class="space-y-2">
+				<ScrollArea class="min-h-0 flex-1">
+					<div class="space-y-2 p-3">
 						{#if contradictionLoading}
-							<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
-								<p class="mb-2 text-[10px] font-bold tracking-[0.14em] text-gray-500 uppercase">
-									Processing Panel
-								</p>
+							<div
+								class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700"
+							>
+								<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
 								<ul class="space-y-1.5 text-[12px] text-gray-600">
 									{#each revisionProcessingSteps as step, index}
-										<li class="processing-step flex items-center gap-2" style={`--step-delay: ${index * 220}ms;`}>
-											<span class="processing-dot" aria-hidden="true"></span>
-											<span class="processing-label">
+										<li
+											class="flex [animation:processing-step-fade_1.35s_ease-in-out_infinite] items-center gap-2 opacity-[0.45]"
+											style={`animation-delay: ${index * 220}ms;`}
+										>
+											<span
+												class="h-1.5 w-1.5 [animation:processing-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-gray-500 opacity-[0.35]"
+												style={`animation-delay: ${index * 220}ms;`}
+												aria-hidden="true"
+											></span>
+											<span class="text-gray-600">
 												{step.label}
-												<span class="processing-ellipsis" aria-hidden="true">
-													<span>.</span><span>.</span><span>.</span>
+												<span class="ml-px inline-flex min-w-[14px]" aria-hidden="true">
+													<span
+														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+														style="animation-delay: 0ms;">.</span
+													>
+													<span
+														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+														style="animation-delay: 140ms;">.</span
+													>
+													<span
+														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+														style="animation-delay: 280ms;">.</span
+													>
 												</span>
 											</span>
 										</li>
@@ -2190,81 +3136,90 @@
 
 						{#if !$selectedParagraph}
 							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium tracking-wide uppercase">
-									Select a paragraph to analyze contradictions
-								</p>
+								<p class="text-[10px] font-medium">Select a paragraph to analyze contradictions</p>
 								<p class="mt-1 text-[10px] text-gray-400">
 									Choose a paragraph in the document on the left.
 								</p>
 							</div>
 						{:else if !selectedContradictionResult}
-							<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
-								No contradiction result is available for this paragraph yet. Run "Searching for contradictions" first.
-							</div>
+							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+								<Card.Content class="px-3 py-2 text-gray-600">
+									No contradiction result is available for this paragraph yet. Run "Search
+									contradictions" first.
+								</Card.Content>
+							</Card.Root>
 						{:else if !selectedContradictionResult.contradiction}
 							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
 								<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
 							</div>
 						{:else}
-							<div class="rounded border border-red-200 bg-red-50/65 px-3 py-2 text-[11px] text-red-800">
-								<p>
-									Confidence: {selectedContradictionResult.confidence}% · {selectedContradictionResult.brief_reason}
-								</p>
-							</div>
+							<Card.Root size="sm" class="border-red-200 bg-red-50/65 py-0 text-[11px]">
+								<Card.Content class="px-3 py-2 text-red-800">
+									<p>
+										Confidence: {selectedContradictionResult.confidence}% · {selectedContradictionResult.brief_reason}
+									</p>
+								</Card.Content>
+							</Card.Root>
 
 							{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
 								<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
 									<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-										<p class="text-[9px] font-bold tracking-widest text-red-700 uppercase">
-											Contradiction Evidence
-										</p>
+										<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 									</div>
 									<div class="space-y-2 p-2.5">
 										<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
 											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-bold text-red-800 uppercase">Snippet A</span>
-												<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+												<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
+												<Badge
+													variant="outline"
+													class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
+												>
 													{selectedContradictionEvidence.source_a}
-												</span>
+												</Badge>
 											</div>
-											<button
-												type="button"
-												class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
-												on:click={() =>
+											<Button
+												variant="ghost"
+												class="h-auto w-full justify-start px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+												onclick={() =>
 													selectedContradictionResult &&
 													focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
 											>
 												{selectedContradictionEvidence.snippet_a}
-											</button>
+											</Button>
 										</div>
 
 										<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
 											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-bold text-red-800 uppercase">Snippet B</span>
-												<span class="rounded border border-red-300 bg-white px-1.5 py-0.5 text-[8px] font-semibold text-red-800 uppercase">
+												<span class="text-[9px] font-semibold text-red-800">Snippet B</span>
+												<Badge
+													variant="outline"
+													class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
+												>
 													{selectedContradictionEvidence.source_b}
-												</span>
+												</Badge>
 											</div>
-											<button
-												type="button"
-												class="w-full text-left leading-relaxed text-red-800 transition hover:text-red-900"
-												on:click={() =>
+											<Button
+												variant="ghost"
+												class="h-auto w-full justify-start px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+												onclick={() =>
 													selectedContradictionResult &&
 													focusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
 											>
 												{selectedContradictionEvidence.snippet_b}
-											</button>
+											</Button>
 										</div>
 									</div>
 								</div>
 							{:else}
-								<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
-									Evidence snippets are unavailable for this contradiction.
-								</div>
+								<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+									<Card.Content class="px-3 py-2 text-gray-600">
+										Evidence snippets are unavailable for this contradiction.
+									</Card.Content>
+								</Card.Root>
 							{/if}
 						{/if}
 					</div>
-				</div>
+				</ScrollArea>
 			</section>
 		{:else if activeRightPanelTab === 'redundancy'}
 			<section class="flex min-h-0 flex-1 flex-col">
@@ -2273,22 +3228,25 @@
 						Inspect repetitive statements and overlapping ideas in the selected paragraph.
 					</p>
 				</header>
-				<div class="min-h-0 flex-1 overflow-y-auto p-3">
-					{#if !$selectedParagraph}
-						<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-							<p class="text-[10px] font-medium tracking-wide uppercase">
-								Select a paragraph to analyze redundancies
-							</p>
-							<p class="mt-1 text-[10px] text-gray-400">
-								Choose a paragraph in the document on the left.
-							</p>
-						</div>
-					{:else}
-						<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
-							Redundancy analysis UI is ready. Backend processing will be connected in a future step.
-						</div>
-					{/if}
-				</div>
+				<ScrollArea class="min-h-0 flex-1">
+					<div class="p-3">
+						{#if !$selectedParagraph}
+							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+								<p class="text-[10px] font-medium">Select a paragraph to analyze redundancies</p>
+								<p class="mt-1 text-[10px] text-gray-400">
+									Choose a paragraph in the document on the left.
+								</p>
+							</div>
+						{:else}
+							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+								<Card.Content class="px-3 py-2 text-gray-600">
+									Redundancy analysis UI is ready. Backend processing will be connected in a future
+									step.
+								</Card.Content>
+							</Card.Root>
+						{/if}
+					</div>
+				</ScrollArea>
 			</section>
 		{:else if activeRightPanelTab === 'summarize'}
 			<section class="flex min-h-0 flex-1 flex-col">
@@ -2297,22 +3255,25 @@
 						Get concise rewrite suggestions to summarize and simplify the selected paragraph.
 					</p>
 				</header>
-				<div class="min-h-0 flex-1 overflow-y-auto p-3">
-					{#if !$selectedParagraph}
-						<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-							<p class="text-[10px] font-medium tracking-wide uppercase">
-								Select a paragraph to summarize and simplify
-							</p>
-							<p class="mt-1 text-[10px] text-gray-400">
-								Choose a paragraph in the document on the left.
-							</p>
-						</div>
-					{:else}
-						<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
-							Summarization and simplification panel is available in the UI. Backend suggestions will be added next.
-						</div>
-					{/if}
-				</div>
+				<ScrollArea class="min-h-0 flex-1">
+					<div class="p-3">
+						{#if !$selectedParagraph}
+							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+								<p class="text-[10px] font-medium">Select a paragraph to summarize and simplify</p>
+								<p class="mt-1 text-[10px] text-gray-400">
+									Choose a paragraph in the document on the left.
+								</p>
+							</div>
+						{:else}
+							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+								<Card.Content class="px-3 py-2 text-gray-600">
+									Summarization and simplification panel is available in the UI. Backend suggestions
+									will be added next.
+								</Card.Content>
+							</Card.Root>
+						{/if}
+					</div>
+				</ScrollArea>
 			</section>
 		{:else if activeRightPanelTab === 'ambiguity'}
 			<section class="flex min-h-0 flex-1 flex-col">
@@ -2321,22 +3282,25 @@
 						Inspect ambiguous wording and unclear obligations in the selected paragraph.
 					</p>
 				</header>
-				<div class="min-h-0 flex-1 overflow-y-auto p-3">
-					{#if !$selectedParagraph}
-						<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-							<p class="text-[10px] font-medium tracking-wide uppercase">
-								Select a paragraph to analyze ambiguities
-							</p>
-							<p class="mt-1 text-[10px] text-gray-400">
-								Choose a paragraph in the document on the left.
-							</p>
-						</div>
-					{:else}
-						<div class="rounded border border-gray-200 bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
-							Ambiguity analysis UI is ready. Backend detection will be connected in a future step.
-						</div>
-					{/if}
-				</div>
+				<ScrollArea class="min-h-0 flex-1">
+					<div class="p-3">
+						{#if !$selectedParagraph}
+							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+								<p class="text-[10px] font-medium">Select a paragraph to analyze ambiguities</p>
+								<p class="mt-1 text-[10px] text-gray-400">
+									Choose a paragraph in the document on the left.
+								</p>
+							</div>
+						{:else}
+							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+								<Card.Content class="px-3 py-2 text-gray-600">
+									Ambiguity analysis UI is ready. Backend detection will be connected in a future
+									step.
+								</Card.Content>
+							</Card.Root>
+						{/if}
+					</div>
+				</ScrollArea>
 			</section>
 		{:else if activeRightPanelTab === 'revisions'}
 			<section class="flex min-h-0 flex-1 flex-col">
@@ -2347,12 +3311,13 @@
 						View modification history and compare original versus edited content.
 					</p>
 					<div class="group relative inline-flex">
-						<span
-							class="cursor-help rounded border border-gray-200 bg-white px-2 py-0.5 text-[9px] font-bold tracking-tight text-gray-600"
+						<Badge
+							variant="outline"
+							class="h-5 cursor-help border-gray-200 bg-white px-2 text-[9px] font-bold tracking-tight text-gray-600"
 							title={COMMIT_SHORTCUT_HINT}
 						>
 							{COMMIT_SHORTCUT_LABEL}
-						</span>
+						</Badge>
 						<div
 							class="pointer-events-none absolute top-full right-0 z-20 mt-1 rounded bg-gray-800 px-2 py-1 text-[9px] font-bold tracking-tight whitespace-nowrap text-white opacity-0 shadow-2xl ring-1 ring-white/20 transition-opacity group-hover:opacity-100 {selectedChangeLog.hasChanges
 								? 'animate-bounce'
@@ -2363,13 +3328,11 @@
 					</div>
 				</header>
 
-				<div class="min-h-0 flex-1 overflow-y-auto p-3">
-					<div class="space-y-2">
+				<ScrollArea class="min-h-0 flex-1">
+					<div class="space-y-2 p-3">
 						{#if !$selectedParagraph}
 							<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-								<p class="text-[10px] font-medium tracking-wide uppercase">
-									Select a paragraph to view revision history
-								</p>
+								<p class="text-[10px] font-medium">Select a paragraph to view revision history</p>
 								<p class="mt-1 text-[10px] text-gray-400">
 									Choose a paragraph in the document on the left.
 								</p>
@@ -2381,7 +3344,7 @@
 						{:else}
 							<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
 								<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-									<span class="mb-1 block text-[8px] font-bold text-red-300 uppercase">Original</span>
+									<span class="mb-1 block text-[8px] font-semibold text-red-300">Original</span>
 									<p class="font-mono leading-relaxed text-red-700/80">
 										{#each selectedChangeLog.oldSegments as segment}
 											{#if segment.changed}
@@ -2394,9 +3357,7 @@
 								</div>
 
 								<div class="bg-green-50/20 px-3 py-2">
-									<span class="mb-1 block text-[8px] font-bold text-green-300 uppercase"
-										>Modified</span
-									>
+									<span class="mb-1 block text-[8px] font-semibold text-green-300">Modified</span>
 									<p class="font-mono leading-relaxed text-green-800">
 										{#each selectedChangeLog.newSegments as segment}
 											{#if segment.changed}
@@ -2410,7 +3371,7 @@
 							</div>
 						{/if}
 					</div>
-				</div>
+				</ScrollArea>
 			</section>
 		{:else if activeRightPanelTab === 'related'}
 			<section class="flex min-h-0 flex-1 flex-col">
@@ -2420,89 +3381,112 @@
 					</p>
 				</header>
 
-				<div
-					class="flex min-h-0 flex-1 flex-col space-y-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2"
-				>
-					{#if backendGraphLoading}
-						<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
-							<p class="mb-2 text-[10px] font-bold tracking-[0.14em] text-gray-500 uppercase">
-								Processing Panel
-							</p>
-							<ul class="space-y-1.5 text-[12px] text-gray-600">
-								{#each relatedProcessingSteps as step, index}
-									<li class="processing-step flex items-center gap-2" style={`--step-delay: ${index * 220}ms;`}>
-										<span class="processing-dot" aria-hidden="true"></span>
-										<span class="processing-label">
-											{step.label}
-											<span class="processing-ellipsis" aria-hidden="true">
-												<span>.</span><span>.</span><span>.</span>
-											</span>
-										</span>
-									</li>
-								{/each}
-							</ul>
-						</div>
-					{:else if !$selectedParagraph}
-						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-							<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
-							<p class="text-center text-[10px] font-medium tracking-widest uppercase">
-								Select a paragraph to view related items
-							</p>
-							<p class="mt-1 text-center text-[10px] text-gray-400">
-								Choose a paragraph in the document on the left.
-							</p>
-						</div>
-					{:else if selectedRelatedParagraphs.length === 0}
-						<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-							<p class="text-[10px] italic">No relations found for this element</p>
-						</div>
-					{:else}
-						{#each selectedRelatedParagraphs as related}
-							<button
-								type="button"
-								class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
-								on:click={() => focusNodeFromPanel(related.node.id)}
+				<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
+					<div class="flex min-h-full flex-col space-y-2 p-2">
+						{#if backendGraphLoading}
+							<div
+								class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700"
 							>
-								<div class="mb-2 flex items-center justify-between">
-									<div class="flex flex-wrap items-center gap-1.5">
-										{#if related.relationTypes.includes('semantic_similarity')}
+								<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
+								<ul class="space-y-1.5 text-[12px] text-gray-600">
+									{#each relatedProcessingSteps as step, index}
+										<li
+											class="flex [animation:processing-step-fade_1.35s_ease-in-out_infinite] items-center gap-2 opacity-[0.45]"
+											style={`animation-delay: ${index * 220}ms;`}
+										>
 											<span
-												class="rounded border border-green-100 bg-green-50 px-1.5 py-0.5 text-[9px] font-bold text-green-600 uppercase"
-											>
-												Similarity
+												class="h-1.5 w-1.5 [animation:processing-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-gray-500 opacity-[0.35]"
+												style={`animation-delay: ${index * 220}ms;`}
+												aria-hidden="true"
+											></span>
+											<span class="text-gray-600">
+												{step.label}
+												<span class="ml-px inline-flex min-w-[14px]" aria-hidden="true">
+													<span
+														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+														style="animation-delay: 0ms;">.</span
+													>
+													<span
+														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+														style="animation-delay: 140ms;">.</span
+													>
+													<span
+														class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
+														style="animation-delay: 280ms;">.</span
+													>
+												</span>
 											</span>
-										{/if}
-										{#if related.relationTypes.includes('reference')}
-											<span
-												class="rounded border border-blue-100 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold text-blue-600 uppercase"
-											>
-												Reference
-											</span>
-										{/if}
-										{#if related.semanticScore != null}
-											<span class="text-[9px] font-semibold text-gray-500">
-												{(related.semanticScore * 100).toFixed(1)}%
-											</span>
-										{/if}
-									</div>
-									<span class="text-[9px] font-bold tracking-tighter text-gray-400 uppercase">
-										Page {related.node.page}
-									</span>
-								</div>
-
-								<p class="text-[11px] leading-relaxed text-gray-600">
-									{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
+										</li>
+									{/each}
+								</ul>
+							</div>
+						{:else if !$selectedParagraph}
+							<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+								<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
+								<p class="text-center text-[10px] font-medium">
+									Select a paragraph to view related items
 								</p>
+								<p class="mt-1 text-center text-[10px] text-gray-400">
+									Choose a paragraph in the document on the left.
+								</p>
+							</div>
+						{:else if selectedRelatedParagraphs.length === 0}
+							<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
+								<p class="text-[10px] italic">No relations found for this element</p>
+							</div>
+						{:else}
+							{#each selectedRelatedParagraphs as related}
+								<button
+									type="button"
+									class="group rounded-lg border border-gray-200 bg-white p-3 text-left shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+									on:click={() => focusNodeFromPanel(related.node.id)}
+								>
+									<div class="mb-2 flex items-center justify-between">
+										<div class="flex flex-wrap items-center gap-1.5">
+											{#if related.relationTypes.includes('semantic_similarity')}
+												<Badge
+													variant="outline"
+													class="h-4 border-green-100 bg-green-50 px-1.5 text-[9px] font-semibold text-green-600"
+												>
+													Similarity
+												</Badge>
+											{/if}
+											{#if related.relationTypes.includes('reference')}
+												<Badge
+													variant="outline"
+													class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
+												>
+													Reference
+												</Badge>
+											{/if}
+											{#if related.semanticScore != null}
+												<Badge
+													variant="outline"
+													class="h-4 border-gray-200 bg-white px-1.5 text-[9px] font-semibold text-gray-500"
+												>
+													{(related.semanticScore * 100).toFixed(1)}%
+												</Badge>
+											{/if}
+										</div>
+										<span class="text-[9px] font-semibold tracking-tight text-gray-400">
+											Page {related.node.page}
+										</span>
+									</div>
 
-								{#if related.references.length}
-									<p class="mt-2 text-[10px] text-gray-500">
-										Refs: {formatReferenceSummary(related.references)}
+									<p class="text-[11px] leading-relaxed text-gray-600">
+										{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
 									</p>
-								{/if}
-							</button>
-						{/each}
-					{/if}
-				</div>
+
+									{#if related.references.length}
+										<p class="mt-2 text-[10px] text-gray-500">
+											Refs: {formatReferenceSummary(related.references)}
+										</p>
+									{/if}
+								</button>
+							{/each}
+						{/if}
+					</div>
+				</ScrollArea>
 			</section>
 		{:else}
 			<section class="flex min-h-0 flex-1 flex-col bg-white">
@@ -2512,114 +3496,346 @@
 					<p class="text-[11px] text-gray-500">
 						Ask questions and get contextual help grounded in the selected contract.
 					</p>
-					<select
-						bind:value={assistantProvider}
-						class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-gray-600"
-					>
-						{#each PROVIDER_OPTIONS as option}
-							<option value={option.value}>{option.label}</option>
-						{/each}
-					</select>
+					<Select.Root type="single" bind:value={assistantProvider}>
+						<Select.Trigger
+							size="sm"
+							class="h-6 w-[130px] border-gray-200 bg-white px-1.5 text-[10px] font-semibold text-gray-600"
+						>
+							{assistantProviderLabel}
+						</Select.Trigger>
+						<Select.Content>
+							{#each PROVIDER_OPTIONS as option}
+								<Select.Item
+									value={option.value}
+									label={option.label}
+									class="text-[10px] font-semibold"
+								>
+									{option.label}
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 				</header>
 
 				<div class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2">
-					<select
-						bind:value={assistantMode}
-						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-					>
-						{#each MODE_OPTIONS as option}
-							<option value={option.value}>{option.label}</option>
-						{/each}
-					</select>
+					<Select.Root type="single" bind:value={assistantMode}>
+						<Select.Trigger
+							size="sm"
+							class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
+						>
+							{assistantModeLabel}
+						</Select.Trigger>
+						<Select.Content>
+							{#each MODE_OPTIONS as option}
+								<Select.Item
+									value={option.value}
+									label={option.label}
+									class="text-[10px] font-semibold"
+								>
+									{option.label}
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 
-					<select
-						bind:value={assistantScope}
-						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
-					>
-						{#each SCOPE_OPTIONS as option}
-							<option value={option.value}>{option.label}</option>
-						{/each}
-					</select>
+					<Select.Root type="single" bind:value={assistantScope}>
+						<Select.Trigger
+							size="sm"
+							class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
+						>
+							{assistantScopeLabel}
+						</Select.Trigger>
+						<Select.Content>
+							{#each SCOPE_OPTIONS as option}
+								<Select.Item
+									value={option.value}
+									label={option.label}
+									class="text-[10px] font-semibold"
+								>
+									{option.label}
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 
-					<select
+					<Select.Root
+						type="single"
 						bind:value={selectedQuickAction}
-						on:change={handleQuickActionSelectionChange}
-						class="min-w-0 rounded border border-gray-200 bg-white px-2 py-1 text-[10px] font-semibold text-gray-600"
+						onValueChange={() => handleQuickActionSelectionChange()}
 					>
-						<option value="">Quick Action</option>
-						{#each QUICK_ACTIONS as action}
-							<option value={action}>{action}</option>
-						{/each}
-					</select>
+						<Select.Trigger
+							size="sm"
+							class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
+						>
+							{quickActionLabel}
+						</Select.Trigger>
+						<Select.Content>
+							{#each QUICK_ACTIONS as action}
+								<Select.Item value={action} label={action} class="text-[10px] font-semibold">
+									{action}
+								</Select.Item>
+							{/each}
+						</Select.Content>
+					</Select.Root>
 				</div>
 
-				<div
-					bind:this={assistantThread}
-					class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain bg-gray-50/30 p-2"
-				>
-					{#if assistantMessages.length === 0 && !assistantLoading}
-						<div class="flex flex-1 flex-col items-center justify-center text-gray-300">
-							<p class="text-[10px] italic">Chat about this contract</p>
-						</div>
-					{/if}
+				<ScrollArea class="min-h-0 flex-1 bg-gray-50/30" bind:viewportRef={assistantThread}>
+					<div class="flex min-h-full flex-col gap-2 p-2">
+						{#if assistantMessages.length === 0 && !assistantLoading}
+							<div class="flex flex-1 flex-col items-center justify-center text-gray-300">
+								<p class="text-[10px] italic">Chat about this contract</p>
+							</div>
+						{/if}
 
-					{#each assistantMessages as message (message.id)}
-						<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
-							<div
-								class="max-w-[92%] rounded-lg border px-2.5 py-2 text-[11px] leading-relaxed shadow-sm {message.role ===
-								'user'
-									? 'border-blue-200 bg-blue-50 text-blue-900'
-									: 'border-gray-200 bg-white text-gray-700'}"
-							>
-								<p class="whitespace-pre-wrap">{message.content}</p>
+						{#each assistantMessages as message (message.id)}
+							<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
+								<div
+									class="max-w-[92%] rounded-lg border px-2.5 py-2 text-[11px] leading-relaxed shadow-sm {message.role ===
+									'user'
+										? 'border-blue-200 bg-blue-50 text-blue-900'
+										: 'border-gray-200 bg-white text-gray-700'}"
+								>
+									{#if message.structuredContradiction}
+										<div class="space-y-2">
+											<p class="whitespace-pre-wrap">{message.content}</p>
 
-								{#if message.citations?.length}
-									<div class="mt-2 flex flex-wrap gap-1">
-										{#each message.citations as citation}
-											<button
-												type="button"
-												class="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9px] font-bold text-amber-700 transition-colors hover:border-amber-300"
-												title={citation.excerpt}
-												on:click={() => focusNodeFromPanel(citation.id, true)}
-											>
-												{citation.id}
-											</button>
-										{/each}
-									</div>
-								{/if}
-
-								{#if message.suggestedQuestions?.length}
-									<div class="mt-2">
-										<p class="mb-1 text-[9px] font-bold tracking-tight text-gray-500 uppercase">
-											Suggested Questions
-										</p>
-										<div class="flex flex-wrap gap-1">
-											{#each message.suggestedQuestions as suggestedQuestion}
-												<button
-													type="button"
-													class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] text-gray-600 transition-colors hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-													on:click={() => onSuggestedQuestionClick(suggestedQuestion)}
+											{#if message.structuredContradiction.highlight_source_text?.trim()}
+												{@const chatSegments = buildChatHighlightSegments(
+													message.structuredContradiction
+												)}
+												<div
+													class="rounded-xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/65 to-sky-50/35 px-2.5 py-2.5 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)]"
 												>
-													{suggestedQuestion}
-												</button>
+													<Tabs.Root
+														value={getChatPreviewTab(message.id)}
+														onValueChange={(value) => setChatPreviewTab(message.id, value)}
+														class="gap-1.5"
+													>
+														<Tabs.List class="h-6 w-full border border-gray-200 bg-white p-[2px]">
+															<Tabs.Trigger value="contradiction" class="text-[9px] font-semibold">
+																Contradiction
+															</Tabs.Trigger>
+															<Tabs.Trigger value="claims" class="text-[9px] font-semibold">
+																Claims
+															</Tabs.Trigger>
+														</Tabs.List>
+
+														<Tabs.Content value="contradiction" class="text-[11px]">
+															<p
+																class="break-words whitespace-normal leading-relaxed text-gray-700"
+																on:mouseleave={() => clearChatPreviewHover(message.id)}
+															>
+																{#each chatSegments as segment, segmentIndex}
+																	{#if segment.interactive}
+																		{@const tooltipData = resolveChatHighlightSegmentTooltip(segment)}
+																		{@const segmentKey = `${message.id}:${segmentIndex}`}
+																		{#if tooltipData}
+																			<Tooltip.Root
+																				open={isChatPreviewTooltipOpen(message.id, segmentKey)}
+																				onOpenChange={(open) => {
+																					if (open) {
+																						handleChatPreviewSegmentMouseEnter(
+																							message.id,
+																							segment,
+																							segmentKey
+																						);
+																						return;
+																					}
+																					if (isChatPreviewTooltipOpen(message.id, segmentKey)) {
+																						clearChatPreviewHover(message.id);
+																					}
+																				}}
+																			>
+																				<Tooltip.Trigger>
+																					{#snippet child({ props })}
+																						<span
+																							{...props}
+																							class="inline bg-transparent p-0 text-left align-baseline leading-[inherit] whitespace-normal text-inherit transition-[background-color,border-color,box-shadow,color] duration-150 ease-out hover:cursor-help focus-visible:outline-none"
+																							on:mouseenter={() =>
+																								handleChatPreviewSegmentMouseEnter(
+																									message.id,
+																									segment,
+																									segmentKey
+																								)}
+																							on:mouseleave={() => clearChatPreviewHover(message.id)}
+																							on:focus={() =>
+																								handleChatPreviewSegmentMouseEnter(
+																									message.id,
+																									segment,
+																									segmentKey
+																								)}
+																							on:blur={() => clearChatPreviewHover(message.id)}
+																						>
+																							<span
+																								class="inline rounded-[3px] px-[2px] py-[1px]"
+																								style={resolveChatHighlightSegmentStyle(segment, message.id)}
+																							>
+																								{segment.text}
+																							</span>
+																						</span>
+																					{/snippet}
+																				</Tooltip.Trigger>
+																				<Tooltip.Content
+																					side="top"
+																					sideOffset={6}
+																					class="max-w-[290px] border border-gray-200 bg-white px-2 py-1.5 text-gray-700 shadow-md"
+																				>
+																					<div class="space-y-1">
+																						<Badge
+																							variant="outline"
+																							class="h-4 px-1.5 text-[9px] font-semibold"
+																							style={tooltipData.badgeStyle}
+																						>
+																							{tooltipData.badgeText}
+																						</Badge>
+																						{#if tooltipData.description}
+																							<p class="text-[9px] leading-relaxed text-gray-600">
+																								{tooltipData.description}
+																							</p>
+																						{/if}
+																					</div>
+																				</Tooltip.Content>
+																			</Tooltip.Root>
+																		{:else}
+																			<button
+																				type="button"
+																				class="inline appearance-none rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left align-baseline leading-[inherit] whitespace-normal text-inherit"
+																				style={resolveChatHighlightSegmentStyle(segment, message.id)}
+																				on:mouseenter={() =>
+																					handleChatPreviewSegmentMouseEnter(
+																						message.id,
+																						segment,
+																						segmentKey
+																					)}
+																				on:mouseleave={() => clearChatPreviewHover(message.id)}
+																			>
+																				{segment.text}
+																			</button>
+																		{/if}
+																	{:else}
+																		<span>{segment.text}</span>
+																	{/if}
+																{/each}
+															</p>
+
+															<div class="mt-2 flex flex-wrap gap-2">
+																{#each CONTRADICTION_TAXONOMY_ORDER as category}
+																	<Badge
+																		variant="outline"
+																		class="h-4 items-center gap-1 border-gray-200 bg-white px-1.5 text-[9px] text-gray-600"
+																	>
+																		<span
+																			class="inline-flex h-2 w-2 rounded-full"
+																			style={`background: ${CONTRADICTION_TAXONOMY_COLORS[category]};`}
+																		></span>
+																		{CONTRADICTION_TAXONOMY_LABELS[category]}
+																	</Badge>
+																{/each}
+															</div>
+														</Tabs.Content>
+
+														<Tabs.Content value="claims" class="text-[11px]">
+															<p class="break-words whitespace-normal leading-relaxed text-gray-700">
+																{#each chatSegments as segment}
+																	{#if segment.claimSide}
+																		<span
+																			class="inline rounded-[3px] px-[2px] py-[1px]"
+																			style={resolveChatClaimSegmentStyle(segment)}
+																		>
+																			{segment.text}
+																		</span>
+																	{:else}
+																		<span>{segment.text}</span>
+																	{/if}
+																{/each}
+															</p>
+
+															<div class="mt-2 flex flex-wrap gap-1.5">
+																<Badge
+																	variant="outline"
+																	class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+																	style={`border-color: ${CONTRADICTION_CLAIM_SIDE_COLORS.a}55; background: ${CONTRADICTION_CLAIM_SIDE_COLORS.a}14; color: ${CONTRADICTION_CLAIM_SIDE_COLORS.a};`}
+																>
+																	<span
+																		class="inline-flex h-2 w-2 rounded-full"
+																		style={`background: ${CONTRADICTION_CLAIM_SIDE_COLORS.a};`}
+																	></span>
+																	Claim A
+																</Badge>
+																<Badge
+																	variant="outline"
+																	class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+																	style={`border-color: ${CONTRADICTION_CLAIM_SIDE_COLORS.b}55; background: ${CONTRADICTION_CLAIM_SIDE_COLORS.b}14; color: ${CONTRADICTION_CLAIM_SIDE_COLORS.b};`}
+																>
+																	<span
+																		class="inline-flex h-2 w-2 rounded-full"
+																		style={`background: ${CONTRADICTION_CLAIM_SIDE_COLORS.b};`}
+																	></span>
+																	Claim B
+																</Badge>
+															</div>
+														</Tabs.Content>
+													</Tabs.Root>
+												</div>
+											{/if}
+										</div>
+									{:else}
+										<p class="whitespace-pre-wrap">{message.content}</p>
+									{/if}
+
+									{#if message.suggestedQuestions?.length}
+										<div class="mt-2">
+											<p class="mb-1 text-[9px] font-semibold text-gray-500">Suggested questions</p>
+											<div class="flex flex-wrap gap-1">
+												{#each message.suggestedQuestions as suggestedQuestion}
+													<Button
+														variant="outline"
+														size="xs"
+														class="h-5 border-gray-200 bg-gray-50 px-1.5 text-[9px] text-gray-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+														onclick={() => onSuggestedQuestionClick(suggestedQuestion)}
+													>
+														{suggestedQuestion}
+													</Button>
+												{/each}
+											</div>
+										</div>
+									{/if}
+
+									{#if message.citations?.length}
+										<div class="mt-2 flex flex-wrap gap-1">
+											{#each message.citations as citation}
+												<Button
+													variant="outline"
+													size="xs"
+													class="h-5 border-amber-200 bg-amber-50 px-1.5 text-[9px] font-bold text-amber-700 hover:border-amber-300"
+													title={citation.excerpt}
+													onclick={() => focusNodeFromPanel(citation.id, true)}
+												>
+													{citation.id}
+												</Button>
 											{/each}
 										</div>
-									</div>
-								{/if}
+									{/if}
+								</div>
 							</div>
-						</div>
-					{/each}
+						{/each}
 
-					{#if assistantLoading}
-						<div class="flex justify-start">
-							<div
-								class="rounded-lg border border-gray-200 bg-white px-2.5 py-2 text-[11px] text-gray-500"
-							>
-								Analyzing contract context...
+						{#if assistantLoading}
+							<div class="flex justify-start">
+								<div
+									class="w-[82%] max-w-[92%] rounded-lg border border-gray-200 bg-white p-3 shadow-sm"
+								>
+									<div class="space-y-2">
+										<Skeleton class="h-3.5 w-28" />
+										<Skeleton class="h-3 w-full" />
+										<Skeleton class="h-3 w-[92%]" />
+										<Skeleton class="h-3 w-[70%]" />
+									</div>
+								</div>
 							</div>
-						</div>
-					{/if}
-				</div>
+						{/if}
+					</div>
+				</ScrollArea>
 
 				{#if assistantError}
 					<div class="border-t border-red-100 bg-red-50 px-3 py-1.5 text-[10px] text-red-700">
@@ -2631,22 +3847,24 @@
 					class="border-t border-gray-200 bg-white p-2"
 					on:submit|preventDefault={() => void submitAssistantQuestion()}
 				>
-					<textarea
-						rows="2"
+					<Textarea
+						rows={2}
 						placeholder="Ask about this contract or paragraph..."
 						bind:value={assistantInput}
-						on:keydown={handleAssistantInputKeydown}
-						class="w-full resize-none rounded border border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700 transition outline-none focus:border-blue-300 focus:ring-1 focus:ring-blue-200"
-					></textarea>
+						onkeydown={handleAssistantInputKeydown}
+						class="min-h-[52px] resize-none border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700"
+					></Textarea>
 					<div class="mt-1.5 flex items-center justify-between">
 						<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
-						<button
+						<Button
 							type="submit"
+							variant="outline"
+							size="sm"
 							disabled={assistantLoading || !assistantInput.trim()}
-							class="rounded border border-gray-200 bg-white px-3 py-1 text-[10px] font-bold text-gray-600 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
+							class="h-7 border-gray-200 bg-white px-3 text-[10px] font-bold text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
 						>
 							Ask
-						</button>
+						</Button>
 					</div>
 				</form>
 			</section>
@@ -2654,19 +3872,23 @@
 	</aside>
 
 	<aside
-		class="grammarly-rail absolute top-0 right-0 bottom-0 z-50"
+		class="absolute top-0 right-0 bottom-0 z-50 flex w-[58px] items-center justify-center px-2 py-3"
 		aria-label="Tools sidebar"
 	>
-		<div class="grammarly-rail__inner">
+		<div
+			class="group/rail flex w-11 flex-col items-center justify-center gap-2.5 rounded-[22px] border border-gray-200 bg-white py-3 shadow-[0_1px_2px_rgba(15,23,42,0.08),0_10px_24px_rgba(15,23,42,0.07)]"
+		>
 			{#each RIGHT_PANEL_TOOLS as item (item.id)}
-				<div class="grammarly-rail__item group relative">
+				<div
+					class="group/item relative flex h-[34px] w-full flex-[0_0_34px] items-center justify-center"
+				>
 					<button
 						type="button"
 						on:click={() => selectRightTool(item.id)}
-						class={`grammarly-rail__button ${
+						class={`inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-transparent [transition:transform_150ms_cubic-bezier(0.2,0.85,0.2,1),background-color_150ms_ease,border-color_150ms_ease,color_150ms_ease,box-shadow_160ms_ease] ${
 							activeRightPanelTab === item.id && isRightDrawerOpen
-								? 'grammarly-rail__button--active'
-								: 'grammarly-rail__button--idle'
+								? 'border-blue-300 bg-blue-100 text-blue-700 shadow-[0_0_0_2px_rgba(147,197,253,0.55),0_7px_16px_rgba(29,78,216,0.25)]'
+								: 'bg-transparent text-blue-700 group-hover/item:translate-x-[-1px] group-hover/item:scale-[1.03] group-hover/item:border-blue-200 group-hover/item:bg-blue-50 group-hover/item:text-blue-700 group-hover/item:shadow-[0_6px_14px_rgba(59,130,246,0.22)]'
 						}`}
 						aria-label={item.label}
 					>
@@ -2687,11 +3909,11 @@
 						{/if}
 					</button>
 					<div
-						class={`grammarly-rail__tooltip pointer-events-none absolute whitespace-nowrap rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold shadow-md ${
+						class={`pointer-events-none absolute top-1/2 right-[calc(100%+8px)] translate-x-[-4px] -translate-y-1/2 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold whitespace-nowrap opacity-0 shadow-md [transition:opacity_140ms_ease,transform_170ms_cubic-bezier(0.2,0.85,0.2,1)] group-focus-within/item:translate-x-0 group-focus-within/item:opacity-100 group-hover/rail:translate-x-0 group-hover/rail:opacity-100 ${
 							activeRightPanelTab === item.id ? 'text-slate-900' : 'text-slate-500'
 						}`}
 					>
-						{item.label}
+						{toTitleCaseLabel(item.label)}
 					</div>
 				</div>
 			{/each}
@@ -2703,49 +3925,49 @@
 			class="fixed z-40 w-52 rounded-xl border border-slate-200 bg-white/95 p-2 shadow-[0_14px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
 			style={`top: ${simplifyToolbarTop}px; left: ${simplifyToolbarLeft}px;`}
 		>
-			<p class="px-1 pb-1 text-[9px] font-bold tracking-[0.12em] text-slate-400 uppercase">
-				Paragraph Tools
-			</p>
+			<p class="px-1 pb-1 text-[9px] font-semibold text-slate-400">Paragraph tools</p>
 			<div class="flex flex-col gap-1.5">
-				<button
-					type="button"
-					class="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-800 transition hover:border-amber-300 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-auto justify-between border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[10px] font-bold text-amber-800 hover:border-amber-300 hover:bg-amber-100"
 					disabled={fixContradictionLoading || assistantLoading || simplifyLoading}
-					on:mousedown|preventDefault
-					on:click={() => void runFixContradiction()}
+					onmousedown={(event) => event.preventDefault()}
+					onclick={() => void runFixContradiction()}
 				>
 					<span class="inline-flex items-center gap-1.5">
 						<HammerShieldIcon className="h-3.5 w-3.5" />
 						<span>{fixContradictionLoading ? 'Fixing...' : 'Fix contradiction'}</span>
 					</span>
-				</button>
+				</Button>
 
-				<button
-					type="button"
-					class="flex items-center justify-between rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800 transition hover:border-sky-300 hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-auto justify-between border-sky-200 bg-sky-50 px-2.5 py-1.5 text-[10px] font-bold text-sky-800 hover:border-sky-300 hover:bg-sky-100"
 					disabled={simplifyLoading || fixContradictionLoading}
-					on:mousedown|preventDefault
-					on:click={() => void runSimplify()}
+					onmousedown={(event) => event.preventDefault()}
+					onclick={() => void runSimplify()}
 				>
 					<span class="inline-flex items-center gap-1.5">
 						<SimplifyWandIcon className="h-3.5 w-3.5" />
 						<span>{simplifyLoading ? 'Simplifying...' : 'Simplify'}</span>
 					</span>
-				</button>
+				</Button>
 			</div>
-			<button
-				class="mt-2 w-full rounded border border-gray-200 bg-white px-2 py-1 text-[9px] font-semibold text-gray-500 transition hover:border-gray-300 hover:bg-gray-50"
-				type="button"
-				on:mousedown|preventDefault
-				on:click={() => {
+			<Button
+				class="mt-2 h-6 w-full border-gray-200 bg-white px-2 text-[9px] font-semibold text-gray-500 hover:border-gray-300 hover:bg-gray-50"
+				variant="outline"
+				size="sm"
+				onmousedown={(event) => event.preventDefault()}
+				onclick={() => {
 					simplifyToolbarVisible = false;
 				}}
 			>
 				Close tools
-			</button>
+			</Button>
 		</div>
 	{/if}
-
 </main>
 
 <style>
@@ -2859,165 +4081,6 @@
 
 	:global(.docx-contradiction-scroll-marker--low) {
 		background: #f87171;
-	}
-
-	:global(.overflow-y-auto)::-webkit-scrollbar {
-		width: 3px;
-	}
-
-	:global(.overflow-y-auto)::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	:global(.overflow-y-auto)::-webkit-scrollbar-thumb {
-		background: #f3f4f6;
-		border-radius: 10px;
-	}
-
-		.grammarly-rail {
-			width: 58px;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			padding: 12px 8px;
-		}
-
-		.grammarly-rail__inner {
-			display: flex;
-			width: 44px;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-			gap: 10px;
-			padding: 12px 0;
-			border: 1px solid #e5e7eb;
-			border-radius: 22px;
-			background: #ffffff;
-			box-shadow:
-				0 1px 2px rgba(15, 23, 42, 0.08),
-				0 10px 24px rgba(15, 23, 42, 0.07);
-		}
-
-		.grammarly-rail__item {
-			position: relative;
-			display: flex;
-			height: 34px;
-			width: 100%;
-			flex: 0 0 34px;
-			align-items: center;
-			justify-content: center;
-		}
-
-	.grammarly-rail__button {
-		display: inline-flex;
-		height: 30px;
-		width: 30px;
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		border: 1px solid transparent;
-		transition:
-			transform 150ms cubic-bezier(0.2, 0.85, 0.2, 1),
-			background-color 150ms ease,
-			border-color 150ms ease,
-			color 150ms ease,
-			box-shadow 160ms ease;
-	}
-
-	.grammarly-rail__button--idle {
-		color: #1d4ed8;
-		background: transparent;
-	}
-
-	.grammarly-rail__item:hover .grammarly-rail__button--idle {
-		border-color: #bfdbfe;
-		background: #eff6ff;
-		color: #1d4ed8;
-		transform: translateX(-1px) scale(1.03);
-		box-shadow: 0 6px 14px rgba(59, 130, 246, 0.22);
-	}
-
-	.grammarly-rail__button--active {
-		border-color: #93c5fd;
-		background: #dbeafe;
-		color: #1d4ed8;
-		box-shadow:
-			0 0 0 2px rgba(147, 197, 253, 0.55),
-			0 7px 16px rgba(29, 78, 216, 0.25);
-	}
-
-	.grammarly-rail__tooltip {
-		top: 50%;
-		right: calc(100% + 8px);
-		opacity: 0;
-		transform: translate(-4px, -50%);
-		transition:
-			opacity 140ms ease,
-			transform 170ms cubic-bezier(0.2, 0.85, 0.2, 1);
-	}
-
-		.grammarly-rail__inner:hover .grammarly-rail__tooltip,
-		.grammarly-rail__item:focus-within .grammarly-rail__tooltip {
-			opacity: 1;
-			transform: translate(0, -50%);
-		}
-
-	.right-drawer--open {
-		transform: translateX(0);
-		pointer-events: auto;
-		opacity: 1;
-		visibility: visible;
-	}
-
-	.right-drawer--closed {
-		transform: translateX(calc(100% + var(--drawer-rail-offset, 58px) + 20px));
-		pointer-events: none;
-		box-shadow: none;
-		opacity: 0;
-		visibility: hidden;
-	}
-
-	.processing-step {
-		opacity: 0.45;
-		animation: processing-step-fade 1.35s ease-in-out infinite;
-		animation-delay: var(--step-delay, 0ms);
-	}
-
-	.processing-dot {
-		height: 6px;
-		width: 6px;
-		border-radius: 9999px;
-		background: #6b7280;
-		opacity: 0.35;
-		animation: processing-dot-pulse 1.2s ease-in-out infinite;
-		animation-delay: var(--step-delay, 0ms);
-	}
-
-	.processing-label {
-		color: #4b5563;
-	}
-
-	.processing-ellipsis {
-		display: inline-flex;
-		min-width: 14px;
-		margin-left: 1px;
-	}
-
-	.processing-ellipsis > span {
-		opacity: 0.18;
-		animation: processing-ellipsis-dot 0.95s ease-in-out infinite;
-	}
-
-	.processing-ellipsis > span:nth-child(1) {
-		animation-delay: 0ms;
-	}
-
-	.processing-ellipsis > span:nth-child(2) {
-		animation-delay: 140ms;
-	}
-
-	.processing-ellipsis > span:nth-child(3) {
-		animation-delay: 280ms;
 	}
 
 	@keyframes bounce {

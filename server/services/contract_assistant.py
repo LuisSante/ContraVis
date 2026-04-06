@@ -42,10 +42,6 @@ class ContextEntry:
 
 def generate_assistant_response(payload: AssistantChatRequest) -> AssistantChatResponse:
     node_map = {node.id: node for node in payload.paragraphNodes}
-    logger.info("======================")
-    logger.info("\t\t NODE MAP")
-    logger.info(node_map)
-    logger.info("======================")
 
     if not node_map:
         raise RuntimeError("No paragraph nodes were provided")
@@ -409,7 +405,6 @@ def _build_user_prompt(
         f"\n\n\n"
     )
     logger.info("======================")
-    logger.info("\t\t NODE MAP")
 
     return (
         f"Document ID: {payload.documentId}\n"

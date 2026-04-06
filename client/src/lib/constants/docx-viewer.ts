@@ -1,4 +1,10 @@
-import type { AssistantMode, AssistantProvider, AssistantScope } from '$lib/types/document';
+import type {
+	AssistantMode,
+	AssistantProvider,
+	AssistantScope,
+	ContradictionTaxonomyType,
+	RightPanelTab
+} from '$lib/types/document';
 
 export const QUICK_ACTION_WHY_CONTRADICTION_FREE = 'Why is it a contradiction? (Free)';
 export const QUICK_ACTION_WHY_CONTRADICTION_AI = 'Why is it a contradiction? (AI cost)';
@@ -28,11 +34,12 @@ export const PROVIDER_OPTIONS: ReadonlyArray<{ value: AssistantProvider; label: 
 ];
 
 export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
-	// { value: 'gpt-4o-mini', label: 'gpt-4o-mini (cheaper)' },
-	{ value: 'gpt-4.1-nano', label: 'gpt-4.1-nano' },
-	{ value: 'gpt-4.1-mini', label: 'gpt-4.1-mini' },
 	{ value: 'gpt-4.1', label: 'gpt-4.1' },
-	{ value: 'gpt-4o', label: 'gpt-4o' }
+	{ value: 'gpt-5', label: 'gpt-5' },
+	{ value: 'gpt-5-mini', label: 'gpt-5-mini' },
+	{ value: 'gpt-5-nano', label: 'gpt-5-nano' },
+	{ value: 'gpt-5.1', label: 'gpt-5.1' }
+
 ];
 
 export const COMMIT_SHORTCUT_LABEL = 'CTRL + SHIFT + ENTER';
@@ -40,6 +47,41 @@ export const COMMIT_SHORTCUT_HINT = 'Commit changes with Ctrl + Shift + Enter';
 export const COMMIT_SHORTCUT_TOOLTIP = 'Ctrl + Shift + Enter to save';
 
 export const MAX_SIMPLIFY_AUDIT_TRAIL = 200;
+
+export const CONTRADICTION_TAXONOMY_ORDER: ReadonlyArray<ContradictionTaxonomyType> = [
+	'temporal',
+	'numerical',
+	'authority',
+	'process',
+	'policy_reversal',
+	'specificity',
+	'other'
+];
+
+export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonomyType, string>> = {
+	temporal: 'Temporal',
+	numerical: 'Numerical',
+	authority: 'Authority',
+	process: 'Process',
+	policy_reversal: 'Policy Reversal',
+	specificity: 'Specificity',
+	other: 'Other'
+};
+
+export const CONTRADICTION_TAXONOMY_COLORS: Readonly<Record<ContradictionTaxonomyType, string>> = {
+	temporal: '#8b5cf6',
+	numerical: '#14b8a6',
+	authority: '#f97316',
+	process: '#0ea5e9',
+	policy_reversal: '#ef4444',
+	specificity: '#84cc16',
+	other: '#9ca3af'
+};
+
+export const CONTRADICTION_CLAIM_SIDE_COLORS: Readonly<Record<'a' | 'b', string>> = {
+	a: '#2563eb',
+	b: '#d97706'
+};
 
 export const EDITABLE_PARAGRAPH_CLASSES = [
 	'rounded-[2px]',
@@ -52,3 +94,20 @@ export const EDITABLE_PARAGRAPH_CLASSES = [
 	'focus:ring-2',
 	'focus:ring-yellow-400'
 ] as const;
+
+export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
+	{ id: 'related', label: 'Related Paragraphs' },
+	{ id: 'analysis', label: 'Contradiction Analysis' },
+	{ id: 'redundancy', label: 'Redundancy Analysis' },
+	{ id: 'summarize', label: 'Summarize & Simplify' },
+	{ id: 'ambiguity', label: 'Ambiguity Analysis' },
+	{ id: 'revisions', label: 'Paragraph Revisions' },
+	{ id: 'assistant', label: 'Contract Chat Assistant' }
+];
+ 
+export const RIGHT_TOOLBAR_WIDTH = 58;
+export const RIGHT_DRAWER_MIN_WIDTH = 360;
+export const RIGHT_DRAWER_DEFAULT_WIDTH = 520;
+export const RIGHT_DRAWER_MAX_RATIO = 0.68;
+export const RIGHT_DRAWER_KEYBOARD_STEP = 24;
+export const FIX_CONTRADICTION_TOP_RELATED = 3;
