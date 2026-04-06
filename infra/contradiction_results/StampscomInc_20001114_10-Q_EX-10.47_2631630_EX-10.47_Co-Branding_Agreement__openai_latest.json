@@ -2,7 +2,7 @@
   "documentId": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement",
   "provider": "openai",
   "temperature": 0.3,
-  "savedAt": "2026-04-01T14:37:53.977507+00:00",
+  "savedAt": "2026-04-05T19:11:58.867010+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-1",
@@ -57,7 +57,7 @@
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-14",
       "contradiction": true,
       "confidence": 100,
-      "brief_reason": "The paragraph first states the parties desire to engage in co-branding activities, then directly contradicts this by stating they shall not engage in any such activities.",
+      "brief_reason": "The paragraph simultaneously states that co-branding activities will and will not occur.",
       "evidence": {
         "snippet_a": "The Company and MBE desire to engage in certain co-branding activities on the Internet so as to allow customers of MBE Centers to use the Company's Internet-based shipping system in a convenient manner and to list the MBE Centers as drop-off locations and retail shipping centers.",
         "snippet_b": "The Company and MBE shall not engage in any co-branding activities on the Internet nor allow customers of MBE Centers to use the Company's Internet-based shipping system or list the MBE Centers as drop-off locations and retail shipping centers.",
@@ -404,13 +404,6 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-110",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-112",
       "contradiction": false,
       "confidence": 0,
@@ -435,9 +428,9 @@
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-118",
       "contradiction": true,
       "confidence": 100,
-      "brief_reason": "The paragraph states both that each MBE Center shall be responsible for Authorized Equipment and that each MBE Center shall not be responsible for it.",
+      "brief_reason": "The paragraph assigns mutually exclusive responsibilities for Authorized Equipment to MBE Centers and the Company.",
       "evidence": {
-        "snippet_a": "Each MBE Center shall be responsible for -------------------- obtaining, installing and maintaining the Authorized Equipment at its sole cost and expense.",
+        "snippet_a": "Each MBE Center shall be responsible for obtaining, installing and maintaining the Authorized Equipment at its sole cost and expense.",
         "snippet_b": "Each MBE Center shall not be responsible for obtaining, installing or maintaining the Authorized Equipment, and such responsibilities shall be borne by the Company.",
         "source_a": "paragraph",
         "source_b": "paragraph",
@@ -628,13 +621,6 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-166",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-168",
       "contradiction": false,
       "confidence": 0,
@@ -720,13 +706,6 @@
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-190",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-192",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -852,13 +831,6 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-223",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-225",
       "contradiction": false,
       "confidence": 0,
@@ -937,13 +909,6 @@
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-247",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-249",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1042,13 +1007,6 @@
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-275",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-277",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1154,13 +1112,6 @@
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-305",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-307",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1762,13 +1713,6 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-465",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-467",
       "contradiction": false,
       "confidence": 0,
@@ -1902,13 +1846,6 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-505",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-507",
       "contradiction": false,
       "confidence": 0,
@@ -1973,13 +1910,6 @@
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-524",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-526",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2336,21 +2266,7 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-594",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-595",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-596",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2644,21 +2560,7 @@
       "evidence": null
     },
     {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-639",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-640",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-641",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3038,139 +2940,76 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-696",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-697",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements to contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-698",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading with no substantive statements to contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-699",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-700",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-701",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-702",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-703",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-704",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "confidence": 0,
+      "brief_reason": "",
+      "evidence": null
     },
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-705",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3178,13 +3017,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-706",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains '5.2.' and no substantive content to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3192,13 +3031,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-707",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3206,13 +3045,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-708",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains '5.2.' and no substantive content to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3220,13 +3059,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-709",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3234,13 +3073,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-710",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains '5.2.' and no substantive content to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3248,13 +3087,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-711",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3262,13 +3101,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-712",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains '5.2.' and no substantive content to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3276,13 +3115,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-713",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3290,13 +3129,13 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-714",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph only contains a section number and no substantive statements.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains '5.2.' and no substantive content to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
@@ -3304,31 +3143,17 @@
     {
       "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-715",
       "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a heading and does not contain any statements that could contradict.",
+      "confidence": 80,
+      "brief_reason": "The paragraph only contains a heading and no substantive statements to contradict.",
       "evidence": {
         "snippet_a": "",
         "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
-    },
-    {
-      "paragraph_id": "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-717",
-      "contradiction": false,
-      "confidence": 100,
-      "brief_reason": "The paragraph is a source note and does not contain any statements that could contradict.",
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
         "evidence_status": "missing",
         "evidence_note": ""
       }
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 78299, \"estimated_output_tokens_total\": 18984, \"estimated_cost_usd\": \"0.308470\", \"batches\": [{\"batch\": 1, \"rows\": 431, \"estimated_input_tokens\": 74888, \"estimated_output_tokens\": 18102, \"estimated_cost_usd\": \"0.294592\", \"response_chars\": 1876, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-14\\\",\\n      \\\"contradiction\\\": true,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"The paragraph first states the parties desire to engage in co-branding activities, then directly contradicts this by stating they shall not engage in any such activities.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"The Company and MBE desire to engage in certain co-branding activities\"}, {\"batch\": 2, \"rows\": 21, \"estimated_input_tokens\": 3411, \"estimated_output_tokens\": 882, \"estimated_cost_usd\": \"0.013878\", \"response_chars\": 8847, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-696\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"The paragraph only contains a heading and no substantive statements to contradict.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"unknown\\\",\\n        \\\"source_b\\\": \\\"unknown\\\"\\n      }\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"StampscomInc_20001114_1\"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 76809, \"estimated_output_tokens_total\": 18354, \"estimated_cost_usd\": \"0.300450\", \"batches\": [{\"batch\": 1, \"rows\": 426, \"estimated_input_tokens\": 74800, \"estimated_output_tokens\": 17892, \"estimated_cost_usd\": \"0.292736\", \"response_chars\": 1737, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-14\\\",\\n      \\\"contradiction\\\": true,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"The paragraph simultaneously states that co-branding activities will and will not occur.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"The Company and MBE desire to engage in certain co-branding activities on the Internet so as to allow customers of MBE Centers to use the Company's Inte\"}, {\"batch\": 2, \"rows\": 11, \"estimated_input_tokens\": 2009, \"estimated_output_tokens\": 462, \"estimated_cost_usd\": \"0.007714\", \"response_chars\": 4665, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding_Agreement-p-705\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 80,\\n      \\\"brief_reason\\\": \\\"The paragraph only contains a heading and no substantive statements to contradict.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"paragraph\\\",\\n        \\\"source_b\\\": \\\"paragraph\\\"\\n      }\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"StampscomInc_2000111\"}]}"
 }
