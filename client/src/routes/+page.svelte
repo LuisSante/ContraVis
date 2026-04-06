@@ -11,10 +11,7 @@
 	<div class="w-full max-w-7xl space-y-10">
 
 		<header class="text-center space-y-2">
-			<h1 class="text-2xl font-semibold">Document Explorer</h1>
-			<p class="text-gray-600">
-				Select a document from the dataset or upload a new PDF
-			</p>
+			<h1 class="text-2xl">Contradiction Explorer</h1>
 		</header>
 
 		<section>

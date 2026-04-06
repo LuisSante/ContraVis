@@ -2,6 +2,7 @@
 	import type { DocumentMeta } from '$lib/types/document';
 	import { goto } from '$app/navigation';
 	import { currentDocument, loading, error } from '$lib/stores/document';
+	import DocumentIcon from '$lib/icons/DocumentIcon.svelte';
 
 	export let documents: DocumentMeta[];
 	let query = '';
@@ -42,7 +43,9 @@
 					class="w-full cursor-pointer rounded px-3 py-2 text-left transition hover:bg-gray-100"
 					on:click={() => selectDocument(doc)}
 				>
-					📄 {doc.name}
+					<div class="flex items-center space-x-6">
+						<DocumentIcon/> {doc.name}
+					</div>
 				</button>
 			</li>
 		{/each}
