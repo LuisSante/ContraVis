@@ -37,7 +37,8 @@
 		SimplifyAuditRecord,
 		RightPanelTab,
 		ChatHighlightSegment,
-		ContradictionScrollMarker
+		ContradictionScrollMarker,
+		ChatPreviewHoverState
 	} from '$lib/types/document';
 	import {
 		buildInspectorState,
@@ -72,6 +73,7 @@
 		CONTRADICTION_TAXONOMY_COLORS,
 		CONTRADICTION_TAXONOMY_ORDER,
 		CONTRADICTION_TAXONOMY_LABELS,
+		CONTRADICTION_CLAIM_SIDE_COLORS,
 		MODE_OPTIONS,
 		PROVIDER_OPTIONS,
 		QUICK_ACTIONS,
@@ -111,10 +113,24 @@
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Tabs from '$lib/components/ui/tabs/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 
 	const initialInspectorState = createEmptyInspectorState();
+	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<
+		Record<ContradictionTaxonomyType, string>
+	> = {
+		temporal: 'The claims conflict on timing, dates, or sequence of events.',
+		numerical: 'The claims conflict on numbers, amounts, percentages, or quantities.',
+		authority: 'The claims conflict on who has authority or who issues the statement.',
+		process: 'The claims conflict on operational steps, method, or procedure.',
+		policy_reversal:
+			'One claim allows or affirms something and the other directly prohibits or negates it.',
+		specificity: 'One claim is broader while the other is narrower in scope.',
+		other: 'The claims conflict, but not under the main taxonomy categories.'
+	};
 	const nodeEditStateById = new Map<string, ParagraphEditState>();
 	const paragraphElementById = new Map<string, HTMLElement>();
 	const paragraphRelationHostById = new Map<string, HTMLElement>();
@@ -165,6 +181,9 @@
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
+	let contradictionSummaryVisible = true;
+	let chatPreviewHover: ChatPreviewHoverState | null = null;
+	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
 
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
@@ -581,7 +600,13 @@
 		}
 		contradictionResultsByParagraphId = next;
 		contradictionSource = source;
+		contradictionSummaryVisible = true;
 		applyContradictionHighlights();
+	}
+
+	function setContradictionErrorMessage(message: string | null) {
+		contradictionError = message;
+		if (message) contradictionSummaryVisible = true;
 	}
 
 	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
@@ -613,17 +638,19 @@
 		isRightDrawerOpen = true;
 
 		if (!activeDocumentId) {
-			contradictionError = 'No document is loaded.';
+			setContradictionErrorMessage('No document is loaded.');
 			return;
 		}
 
 		contradictionLoading = true;
-		contradictionError = null;
+		setContradictionErrorMessage(null);
 		try {
 			const response = await fetchSavedContradictions(activeDocumentId);
 			setContradictionResults(response.paragraphResults ?? [], response.sourceFile);
 		} catch (savedError) {
-			contradictionError = getAxiosErrorMessage(savedError, 'Failed to load saved contradictions.');
+			setContradictionErrorMessage(
+				getAxiosErrorMessage(savedError, 'Failed to load saved contradictions.')
+			);
 		} finally {
 			contradictionLoading = false;
 		}
@@ -634,26 +661,27 @@
 		isRightDrawerOpen = true;
 
 		if (backendGraphLoading) {
-			contradictionError = 'Wait until graph generation finishes before searching contradictions.';
+			setContradictionErrorMessage(
+				'Wait until graph generation finishes before searching contradictions.'
+			);
 			return;
 		}
 
 		const payload = buildContradictionAnalysisPayload();
 		if (!payload) {
-			contradictionError = 'No paragraph context is available yet.';
+			setContradictionErrorMessage('No paragraph context is available yet.');
 			return;
 		}
 
 		contradictionLoading = true;
-		contradictionError = null;
+		setContradictionErrorMessage(null);
 		try {
 			const response = await fetchContradictionAnalysis(payload);
 			const resolvedModel = response.model?.trim() || payload.model || 'default';
 			setContradictionResults(response.paragraphResults ?? [], `llm:openai:${resolvedModel}`);
 		} catch (analysisError) {
-			contradictionError = getAxiosErrorMessage(
-				analysisError,
-				'Failed to search contradictions with LLM.'
+			setContradictionErrorMessage(
+				getAxiosErrorMessage(analysisError, 'Failed to search contradictions with LLM.')
 			);
 		} finally {
 			contradictionLoading = false;
@@ -1062,24 +1090,8 @@
 	): ChatHighlightSegment[] {
 		if (!analysis) return [];
 
-		const sourceText = (analysis.highlight_source_text || '').trim();
+		const sourceText = normalizeChatPreviewText(analysis.highlight_source_text || '');
 		if (!sourceText) return [];
-
-		type HighlightSpan = {
-			start: number;
-			end: number;
-			category: ContradictionTaxonomyType;
-			claimId?: string;
-			claimSide?: 'a' | 'b';
-			contradictionType?: ContradictionTaxonomyType;
-			contradictionWhy?: string;
-		};
-		type ClaimSpan = {
-			start: number;
-			end: number;
-			claimId: string;
-			claimSide: 'a' | 'b';
-		};
 
 		const textLower = sourceText.toLowerCase();
 		const contradictionById = new Map<
@@ -1093,40 +1105,108 @@
 		}
 		const singleContradiction =
 			analysis.contradictions.length === 1 ? analysis.contradictions[0] : null;
+		const singleContradictionId = singleContradiction
+			? toNonEmptyString(singleContradiction.id) || null
+			: null;
 
-		const claimSpans: ClaimSpan[] = [];
-		const pushClaimSpan = (claimId: string, claimSide: 'a' | 'b', rawClaimText: string) => {
-			const phrase = rawClaimText.trim();
-			if (phrase.length < 6) return;
+		type HighlightSpan = {
+			start: number;
+			end: number;
+			length: number;
+			category: ContradictionTaxonomyType;
+			claimId?: string;
+			claimSide?: 'a' | 'b';
+			contradictionType?: ContradictionTaxonomyType;
+			contradictionWhy?: string;
+		};
+		type SegmentMeta = Omit<ChatHighlightSegment, 'text'>;
+
+		function findPhraseRanges(phrase: string, maxMatches: number): Array<{ start: number; end: number }> {
+			if (!phrase) return [];
+			const ranges: Array<{ start: number; end: number }> = [];
 			const phraseLower = phrase.toLowerCase();
 			let fromIndex = 0;
-			let hitCount = 0;
-			while (fromIndex < textLower.length && hitCount < 1) {
+			while (fromIndex < textLower.length && ranges.length < maxMatches) {
 				const start = textLower.indexOf(phraseLower, fromIndex);
 				if (start < 0) break;
-				claimSpans.push({
-					start,
-					end: start + phrase.length,
-					claimId,
-					claimSide
-				});
-				fromIndex = start + phrase.length;
-				hitCount += 1;
+				ranges.push({ start, end: start + phrase.length });
+				fromIndex = start + Math.max(1, phrase.length);
 			}
+			return ranges;
+		}
+
+		const claimIdByChar = new Array<string | null>(sourceText.length).fill(null);
+		const claimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
+		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
+			null
+		);
+		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(null);
+		const highlightWhyByChar = new Array<string | null>(sourceText.length).fill(null);
+		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(Number.POSITIVE_INFINITY);
+		const highlightClaimIdByChar = new Array<string | null>(sourceText.length).fill(null);
+		const highlightClaimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
+
+		const assignClaimRange = (start: number, end: number, claimId: string, claimSide: 'a' | 'b') => {
+			const safeStart = Math.max(0, Math.min(sourceText.length, start));
+			const safeEnd = Math.max(0, Math.min(sourceText.length, end));
+			for (let index = safeStart; index < safeEnd; index += 1) {
+				if (!claimIdByChar[index]) claimIdByChar[index] = claimId;
+				if (!claimSideByChar[index]) claimSideByChar[index] = claimSide;
+			}
+		};
+
+		const assignHighlightRange = (span: HighlightSpan) => {
+			const safeStart = Math.max(0, Math.min(sourceText.length, span.start));
+			const safeEnd = Math.max(0, Math.min(sourceText.length, span.end));
+			for (let index = safeStart; index < safeEnd; index += 1) {
+				const currentSpanLength = highlightSpanLengthByChar[index];
+				const shouldReplace = span.length < currentSpanLength;
+				if (shouldReplace) {
+					highlightCategoryByChar[index] = span.category;
+					highlightTypeByChar[index] = span.contradictionType || null;
+					highlightWhyByChar[index] = span.contradictionWhy || null;
+					highlightClaimIdByChar[index] = span.claimId || null;
+					highlightClaimSideByChar[index] = span.claimSide || null;
+					highlightSpanLengthByChar[index] = span.length;
+				}
+				if (span.claimId && !claimIdByChar[index]) claimIdByChar[index] = span.claimId;
+				if (span.claimSide && !claimSideByChar[index]) claimSideByChar[index] = span.claimSide;
+			}
+		};
+
+		const claimTextToRanges = (rawClaimText: string): Array<{ start: number; end: number }> => {
+			const phrase = normalizeChatPreviewText(rawClaimText);
+			if (phrase.length < 6) return [];
+			const exact = findPhraseRanges(phrase, 2);
+			if (exact.length > 0) return exact;
+
+			// Fallback when LLM claim text has punctuation drift relative to source text.
+			const fragments = phrase
+				.split(/[,:;()]/)
+				.map((part) => part.trim())
+				.filter((part) => part.length >= Math.max(12, Math.floor(phrase.length * 0.35)))
+				.sort((left, right) => right.length - left.length);
+			for (const fragment of fragments.slice(0, 3)) {
+				const fragmentHits = findPhraseRanges(fragment, 2);
+				if (fragmentHits.length > 0) return fragmentHits;
+			}
+			return [];
 		};
 
 		for (const contradiction of analysis.contradictions) {
 			const claimId = toNonEmptyString(contradiction.id);
 			if (!claimId) continue;
-			pushClaimSpan(claimId, 'a', contradiction.claim_a.text || '');
-			pushClaimSpan(claimId, 'b', contradiction.claim_b.text || '');
+			for (const range of claimTextToRanges(contradiction.claim_a.text || '')) {
+				assignClaimRange(range.start, range.end, claimId, 'a');
+			}
+			for (const range of claimTextToRanges(contradiction.claim_b.text || '')) {
+				assignClaimRange(range.start, range.end, claimId, 'b');
+			}
 		}
 
-		const highlightSpans: HighlightSpan[] = [];
 		for (const highlight of analysis.highlights) {
-			const phrase = highlight.phrase.trim();
+			const phrase = normalizeChatPreviewText(highlight.phrase);
 			if (phrase.length < 2) continue;
-			const phraseLower = phrase.toLowerCase();
 			const rawClaimId = toNonEmptyString(highlight.claim_id);
 			const mappedContradiction = rawClaimId
 				? contradictionById.get(rawClaimId.toLowerCase())
@@ -1138,118 +1218,318 @@
 					: undefined;
 			const contradictionType = mappedContradiction?.contradiction_type;
 			const contradictionWhy = mappedContradiction?.why;
-
-			let fromIndex = 0;
-			let hitCount = 0;
-			while (fromIndex < textLower.length && hitCount < 3) {
-				const start = textLower.indexOf(phraseLower, fromIndex);
-				if (start < 0) break;
-				highlightSpans.push({
-					start,
-					end: start + phrase.length,
+			const phraseRanges = findPhraseRanges(phrase, 4);
+			for (const range of phraseRanges) {
+				assignHighlightRange({
+					start: range.start,
+					end: range.end,
+					length: range.end - range.start,
 					category: highlight.category,
 					claimId,
 					claimSide,
 					contradictionType,
 					contradictionWhy
 				});
-				fromIndex = start + phrase.length;
-				hitCount += 1;
 			}
 		}
 
-		if (highlightSpans.length === 0 && claimSpans.length === 0) {
+		for (let index = 0; index < sourceText.length; index += 1) {
+			if (!claimIdByChar[index]) {
+				if (claimSideByChar[index] && singleContradictionId) {
+					claimIdByChar[index] = singleContradictionId;
+				} else if (highlightClaimIdByChar[index]) {
+					claimIdByChar[index] = highlightClaimIdByChar[index];
+				} else if (highlightCategoryByChar[index] && singleContradictionId) {
+					claimIdByChar[index] = singleContradictionId;
+				}
+			}
+			if (!claimSideByChar[index] && highlightClaimSideByChar[index]) {
+				claimSideByChar[index] = highlightClaimSideByChar[index];
+			}
+		}
+
+		const hasMetadata = claimIdByChar.some(Boolean) || highlightCategoryByChar.some(Boolean);
+		if (!hasMetadata) {
 			return [{ text: sourceText, category: null, interactive: false }];
 		}
 
-		const boundaries = new Set<number>([0, sourceText.length]);
-		for (const span of highlightSpans) {
-			boundaries.add(Math.max(0, Math.min(sourceText.length, span.start)));
-			boundaries.add(Math.max(0, Math.min(sourceText.length, span.end)));
-		}
-		for (const span of claimSpans) {
-			boundaries.add(Math.max(0, Math.min(sourceText.length, span.start)));
-			boundaries.add(Math.max(0, Math.min(sourceText.length, span.end)));
-		}
-		const sortedBoundaries = Array.from(boundaries).sort((left, right) => left - right);
+		const getMetaForCharIndex = (index: number): SegmentMeta => {
+			const claimId = claimIdByChar[index] || undefined;
+			const claimSide = claimSideByChar[index] || undefined;
+			const category = highlightCategoryByChar[index];
+			const contradiction = claimId ? contradictionById.get(claimId.toLowerCase()) : undefined;
+			const contradictionType =
+				contradiction?.contradiction_type || highlightTypeByChar[index] || undefined;
+			const contradictionWhy = contradiction?.why || highlightWhyByChar[index] || undefined;
+			const interactive = Boolean(category || claimId || claimSide);
+			return {
+				category,
+				claimId,
+				claimSide,
+				contradictionType,
+				contradictionWhy,
+				interactive
+			};
+		};
+
+		const metaEquals = (left: SegmentMeta, right: SegmentMeta): boolean =>
+			left.category === right.category &&
+			left.claimId === right.claimId &&
+			left.claimSide === right.claimSide &&
+			left.contradictionType === right.contradictionType &&
+			left.contradictionWhy === right.contradictionWhy &&
+			left.interactive === right.interactive;
 
 		const segments: ChatHighlightSegment[] = [];
-		for (let index = 0; index < sortedBoundaries.length - 1; index += 1) {
-			const start = sortedBoundaries[index];
-			const end = sortedBoundaries[index + 1];
-			if (end <= start) continue;
-			const text = sourceText.slice(start, end);
-			if (!text) continue;
-
-			const claimSpan = claimSpans.find((span) => start >= span.start && end <= span.end);
-			const highlightSpan = highlightSpans
-				.filter((span) => start >= span.start && end <= span.end)
-				.sort((left, right) => {
-					const leftLen = left.end - left.start;
-					const rightLen = right.end - right.start;
-					return leftLen - rightLen;
-				})[0];
-
-			let claimId = highlightSpan?.claimId || claimSpan?.claimId;
-			if (!claimId) {
-				const overlapClaim = claimSpans.find((span) => start < span.end && end > span.start);
-				claimId = overlapClaim?.claimId;
-			}
-
-			const contradiction = claimId ? contradictionById.get(claimId.toLowerCase()) : undefined;
-			const nextSegment: ChatHighlightSegment = {
-				text,
-				category: highlightSpan?.category ?? null,
-				claimId,
-				claimSide: claimSpan?.claimSide || highlightSpan?.claimSide,
-				contradictionType: contradiction?.contradiction_type || highlightSpan?.contradictionType,
-				contradictionWhy: contradiction?.why || highlightSpan?.contradictionWhy,
-				interactive: Boolean(highlightSpan || claimSpan || claimId)
-			};
-
-			const previous = segments[segments.length - 1];
-			const canMerge =
-				previous &&
-				previous.category === nextSegment.category &&
-				previous.claimId === nextSegment.claimId &&
-				previous.claimSide === nextSegment.claimSide &&
-				previous.contradictionType === nextSegment.contradictionType &&
-				previous.contradictionWhy === nextSegment.contradictionWhy &&
-				previous.interactive === nextSegment.interactive;
-			if (canMerge) {
-				previous.text += nextSegment.text;
-			} else {
-				segments.push(nextSegment);
-			}
+		let segmentStart = 0;
+		let segmentMeta = getMetaForCharIndex(0);
+		for (let index = 1; index < sourceText.length; index += 1) {
+			const nextMeta = getMetaForCharIndex(index);
+			if (metaEquals(segmentMeta, nextMeta)) continue;
+			segments.push({
+				text: sourceText.slice(segmentStart, index),
+				...segmentMeta
+			});
+			segmentStart = index;
+			segmentMeta = nextMeta;
 		}
+		segments.push({
+			text: sourceText.slice(segmentStart),
+			...segmentMeta
+		});
 
 		return segments;
 	}
 
-	function resolveChatHighlightSegmentStyle(segment: ChatHighlightSegment): string {
+	function normalizeChatPreviewText(value: string): string {
+		return value
+			.replace(/\u00a0/g, ' ')
+			.replace(/\r\n?/g, '\n')
+			.replace(/[ \t]*\n+[ \t]*/g, ' ')
+			.replace(/[ \t]{2,}/g, ' ')
+			.trim();
+	}
+
+	type ChatHighlightTooltip = {
+		kind: 'claim' | 'highlight';
+		badgeText: string;
+		badgeStyle: string;
+		description?: string;
+	};
+	type ChatPreviewTab = 'contradiction' | 'claims';
+
+	function getChatPreviewTab(messageId: string): ChatPreviewTab {
+		return chatPreviewTabByMessageId[messageId] ?? 'contradiction';
+	}
+
+	function setChatPreviewTab(messageId: string, value: string) {
+		const nextTab: ChatPreviewTab = value === 'claims' ? 'claims' : 'contradiction';
+		if (getChatPreviewTab(messageId) === nextTab) return;
+		chatPreviewTabByMessageId = {
+			...chatPreviewTabByMessageId,
+			[messageId]: nextTab
+		};
+		if (nextTab !== 'contradiction') clearChatPreviewHover(messageId);
+	}
+
+	function getChatPreviewHover(messageId: string): ChatPreviewHoverState | null {
+		if (!chatPreviewHover) return null;
+		return chatPreviewHover.messageId === messageId ? chatPreviewHover : null;
+	}
+
+	function clearChatPreviewHover(messageId?: string) {
+		if (!chatPreviewHover) return;
+		if (messageId && chatPreviewHover.messageId !== messageId) return;
+		chatPreviewHover = null;
+	}
+
+	function handleChatPreviewSegmentMouseEnter(
+		messageId: string,
+		segment: ChatHighlightSegment,
+		segmentKey: string
+	) {
+		const contradictionId = toNonEmptyString(segment.claimId);
+		if (!contradictionId) {
+			clearChatPreviewHover(messageId);
+			return;
+		}
+
+		if (segment.claimSide) {
+			chatPreviewHover = {
+				messageId,
+				segmentKey,
+				contradictionId,
+				claimSide: segment.claimSide,
+				kind: 'claim'
+			};
+			return;
+		}
+
+		if (segment.category) {
+			chatPreviewHover = {
+				messageId,
+				segmentKey,
+				contradictionId,
+				claimSide: segment.claimSide ?? null,
+				kind: 'highlight'
+			};
+			return;
+		}
+	}
+
+	function isChatPreviewTooltipOpen(messageId: string, segmentKey: string): boolean {
+		const hover = getChatPreviewHover(messageId);
+		if (!hover) return false;
+		return hover.segmentKey === segmentKey;
+	}
+
+	function isHoveringContradiction(messageId: string, contradictionId?: string): boolean {
+		const hover = getChatPreviewHover(messageId);
+		if (!hover || !contradictionId) return false;
+		return hover.contradictionId.toLowerCase() === contradictionId.toLowerCase();
+	}
+
+	function resolveChatHighlightSegmentStyle(
+		segment: ChatHighlightSegment,
+		messageId: string
+	): string {
+		const hover = getChatPreviewHover(messageId);
+		const hoverMatchesContradiction = isHoveringContradiction(messageId, segment.claimId);
+
+		if (hover?.kind === 'claim' && hover.claimSide) {
+			const claimColor = CONTRADICTION_CLAIM_SIDE_COLORS[hover.claimSide];
+
+			if (segment.claimSide === hover.claimSide) {
+				return [
+					`background: ${claimColor}3a;`,
+					`border-bottom: 2px solid ${claimColor};`,
+					`box-shadow: 0 0 0 1px ${claimColor}70, 0 0 10px ${claimColor}3d;`
+				].join(' ');
+			}
+
+			if (!segment.claimSide && hoverMatchesContradiction) {
+				return [
+					`background: ${claimColor}36;`,
+					`border-bottom: 2px solid ${claimColor};`,
+					`box-shadow: inset 0 0 0 1px ${claimColor}55;`
+				].join(' ');
+			}
+
+			if (segment.category) {
+				return 'background: transparent; border-bottom: 1.5px solid transparent; box-shadow: none;';
+			}
+
+			return '';
+		}
+
+		if (hover?.kind === 'highlight' && hoverMatchesContradiction && segment.category) {
+			const contradictionType = segment.contradictionType || segment.category;
+			const color = CONTRADICTION_TAXONOMY_COLORS[contradictionType];
+			return [
+				`background: ${color}3a;`,
+				`border-bottom: 2px solid ${color};`,
+				`box-shadow: 0 0 0 1px ${color}70, 0 0 12px ${color}55;`
+			].join(' ');
+		}
+
 		if (segment.category) {
 			const color = CONTRADICTION_TAXONOMY_COLORS[segment.category];
 			return `background: ${color}22; border-bottom: 1.5px solid ${color};`;
 		}
+
 		return '';
 	}
 
-	function resolveChatHighlightSegmentTooltip(segment: ChatHighlightSegment): string | undefined {
-		if (segment.category && segment.claimId) {
-			const typeLabel =
-				CONTRADICTION_TAXONOMY_LABELS[segment.contradictionType || segment.category];
-			const header = `${segment.claimId.toUpperCase()} · ${typeLabel}`;
-			if (segment.contradictionWhy) {
-				return `${header}\n${segment.contradictionWhy}`;
-			}
-			return header;
+	function resolveChatClaimSegmentStyle(segment: ChatHighlightSegment): string {
+		if (!segment.claimSide) return '';
+		const color = CONTRADICTION_CLAIM_SIDE_COLORS[segment.claimSide];
+		return [
+			`background: ${color}26;`,
+			`border-bottom: 1.5px solid ${color};`,
+			`box-shadow: inset 0 0 0 1px ${color}45;`
+		].join(' ');
+	}
+
+	function resolveChatHighlightSegmentTooltip(segment: ChatHighlightSegment): ChatHighlightTooltip | null {
+		if (segment.category) {
+			const contradictionType = segment.contradictionType || segment.category;
+			const color = CONTRADICTION_TAXONOMY_COLORS[contradictionType];
+			const typeLabel = CONTRADICTION_TAXONOMY_LABELS[contradictionType];
+			return {
+				kind: 'highlight',
+				badgeText: typeLabel,
+				badgeStyle: `border-color: ${color}55; background: ${color}1f; color: ${color};`,
+				description:
+					segment.contradictionWhy || CONTRADICTION_TAXONOMY_DESCRIPTIONS[contradictionType]
+			};
 		}
+
 		if (segment.claimSide) {
 			const claimLabel = segment.claimSide === 'a' ? 'Claim A' : 'Claim B';
-			return segment.claimId ? `${claimLabel} (${segment.claimId.toUpperCase()})` : claimLabel;
+			const color = CONTRADICTION_CLAIM_SIDE_COLORS[segment.claimSide];
+			return {
+				kind: 'claim',
+				badgeText: claimLabel,
+				badgeStyle: `border-color: ${color}55; background: ${color}1f; color: ${color};`,
+			};
 		}
-		if (segment.category) return CONTRADICTION_TAXONOMY_LABELS[segment.category];
-		return undefined;
+
+		return null;
+	}
+
+	function sanitizeSuggestedQuestions(value: unknown): string[] {
+		if (!Array.isArray(value)) return [];
+		const cleaned = value
+			.map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
+			.filter((entry) => entry.length > 0);
+		return Array.from(new Set(cleaned)).slice(0, 4);
+	}
+
+	function getFallbackSuggestedQuestions(options?: {
+		mode?: AssistantMode;
+		scope?: AssistantScope;
+		contradiction?: boolean;
+	}): string[] {
+		if (options?.contradiction) {
+			return [
+				'How can I rewrite this paragraph to remove the contradiction?',
+				'Which claim is riskier to keep and why?',
+				'Show a safer clause version preserving business intent.'
+			];
+		}
+		if (options?.mode === 'quote') {
+			return [
+				'Can you show the exact sentence that supports your answer?',
+				'What is the key obligation in this paragraph?',
+				'What term could create legal risk here?'
+			];
+		}
+		if (options?.scope === 'full_contract') {
+			return [
+				'What are the most important risks in this contract?',
+				'Which clauses should we renegotiate first?',
+				'Where do obligations conflict across sections?'
+			];
+		}
+		return [
+			'Can you simplify this paragraph in plain English?',
+			'What happens if this clause is breached?',
+			'Which related clause should I read next?'
+		];
+	}
+
+	function resolveAssistantSuggestedQuestions(
+		value: unknown,
+		options?: {
+			mode?: AssistantMode;
+			scope?: AssistantScope;
+			contradiction?: boolean;
+		}
+	): string[] | undefined {
+		const normalized = sanitizeSuggestedQuestions(value);
+		if (normalized.length > 0) return normalized;
+		const fallback = getFallbackSuggestedQuestions(options);
+		return fallback.length > 0 ? fallback : undefined;
 	}
 
 	async function scrollAssistantToBottom() {
@@ -1329,7 +1609,10 @@
 					role: 'assistant',
 					content: response.answer,
 					citations: response.citations,
-					suggestedQuestions: response.suggestedQuestions
+					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
+						mode: resolvedMode,
+						scope: resolvedScope
+					})
 				}
 			];
 		} catch (assistantRequestError) {
@@ -1399,7 +1682,11 @@
 					role: 'assistant',
 					content: structured?.overall_summary?.trim() || response.answer,
 					citations: response.citations,
-					suggestedQuestions: response.suggestedQuestions,
+					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
+						mode: 'explain',
+						scope: 'selected',
+						contradiction: true
+					}),
 					structuredContradiction: structured ?? undefined
 				}
 			];
@@ -2621,15 +2908,6 @@
 				</div>
 			</div>
 			<div class="flex items-center gap-1.5">
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={() => void loadSavedContradictions()}
-					disabled={!activeDocumentId || contradictionLoading || $loading}
-					class="h-7 border-amber-200 bg-amber-50 px-2.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
-				>
-					Saved Contradictions
-				</Button>
 				<Select.Root
 					type="single"
 					bind:value={contradictionModel}
@@ -2651,6 +2929,15 @@
 					</Select.Content>
 				</Select.Root>
 				<Button
+					variant="outline"
+					size="sm"
+					onclick={() => void loadSavedContradictions()}
+					disabled={!activeDocumentId || contradictionLoading || $loading}
+					class="h-7 border-amber-200 bg-amber-50 px-2.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
+				>
+					Saved Contradictions
+				</Button>
+				<Button
 					variant="destructive"
 					size="sm"
 					onclick={() => void searchContradictionsWithLlm()}
@@ -2662,19 +2949,29 @@
 			</div>
 		</header>
 
-		{#if contradictionError || contradictionResultsByParagraphId.size > 0}
-			<Card.Root size="sm" class="mx-4 mt-2 border-gray-200 py-0 text-[11px]">
-				<Card.Content class="px-3 py-2 text-gray-600">
-					{#if contradictionError}
-						<p class="text-red-700">{contradictionError}</p>
-					{:else}
-						<p>
-							{contradictionCount} paragraph(s) with highlighted contradiction(s).
-							{#if contradictionSource}
-								<span class="text-gray-500"> Source: {contradictionSource}</span>
-							{/if}
-						</p>
-					{/if}
+		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
+			<Card.Root size="sm" class="mx-4 mt-2 border-gray-200 py-0 text-[10px]">
+				<Card.Content class="px-2.5 py-1.5 text-gray-600">
+					<div class="flex items-start justify-between gap-2">
+						{#if contradictionError}
+							<p class="min-w-0 leading-snug text-red-700">{contradictionError}</p>
+						{:else}
+							<p class="min-w-0 leading-snug">
+								{contradictionCount} paragraph(s) with highlighted contradiction(s).
+								{#if contradictionSource}
+									<span class="text-gray-500"> Source: {contradictionSource}</span>
+								{/if}
+							</p>
+						{/if}
+						<button
+							type="button"
+							class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
+							aria-label="Close contradiction summary"
+							on:click={() => (contradictionSummaryVisible = false)}
+						>
+							<CloseIcon className="h-3 w-3" />
+						</button>
+					</div>
 				</Card.Content>
 			</Card.Root>
 		{/if}
@@ -3303,102 +3600,187 @@
 											<p class="whitespace-pre-wrap">{message.content}</p>
 
 											{#if message.structuredContradiction.highlight_source_text?.trim()}
-												<div class="rounded border border-gray-200 bg-gray-50 px-2 py-2">
-													<p class="mb-1 text-[9px] font-semibold text-gray-500">
-														KG highlight preview
-													</p>
-													<p class="leading-relaxed text-gray-700">
-														{#each buildChatHighlightSegments(message.structuredContradiction) as segment}
-															{#if segment.interactive}
-																<span
-																	class="inline rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left text-inherit"
-																	style={resolveChatHighlightSegmentStyle(segment)}
-																	title={resolveChatHighlightSegmentTooltip(segment)}
-																>
-																	{segment.text}
-																</span>
-															{:else}
-																<span>{segment.text}</span>
-															{/if}
-														{/each}
-													</p>
+												{@const chatSegments = buildChatHighlightSegments(
+													message.structuredContradiction
+												)}
+												<div
+													class="rounded-xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/65 to-sky-50/35 px-2.5 py-2.5 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)]"
+												>
+													<Tabs.Root
+														value={getChatPreviewTab(message.id)}
+														onValueChange={(value) => setChatPreviewTab(message.id, value)}
+														class="gap-1.5"
+													>
+														<Tabs.List class="h-6 w-full border border-gray-200 bg-white p-[2px]">
+															<Tabs.Trigger value="contradiction" class="text-[9px] font-semibold">
+																Contradiction
+															</Tabs.Trigger>
+															<Tabs.Trigger value="claims" class="text-[9px] font-semibold">
+																Claims
+															</Tabs.Trigger>
+														</Tabs.List>
 
-													<div class="mt-2 flex flex-wrap gap-2">
-														{#each CONTRADICTION_TAXONOMY_ORDER as category}
-															<Badge
-																variant="outline"
-																class="h-4 items-center gap-1 border-gray-200 bg-white px-1.5 text-[9px] text-gray-600"
+														<Tabs.Content value="contradiction" class="text-[11px]">
+															<p
+																class="break-words whitespace-normal leading-relaxed text-gray-700"
+																on:mouseleave={() => clearChatPreviewHover(message.id)}
 															>
-																<span
-																	class="inline-flex h-2 w-2 rounded-full"
-																	style={`background: ${CONTRADICTION_TAXONOMY_COLORS[category]};`}
-																></span>
-																{CONTRADICTION_TAXONOMY_LABELS[category]}
-															</Badge>
-														{/each}
-													</div>
-												</div>
-											{/if}
+																{#each chatSegments as segment, segmentIndex}
+																	{#if segment.interactive}
+																		{@const tooltipData = resolveChatHighlightSegmentTooltip(segment)}
+																		{@const segmentKey = `${message.id}:${segmentIndex}`}
+																		{#if tooltipData}
+																			<Tooltip.Root
+																				open={isChatPreviewTooltipOpen(message.id, segmentKey)}
+																				onOpenChange={(open) => {
+																					if (open) {
+																						handleChatPreviewSegmentMouseEnter(
+																							message.id,
+																							segment,
+																							segmentKey
+																						);
+																						return;
+																					}
+																					if (isChatPreviewTooltipOpen(message.id, segmentKey)) {
+																						clearChatPreviewHover(message.id);
+																					}
+																				}}
+																			>
+																				<Tooltip.Trigger>
+																					{#snippet child({ props })}
+																						<span
+																							{...props}
+																							class="inline bg-transparent p-0 text-left align-baseline leading-[inherit] whitespace-normal text-inherit transition-[background-color,border-color,box-shadow,color] duration-150 ease-out hover:cursor-help focus-visible:outline-none"
+																							on:mouseenter={() =>
+																								handleChatPreviewSegmentMouseEnter(
+																									message.id,
+																									segment,
+																									segmentKey
+																								)}
+																							on:mouseleave={() => clearChatPreviewHover(message.id)}
+																							on:focus={() =>
+																								handleChatPreviewSegmentMouseEnter(
+																									message.id,
+																									segment,
+																									segmentKey
+																								)}
+																							on:blur={() => clearChatPreviewHover(message.id)}
+																						>
+																							<span
+																								class="inline rounded-[3px] px-[2px] py-[1px]"
+																								style={resolveChatHighlightSegmentStyle(segment, message.id)}
+																							>
+																								{segment.text}
+																							</span>
+																						</span>
+																					{/snippet}
+																				</Tooltip.Trigger>
+																				<Tooltip.Content
+																					side="top"
+																					sideOffset={6}
+																					class="max-w-[290px] border border-gray-200 bg-white px-2 py-1.5 text-gray-700 shadow-md"
+																				>
+																					<div class="space-y-1">
+																						<Badge
+																							variant="outline"
+																							class="h-4 px-1.5 text-[9px] font-semibold"
+																							style={tooltipData.badgeStyle}
+																						>
+																							{tooltipData.badgeText}
+																						</Badge>
+																						{#if tooltipData.description}
+																							<p class="text-[9px] leading-relaxed text-gray-600">
+																								{tooltipData.description}
+																							</p>
+																						{/if}
+																					</div>
+																				</Tooltip.Content>
+																			</Tooltip.Root>
+																		{:else}
+																			<button
+																				type="button"
+																				class="inline appearance-none rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left align-baseline leading-[inherit] whitespace-normal text-inherit"
+																				style={resolveChatHighlightSegmentStyle(segment, message.id)}
+																				on:mouseenter={() =>
+																					handleChatPreviewSegmentMouseEnter(
+																						message.id,
+																						segment,
+																						segmentKey
+																					)}
+																				on:mouseleave={() => clearChatPreviewHover(message.id)}
+																			>
+																				{segment.text}
+																			</button>
+																		{/if}
+																	{:else}
+																		<span>{segment.text}</span>
+																	{/if}
+																{/each}
+															</p>
 
-											{#if message.structuredContradiction.contradictions.length > 0}
-												<div class="space-y-1.5">
-													{#each message.structuredContradiction.contradictions as contradictionItem}
-														<Card.Root size="sm" class="border-red-200 bg-red-50/55 py-0">
-															<Card.Content class="px-2 py-2">
-																<div class="mb-1 flex items-center justify-between gap-2">
-																	<p class="text-[9px] font-semibold text-red-700">
-																		{contradictionItem.id} · {CONTRADICTION_TAXONOMY_LABELS[
-																			contradictionItem.contradiction_type
-																		]}
-																	</p>
-																	{#if Number.isFinite(contradictionItem.confidence)}
-																		<p class="text-[9px] font-bold text-red-700">
-																			{Math.round(contradictionItem.confidence)}%
-																		</p>
+															<div class="mt-2 flex flex-wrap gap-2">
+																{#each CONTRADICTION_TAXONOMY_ORDER as category}
+																	<Badge
+																		variant="outline"
+																		class="h-4 items-center gap-1 border-gray-200 bg-white px-1.5 text-[9px] text-gray-600"
+																	>
+																		<span
+																			class="inline-flex h-2 w-2 rounded-full"
+																			style={`background: ${CONTRADICTION_TAXONOMY_COLORS[category]};`}
+																		></span>
+																		{CONTRADICTION_TAXONOMY_LABELS[category]}
+																	</Badge>
+																{/each}
+															</div>
+														</Tabs.Content>
+
+														<Tabs.Content value="claims" class="text-[11px]">
+															<p class="break-words whitespace-normal leading-relaxed text-gray-700">
+																{#each chatSegments as segment}
+																	{#if segment.claimSide}
+																		<span
+																			class="inline rounded-[3px] px-[2px] py-[1px]"
+																			style={resolveChatClaimSegmentStyle(segment)}
+																		>
+																			{segment.text}
+																		</span>
+																	{:else}
+																		<span>{segment.text}</span>
 																	{/if}
-																</div>
-																<div class="mt-1 space-y-1 text-[10px] text-red-900">
-																	<p>{contradictionItem.why || 'No explanation returned.'}</p>
-																	<p>
-																		<span class="font-bold">Claim A:</span>
-																		{contradictionItem.claim_a.text || '(missing)'}
-																	</p>
-																	<p>
-																		<span class="font-bold">Claim B:</span>
-																		{contradictionItem.claim_b.text || '(missing)'}
-																	</p>
-																	{#if contradictionItem.conflicting_fields.length > 0}
-																		<p class="text-[9px] text-red-700">
-																			Conflict fields: {contradictionItem.conflicting_fields.join(
-																				', '
-																			)}
-																		</p>
-																	{/if}
-																</div>
-															</Card.Content>
-														</Card.Root>
-													{/each}
+																{/each}
+															</p>
+
+															<div class="mt-2 flex flex-wrap gap-1.5">
+																<Badge
+																	variant="outline"
+																	class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+																	style={`border-color: ${CONTRADICTION_CLAIM_SIDE_COLORS.a}55; background: ${CONTRADICTION_CLAIM_SIDE_COLORS.a}14; color: ${CONTRADICTION_CLAIM_SIDE_COLORS.a};`}
+																>
+																	<span
+																		class="inline-flex h-2 w-2 rounded-full"
+																		style={`background: ${CONTRADICTION_CLAIM_SIDE_COLORS.a};`}
+																	></span>
+																	Claim A
+																</Badge>
+																<Badge
+																	variant="outline"
+																	class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+																	style={`border-color: ${CONTRADICTION_CLAIM_SIDE_COLORS.b}55; background: ${CONTRADICTION_CLAIM_SIDE_COLORS.b}14; color: ${CONTRADICTION_CLAIM_SIDE_COLORS.b};`}
+																>
+																	<span
+																		class="inline-flex h-2 w-2 rounded-full"
+																		style={`background: ${CONTRADICTION_CLAIM_SIDE_COLORS.b};`}
+																	></span>
+																	Claim B
+																</Badge>
+															</div>
+														</Tabs.Content>
+													</Tabs.Root>
 												</div>
 											{/if}
 										</div>
 									{:else}
 										<p class="whitespace-pre-wrap">{message.content}</p>
-									{/if}
-
-									{#if message.citations?.length}
-										<div class="mt-2 flex flex-wrap gap-1">
-											{#each message.citations as citation}
-												<Button
-													variant="outline"
-													size="xs"
-													class="h-5 border-amber-200 bg-amber-50 px-1.5 text-[9px] font-bold text-amber-700 hover:border-amber-300"
-													title={citation.excerpt}
-													onclick={() => focusNodeFromPanel(citation.id, true)}
-												>
-													{citation.id}
-												</Button>
-											{/each}
-										</div>
 									{/if}
 
 									{#if message.suggestedQuestions?.length}
@@ -3416,6 +3798,22 @@
 													</Button>
 												{/each}
 											</div>
+										</div>
+									{/if}
+
+									{#if message.citations?.length}
+										<div class="mt-2 flex flex-wrap gap-1">
+											{#each message.citations as citation}
+												<Button
+													variant="outline"
+													size="xs"
+													class="h-5 border-amber-200 bg-amber-50 px-1.5 text-[9px] font-bold text-amber-700 hover:border-amber-300"
+													title={citation.excerpt}
+													onclick={() => focusNodeFromPanel(citation.id, true)}
+												>
+													{citation.id}
+												</Button>
+											{/each}
 										</div>
 									{/if}
 								</div>

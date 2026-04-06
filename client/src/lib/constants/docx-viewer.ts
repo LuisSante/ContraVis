@@ -35,6 +35,11 @@ export const PROVIDER_OPTIONS: ReadonlyArray<{ value: AssistantProvider; label: 
 
 export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 	{ value: 'gpt-4.1', label: 'gpt-4.1' },
+	{ value: 'gpt-5', label: 'gpt-5' },
+	{ value: 'gpt-5-mini', label: 'gpt-5-mini' },
+	{ value: 'gpt-5-nano', label: 'gpt-5-nano' },
+	{ value: 'gpt-5.1', label: 'gpt-5.1' }
+
 ];
 
 export const COMMIT_SHORTCUT_LABEL = 'CTRL + SHIFT + ENTER';

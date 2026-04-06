@@ -340,8 +340,9 @@ export type RightPanelTab =
 	| 'assistant';
 
 export type ChatPreviewHoverState = {
-		messageId: string;
-		contradictionId: string;
-		claimSide: 'a' | 'b' | null;
-		kind: 'claim' | 'highlight';
-	};
+	messageId: string;
+	segmentKey: string;
+	contradictionId: string;
+	claimSide: 'a' | 'b' | null;
+	kind: 'claim' | 'highlight';
+};
