@@ -72,9 +72,9 @@ export function buildTargetFromSelectionRange(options: {
 	const originalSnippet = paragraphText.slice(bounds.start, bounds.end);
 	if (!originalSnippet) return null;
 
-	const rawRect = range.getBoundingClientRect();
-	const anchorRect =
-		rawRect.width > 0 || rawRect.height > 0 ? rawRect : startElement.getBoundingClientRect();
+	// Keep the tools anchored to the paragraph block so the toolbar stays stable
+	// while the user changes text selection inside the same paragraph.
+	const anchorRect = startElement.getBoundingClientRect();
 
 	return {
 		paragraphId,
@@ -92,9 +92,9 @@ export function computeSimplifyToolbarPosition(
 	viewportHeight: number
 ) {
 	const toolbarWidth = 208;
-	const estimatedToolbarHeight = 172;
+	const estimatedToolbarHeight = 150;
 	const margin = 12;
-	const gap = -15;
+	const gap = 10;
 
 	const left = Math.max(
 		margin,
