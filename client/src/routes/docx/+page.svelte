@@ -1992,7 +1992,7 @@
 
 		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
 			<Card.Root size="sm" class="mx-4 mt-2 border-gray-200 py-0 text-[10px]">
-				<Card.Content class="px-2.5 py-1.5 text-gray-600">
+				<Card.Content class="px-2.5 text-gray-600">
 					<div class="flex items-start justify-between gap-2">
 						{#if contradictionError}
 							<p class="min-w-0 leading-snug text-red-700">{contradictionError}</p>

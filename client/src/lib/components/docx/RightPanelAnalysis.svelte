@@ -109,7 +109,7 @@
 								</div>
 								<Button
 									variant="ghost"
-									class="h-auto w-full justify-start px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
 									onclick={() =>
 										selectedContradictionResult &&
 										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
@@ -130,7 +130,7 @@
 								</div>
 								<Button
 									variant="ghost"
-									class="h-auto w-full justify-start px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
 									onclick={() =>
 										selectedContradictionResult &&
 										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}

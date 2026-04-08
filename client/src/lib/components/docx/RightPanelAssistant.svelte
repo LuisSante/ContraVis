@@ -473,7 +473,7 @@
 		}
 
 		if (segment.claimSide) {
-			const claimLabel = segment.claimSide === 'a' ? 'Claim A' : 'Claim B';
+			const claimLabel = segment.claimSide === 'a' ? 'Snippet A' : 'Snippet B';
 			const color = contradictionClaimSideColors[segment.claimSide];
 			return {
 				kind: 'claim',
@@ -599,7 +599,7 @@
 													Contradiction
 												</Tabs.Trigger>
 												<Tabs.Trigger value="claims" class="text-[9px] font-semibold">
-													Claims
+													Snippet
 												</Tabs.Trigger>
 											</Tabs.List>
 
@@ -743,7 +743,7 @@
 															class="inline-flex h-2 w-2 rounded-full"
 															style={`background: ${contradictionClaimSideColors.a};`}
 														></span>
-														Claim A
+														Snippet A
 													</Badge>
 													<Badge
 														variant="outline"
@@ -754,7 +754,7 @@
 															class="inline-flex h-2 w-2 rounded-full"
 															style={`background: ${contradictionClaimSideColors.b};`}
 														></span>
-														Claim B
+														Snippet B
 													</Badge>
 												</div>
 											</Tabs.Content>

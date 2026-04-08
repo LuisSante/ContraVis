@@ -416,7 +416,7 @@ function getFallbackSuggestedQuestions(options?: ResolveSuggestedQuestionsOption
 	if (options?.contradiction) {
 		return [
 			'How can I rewrite this paragraph to remove the contradiction?',
-			'Which claim is riskier to keep and why?',
+			'Which snippet is riskier to keep and why?',
 			'Show a safer clause version preserving business intent.'
 		];
 	}
