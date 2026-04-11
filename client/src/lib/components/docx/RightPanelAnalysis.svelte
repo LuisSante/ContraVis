@@ -112,20 +112,20 @@
 					<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
 				</div>
 			{:else}
-				<Card.Root size="sm" class="border-red-200 bg-red-50/65 py-0 text-[11px]">
-					<Card.Content class="px-3 py-2 text-red-800">
-						<p>
-							Confidence: {selectedContradictionResult.confidence}% · {selectedContradictionResult.brief_reason}
-						</p>
-					</Card.Content>
-				</Card.Root>
-
 				{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
 					<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
 						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
 							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 						</div>
 						<div class="space-y-2 p-2.5">
+							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+								<div class="mb-1 flex items-center justify-between">
+									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
+								</div>
+								<p class="text-[10px] leading-relaxed text-red-800">
+									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+								</p>
+							</div>
 							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
 								<div class="mb-1 flex items-center justify-between">
 									<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
@@ -138,7 +138,7 @@
 								</div>
 								<Button
 									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
 									onclick={() =>
 										selectedContradictionResult &&
 										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
@@ -159,7 +159,7 @@
 								</div>
 								<Button
 									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
 									onclick={() =>
 										selectedContradictionResult &&
 										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
@@ -170,11 +170,26 @@
 						</div>
 					</div>
 				{:else}
-					<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-						<Card.Content class="px-3 py-2 text-gray-600">
-							Evidence snippets are unavailable for this contradiction.
-						</Card.Content>
-					</Card.Root>
+					<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+						</div>
+						<div class="space-y-2 p-2.5">
+							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+								<div class="mb-1 flex items-center justify-between">
+									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
+								</div>
+								<p class="text-[10px] leading-relaxed text-red-800">
+									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+								</p>
+							</div>
+							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+								<Card.Content class="px-3 py-2 text-gray-600">
+									Evidence snippets are unavailable for this contradiction.
+								</Card.Content>
+							</Card.Root>
+						</div>
+					</div>
 				{/if}
 			{/if}
 		</div>

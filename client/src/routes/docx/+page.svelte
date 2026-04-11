@@ -1937,7 +1937,11 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	});
 </script>
 
-<main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans">
+<main
+	class={`relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans ${
+		activeRightPanelTab === 'related' ? 'related-badges-on' : 'related-badges-off'
+	}`}
+>
 	<div
 		class="relative flex min-w-0 flex-col border-r border-gray-300"
 		style={isCompactLayout
@@ -1945,53 +1949,13 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 			: `width: calc(100% - ${activeSidebarWidth + activeDrawerWidth}px);`}
 	>
 		<header
-			class="flex flex-none items-center justify-between gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
+			class="flex flex-none items-center gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
 		>
 			<div class="min-w-0">
 				<p class="text-[11px] text-gray-500">Document</p>
 				<div class="truncate text-sm font-medium text-gray-800">
 					{activeDocumentName || 'No document selected'}
 				</div>
-			</div>
-			<div class="flex items-center gap-1.5">
-				<Select.Root
-					type="single"
-					bind:value={contradictionModel}
-					disabled={contradictionLoading || $loading || backendGraphLoading}
-				>
-					<Select.Trigger
-						size="sm"
-						class="h-7 w-[170px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
-						title="Realtime contradiction model"
-					>
-						{contradictionModelLabel}
-					</Select.Trigger>
-					<Select.Content>
-						{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
-							<Select.Item value={option.value} label={option.label} class="text-[10px]">
-								{option.label}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={() => void loadSavedContradictions()}
-					disabled={!activeDocumentId || contradictionLoading || $loading}
-					class="h-7 border-amber-200 bg-amber-50 px-2.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
-				>
-					Saved Contradictions
-				</Button>
-				<Button
-					variant="destructive"
-					size="sm"
-					onclick={() => void searchContradictionsWithLlm()}
-					disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
-					class="h-7 border-red-200 bg-red-50 px-2.5 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
-				>
-					Search contradictions
-				</Button>
 			</div>
 		</header>
 
@@ -2094,38 +2058,86 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 			: `right: ${activeSidebarWidth}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${activeSidebarWidth}px;`}
 	>
 		<header
-			class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5"
+			class={`flex justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5 ${
+				activeRightPanelTab === 'analysis' ? 'items-start' : 'items-center'
+			}`}
 		>
 			<div class="min-w-0">
-				<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
-					<span class="shrink-0 text-blue-700">
-						{#if activeRightPanelTab === 'related'}
-							<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'analysis'}
-							<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'redundancy'}
-							<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'summarize'}
-							<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'ambiguity'}
-							<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'revisions'}
-							<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else}
-							<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
-						{/if}
-					</span>
-					<span>
-						{toTitleCaseLabel(
-							RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
-						)}
-					</span>
-				</h2>
+				<div class="flex flex-wrap items-center gap-2">
+					<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
+						<span class="shrink-0 text-blue-700">
+							{#if activeRightPanelTab === 'related'}
+								<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'analysis'}
+								<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'redundancy'}
+								<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'summarize'}
+								<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'ambiguity'}
+								<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'revisions'}
+								<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else}
+								<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
+							{/if}
+						</span>
+						<span>
+							{toTitleCaseLabel(
+								RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
+							)}
+						</span>
+					</h2>
+					{#if activeRightPanelTab === 'analysis'}
+						<div class="flex items-center gap-1">
+							<Select.Root
+								type="single"
+								bind:value={contradictionModel}
+								disabled={contradictionLoading || $loading || backendGraphLoading}
+							>
+								<Select.Trigger
+									size="sm"
+									class="h-7 w-[140px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+									title="Realtime contradiction model"
+								>
+									{contradictionModelLabel}
+								</Select.Trigger>
+								<Select.Content>
+									{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
+										<Select.Item value={option.value} label={option.label} class="text-[10px]">
+											{option.label}
+										</Select.Item>
+									{/each}
+								</Select.Content>
+							</Select.Root>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => void loadSavedContradictions()}
+								disabled={!activeDocumentId || contradictionLoading || $loading}
+								class="h-7 w-[140px] justify-center border-amber-200 bg-amber-50 px-1.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
+							>
+								Saved Contradictions
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onclick={() => void searchContradictionsWithLlm()}
+								disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
+								class="h-7 w-[140px] justify-center border-red-200 bg-red-50 px-1.5 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
+							>
+								Search contradictions
+							</Button>
+						</div>
+					{/if}
+				</div>
 			</div>
 			<Button
 				variant="outline"
 				size="icon-sm"
-				class="h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
+				class={`h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+					activeRightPanelTab === 'analysis' ? 'mt-0.5 self-start' : ''
+				}`}
 				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
@@ -2386,6 +2398,11 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		border-color: #93c5fd;
 		background: #dbeafe;
 		color: #1d4ed8;
+	}
+
+	:global(.related-badges-off .docx-relations-badge-host)::before,
+	:global(.related-badges-off .docx-relations-badge-host)::after {
+		display: none;
 	}
 
 	:global(.docx-citation-flash) {
