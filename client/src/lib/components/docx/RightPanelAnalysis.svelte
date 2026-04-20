@@ -147,19 +147,19 @@
 								</Button>
 							</div>
 
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+							<div class="rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
 								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Snippet B</span>
+									<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
 									<Badge
 										variant="outline"
-										class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
+										class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
 									>
 										{selectedContradictionEvidence.source_b}
 									</Badge>
 								</div>
 								<Button
 									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
+									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] rounded border border-yellow-300 bg-yellow-100/80 px-1 py-0.5 text-left text-[11px] leading-relaxed text-yellow-900 hover:bg-yellow-100 hover:text-yellow-900"
 									onclick={() =>
 										selectedContradictionResult &&
 										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}

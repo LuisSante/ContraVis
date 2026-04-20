@@ -168,6 +168,17 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	let contradictionModel = 'gpt-4.1';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
+	let selectedContradictionEvidenceLink:
+		| {
+				topPx: number;
+				bottomPx: number;
+				leftPx: number;
+				showA: boolean;
+				showB: boolean;
+				aCenterPx: number;
+				bCenterPx: number;
+		  }
+		| null = null;
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
@@ -180,6 +191,8 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	let isCompactLayout = false;
 	let rightDrawerWidth = RIGHT_DRAWER_DEFAULT_WIDTH;
 	let isResizingRightDrawer = false;
+	$: shouldShowContradictionDecorations =
+		activeRightPanelTab === 'analysis' && isRightDrawerOpen;
 	$: activeDrawerWidth = !isCompactLayout && isRightDrawerOpen ? rightDrawerWidth : 0;
 	$: activeSidebarWidth = sidebarLabelsPinned
 		? RIGHT_TOOLBAR_EXPANDED_WIDTH
@@ -234,6 +247,15 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	$: assistantScopeLabel =
 		SCOPE_OPTIONS.find((option) => option.value === assistantScope)?.label ?? 'Scope';
 	$: quickActionLabel = selectedQuickAction || 'Quick action';
+	$: {
+		if (shouldShowContradictionDecorations) {
+			applyContradictionHighlights();
+		} else {
+			clearContradictionHighlights();
+			contradictionScrollMarkers = [];
+			selectedContradictionEvidenceLink = null;
+		}
+	}
 
 	function toTitleCaseLabel(label: string): string {
 		return label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
@@ -458,6 +480,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	}
 
 	function clearContradictionHighlights() {
+		selectedContradictionEvidenceLink = null;
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
 			clearSnippetMarks(element);
@@ -479,6 +502,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	function refreshContradictionScrollMarkers() {
 		if (!documentScrollHost || contradictionResultsByParagraphId.size === 0) {
 			contradictionScrollMarkers = [];
+			selectedContradictionEvidenceLink = null;
 			return;
 		}
 
@@ -486,6 +510,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		const hostScrollHeight = documentScrollHost.scrollHeight;
 		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
 			contradictionScrollMarkers = [];
+			selectedContradictionEvidenceLink = null;
 			return;
 		}
 
@@ -512,6 +537,57 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 
 		nextMarkers.sort((left, right) => left.topPercent - right.topPercent);
 		contradictionScrollMarkers = nextMarkers;
+
+		const selected = get(selectedParagraph);
+		if (!selected?.id || !contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
+			selectedContradictionEvidenceLink = null;
+			return;
+		}
+
+		let markA: HTMLElement | null = null;
+		let markB: HTMLElement | null = null;
+		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		for (const mark of allMarks) {
+			if (mark.dataset.contradictionOwner !== selected.id) continue;
+			if (!markA && mark.dataset.contradictionRole === 'a') {
+				markA = mark;
+			}
+			if (!markB && mark.dataset.contradictionRole === 'b') {
+				markB = mark;
+			}
+			if (markA && markB) break;
+		}
+
+		if (!markA || !markB) {
+			selectedContradictionEvidenceLink = null;
+			return;
+		}
+
+		const markARect = markA.getBoundingClientRect();
+		const markBRect = markB.getBoundingClientRect();
+		const aCenterPx = markARect.top - hostRect.top + markARect.height / 2;
+		const bCenterPx = markBRect.top - hostRect.top + markBRect.height / 2;
+		const showA = aCenterPx >= 0 && aCenterPx <= hostRect.height;
+		const showB = bCenterPx >= 0 && bCenterPx <= hostRect.height;
+		const clampedACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
+		const clampedBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
+		const topPx = Math.min(clampedACenterPx, clampedBCenterPx);
+		const bottomPx = Math.max(clampedACenterPx, clampedBCenterPx);
+		if (bottomPx - topPx < 2) {
+			selectedContradictionEvidenceLink = null;
+			return;
+		}
+		const rightEdge = Math.max(markARect.right, markBRect.right);
+		const leftPx = Math.max(8, rightEdge - hostRect.left + 16);
+		selectedContradictionEvidenceLink = {
+			topPx,
+			bottomPx,
+			leftPx,
+			showA,
+			showB,
+			aCenterPx,
+			bCenterPx
+		};
 	}
 
 	function scheduleContradictionScrollMarkerRefresh() {
@@ -523,6 +599,10 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 			contradictionMarkerFrame = null;
 			refreshContradictionScrollMarkers();
 		});
+	}
+
+	function jumpToContradictionParagraph(paragraphId: string) {
+		focusNodeFromPanel(paragraphId, true);
 	}
 
 	function applyContradictionHighlights() {
@@ -1190,6 +1270,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		contradictionSource = null;
 		contradictionError = null;
 		contradictionScrollMarkers = [];
+		selectedContradictionEvidenceLink = null;
 		resetInspectorState();
 		resetAssistantState();
 		if (clearStores) {
@@ -2006,14 +2087,68 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 				<div bind:this={viewer} class="min-h-full w-full"></div>
 			</section>
 
-			{#if contradictionScrollMarkers.length > 0}
-				<div class="pointer-events-none absolute top-2 right-1 bottom-2 z-20 w-2">
+			{#if shouldShowContradictionDecorations && contradictionScrollMarkers.length > 0}
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
 					{#each contradictionScrollMarkers as marker (marker.paragraphId)}
 						<span
 							class={`docx-contradiction-scroll-marker docx-contradiction-scroll-marker--${marker.confidenceBand}`}
 							style={`top: ${marker.topPercent}%;`}
+							role="button"
+							tabindex="0"
+							aria-label={`Go to contradiction in paragraph ${marker.paragraphId}`}
+							on:click={() => jumpToContradictionParagraph(marker.paragraphId)}
+							on:keydown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									jumpToContradictionParagraph(marker.paragraphId);
+								}
+							}}
 						></span>
 					{/each}
+				</div>
+			{/if}
+
+			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
+				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+					<span
+						class="docx-contradiction-evidence-bracket"
+						style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.topPx}px; height: ${Math.max(
+							6,
+							selectedContradictionEvidenceLink.bottomPx - selectedContradictionEvidenceLink.topPx
+						)}px;`}
+					></span>
+					{#if selectedContradictionEvidenceLink.showA}
+						<span
+							class="docx-contradiction-evidence-cap"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--a"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--a"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						>
+							A
+						</span>
+					{/if}
+					{#if selectedContradictionEvidenceLink.showB}
+						<span
+							class="docx-contradiction-evidence-cap"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--b"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--b"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						>
+							B
+						</span>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -2430,18 +2565,39 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 
 	:global(mark.docx-contradiction-snippet) {
 		background: transparent;
-		color: #991b1b;
+		color: #7f1d1d;
 		padding: 0 1px;
 		border-radius: 1px;
 		text-decoration: underline;
-		text-decoration-color: #dc2626;
+		text-decoration-color: #b91c1c;
 		text-decoration-thickness: 2px;
 		text-underline-offset: 2px;
 	}
 
+	:global(mark.docx-contradiction-snippet[data-contradiction-role='a']) {
+		color: #991b1b;
+		text-decoration-color: #dc2626;
+		background: rgba(254, 202, 202, 0.26);
+	}
+
+	:global(mark.docx-contradiction-snippet[data-contradiction-role='b']) {
+		color: #854d0e;
+		text-decoration-color: #ca8a04;
+		background: rgba(254, 240, 138, 0.28);
+	}
+
 	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active) {
-		background: rgba(254, 202, 202, 0.55);
+		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
+	}
+
+	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']) {
+		background: rgba(254, 202, 202, 0.58);
 		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
+	}
+
+	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']) {
+		background: rgba(254, 240, 138, 0.6);
+		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
 	}
 
 	:global(.docx-contradiction-scroll-marker) {
@@ -2454,6 +2610,21 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		background: #dc2626;
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
 		opacity: 0.92;
+		cursor: pointer;
+		transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+	}
+
+	:global(.docx-contradiction-scroll-marker:hover) {
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(239, 68, 68, 0.35);
+	}
+
+	:global(.docx-contradiction-scroll-marker:focus-visible) {
+		outline: none;
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(239, 68, 68, 0.45);
 	}
 
 	:global(.docx-contradiction-scroll-marker--medium) {
@@ -2462,6 +2633,59 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 
 	:global(.docx-contradiction-scroll-marker--low) {
 		background: #f87171;
+	}
+
+	:global(.docx-contradiction-evidence-bracket) {
+		position: absolute;
+		width: 2px;
+		border-radius: 0;
+		background: linear-gradient(to bottom, #dc2626 0%, #eab308 100%);
+		transform: translateX(-50%);
+		opacity: 0.92;
+	}
+
+	:global(.docx-contradiction-evidence-cap) {
+		position: absolute;
+		width: 12px;
+		height: 2px;
+		border-radius: 0;
+		background: linear-gradient(to right, rgba(220, 38, 38, 0.95) 0%, rgba(234, 179, 8, 0.95) 100%);
+		transform: translate(-100%, -50%);
+		opacity: 0.92;
+	}
+
+	:global(.docx-contradiction-evidence-dot) {
+		position: absolute;
+		height: 8px;
+		width: 8px;
+		transform: translate(-50%, -50%);
+		border-radius: 9999px;
+		border: 1px solid rgba(255, 255, 255, 0.9);
+		box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.28);
+	}
+
+	:global(.docx-contradiction-evidence-dot--a) {
+		background: #dc2626;
+	}
+
+	:global(.docx-contradiction-evidence-dot--b) {
+		background: #eab308;
+	}
+
+	:global(.docx-contradiction-evidence-label) {
+		position: absolute;
+		transform: translate(9px, -50%);
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	:global(.docx-contradiction-evidence-label--a) {
+		color: #b91c1c;
+	}
+
+	:global(.docx-contradiction-evidence-label--b) {
+		color: #a16207;
 	}
 
 	@keyframes bounce {
