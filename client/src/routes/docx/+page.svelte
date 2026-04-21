@@ -67,6 +67,7 @@
 		EDITABLE_PARAGRAPH_CLASSES,
 		MAX_SIMPLIFY_AUDIT_TRAIL,
 		CONTRADICTION_OPENAI_MODEL_OPTIONS,
+		PARAGRAPH_EXPLANATION_MODEL_OPTIONS,
 		CONTRADICTION_TAXONOMY_COLORS,
 		CONTRADICTION_TAXONOMY_ORDER,
 		CONTRADICTION_TAXONOMY_LABELS,
@@ -99,6 +100,7 @@
 	import CloseIcon from '$lib/icons/CloseIcon.svelte';
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 	import ContradictionAnalysisIcon from '$lib/icons/ContradictionAnalysisIcon.svelte';
+	import ParagraphExplanationIcon from '$lib/icons/ParagraphExplanationIcon.svelte';
 	import ParagraphRevisionsIcon from '$lib/icons/ParagraphRevisionsIcon.svelte';
 	import RedundancyAnalysisIcon from '$lib/icons/RedundancyAnalysisIcon.svelte';
 	import RelatedParagraphsIcon from '$lib/icons/RelatedParagraphsIcon.svelte';
@@ -107,6 +109,7 @@
 		RightPanelAmbiguity,
 		RightPanelAnalysis,
 		RightPanelAssistant,
+		RightPanelParagraphExplanation,
 		RightPanelRedundancy,
 		RightPanelRelated,
 		RightPanelRevisions,
@@ -125,7 +128,7 @@ const relationsCountByNodeId = new Map<string, number>();
 const simplifyAuditTrail: SimplifyAuditRecord[] = [];
 const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
 const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
-const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
+const TOOL_BRAND_SHORT_NAME = 'Nome';
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -184,6 +187,30 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	let contradictionSummaryVisible = true;
+	let paragraphExplanationModel = 'gpt-5-mini';
+	let paragraphExplanationLoading = false;
+	let paragraphExplanationError: string | null = null;
+	let paragraphExplanationAnswer = '';
+	let paragraphExplanationCitations: Array<{
+		id: string;
+		excerpt: string;
+		page?: number;
+		paragraph_enum?: number;
+	}> = [];
+	let paragraphExplanationConnectors: Array<{
+		topPx: number;
+		bottomPx: number;
+		leftPx: number;
+		selectedCapTopPx: number;
+		relatedCapTopPx: number;
+		paragraphId: string;
+	}> = [];
+	let paragraphExplanationScrollMarkers: Array<{
+		paragraphId: string;
+		topPercent: number;
+	}> = [];
+	let paragraphExplanationFrame: number | null = null;
+	let paragraphExplanationRelatedParagraphs: RelatedParagraph[] = [];
 
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
@@ -193,6 +220,8 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	let isResizingRightDrawer = false;
 	$: shouldShowContradictionDecorations =
 		activeRightPanelTab === 'analysis' && isRightDrawerOpen;
+	$: shouldShowParagraphExplanationDecorations =
+		activeRightPanelTab === 'paragraph_explanation' && isRightDrawerOpen;
 	$: activeDrawerWidth = !isCompactLayout && isRightDrawerOpen ? rightDrawerWidth : 0;
 	$: activeSidebarWidth = sidebarLabelsPinned
 		? RIGHT_TOOLBAR_EXPANDED_WIDTH
@@ -247,6 +276,23 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 	$: assistantScopeLabel =
 		SCOPE_OPTIONS.find((option) => option.value === assistantScope)?.label ?? 'Scope';
 	$: quickActionLabel = selectedQuickAction || 'Quick action';
+	$: paragraphExplanationRelatedParagraphs = [...selectedRelatedParagraphs]
+		.sort((left, right) => {
+			const leftReference = left.relationTypes.includes('reference') ? 1 : 0;
+			const rightReference = right.relationTypes.includes('reference') ? 1 : 0;
+			if (rightReference !== leftReference) return rightReference - leftReference;
+
+			const leftSemantic = left.semanticScore ?? 0;
+			const rightSemantic = right.semanticScore ?? 0;
+			if (rightSemantic !== leftSemantic) return rightSemantic - leftSemantic;
+
+			const leftReferences = left.references.length;
+			const rightReferences = right.references.length;
+			if (rightReferences !== leftReferences) return rightReferences - leftReferences;
+
+			return left.node.paragraph_enum - right.node.paragraph_enum;
+		})
+		.slice(0, 5);
 	$: {
 		if (shouldShowContradictionDecorations) {
 			applyContradictionHighlights();
@@ -254,6 +300,20 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 			clearContradictionHighlights();
 			contradictionScrollMarkers = [];
 			selectedContradictionEvidenceLink = null;
+		}
+	}
+	$: {
+		const selectedId = $selectedParagraph?.id ?? '';
+		const relatedIds = paragraphExplanationRelatedParagraphs
+			.map((related) => related.node.id)
+			.join('|');
+		void selectedId;
+		void relatedIds;
+		if (shouldShowParagraphExplanationDecorations) {
+			applyParagraphExplanationHighlights();
+			scheduleParagraphExplanationConnectorRefresh();
+		} else {
+			clearParagraphExplanationHighlights();
 		}
 	}
 
@@ -332,6 +392,13 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		assistantMessages = [];
 		assistantLoading = false;
 		assistantError = null;
+	}
+
+	function resetParagraphExplanationState() {
+		paragraphExplanationError = null;
+		paragraphExplanationAnswer = '';
+		paragraphExplanationCitations = [];
+		paragraphExplanationLoading = false;
 	}
 
 	function clearSnippetMarks(element: HTMLElement) {
@@ -666,6 +733,149 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		scheduleContradictionScrollMarkerRefresh();
 	}
 
+	function clearParagraphExplanationHighlights() {
+		paragraphExplanationConnectors = [];
+		paragraphExplanationScrollMarkers = [];
+		for (const element of paragraphElementById.values()) {
+			element.classList.remove(
+				'docx-paragraph-explanation-selected',
+				'docx-paragraph-explanation-related'
+			);
+		}
+	}
+
+	function applyParagraphExplanationHighlights() {
+		clearParagraphExplanationHighlights();
+		if (!shouldShowParagraphExplanationDecorations) return;
+
+		const selected = get(selectedParagraph);
+		if (!selected?.id) return;
+		paragraphElementById.get(selected.id)?.classList.add('docx-paragraph-explanation-selected');
+		for (const related of paragraphExplanationRelatedParagraphs) {
+			paragraphElementById
+				.get(related.node.id)
+				?.classList.add('docx-paragraph-explanation-related');
+		}
+	}
+
+	function refreshParagraphExplanationConnectorPaths() {
+		if (!documentScrollHost || !shouldShowParagraphExplanationDecorations) {
+			paragraphExplanationConnectors = [];
+			paragraphExplanationScrollMarkers = [];
+			return;
+		}
+
+		const selected = get(selectedParagraph);
+		if (!selected?.id) {
+			paragraphExplanationConnectors = [];
+			paragraphExplanationScrollMarkers = [];
+			return;
+		}
+
+		const selectedElement = paragraphElementById.get(selected.id);
+		if (!selectedElement) {
+			paragraphExplanationConnectors = [];
+			paragraphExplanationScrollMarkers = [];
+			return;
+		}
+
+		const hostRect = documentScrollHost.getBoundingClientRect();
+		const selectedRect = selectedElement.getBoundingClientRect();
+		const selectedY = selectedRect.top - hostRect.top + selectedRect.height / 2;
+		const baseLeft = Math.max(12, selectedRect.right - hostRect.left + 16);
+
+		const anchors: Array<{ y: number; paragraphId: string }> = [];
+		for (const related of paragraphExplanationRelatedParagraphs) {
+			const relatedElement = paragraphElementById.get(related.node.id);
+			if (!relatedElement) continue;
+			const relatedRect = relatedElement.getBoundingClientRect();
+			const relatedY = relatedRect.top - hostRect.top + relatedRect.height / 2;
+			anchors.push({ y: relatedY, paragraphId: related.node.id });
+		}
+
+		if (anchors.length === 0) {
+			paragraphExplanationConnectors = [];
+			paragraphExplanationScrollMarkers = [];
+			return;
+		}
+
+		const sortedAnchors = [...anchors].sort(
+			(left, right) =>
+				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) ||
+				left.y - right.y
+		);
+		let laneCounter = 0;
+		const nextConnectors: Array<{
+			topPx: number;
+			bottomPx: number;
+			leftPx: number;
+			selectedCapTopPx: number;
+			relatedCapTopPx: number;
+			paragraphId: string;
+		}> = [];
+		for (const anchor of sortedAnchors) {
+			// Keep connector anchors tied to real paragraph positions.
+			// We intentionally avoid clamping to viewport edges so the line does not "snap"
+			// when one paragraph goes out of view.
+			const selectedCenter = selectedY;
+			const relatedCenter = anchor.y;
+			const topPx = Math.min(selectedCenter, relatedCenter);
+			const bottomPx = Math.max(selectedCenter, relatedCenter);
+			if (bottomPx - topPx < 2) continue;
+			const leftPx = baseLeft + laneCounter * 8;
+			laneCounter += 1;
+			nextConnectors.push({
+				topPx,
+				bottomPx,
+				leftPx,
+				selectedCapTopPx: selectedCenter,
+				relatedCapTopPx: relatedCenter,
+				paragraphId: anchor.paragraphId
+			});
+		}
+
+		paragraphExplanationConnectors = nextConnectors;
+
+		const hostScrollHeight = documentScrollHost.scrollHeight;
+		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
+			paragraphExplanationScrollMarkers = [];
+			return;
+		}
+		const nextScrollMarkers: Array<{ paragraphId: string; topPercent: number }> = [];
+		for (const related of paragraphExplanationRelatedParagraphs) {
+			const relatedElement = paragraphElementById.get(related.node.id);
+			if (!relatedElement) continue;
+			const relatedRect = relatedElement.getBoundingClientRect();
+			const centerOffset =
+				relatedRect.top - hostRect.top + documentScrollHost.scrollTop + relatedRect.height / 2;
+			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
+			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
+			nextScrollMarkers.push({ paragraphId: related.node.id, topPercent });
+		}
+		nextScrollMarkers.sort((left, right) => left.topPercent - right.topPercent);
+		paragraphExplanationScrollMarkers = nextScrollMarkers;
+	}
+
+	function scheduleParagraphExplanationConnectorRefresh() {
+		if (typeof window === 'undefined') return;
+		if (paragraphExplanationFrame != null) {
+			window.cancelAnimationFrame(paragraphExplanationFrame);
+		}
+		paragraphExplanationFrame = window.requestAnimationFrame(() => {
+			paragraphExplanationFrame = null;
+			refreshParagraphExplanationConnectorPaths();
+		});
+	}
+
+	function jumpToRelatedParagraphMarker(paragraphId: string) {
+		const element = paragraphElementById.get(paragraphId);
+		if (!element) return;
+		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		element.classList.remove('docx-citation-flash');
+		void element.offsetHeight;
+		element.classList.add('docx-citation-flash');
+	}
+
 	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
 		const next = new Map<string, ContradictionParagraphResult>();
 		for (const row of results) {
@@ -878,6 +1088,73 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		} finally {
 			assistantLoading = false;
 			await scrollAssistantToBottom();
+		}
+	}
+
+	async function submitParagraphExplanation() {
+		if (paragraphExplanationLoading) return;
+		if (!activeDocumentId) {
+			paragraphExplanationError = 'No document is loaded.';
+			return;
+		}
+
+		const selected = get(selectedParagraph);
+		if (!selected) {
+			paragraphExplanationError = 'Select a paragraph before requesting an explanation.';
+			return;
+		}
+
+		const paragraphNodes = buildAssistantNodeSnapshot(get(paragraphs), nodeEditStateById);
+		if (paragraphNodes.length === 0) {
+			paragraphExplanationError = 'The contract is still loading.';
+			return;
+		}
+
+		const selectedText = getNodeCurrentText(nodeEditStateById, selected).trim();
+		if (!selectedText) {
+			paragraphExplanationError = 'Selected paragraph has no text to explain.';
+			return;
+		}
+
+		paragraphExplanationLoading = true;
+		paragraphExplanationError = null;
+
+		const question = [
+			'Explain the selected contract paragraph in clear and accessible language.',
+			'Use the related paragraphs as supporting context.',
+			'Return a detailed explanation with:',
+			'1) plain-language summary,',
+			'2) practical meaning and obligations,',
+			'3) potential risks/ambiguities,',
+			'4) examples of real-world impact.',
+			'Keep legal accuracy while avoiding jargon.'
+		].join('\n');
+
+		const payload: AssistantChatRequest = {
+			documentId: activeDocumentId,
+			question,
+			mode: 'explain',
+			scope: 'selected',
+			provider: assistantProvider,
+			model: paragraphExplanationModel,
+			selectedParagraphId: selected.id,
+			relatedParagraphs: buildAssistantRelatedContext(paragraphExplanationRelatedParagraphs),
+			paragraphNodes,
+			history: []
+		};
+
+		try {
+			const response = await fetchAssistantResponse(payload);
+			paragraphExplanationAnswer = response.answer;
+			paragraphExplanationCitations = response.citations ?? [];
+		} catch (requestError) {
+			const message = getAxiosErrorMessage(
+				requestError,
+				'Failed to generate paragraph explanation.'
+			);
+			paragraphExplanationError = message;
+		} finally {
+			paragraphExplanationLoading = false;
 		}
 	}
 
@@ -1293,6 +1570,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		selectedContradictionEvidenceLink = null;
 		resetInspectorState();
 		resetAssistantState();
+		resetParagraphExplanationState();
 		if (clearStores) {
 			paragraphs.set([]);
 			setSelectedParagraphNode(null);
@@ -1702,6 +1980,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		paragraphs.set([]);
 		setSelectedParagraphNode(null);
 		resetAssistantState();
+		resetParagraphExplanationState();
 
 		try {
 			const metadata = await resolveDocumentMeta(docId);
@@ -1986,6 +2265,7 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		const handleDocumentSelectionChange = () => {
 			refreshSimplifyTarget();
 			scheduleContradictionScrollMarkerRefresh();
+			scheduleParagraphExplanationConnectorRefresh();
 		};
 		const handleViewportResize = () => {
 			refreshViewportMode();
@@ -2032,6 +2312,10 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 			if (contradictionMarkerFrame != null) {
 				window.cancelAnimationFrame(contradictionMarkerFrame);
 				contradictionMarkerFrame = null;
+			}
+			if (paragraphExplanationFrame != null) {
+				window.cancelAnimationFrame(paragraphExplanationFrame);
+				paragraphExplanationFrame = null;
 			}
 			clearRenderedDocument();
 		};
@@ -2171,6 +2455,59 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 					{/if}
 				</div>
 			{/if}
+
+			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationConnectors.length > 0}
+				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+					{#each paragraphExplanationConnectors as connector, index (`connector-${index}`)}
+						<span
+							class="docx-paragraph-explanation-bracket"
+							style={`left: ${connector.leftPx}px; top: ${connector.topPx}px; height: ${Math.max(
+								6,
+								connector.bottomPx - connector.topPx
+							)}px;`}
+							role="button"
+							tabindex="0"
+							aria-label={`Go to related paragraph ${connector.paragraphId}`}
+							on:click={() => jumpToRelatedParagraphMarker(connector.paragraphId)}
+							on:keydown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									jumpToRelatedParagraphMarker(connector.paragraphId);
+								}
+							}}
+						></span>
+						<span
+							class="docx-paragraph-explanation-cap"
+							style={`left: ${connector.leftPx}px; top: ${connector.selectedCapTopPx}px;`}
+						></span>
+						<span
+							class="docx-paragraph-explanation-cap"
+							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px;`}
+						></span>
+					{/each}
+				</div>
+			{/if}
+
+			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationScrollMarkers.length > 0}
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
+					{#each paragraphExplanationScrollMarkers as marker (`related-marker-${marker.paragraphId}`)}
+						<span
+							class="docx-related-scroll-marker"
+							style={`top: ${marker.topPercent}%;`}
+							role="button"
+							tabindex="0"
+							aria-label={`Go to related paragraph ${marker.paragraphId}`}
+							on:click={() => jumpToRelatedParagraphMarker(marker.paragraphId)}
+							on:keydown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									jumpToRelatedParagraphMarker(marker.paragraphId);
+								}
+							}}
+						></span>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -2225,6 +2562,8 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 								<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
 							{:else if activeRightPanelTab === 'analysis'}
 								<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'paragraph_explanation'}
+								<ParagraphExplanationIcon className="h-4 w-4" strokeWidth={1.9} />
 							{:else if activeRightPanelTab === 'redundancy'}
 								<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
 							{:else if activeRightPanelTab === 'summarize'}
@@ -2355,6 +2694,18 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 				nodeEditStateById={nodeEditStateById}
 				onFocusNodeFromPanel={focusNodeFromPanel}
 			/>
+		{:else if activeRightPanelTab === 'paragraph_explanation'}
+			<RightPanelParagraphExplanation
+				selectedParagraph={$selectedParagraph}
+				bind:model={paragraphExplanationModel}
+				modelOptions={PARAGRAPH_EXPLANATION_MODEL_OPTIONS}
+				loading={paragraphExplanationLoading}
+				error={paragraphExplanationError}
+				explanation={paragraphExplanationAnswer}
+				citations={paragraphExplanationCitations}
+				onRunExplanation={submitParagraphExplanation}
+				onFocusNodeFromPanel={focusNodeFromPanel}
+			/>
 		{:else}
 			<RightPanelAssistant
 				bind:assistantProvider
@@ -2455,6 +2806,8 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 									<RelatedParagraphsIcon className="h-[17px] w-[17px]" />
 								{:else if item.id === 'analysis'}
 									<ContradictionAnalysisIcon className="h-[17px] w-[17px]" />
+								{:else if item.id === 'paragraph_explanation'}
+									<ParagraphExplanationIcon className="h-[17px] w-[17px]" />
 								{:else if item.id === 'redundancy'}
 									<RedundancyAnalysisIcon className="h-[17px] w-[17px]" />
 								{:else if item.id === 'summarize'}
@@ -2483,6 +2836,8 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 												<RelatedParagraphsIcon className="h-[17px] w-[17px]" />
 											{:else if item.id === 'analysis'}
 												<ContradictionAnalysisIcon className="h-[17px] w-[17px]" />
+											{:else if item.id === 'paragraph_explanation'}
+												<ParagraphExplanationIcon className="h-[17px] w-[17px]" />
 											{:else if item.id === 'redundancy'}
 												<RedundancyAnalysisIcon className="h-[17px] w-[17px]" />
 											{:else if item.id === 'summarize'}
@@ -2576,6 +2931,83 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 
 	:global(.docx-citation-flash) {
 		animation: citation-flash 1.2s ease-out;
+	}
+
+	:global(.docx-paragraph-explanation-selected) {
+		outline: 2.5px solid rgba(37, 99, 235, 0.82) !important;
+		/* outline-offset: 1px !important; */
+		background: rgba(59, 130, 246, 0.1) !important;
+		/* border-left: 1px solid rgba(37, 99, 235, 0.9) !important; */
+		box-shadow:
+			inset 0 0 0 9999px rgba(59, 130, 246, 0.08),
+			inset 0 0 0 1px rgba(37, 99, 235, 0.4) !important;
+	}
+
+	:global(.docx-paragraph-explanation-selected:focus),
+	:global(.docx-paragraph-explanation-selected:focus-visible) {
+		outline: 2px solid rgba(37, 99, 235, 0.9) !important;
+		outline-offset: 1px !important;
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22) !important;
+	}
+
+	:global(.docx-paragraph-explanation-related) {
+		outline: 2px solid #2563eb !important;
+		outline-offset: 1px !important;
+		border-left: 1px solid #2563eb !important;
+		background: transparent !important;
+		/* box-shadow: inset 0 0 0 1px #2563eb !important; */
+	}
+
+	:global(.docx-paragraph-explanation-bracket) {
+		position: absolute;
+		width: 2px;
+		border-radius: 0;
+		background: #2563eb;
+		transform: translateX(-50%);
+		opacity: 0.9;
+		pointer-events: auto;
+		cursor: pointer;
+		transition: opacity 120ms ease, box-shadow 120ms ease, width 120ms ease;
+	}
+
+	:global(.docx-paragraph-explanation-bracket:hover),
+	:global(.docx-paragraph-explanation-bracket:focus-visible) {
+		outline: none;
+		opacity: 1;
+		width: 3px;
+		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+	}
+
+	:global(.docx-paragraph-explanation-cap) {
+		position: absolute;
+		width: 12px;
+		height: 2px;
+		border-radius: 0;
+		background: #2563eb;
+		transform: translate(-100%, -50%);
+		opacity: 0.92;
+	}
+
+	:global(.docx-related-scroll-marker) {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 2px;
+		transform: translateY(-50%);
+		border-radius: 9999px;
+		background: #2563eb;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.88);
+		opacity: 0.9;
+		cursor: pointer;
+		transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+	}
+
+	:global(.docx-related-scroll-marker:hover),
+	:global(.docx-related-scroll-marker:focus-visible) {
+		outline: none;
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(37, 99, 235, 0.35);
 	}
 
 	:global(.docx-contradiction-highlight) {

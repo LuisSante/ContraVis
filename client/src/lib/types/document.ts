@@ -198,6 +198,7 @@ export type AssistantChatRequest = {
 	mode: AssistantMode;
 	scope: AssistantScope;
 	provider: AssistantProvider;
+	model?: string;
 	selectedParagraphId?: string | null;
 	relatedParagraphs: AssistantContextRelation[];
 	paragraphNodes: AssistantContextNode[];
@@ -334,6 +335,7 @@ export type RightPanelTab =
 	| 'related'
 	| 'analysis'
 	| 'redundancy'
+	| 'paragraph_explanation'
 	| 'summarize'
 	| 'ambiguity'
 	| 'revisions'
