@@ -1054,6 +1054,26 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		void submitAssistantQuestion(question);
 	}
 
+	async function submitContradictionAssistantQuestion(questionOverride?: string) {
+		await submitAssistantQuestion(questionOverride, {
+			mode: 'explain',
+			scope: 'selected'
+		});
+	}
+
+	function handleContradictionAssistantInputKeydown(event: KeyboardEvent) {
+		if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+			event.preventDefault();
+			void submitContradictionAssistantQuestion();
+		}
+	}
+
+	function suggestContradictionFixFromChat() {
+		void submitContradictionAssistantQuestion(
+			'Suggest a revised version of the selected paragraph that resolves the contradiction while preserving legal intent and legal style.'
+		);
+	}
+
 	function resetSimplifyState() {
 		simplifyToolbarVisible = false;
 		simplifyToolbarTop = 0;
@@ -2288,6 +2308,20 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 				revisionProcessingSteps={revisionProcessingSteps}
 				selectedContradictionResult={selectedContradictionResult}
 				selectedContradictionEvidence={selectedContradictionEvidence}
+				bind:assistantInput
+				bind:assistantThread
+				assistantMessages={assistantMessages}
+				assistantLoading={assistantLoading}
+				assistantError={assistantError}
+				contradictionQuickActionFreeLabel={QUICK_ACTION_WHY_CONTRADICTION_FREE}
+				contradictionQuickActionAiLabel={QUICK_ACTION_WHY_CONTRADICTION_AI}
+				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
+				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
+				onSuggestContradictionFix={suggestContradictionFixFromChat}
+				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
+				onSubmitAssistantQuestion={submitContradictionAssistantQuestion}
+				onHandleAssistantInputKeydown={handleContradictionAssistantInputKeydown}
+				onFocusNodeFromPanel={focusNodeFromPanel}
 				onFocusEvidenceSnippet={focusEvidenceSnippet}
 			/>
 		{:else if activeRightPanelTab === 'redundancy'}
@@ -2568,21 +2602,16 @@ const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 		color: #7f1d1d;
 		padding: 0 1px;
 		border-radius: 1px;
-		text-decoration: underline;
-		text-decoration-color: #b91c1c;
-		text-decoration-thickness: 2px;
-		text-underline-offset: 2px;
+		text-decoration: none;
 	}
 
 	:global(mark.docx-contradiction-snippet[data-contradiction-role='a']) {
 		color: #991b1b;
-		text-decoration-color: #dc2626;
 		background: rgba(254, 202, 202, 0.26);
 	}
 
 	:global(mark.docx-contradiction-snippet[data-contradiction-role='b']) {
 		color: #854d0e;
-		text-decoration-color: #ca8a04;
 		background: rgba(254, 240, 138, 0.28);
 	}
 

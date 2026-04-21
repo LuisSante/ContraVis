@@ -1182,10 +1182,17 @@
     },
     {
       "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-289",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "contradiction": true,
+      "confidence": 100,
+      "brief_reason": "The paragraph contains two directly conflicting statements about whether the first three months of each Monthly Forecast are binding.",
+      "evidence": {
+        "snippet_a": "(b)Each Purchase Order will specify the MB Global Contract Number assigned to this Agreement, the volumes of Miltenyi Product(s)",
+        "snippet_b": "(b)Each shipment of Miltenyi Products will be picked up by Bellicum’s designated carrier on the agreed delivery date(s) (each, a “Delivery Date”) ",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement_with_contradictions-p-290",
