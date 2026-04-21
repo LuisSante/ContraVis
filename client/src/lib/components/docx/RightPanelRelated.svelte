@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 	import type {
 		Node as ParagraphNode,
 		ParagraphEditState,
@@ -20,6 +22,32 @@
 	export let selectedRelatedParagraphs: RelatedParagraph[] = [];
 	export let nodeEditStateById: Map<string, ParagraphEditState> = new Map();
 	export let onFocusNodeFromPanel: (nodeId: string) => void = () => {};
+
+	let processingTick = 0;
+	let processingTimer: ReturnType<typeof setInterval> | null = null;
+	$: activeProcessingStepIndex =
+		relatedProcessingSteps.length > 0 ? Math.floor(processingTick / 3) % relatedProcessingSteps.length : 0;
+	$: activeDotCount = (processingTick % 3) + 1;
+
+	$: {
+		if (browser && backendGraphLoading && processingTimer == null) {
+			processingTimer = setInterval(() => {
+				processingTick += 1;
+			}, 260);
+		}
+		if (!backendGraphLoading && processingTimer != null) {
+			clearInterval(processingTimer);
+			processingTimer = null;
+			processingTick = 0;
+		}
+	}
+
+	onDestroy(() => {
+		if (processingTimer != null) {
+			clearInterval(processingTimer);
+			processingTimer = null;
+		}
+	});
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col">
@@ -37,29 +65,30 @@
 					<ul class="space-y-1.5 text-[12px] text-gray-600">
 						{#each relatedProcessingSteps as step, index}
 							<li
-								class="flex [animation:processing-step-fade_1.35s_ease-in-out_infinite] items-center gap-2 opacity-[0.45]"
-								style={`animation-delay: ${index * 220}ms;`}
+								class={`relative flex items-center gap-2 transition-opacity duration-300 ${
+									index === activeProcessingStepIndex ? 'opacity-100' : 'opacity-40'
+								}`}
 							>
+								{#if index < relatedProcessingSteps.length - 1}
+									<span
+										class="absolute top-[13px] left-[3px] h-[18px] w-px bg-gray-300/80"
+										aria-hidden="true"
+									></span>
+								{/if}
 								<span
-									class="h-1.5 w-1.5 [animation:processing-dot-pulse_1.2s_ease-in-out_infinite] rounded-full bg-gray-500 opacity-[0.35]"
-									style={`animation-delay: ${index * 220}ms;`}
+									class={`h-1.5 w-1.5 rounded-full bg-gray-500 transition-opacity duration-300 ${
+										index === activeProcessingStepIndex
+											? 'animate-pulse opacity-95'
+											: 'opacity-30'
+									}`}
 									aria-hidden="true"
 								></span>
 								<span class="text-gray-600">
 									{step.label}
-									<span class="ml-px inline-flex min-w-[14px]" aria-hidden="true">
-										<span
-											class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-											style="animation-delay: 0ms;">.</span
-										>
-										<span
-											class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-											style="animation-delay: 140ms;">.</span
-										>
-										<span
-											class="[animation:processing-ellipsis-dot_0.95s_ease-in-out_infinite] opacity-[0.18]"
-											style="animation-delay: 280ms;">.</span
-										>
+									<span class="ml-px inline-flex min-w-[14px] text-gray-500" aria-hidden="true">
+										{#if index === activeProcessingStepIndex}
+											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2 ? '.' : ''}{activeDotCount >= 3 ? '.' : ''}
+										{/if}
 									</span>
 								</span>
 							</li>

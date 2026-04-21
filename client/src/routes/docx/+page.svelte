@@ -78,7 +78,6 @@
 		QUICK_ACTION_WHY_CONTRADICTION_FREE,
 		SCOPE_OPTIONS,
 		RIGHT_DRAWER_DEFAULT_WIDTH,
-		RIGHT_TOOLBAR_WIDTH,
 		RIGHT_DRAWER_KEYBOARD_STEP,
 		RIGHT_DRAWER_MIN_WIDTH,
 		RIGHT_DRAWER_MAX_RATIO,
@@ -105,7 +104,6 @@
 	import RelatedParagraphsIcon from '$lib/icons/RelatedParagraphsIcon.svelte';
 	import SummarizeSimplifyIcon from '$lib/icons/SummarizeSimplifyIcon.svelte';
 	import {
-		ParagraphRewriteActions,
 		RightPanelAmbiguity,
 		RightPanelAnalysis,
 		RightPanelAssistant,
@@ -117,13 +115,17 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	const initialInspectorState = createEmptyInspectorState();
 	const nodeEditStateById = new Map<string, ParagraphEditState>();
 	const paragraphElementById = new Map<string, HTMLElement>();
-	const paragraphRelationHostById = new Map<string, HTMLElement>();
-	const relationsCountByNodeId = new Map<string, number>();
-	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+const paragraphRelationHostById = new Map<string, HTMLElement>();
+const relationsCountByNodeId = new Map<string, number>();
+const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
+const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
+const TOOL_BRAND_SHORT_NAME = 'ContraLegal';
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -166,6 +168,17 @@
 	let contradictionModel = 'gpt-4.1';
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
+	let selectedContradictionEvidenceLink:
+		| {
+				topPx: number;
+				bottomPx: number;
+				leftPx: number;
+				showA: boolean;
+				showB: boolean;
+				aCenterPx: number;
+				bCenterPx: number;
+		  }
+		| null = null;
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
@@ -174,10 +187,16 @@
 
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
+	let sidebarLabelsPinned = false;
 	let isCompactLayout = false;
 	let rightDrawerWidth = RIGHT_DRAWER_DEFAULT_WIDTH;
 	let isResizingRightDrawer = false;
+	$: shouldShowContradictionDecorations =
+		activeRightPanelTab === 'analysis' && isRightDrawerOpen;
 	$: activeDrawerWidth = !isCompactLayout && isRightDrawerOpen ? rightDrawerWidth : 0;
+	$: activeSidebarWidth = sidebarLabelsPinned
+		? RIGHT_TOOLBAR_EXPANDED_WIDTH
+		: RIGHT_TOOLBAR_COLLAPSED_WIDTH;
 
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
 		(row) => row.contradiction
@@ -228,6 +247,15 @@
 	$: assistantScopeLabel =
 		SCOPE_OPTIONS.find((option) => option.value === assistantScope)?.label ?? 'Scope';
 	$: quickActionLabel = selectedQuickAction || 'Quick action';
+	$: {
+		if (shouldShowContradictionDecorations) {
+			applyContradictionHighlights();
+		} else {
+			clearContradictionHighlights();
+			contradictionScrollMarkers = [];
+			selectedContradictionEvidenceLink = null;
+		}
+	}
 
 	function toTitleCaseLabel(label: string): string {
 		return label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
@@ -452,6 +480,7 @@
 	}
 
 	function clearContradictionHighlights() {
+		selectedContradictionEvidenceLink = null;
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
 			clearSnippetMarks(element);
@@ -473,6 +502,7 @@
 	function refreshContradictionScrollMarkers() {
 		if (!documentScrollHost || contradictionResultsByParagraphId.size === 0) {
 			contradictionScrollMarkers = [];
+			selectedContradictionEvidenceLink = null;
 			return;
 		}
 
@@ -480,6 +510,7 @@
 		const hostScrollHeight = documentScrollHost.scrollHeight;
 		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
 			contradictionScrollMarkers = [];
+			selectedContradictionEvidenceLink = null;
 			return;
 		}
 
@@ -506,6 +537,57 @@
 
 		nextMarkers.sort((left, right) => left.topPercent - right.topPercent);
 		contradictionScrollMarkers = nextMarkers;
+
+		const selected = get(selectedParagraph);
+		if (!selected?.id || !contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
+			selectedContradictionEvidenceLink = null;
+			return;
+		}
+
+		let markA: HTMLElement | null = null;
+		let markB: HTMLElement | null = null;
+		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		for (const mark of allMarks) {
+			if (mark.dataset.contradictionOwner !== selected.id) continue;
+			if (!markA && mark.dataset.contradictionRole === 'a') {
+				markA = mark;
+			}
+			if (!markB && mark.dataset.contradictionRole === 'b') {
+				markB = mark;
+			}
+			if (markA && markB) break;
+		}
+
+		if (!markA || !markB) {
+			selectedContradictionEvidenceLink = null;
+			return;
+		}
+
+		const markARect = markA.getBoundingClientRect();
+		const markBRect = markB.getBoundingClientRect();
+		const aCenterPx = markARect.top - hostRect.top + markARect.height / 2;
+		const bCenterPx = markBRect.top - hostRect.top + markBRect.height / 2;
+		const showA = aCenterPx >= 0 && aCenterPx <= hostRect.height;
+		const showB = bCenterPx >= 0 && bCenterPx <= hostRect.height;
+		const clampedACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
+		const clampedBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
+		const topPx = Math.min(clampedACenterPx, clampedBCenterPx);
+		const bottomPx = Math.max(clampedACenterPx, clampedBCenterPx);
+		if (bottomPx - topPx < 2) {
+			selectedContradictionEvidenceLink = null;
+			return;
+		}
+		const rightEdge = Math.max(markARect.right, markBRect.right);
+		const leftPx = Math.max(8, rightEdge - hostRect.left + 16);
+		selectedContradictionEvidenceLink = {
+			topPx,
+			bottomPx,
+			leftPx,
+			showA,
+			showB,
+			aCenterPx,
+			bCenterPx
+		};
 	}
 
 	function scheduleContradictionScrollMarkerRefresh() {
@@ -517,6 +599,10 @@
 			contradictionMarkerFrame = null;
 			refreshContradictionScrollMarkers();
 		});
+	}
+
+	function jumpToContradictionParagraph(paragraphId: string) {
+		focusNodeFromPanel(paragraphId, true);
 	}
 
 	function applyContradictionHighlights() {
@@ -968,6 +1054,26 @@
 		void submitAssistantQuestion(question);
 	}
 
+	async function submitContradictionAssistantQuestion(questionOverride?: string) {
+		await submitAssistantQuestion(questionOverride, {
+			mode: 'explain',
+			scope: 'selected'
+		});
+	}
+
+	function handleContradictionAssistantInputKeydown(event: KeyboardEvent) {
+		if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+			event.preventDefault();
+			void submitContradictionAssistantQuestion();
+		}
+	}
+
+	function suggestContradictionFixFromChat() {
+		void submitContradictionAssistantQuestion(
+			'Suggest a revised version of the selected paragraph that resolves the contradiction while preserving legal intent and legal style.'
+		);
+	}
+
 	function resetSimplifyState() {
 		simplifyToolbarVisible = false;
 		simplifyToolbarTop = 0;
@@ -995,12 +1101,11 @@
 		});
 		if (nextTarget) {
 			simplifyTarget = nextTarget;
-			simplifyToolbarVisible = true;
 			setSimplifyToolbarPosition(nextTarget.anchorRect);
 		} else {
-			simplifyToolbarVisible = false;
 			simplifyTarget = null;
 		}
+		simplifyToolbarVisible = false;
 	}
 
 	function resolveActiveSimplifyTarget(): SimplifyTarget | null {
@@ -1185,6 +1290,7 @@
 		contradictionSource = null;
 		contradictionError = null;
 		contradictionScrollMarkers = [];
+		selectedContradictionEvidenceLink = null;
 		resetInspectorState();
 		resetAssistantState();
 		if (clearStores) {
@@ -1841,7 +1947,7 @@
 	}
 
 	function handleRightDrawerResizeMove(event: MouseEvent) {
-		const desiredWidth = window.innerWidth - RIGHT_TOOLBAR_WIDTH - event.clientX;
+		const desiredWidth = window.innerWidth - activeSidebarWidth - event.clientX;
 		setRightDrawerWidth(desiredWidth);
 	}
 
@@ -1856,24 +1962,24 @@
 
 	function handleRightDrawerResizeKeydown(event: KeyboardEvent) {
 		if (!isRightDrawerOpen) return;
-		if (event.key === 'ArrowLeft') {
+		if (event.key === 'ArrowRight') {
 			event.preventDefault();
 			setRightDrawerWidth(rightDrawerWidth + RIGHT_DRAWER_KEYBOARD_STEP);
 			return;
 		}
-		if (event.key === 'ArrowRight') {
+		if (event.key === 'ArrowLeft') {
 			event.preventDefault();
 			setRightDrawerWidth(rightDrawerWidth - RIGHT_DRAWER_KEYBOARD_STEP);
 		}
 	}
 
 	function selectRightTool(tabId: RightPanelTab) {
-		if (activeRightPanelTab === tabId && isRightDrawerOpen) {
-			isRightDrawerOpen = false;
-			return;
-		}
 		activeRightPanelTab = tabId;
 		isRightDrawerOpen = true;
+	}
+
+	function toggleSidebarLabels() {
+		sidebarLabelsPinned = !sidebarLabelsPinned;
 	}
 
 	onMount(() => {
@@ -1932,15 +2038,19 @@
 	});
 </script>
 
-<main class="relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans">
+<main
+	class={`relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans ${
+		activeRightPanelTab === 'related' ? 'related-badges-on' : 'related-badges-off'
+	}`}
+>
 	<div
-		class="flex min-w-0 flex-col border-r border-gray-300"
+		class="relative flex min-w-0 flex-col border-r border-gray-300"
 		style={isCompactLayout
 			? ''
-			: `width: calc(100% - ${RIGHT_TOOLBAR_WIDTH + activeDrawerWidth}px);`}
+			: `width: calc(100% - ${activeSidebarWidth + activeDrawerWidth}px);`}
 	>
 		<header
-			class="flex flex-none items-center justify-between gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
+			class="flex flex-none items-center gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
 		>
 			<div class="min-w-0">
 				<p class="text-[11px] text-gray-500">Document</p>
@@ -1948,50 +2058,13 @@
 					{activeDocumentName || 'No document selected'}
 				</div>
 			</div>
-			<div class="flex items-center gap-1.5">
-				<Select.Root
-					type="single"
-					bind:value={contradictionModel}
-					disabled={contradictionLoading || $loading || backendGraphLoading}
-				>
-					<Select.Trigger
-						size="sm"
-						class="h-7 w-[170px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
-						title="Realtime contradiction model"
-					>
-						{contradictionModelLabel}
-					</Select.Trigger>
-					<Select.Content>
-						{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
-							<Select.Item value={option.value} label={option.label} class="text-[10px]">
-								{option.label}
-							</Select.Item>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-				<Button
-					variant="outline"
-					size="sm"
-					onclick={() => void loadSavedContradictions()}
-					disabled={!activeDocumentId || contradictionLoading || $loading}
-					class="h-7 border-amber-200 bg-amber-50 px-2.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
-				>
-					Saved Contradictions
-				</Button>
-				<Button
-					variant="destructive"
-					size="sm"
-					onclick={() => void searchContradictionsWithLlm()}
-					disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
-					class="h-7 border-red-200 bg-red-50 px-2.5 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
-				>
-					Search contradictions
-				</Button>
-			</div>
 		</header>
 
 		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
-			<Card.Root size="sm" class="mx-4 mt-2 border-gray-200 py-0 text-[10px]">
+			<Card.Root
+				size="sm"
+				class="absolute top-[64px] right-4 left-4 z-[70] border-gray-200 py-0 text-[10px] shadow-lg"
+			>
 				<Card.Content class="px-2.5 text-gray-600">
 					<div class="flex items-start justify-between gap-2">
 						{#if contradictionError}
@@ -2034,14 +2107,68 @@
 				<div bind:this={viewer} class="min-h-full w-full"></div>
 			</section>
 
-			{#if contradictionScrollMarkers.length > 0}
-				<div class="pointer-events-none absolute top-2 right-1 bottom-2 z-20 w-2">
+			{#if shouldShowContradictionDecorations && contradictionScrollMarkers.length > 0}
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
 					{#each contradictionScrollMarkers as marker (marker.paragraphId)}
 						<span
 							class={`docx-contradiction-scroll-marker docx-contradiction-scroll-marker--${marker.confidenceBand}`}
 							style={`top: ${marker.topPercent}%;`}
+							role="button"
+							tabindex="0"
+							aria-label={`Go to contradiction in paragraph ${marker.paragraphId}`}
+							on:click={() => jumpToContradictionParagraph(marker.paragraphId)}
+							on:keydown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									jumpToContradictionParagraph(marker.paragraphId);
+								}
+							}}
 						></span>
 					{/each}
+				</div>
+			{/if}
+
+			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
+				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+					<span
+						class="docx-contradiction-evidence-bracket"
+						style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.topPx}px; height: ${Math.max(
+							6,
+							selectedContradictionEvidenceLink.bottomPx - selectedContradictionEvidenceLink.topPx
+						)}px;`}
+					></span>
+					{#if selectedContradictionEvidenceLink.showA}
+						<span
+							class="docx-contradiction-evidence-cap"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--a"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--a"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						>
+							A
+						</span>
+					{/if}
+					{#if selectedContradictionEvidenceLink.showB}
+						<span
+							class="docx-contradiction-evidence-cap"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--b"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--b"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						>
+							B
+						</span>
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -2063,7 +2190,7 @@
 			aria-label="Resize side panel"
 			tabindex="0"
 			class="absolute top-0 bottom-0 z-50 w-1 cursor-col-resize bg-gray-200/80 transition hover:bg-teal-300 focus:bg-teal-400 focus:outline-none"
-			style={`right: ${RIGHT_TOOLBAR_WIDTH + rightDrawerWidth}px;`}
+			style={`right: ${activeSidebarWidth + rightDrawerWidth}px;`}
 			on:mousedown={startRightDrawerResize}
 			on:keydown={handleRightDrawerResizeKeydown}
 		>
@@ -2083,41 +2210,89 @@
 		}`}
 		style={isCompactLayout
 			? ''
-			: `right: ${RIGHT_TOOLBAR_WIDTH}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${RIGHT_TOOLBAR_WIDTH}px;`}
+			: `right: ${activeSidebarWidth}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${activeSidebarWidth}px;`}
 	>
 		<header
-			class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5"
+			class={`flex justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5 ${
+				activeRightPanelTab === 'analysis' ? 'items-start' : 'items-center'
+			}`}
 		>
 			<div class="min-w-0">
-				<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
-					<span class="shrink-0 text-blue-700">
-						{#if activeRightPanelTab === 'related'}
-							<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'analysis'}
-							<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'redundancy'}
-							<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'summarize'}
-							<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'ambiguity'}
-							<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else if activeRightPanelTab === 'revisions'}
-							<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
-						{:else}
-							<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
-						{/if}
-					</span>
-					<span>
-						{toTitleCaseLabel(
-							RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
-						)}
-					</span>
-				</h2>
+				<div class="flex flex-wrap items-center gap-2">
+					<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
+						<span class="shrink-0 text-blue-700">
+							{#if activeRightPanelTab === 'related'}
+								<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'analysis'}
+								<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'redundancy'}
+								<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'summarize'}
+								<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'ambiguity'}
+								<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else if activeRightPanelTab === 'revisions'}
+								<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
+							{:else}
+								<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
+							{/if}
+						</span>
+						<span>
+							{toTitleCaseLabel(
+								RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
+							)}
+						</span>
+					</h2>
+					{#if activeRightPanelTab === 'analysis'}
+						<div class="flex items-center gap-1">
+							<Select.Root
+								type="single"
+								bind:value={contradictionModel}
+								disabled={contradictionLoading || $loading || backendGraphLoading}
+							>
+								<Select.Trigger
+									size="sm"
+									class="h-7 w-[140px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+									title="Realtime contradiction model"
+								>
+									{contradictionModelLabel}
+								</Select.Trigger>
+								<Select.Content>
+									{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
+										<Select.Item value={option.value} label={option.label} class="text-[10px]">
+											{option.label}
+										</Select.Item>
+									{/each}
+								</Select.Content>
+							</Select.Root>
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => void loadSavedContradictions()}
+								disabled={!activeDocumentId || contradictionLoading || $loading}
+								class="h-7 w-[140px] justify-center border-amber-200 bg-amber-50 px-1.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
+							>
+								Saved Contradictions
+							</Button>
+							<Button
+								variant="destructive"
+								size="sm"
+								onclick={() => void searchContradictionsWithLlm()}
+								disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
+								class="h-7 w-[140px] justify-center border-red-200 bg-red-50 px-1.5 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
+							>
+								Search contradictions
+							</Button>
+						</div>
+					{/if}
+				</div>
 			</div>
 			<Button
 				variant="outline"
 				size="icon-sm"
-				class="h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
+				class={`h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+					activeRightPanelTab === 'analysis' ? 'mt-0.5 self-start' : ''
+				}`}
 				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
@@ -2133,6 +2308,20 @@
 				revisionProcessingSteps={revisionProcessingSteps}
 				selectedContradictionResult={selectedContradictionResult}
 				selectedContradictionEvidence={selectedContradictionEvidence}
+				bind:assistantInput
+				bind:assistantThread
+				assistantMessages={assistantMessages}
+				assistantLoading={assistantLoading}
+				assistantError={assistantError}
+				contradictionQuickActionFreeLabel={QUICK_ACTION_WHY_CONTRADICTION_FREE}
+				contradictionQuickActionAiLabel={QUICK_ACTION_WHY_CONTRADICTION_AI}
+				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
+				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
+				onSuggestContradictionFix={suggestContradictionFixFromChat}
+				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
+				onSubmitAssistantQuestion={submitContradictionAssistantQuestion}
+				onHandleAssistantInputKeydown={handleContradictionAssistantInputKeydown}
+				onFocusNodeFromPanel={focusNodeFromPanel}
 				onFocusEvidenceSnippet={focusEvidenceSnippet}
 			/>
 		{:else if activeRightPanelTab === 'redundancy'}
@@ -2199,67 +2388,131 @@
 	</aside>
 
 	<aside
-		class="absolute top-0 right-0 bottom-0 z-50 flex w-[58px] items-center justify-center px-2 py-3"
+		class="absolute top-0 right-0 bottom-0 z-50 flex items-stretch justify-end transition-[width] duration-200 ease-out"
+		style={`width: ${activeSidebarWidth}px;`}
 		aria-label="Tools sidebar"
 	>
-		<div
-			class="group/rail flex w-11 flex-col items-center justify-center gap-2.5 rounded-[22px] border border-gray-200 bg-white py-3 shadow-[0_1px_2px_rgba(15,23,42,0.08),0_10px_24px_rgba(15,23,42,0.07)]"
-		>
-			{#each RIGHT_PANEL_TOOLS as item (item.id)}
-				<div
-					class="group/item relative flex h-[34px] w-full flex-[0_0_34px] items-center justify-center"
-				>
-					<button
-						type="button"
-						on:click={() => selectRightTool(item.id)}
-						class={`inline-flex h-[30px] w-[30px] items-center justify-center rounded-full border border-transparent [transition:transform_150ms_cubic-bezier(0.2,0.85,0.2,1),background-color_150ms_ease,border-color_150ms_ease,color_150ms_ease,box-shadow_160ms_ease] ${
-							activeRightPanelTab === item.id && isRightDrawerOpen
-								? 'border-blue-300 bg-blue-100 text-blue-700 shadow-[0_0_0_2px_rgba(147,197,253,0.55),0_7px_16px_rgba(29,78,216,0.25)]'
-								: 'bg-transparent text-blue-700 group-hover/item:translate-x-[-1px] group-hover/item:scale-[1.03] group-hover/item:border-blue-200 group-hover/item:bg-blue-50 group-hover/item:text-blue-700 group-hover/item:shadow-[0_6px_14px_rgba(59,130,246,0.22)]'
-						}`}
-						aria-label={item.label}
+		<Tooltip.Provider delayDuration={130}>
+			<div
+				class={`relative flex h-full flex-col border-l border-gray-200 bg-white py-2 transition-[width,padding] duration-200 ease-out ${
+					sidebarLabelsPinned ? 'ml-auto w-[calc(100%-6px)] px-1.5' : 'w-9 items-center px-[2px]'
+				}`}
+			>
+				<div class={`mb-3 flex w-full items-center ${sidebarLabelsPinned ? 'justify-between' : 'justify-center'}`}>
+					{#if sidebarLabelsPinned}
+						<span class="ml-1 text-[17px] font-semibold tracking-wide text-gray-600">{TOOL_BRAND_SHORT_NAME}</span>
+					{/if}
+					<Button
+						variant="ghost"
+						size="icon-sm"
+						class="border border-transparent bg-transparent text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+						onclick={toggleSidebarLabels}
+						aria-label={sidebarLabelsPinned ? 'Collapse tool names' : 'Expand tool names'}
+						title={sidebarLabelsPinned ? 'Hide names' : 'Show names'}
 					>
-						{#if item.id === 'related'}
-							<RelatedParagraphsIcon className="h-[18px] w-[18px]" />
-						{:else if item.id === 'analysis'}
-							<ContradictionAnalysisIcon className="h-[18px] w-[18px]" />
-						{:else if item.id === 'redundancy'}
-							<RedundancyAnalysisIcon className="h-[18px] w-[18px]" />
-						{:else if item.id === 'summarize'}
-							<SummarizeSimplifyIcon className="h-[18px] w-[18px]" />
-						{:else if item.id === 'ambiguity'}
-							<AmbiguityAnalysisIcon className="h-[18px] w-[18px]" />
-						{:else if item.id === 'revisions'}
-							<ParagraphRevisionsIcon className="h-[18px] w-[18px]" />
-						{:else}
-							<ContractChatAssistantIcon className="h-[18px] w-[18px]" />
-						{/if}
-					</button>
-					<div
-						class={`pointer-events-none absolute top-1/2 right-[calc(100%+8px)] translate-x-[-4px] -translate-y-1/2 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-semibold whitespace-nowrap opacity-0 shadow-md [transition:opacity_140ms_ease,transform_170ms_cubic-bezier(0.2,0.85,0.2,1)] group-focus-within/item:translate-x-0 group-focus-within/item:opacity-100 group-hover/rail:translate-x-0 group-hover/rail:opacity-100 ${
-							activeRightPanelTab === item.id ? 'text-slate-900' : 'text-slate-500'
-						}`}
-					>
-						{toTitleCaseLabel(item.label)}
-					</div>
+						<svg
+							viewBox="0 0 24 24"
+							fill="none"
+							class="h-4 w-4"
+							stroke="currentColor"
+							stroke-width="2"
+							aria-hidden="true"
+						>
+							{#if sidebarLabelsPinned}
+								<path d="M5 6v12M8 12h10m0 0-3-3m3 3-3 3" stroke-linecap="round" stroke-linejoin="round" />
+							{:else}
+								<path d="M19 6v12M16 12H6m0 0 3-3m-3 3 3 3" stroke-linecap="round" stroke-linejoin="round" />
+							{/if}
+						</svg>
+					</Button>
 				</div>
-			{/each}
-		</div>
+
+				<div class="mb-7 h-px w-full bg-gray-200" aria-hidden="true"></div>
+
+				<div class="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+					{#each RIGHT_PANEL_TOOLS as item (item.id)}
+						{@const isActive = activeRightPanelTab === item.id && isRightDrawerOpen}
+						{@const label = toTitleCaseLabel(item.label)}
+						{@const rowClasses = sidebarLabelsPinned
+							? `h-8 w-full justify-start gap-1.5 px-1.5 text-[10px] font-semibold ${
+									isActive
+										? 'border-blue-200 bg-blue-50 text-blue-700 shadow-[0_4px_10px_rgba(59,130,246,0.2)]'
+										: 'text-slate-600 hover:border-blue-100 hover:bg-blue-50/70 hover:text-blue-700'
+								}`
+							: `h-8 w-8 justify-center ${
+									isActive
+										? 'border-blue-300 bg-blue-100 text-blue-700 shadow-[0_0_0_2px_rgba(147,197,253,0.55),0_7px_16px_rgba(29,78,216,0.25)]'
+										: 'text-blue-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-[0_6px_14px_rgba(59,130,246,0.22)]'
+								}`}
+						{#if sidebarLabelsPinned}
+							<Button
+								variant="ghost"
+								class={rowClasses}
+								onclick={() => selectRightTool(item.id)}
+								aria-label={item.label}
+							>
+								{#if item.id === 'related'}
+									<RelatedParagraphsIcon className="h-[17px] w-[17px]" />
+								{:else if item.id === 'analysis'}
+									<ContradictionAnalysisIcon className="h-[17px] w-[17px]" />
+								{:else if item.id === 'redundancy'}
+									<RedundancyAnalysisIcon className="h-[17px] w-[17px]" />
+								{:else if item.id === 'summarize'}
+									<SummarizeSimplifyIcon className="h-[17px] w-[17px]" />
+								{:else if item.id === 'ambiguity'}
+									<AmbiguityAnalysisIcon className="h-[17px] w-[17px]" />
+								{:else if item.id === 'revisions'}
+									<ParagraphRevisionsIcon className="h-[17px] w-[17px]" />
+								{:else}
+									<ContractChatAssistantIcon className="h-[17px] w-[17px]" />
+								{/if}
+								<span class="truncate">{label}</span>
+							</Button>
+						{:else}
+							<Tooltip.Root>
+								<Tooltip.Trigger>
+									{#snippet child({ props })}
+										<Button
+											{...props}
+											variant="ghost"
+											class={rowClasses}
+											onclick={() => selectRightTool(item.id)}
+											aria-label={item.label}
+										>
+											{#if item.id === 'related'}
+												<RelatedParagraphsIcon className="h-[17px] w-[17px]" />
+											{:else if item.id === 'analysis'}
+												<ContradictionAnalysisIcon className="h-[17px] w-[17px]" />
+											{:else if item.id === 'redundancy'}
+												<RedundancyAnalysisIcon className="h-[17px] w-[17px]" />
+											{:else if item.id === 'summarize'}
+												<SummarizeSimplifyIcon className="h-[17px] w-[17px]" />
+											{:else if item.id === 'ambiguity'}
+												<AmbiguityAnalysisIcon className="h-[17px] w-[17px]" />
+											{:else if item.id === 'revisions'}
+												<ParagraphRevisionsIcon className="h-[17px] w-[17px]" />
+											{:else}
+												<ContractChatAssistantIcon className="h-[17px] w-[17px]" />
+											{/if}
+										</Button>
+									{/snippet}
+								</Tooltip.Trigger>
+								<Tooltip.Content
+									side="left"
+									sideOffset={10}
+									arrowClasses="hidden"
+									class="border border-gray-200 bg-white px-2.5 py-1 text-[10px] font-semibold text-slate-700 shadow-md"
+								>
+									{label}
+								</Tooltip.Content>
+							</Tooltip.Root>
+						{/if}
+					{/each}
+				</div>
+			</div>
+		</Tooltip.Provider>
 	</aside>
 
-	<ParagraphRewriteActions
-		visible={simplifyToolbarVisible && Boolean(simplifyTarget)}
-		top={simplifyToolbarTop}
-		left={simplifyToolbarLeft}
-		simplifyLoading={simplifyLoading}
-		fixContradictionLoading={fixContradictionLoading}
-		assistantLoading={assistantLoading}
-		onFixContradiction={runFixContradiction}
-		onSimplify={runSimplify}
-		onClose={() => {
-			simplifyToolbarVisible = false;
-		}}
-	/>
 </main>
 
 <style>
@@ -2316,6 +2569,11 @@
 		color: #1d4ed8;
 	}
 
+	:global(.related-badges-off .docx-relations-badge-host)::before,
+	:global(.related-badges-off .docx-relations-badge-host)::after {
+		display: none;
+	}
+
 	:global(.docx-citation-flash) {
 		animation: citation-flash 1.2s ease-out;
 	}
@@ -2341,18 +2599,34 @@
 
 	:global(mark.docx-contradiction-snippet) {
 		background: transparent;
-		color: #991b1b;
+		color: #7f1d1d;
 		padding: 0 1px;
 		border-radius: 1px;
-		text-decoration: underline;
-		text-decoration-color: #dc2626;
-		text-decoration-thickness: 2px;
-		text-underline-offset: 2px;
+		text-decoration: none;
+	}
+
+	:global(mark.docx-contradiction-snippet[data-contradiction-role='a']) {
+		color: #991b1b;
+		background: rgba(254, 202, 202, 0.26);
+	}
+
+	:global(mark.docx-contradiction-snippet[data-contradiction-role='b']) {
+		color: #854d0e;
+		background: rgba(254, 240, 138, 0.28);
 	}
 
 	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active) {
-		background: rgba(254, 202, 202, 0.55);
+		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
+	}
+
+	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']) {
+		background: rgba(254, 202, 202, 0.58);
 		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
+	}
+
+	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']) {
+		background: rgba(254, 240, 138, 0.6);
+		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
 	}
 
 	:global(.docx-contradiction-scroll-marker) {
@@ -2365,6 +2639,21 @@
 		background: #dc2626;
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
 		opacity: 0.92;
+		cursor: pointer;
+		transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+	}
+
+	:global(.docx-contradiction-scroll-marker:hover) {
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(239, 68, 68, 0.35);
+	}
+
+	:global(.docx-contradiction-scroll-marker:focus-visible) {
+		outline: none;
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(239, 68, 68, 0.45);
 	}
 
 	:global(.docx-contradiction-scroll-marker--medium) {
@@ -2373,6 +2662,59 @@
 
 	:global(.docx-contradiction-scroll-marker--low) {
 		background: #f87171;
+	}
+
+	:global(.docx-contradiction-evidence-bracket) {
+		position: absolute;
+		width: 2px;
+		border-radius: 0;
+		background: linear-gradient(to bottom, #dc2626 0%, #eab308 100%);
+		transform: translateX(-50%);
+		opacity: 0.92;
+	}
+
+	:global(.docx-contradiction-evidence-cap) {
+		position: absolute;
+		width: 12px;
+		height: 2px;
+		border-radius: 0;
+		background: linear-gradient(to right, rgba(220, 38, 38, 0.95) 0%, rgba(234, 179, 8, 0.95) 100%);
+		transform: translate(-100%, -50%);
+		opacity: 0.92;
+	}
+
+	:global(.docx-contradiction-evidence-dot) {
+		position: absolute;
+		height: 8px;
+		width: 8px;
+		transform: translate(-50%, -50%);
+		border-radius: 9999px;
+		border: 1px solid rgba(255, 255, 255, 0.9);
+		box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.28);
+	}
+
+	:global(.docx-contradiction-evidence-dot--a) {
+		background: #dc2626;
+	}
+
+	:global(.docx-contradiction-evidence-dot--b) {
+		background: #eab308;
+	}
+
+	:global(.docx-contradiction-evidence-label) {
+		position: absolute;
+		transform: translate(9px, -50%);
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	:global(.docx-contradiction-evidence-label--a) {
+		color: #b91c1c;
+	}
+
+	:global(.docx-contradiction-evidence-label--b) {
+		color: #a16207;
 	}
 
 	@keyframes bounce {
