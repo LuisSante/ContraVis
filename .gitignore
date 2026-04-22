@@ -1,3 +1,4 @@
 *.env
 .vscode/
 .codex
+words_paragraph.json

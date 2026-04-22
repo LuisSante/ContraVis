@@ -33,11 +33,21 @@ def build_graph_cache_key(
             }
         )
 
-    payload_text = json.dumps(canonical_rows, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    fingerprint_payload = {
+        "rows": canonical_rows,
+        # Keep internal invalidation when extraction logic/schema changes,
+        # but avoid exposing version tags in the filename.
+        "schema": str(schema_version or ""),
+    }
+    payload_text = json.dumps(
+        fingerprint_payload,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
     digest = sha256(payload_text.encode("utf-8")).hexdigest()[:16]
     safe_doc_id = _safe_token(document_id)
-    safe_version = _safe_token(schema_version)
-    return f"{safe_doc_id}.{digest}.{safe_version}.json"
+    return f"{safe_doc_id}.{digest}.json"
 
 
 def load_graph_cache(*, cache_dir: Path, cache_key: str) -> dict[str, Any] | None:

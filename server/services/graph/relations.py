@@ -184,6 +184,30 @@ def extract_heading_meta(text: str) -> dict | None:
     return None
 
 
+def is_self_heading_reference(
+    *,
+    heading_meta: dict | None,
+    ref_type: str,
+    ref_id: str,
+    match_start: int,
+) -> bool:
+    if heading_meta is None:
+        return False
+
+    # Match is very close to the start and equals the heading identifier.
+    # Example: "Article 1 DEFINITIONS..." should not create outgoing references
+    # to every 1.x paragraph just because of its own title.
+    if match_start > 24:
+        return False
+
+    heading_type = str(heading_meta.get("type", ""))
+    heading_ref_id = str(heading_meta.get("ref_id", ""))
+    if not heading_type or not heading_ref_id:
+        return False
+
+    return heading_type == ref_type and heading_ref_id == ref_id
+
+
 def expand_reference_scope_indices(
     *,
     nodes: list[Node],
@@ -302,10 +326,18 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
 
     for i in range(len(nodes)):
         current_text = nodes[i].text
+        current_heading_meta = heading_by_index.get(i)
         for ref_type, pattern in Config.REFERENCE_PATTERNS:
             matches = pattern.finditer(current_text)
             for match in matches:
                 ref_id = match.group(1)
+                if is_self_heading_reference(
+                    heading_meta=current_heading_meta,
+                    ref_type=ref_type,
+                    ref_id=ref_id,
+                    match_start=match.start(),
+                ):
+                    continue
                 direct_target_indices: set[int] = set()
                 for target_idx, target_node in enumerate(nodes):
                     if target_node.id == nodes[i].id:

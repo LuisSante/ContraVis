@@ -189,7 +189,6 @@ async def process_document(data: dict):
                 "enabled": True,
                 "hit": True,
                 "key": cache_key,
-                "schemaVersion": Config.KG_SCHEMA_VERSION,
             }
             response = dict(cached_payload)
             response["cache"] = cache_meta
@@ -206,7 +205,6 @@ async def process_document(data: dict):
         "enabled": Config.GRAPH_CACHE_ENABLED,
         "hit": False,
         "key": cache_key,
-        "schemaVersion": Config.KG_SCHEMA_VERSION,
     }
     response = {
         "status": "success",
