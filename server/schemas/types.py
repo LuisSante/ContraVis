@@ -63,6 +63,7 @@ class AssistantChatRequest(BaseModel):
     mode: AssistantMode = "explain"
     scope: AssistantScope = "selected"
     provider: AssistantProvider = "gemini"
+    model: Optional[str] = None
     selectedParagraphId: Optional[str] = None
     relatedParagraphs: List[AssistantRelatedParagraph] = Field(default_factory=list)
     paragraphNodes: List[AssistantParagraphNode]

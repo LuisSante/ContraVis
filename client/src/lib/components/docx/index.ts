@@ -1,5 +1,6 @@
 export { default as RightPanelAmbiguity } from './RightPanelAmbiguity.svelte';
 export { default as RightPanelAnalysis } from './RightPanelAnalysis.svelte';
+export { default as RightPanelParagraphExplanation } from './RightPanelParagraphExplanation.svelte';
 export { default as ParagraphRewriteActions } from './ParagraphRewriteActions.svelte';
 export { default as ParagraphRewriteResult } from './ParagraphRewriteResult.svelte';
 export { default as RightPanelAssistant } from './RightPanelAssistant.svelte';

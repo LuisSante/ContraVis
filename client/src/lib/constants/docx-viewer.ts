@@ -42,6 +42,12 @@ export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; 
 
 ];
 
+export const PARAGRAPH_EXPLANATION_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+	{ value: 'gpt-5-mini', label: 'gpt-5-mini' },
+	{ value: 'gpt-5', label: 'gpt-5' },
+	{ value: 'gpt-4.1', label: 'gpt-4.1' }
+];
+
 export const COMMIT_SHORTCUT_LABEL = 'CTRL + SHIFT + ENTER';
 export const COMMIT_SHORTCUT_HINT = 'Commit changes with Ctrl + Shift + Enter';
 export const COMMIT_SHORTCUT_TOOLTIP = 'Ctrl + Shift + Enter to save';
@@ -98,9 +104,10 @@ export const EDITABLE_PARAGRAPH_CLASSES = [
 export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
 	{ id: 'related', label: 'Related Paragraphs' },
 	{ id: 'analysis', label: 'Contradiction Analysis' },
-	{ id: 'redundancy', label: 'Redundancy Analysis' },
-	{ id: 'summarize', label: 'Summarize & Simplify' },
-	{ id: 'ambiguity', label: 'Ambiguity Analysis' },
+	// { id: 'redundancy', label: 'Redundancy Analysis' },
+	{ id: 'paragraph_explanation', label: 'Paragraph Explanation' },
+	// { id: 'summarize', label: 'Summarize & Simplify' },
+	// { id: 'ambiguity', label: 'Ambiguity Analysis' },
 	{ id: 'revisions', label: 'Paragraph Revisions' },
 	{ id: 'assistant', label: 'Contract Chat Assistant' }
 ];
