@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KG Fragment Viewer + Clause Explorer</title>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #141b34;
+      --panel-2: #0f1630;
+      --text: #edf2ff;
+      --muted: #aab7d6;
+      --accent: #77a8ff;
+      --accent-2: #9ce6c4;
+      --border: rgba(255,255,255,0.08);
+      --danger: #ff7d7d;
+      --warning: #ffd27a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    body { overflow: hidden; }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border-right: 1px solid var(--border);
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .muted {
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .panel {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 14px;
+    }
+
+    label, .file-label span {
+      display: block;
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+      color: #dce6ff;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      margin: 4px 0 14px;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: var(--accent);
+      color: #08101f;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+
+    button.secondary {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stats div {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      color: var(--muted);
+    }
+
+    .legend ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .legend li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      padding: 4px 0;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .dot.center { background: var(--accent-2); }
+    .dot.neighbor { background: var(--accent); }
+
+    .line {
+      width: 22px;
+      height: 2px;
+      background: #96a9d7;
+    }
+
+    .canvas-wrap {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 4;
+      background: rgba(11,16,32,0.84);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    #graph {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .link {
+      stroke: #91a3cf;
+      stroke-opacity: 0.38;
+      stroke-width: 1.4px;
+    }
+
+    .link.highlighted {
+      stroke: var(--warning);
+      stroke-opacity: 0.95;
+      stroke-width: 2.3px;
+    }
+
+    .node circle {
+      stroke: rgba(255,255,255,0.45);
+      stroke-width: 1px;
+    }
+
+    .node text {
+      fill: #f8fbff;
+      font-size: 11px;
+      pointer-events: none;
+    }
+
+    .node.center circle {
+      fill: var(--accent-2);
+    }
+
+    .node.neighbor circle {
+      fill: var(--accent);
+    }
+
+    .node.faded {
+      opacity: 0.18;
+    }
+
+    .tooltip {
+      position: absolute;
+      max-width: 360px;
+      pointer-events: none;
+      background: rgba(7, 11, 24, 0.95);
+      color: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      line-height: 1.45;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      z-index: 5;
+    }
+
+    .hidden { display: none; }
+
+    .node-id {
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .small {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .clause-explorer {
+      position: absolute;
+      right: 20px;
+      bottom: 20px;
+      width: 440px;
+      max-height: 55%;
+      overflow-y: auto;
+      background: rgba(10, 15, 30, 0.96);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      z-index: 6;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    .clause-explorer h3,
+    .clause-explorer h4 {
+      margin: 0;
+    }
+
+    .clause-card {
+      background: rgba(255,255,255,0.05);
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .clause-card h3 {
+      margin-bottom: 8px;
+      font-size: 0.98rem;
+      color: var(--accent-2);
+    }
+
+    .clause-card p {
+      margin: 0;
+      color: #eef4ff;
+      line-height: 1.5;
+      font-size: 0.92rem;
+    }
+
+    .relations {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .relation-block {
+      background: rgba(255,255,255,0.03);
+      border-radius: 12px;
+      padding: 10px;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .relation-block h4 {
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .relation-block ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .relation-block li {
+      font-size: 0.82rem;
+      line-height: 1.4;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #e9f0ff;
+    }
+
+    .relation-block li:last-child {
+      border-bottom: 0;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-style: italic;
+    }
+
+    @media (max-width: 1100px) {
+      .app-shell {
+        grid-template-columns: 320px 1fr;
+      }
+
+      .clause-explorer {
+        width: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <h1>KG Fragment Viewer</h1>
+      <p class="muted">
+        Carga tu JSON del knowledge graph, busca un nodo y visualiza solo un fragmento.
+      </p>
+
+      <div class="panel">
+        <label class="file-label">
+          <span>Load KG JSON</span>
+          <input id="fileInput" type="file" accept=".json" />
+        </label>
+        <button id="loadExampleBtn" class="secondary">Load example config</button>
+      </div>
+
+      <div class="panel">
+        <label for="nodeSearch">Search node</label>
+        <input id="nodeSearch" type="text" placeholder="Type clause text, id, section..." list="nodeSuggestions" />
+        <datalist id="nodeSuggestions"></datalist>
+
+        <label for="depthRange">Neighborhood depth: <strong id="depthValue">1</strong></label>
+        <input id="depthRange" type="range" min="1" max="3" value="1" />
+
+        <label for="maxNodesRange">Max nodes: <strong id="maxNodesValue">20</strong></label>
+        <input id="maxNodesRange" type="range" min="5" max="80" value="20" />
+
+        <label for="relationFilter">Relation filter</label>
+        <select id="relationFilter">
+          <option value="all">All relations</option>
+        </select>
+
+        <div class="button-row">
+          <button id="renderBtn">Render fragment</button>
+          <button id="resetBtn" class="secondary">Reset</button>
+        </div>
+      </div>
+
+      <div class="panel stats">
+        <div><span>Total nodes:</span> <strong id="totalNodes">0</strong></div>
+        <div><span>Total edges:</span> <strong id="totalEdges">0</strong></div>
+        <div><span>Visible nodes:</span> <strong id="visibleNodes">0</strong></div>
+        <div><span>Visible edges:</span> <strong id="visibleEdges">0</strong></div>
+      </div>
+
+      <div class="panel details">
+        <h2>Selected node</h2>
+        <div id="nodeDetails" class="muted">Click a node to inspect it.</div>
+      </div>
+
+      <div class="panel legend">
+        <h2>Legend</h2>
+        <ul>
+          <li><span class="dot center"></span> Center node</li>
+          <li><span class="dot neighbor"></span> Neighbor node</li>
+          <li><span class="line"></span> Directed relation</li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="canvas-wrap">
+      <div class="toolbar">
+        <span id="status">Waiting for JSON file...</span>
+      </div>
+
+      <svg id="graph"></svg>
+      <div id="tooltip" class="tooltip hidden"></div>
+
+      <div id="clauseExplorer" class="clause-explorer hidden">
+        <div class="clause-card">
+          <h3 id="clauseTitle">Clause</h3>
+          <p id="clauseText">Select a node to inspect its local relations.</p>
+        </div>
+
+        <div class="relations">
+          <div class="relation-block">
+            <h4>Outgoing</h4>
+            <ul id="outgoingList"></ul>
+          </div>
+          <div class="relation-block">
+            <h4>Incoming</h4>
+            <ul id="incomingList"></ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const loadExampleBtn = document.getElementById('loadExampleBtn');
+    const nodeSearch = document.getElementById('nodeSearch');
+    const nodeSuggestions = document.getElementById('nodeSuggestions');
+    const depthRange = document.getElementById('depthRange');
+    const depthValue = document.getElementById('depthValue');
+    const maxNodesRange = document.getElementById('maxNodesRange');
+    const maxNodesValue = document.getElementById('maxNodesValue');
+    const relationFilter = document.getElementById('relationFilter');
+    const renderBtn = document.getElementById('renderBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const statusEl = document.getElementById('status');
+    const totalNodesEl = document.getElementById('totalNodes');
+    const totalEdgesEl = document.getElementById('totalEdges');
+    const visibleNodesEl = document.getElementById('visibleNodes');
+    const visibleEdgesEl = document.getElementById('visibleEdges');
+    const nodeDetails = document.getElementById('nodeDetails');
+    const tooltip = document.getElementById('tooltip');
+    const svg = d3.select('#graph');
+
+    let rawData = null;
+    let normalized = null;
+    let simulation = null;
+    let zoomBehavior = null;
+    let currentCenterId = null;
+
+    const width = () => document.querySelector('.canvas-wrap').clientWidth;
+    const height = () => document.querySelector('.canvas-wrap').clientHeight;
+
+    const state = {
+      nodesById: new Map(),
+      outgoing: new Map(),
+      incoming: new Map(),
+      relationTypes: new Set(),
+    };
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function shortText(text, max = 44) {
+      if (!text) return '(no text)';
+      return text.length > max ? text.slice(0, max - 1) + '…' : text;
+    }
+
+    function formatNodeText(text) {
+      if (!text) return '(no text)';
+      return String(text).replace(/\s+/g, ' ').trim();
+    }
+
+    function normalizeData(data) {
+      const graph = data.graph || data.knowledgeGraph || {};
+      const nodes = (graph.nodes || []).map(n => ({
+        ...n,
+        text: formatNodeText(n.text),
+        page: n.page ?? null,
+      }));
+
+      const edges = (graph.edges || graph.relations || []).map((e, idx) => ({
+        id: e.id || `e-${idx}`,
+        source: e.source,
+        target: e.target,
+        type: e.type || 'relation',
+        label: e.type || e.ref_label || 'relation',
+        ref_label: e.ref_label || null,
+        ref_value: e.ref_value || null,
+        score: e.score ?? null,
+      })).filter(e => e.source && e.target);
+
+      return { nodes, edges };
+    }
+
+    function buildIndexes(data) {
+      state.nodesById = new Map();
+      state.outgoing = new Map();
+      state.incoming = new Map();
+      state.relationTypes = new Set();
+
+      data.nodes.forEach(node => state.nodesById.set(node.id, node));
+
+      data.edges.forEach(edge => {
+        if (!state.outgoing.has(edge.source)) state.outgoing.set(edge.source, []);
+        if (!state.incoming.has(edge.target)) state.incoming.set(edge.target, []);
+        state.outgoing.get(edge.source).push(edge);
+        state.incoming.get(edge.target).push(edge);
+        state.relationTypes.add(edge.type);
+      });
+
+      totalNodesEl.textContent = data.nodes.length;
+      totalEdgesEl.textContent = data.edges.length;
+      fillSuggestions(data.nodes);
+      fillRelationFilter([...state.relationTypes].sort());
+    }
+
+    function fillSuggestions(nodes) {
+      nodeSuggestions.innerHTML = '';
+      nodes.slice(0, 400).forEach(node => {
+        const option = document.createElement('option');
+        option.value = `${shortText(node.text, 80)} | ${node.id}`;
+        nodeSuggestions.appendChild(option);
+      });
+    }
+
+    function fillRelationFilter(types) {
+      relationFilter.innerHTML = '<option value="all">All relations</option>';
+      types.forEach(type => {
+        const option = document.createElement('option');
+        option.value = type;
+        option.textContent = type;
+        relationFilter.appendChild(option);
+      });
+    }
+
+    function parseSearchValue(value) {
+      const raw = value.trim();
+      if (!raw || !normalized) return null;
+
+      const afterPipe = raw.includes('|') ? raw.split('|').pop().trim() : raw;
+      if (state.nodesById.has(afterPipe)) return afterPipe;
+
+      const lower = raw.toLowerCase();
+
+      const exactText = normalized.nodes.find(n => (n.text || '').toLowerCase() === lower);
+      if (exactText) return exactText.id;
+
+      const contains = normalized.nodes.find(n => {
+        const text = (n.text || '').toLowerCase();
+        return text.includes(lower) || n.id.toLowerCase().includes(lower);
+      });
+
+      return contains ? contains.id : null;
+    }
+
+    function getNeighbors(nodeId, relationType = 'all') {
+      const outgoing = (state.outgoing.get(nodeId) || []).filter(e => relationType === 'all' || e.type === relationType);
+      const incoming = (state.incoming.get(nodeId) || []).filter(e => relationType === 'all' || e.type === relationType);
+      return { outgoing, incoming };
+    }
+
+    function extractSubgraph(centerId, depth = 1, maxNodes = 20, relationType = 'all') {
+      const queue = [{ id: centerId, level: 0 }];
+      const visited = new Set([centerId]);
+      const selectedEdges = new Map();
+
+      while (queue.length && visited.size < maxNodes) {
+        const current = queue.shift();
+        if (current.level >= depth) continue;
+
+        const { outgoing, incoming } = getNeighbors(current.id, relationType);
+        const candidateEdges = [...outgoing, ...incoming];
+
+        for (const edge of candidateEdges) {
+          selectedEdges.set(edge.id, edge);
+          const nextId = edge.source === current.id ? edge.target : edge.source;
+
+          if (!visited.has(nextId) && state.nodesById.has(nextId)) {
+            visited.add(nextId);
+            queue.push({ id: nextId, level: current.level + 1 });
+            if (visited.size >= maxNodes) break;
+          }
+        }
+      }
+
+      const subNodes = [...visited]
+        .map(id => state.nodesById.get(id))
+        .filter(Boolean)
+        .map(node => ({
+          ...node,
+          role: node.id === centerId ? 'center' : 'neighbor',
+        }));
+
+      const allowedIds = new Set(subNodes.map(n => n.id));
+      const subEdges = [...selectedEdges.values()].filter(e => allowedIds.has(e.source) && allowedIds.has(e.target));
+
+      return { nodes: subNodes, edges: subEdges };
+    }
+
+    function showNodeDetails(node) {
+      const outgoingCount = (state.outgoing.get(node.id) || []).length;
+      const incomingCount = (state.incoming.get(node.id) || []).length;
+
+      nodeDetails.innerHTML = `
+        <div><strong>${shortText(node.text, 120)}</strong></div>
+        <div class="node-id">${node.id}</div>
+        <div class="small">Page: ${node.page ?? '—'}</div>
+        <div class="small">Outgoing edges: ${outgoingCount}</div>
+        <div class="small">Incoming edges: ${incomingCount}</div>
+        <p>${node.text}</p>
+      `;
+    }
+
+    function renderRelationList(listEl, edges, direction) {
+      listEl.innerHTML = '';
+
+      if (!edges.length) {
+        const li = document.createElement('li');
+        li.className = 'empty-state';
+        li.textContent = 'No relations in this direction.';
+        listEl.appendChild(li);
+        return;
+      }
+
+      edges.forEach(edge => {
+        const otherNode = direction === 'out'
+          ? state.nodesById.get(edge.target)
+          : state.nodesById.get(edge.source);
+
+        const li = document.createElement('li');
+        li.textContent = direction === 'out'
+          ? `→ ${edge.type} → ${shortText(otherNode?.text || edge.target, 60)}`
+          : `← ${edge.type} ← ${shortText(otherNode?.text || edge.source, 60)}`;
+
+        listEl.appendChild(li);
+      });
+    }
+
+    function updateClauseExplorer(node) {
+      const explorer = document.getElementById('clauseExplorer');
+      const title = document.getElementById('clauseTitle');
+      const text = document.getElementById('clauseText');
+      const outgoingList = document.getElementById('outgoingList');
+      const incomingList = document.getElementById('incomingList');
+
+      explorer.classList.remove('hidden');
+
+      title.textContent = node.id;
+      text.textContent = node.text || '(no text)';
+
+      const outgoing = state.outgoing.get(node.id) || [];
+      const incoming = state.incoming.get(node.id) || [];
+
+      renderRelationList(outgoingList, outgoing, 'out');
+      renderRelationList(incomingList, incoming, 'in');
+    }
+
+    function highlightConnected(selectedNodeId, nodeSelection, linkSelection) {
+      const connectedNodeIds = new Set([selectedNodeId]);
+
+      linkSelection.classed('highlighted', d => {
+        const hit = d.source.id === selectedNodeId || d.target.id === selectedNodeId;
+        if (hit) {
+          connectedNodeIds.add(d.source.id);
+          connectedNodeIds.add(d.target.id);
+        }
+        return hit;
+      });
+
+      nodeSelection.classed('faded', d => !connectedNodeIds.has(d.id));
+    }
+
+    function clearHighlight(nodeSelection, linkSelection) {
+      nodeSelection.classed('faded', false);
+      linkSelection.classed('highlighted', false);
+    }
+
+    function renderGraph(graphData) {
+      currentCenterId = graphData.nodes.find(n => n.role === 'center')?.id || null;
+      visibleNodesEl.textContent = graphData.nodes.length;
+      visibleEdgesEl.textContent = graphData.edges.length;
+      setStatus(`Showing ${graphData.nodes.length} nodes and ${graphData.edges.length} edges.`);
+
+      svg.selectAll('*').remove();
+
+      const defs = svg.append('defs');
+
+      defs.append('marker')
+        .attr('id', 'arrowhead')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 18)
+        .attr('refY', 0)
+        .attr('markerWidth', 6)
+        .attr('markerHeight', 6)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', 'M0,-5L10,0L0,5')
+        .attr('fill', '#91a3cf');
+
+      const root = svg.append('g');
+
+      zoomBehavior = d3.zoom()
+        .scaleExtent([0.3, 3])
+        .on('zoom', (event) => root.attr('transform', event.transform));
+
+      svg.call(zoomBehavior);
+
+      const link = root.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(graphData.edges)
+        .join('line')
+        .attr('class', 'link')
+        .attr('marker-end', 'url(#arrowhead)');
+
+      const node = root.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g')
+        .data(graphData.nodes)
+        .join('g')
+        .attr('class', d => `node ${d.role}`)
+        .call(
+          d3.drag()
+            .on('start', dragStarted)
+            .on('drag', dragged)
+            .on('end', dragEnded)
+        );
+
+      node.append('circle')
+        .attr('r', d => d.role === 'center' ? 16 : 12);
+
+      node.append('text')
+        .attr('dy', -18)
+        .attr('text-anchor', 'middle')
+        .text(d => shortText(d.text, 34));
+
+      node
+        .on('click', (event, d) => {
+          showNodeDetails(d);
+          updateClauseExplorer(d);
+          highlightConnected(d.id, node, link);
+        })
+        .on('dblclick', (event, d) => {
+          nodeSearch.value = d.id;
+          renderFromControls();
+        })
+        .on('mouseenter', (event, d) => {
+          tooltip.classList.remove('hidden');
+          tooltip.innerHTML = `
+            <strong>${shortText(d.text, 120)}</strong><br>
+            <span class="node-id">${d.id}</span><br>
+            <span class="small">Page: ${d.page ?? '—'}</span>
+          `;
+        })
+        .on('mousemove', (event) => {
+          tooltip.style.left = `${event.offsetX + 18}px`;
+          tooltip.style.top = `${event.offsetY + 18}px`;
+        })
+        .on('mouseleave', () => {
+          tooltip.classList.add('hidden');
+        });
+
+      link.append('title').text(d => `${d.label}: ${typeof d.source === 'object' ? d.source.id : d.source} → ${typeof d.target === 'object' ? d.target.id : d.target}`);
+
+      simulation = d3.forceSimulation(graphData.nodes)
+        .force('link', d3.forceLink(graphData.edges).id(d => d.id).distance(135))
+        .force('charge', d3.forceManyBody().strength(-520))
+        .force('center', d3.forceCenter(width() / 2, height() / 2))
+        .force('collision', d3.forceCollide().radius(d => d.role === 'center' ? 34 : 28));
+
+      simulation.on('tick', () => {
+        link
+          .attr('x1', d => d.source.x)
+          .attr('y1', d => d.source.y)
+          .attr('x2', d => d.target.x)
+          .attr('y2', d => d.target.y);
+
+        node.attr('transform', d => `translate(${d.x},${d.y})`);
+      });
+
+      clearHighlight(node, link);
+
+      const centerNode = graphData.nodes.find(n => n.role === 'center');
+      if (centerNode) {
+        showNodeDetails(centerNode);
+        updateClauseExplorer(centerNode);
+      }
+
+      function dragStarted(event, d) {
+        if (!event.active) simulation.alphaTarget(0.2).restart();
+        d.fx = d.x;
+        d.fy = d.y;
+      }
+
+      function dragged(event, d) {
+        d.fx = event.x;
+        d.fy = event.y;
+      }
+
+      function dragEnded(event, d) {
+        if (!event.active) simulation.alphaTarget(0);
+        d.fx = null;
+        d.fy = null;
+      }
+    }
+
+    function renderFromControls() {
+      if (!normalized) {
+        setStatus('Load a JSON file first.');
+        return;
+      }
+
+      const centerId = parseSearchValue(nodeSearch.value) || normalized.nodes[0]?.id;
+
+      if (!centerId) {
+        setStatus('No node found.');
+        return;
+      }
+
+      const depth = Number(depthRange.value);
+      const maxNodes = Number(maxNodesRange.value);
+      const relationType = relationFilter.value;
+      const subgraph = extractSubgraph(centerId, depth, maxNodes, relationType);
+
+      renderGraph(subgraph);
+    }
+
+    function resetControls() {
+      nodeSearch.value = '';
+      depthRange.value = 1;
+      maxNodesRange.value = 20;
+      relationFilter.value = 'all';
+      depthValue.textContent = depthRange.value;
+      maxNodesValue.textContent = maxNodesRange.value;
+      nodeDetails.textContent = 'Click a node to inspect it.';
+
+      if (normalized?.nodes?.length) {
+        const starter = normalized.nodes.find(n => n.id.includes('p-111')) || normalized.nodes[0];
+        nodeSearch.value = starter.id;
+        renderFromControls();
+      }
+    }
+
+    function handleLoadedJson(data) {
+      rawData = data;
+      normalized = normalizeData(rawData);
+      buildIndexes(normalized);
+
+      const starter = normalized.nodes.find(n => n.id.includes('p-111')) || normalized.nodes[0];
+      nodeSearch.value = starter?.id || '';
+      setStatus('JSON loaded. Ready to render a fragment.');
+      renderFromControls();
+    }
+
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        handleLoadedJson(data);
+      } catch (error) {
+        console.error(error);
+        setStatus('Could not parse the JSON file.');
+      }
+    });
+
+    loadExampleBtn.addEventListener('click', () => {
+      setStatus('Example mode: search a clause like p-111 or "Permitted Use".');
+      if (normalized) resetControls();
+    });
+
+    renderBtn.addEventListener('click', renderFromControls);
+    resetBtn.addEventListener('click', resetControls);
+
+    nodeSearch.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') renderFromControls();
+    });
+
+    depthRange.addEventListener('input', () => {
+      depthValue.textContent = depthRange.value;
+    });
+
+    maxNodesRange.addEventListener('input', () => {
+      maxNodesValue.textContent = maxNodesRange.value;
+    });
+
+    window.addEventListener('resize', () => {
+      if (normalized && currentCenterId) renderFromControls();
+    });
+  </script>
+</body>
+</html>
