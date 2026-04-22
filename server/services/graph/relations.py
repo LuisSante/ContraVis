@@ -27,6 +27,12 @@ REFERENCE_PREFIX_BY_TYPE = {
     "annex": "annex",
     "appendix": "appendix",
 }
+ARTICLE_HEADING_PATTERN = re.compile(r"^(?:article)\s+(\d+(?:\.\d+)*)\b", re.IGNORECASE)
+SECTION_HEADING_WITH_KEYWORD_PATTERN = re.compile(
+    r"^(?:section|clause)\s+(\d+(?:\.\d+)*)\b",
+    re.IGNORECASE,
+)
+SECTION_HEADING_NUMERIC_PATTERN = re.compile(r"^(\d+(?:\.\d+)*)\b")
 
 def create_folder(folder):
     if not os.path.exists(folder):
@@ -140,6 +146,108 @@ def target_starts_with_reference(target_text: str, ref_type: str, ref_id: str) -
     return has_reference_prefix(normalized_target, normalized_ref)
 
 
+def extract_heading_meta(text: str) -> dict | None:
+    normalized = normalize_for_match(text)
+    if not normalized:
+        return None
+
+    article_match = ARTICLE_HEADING_PATTERN.match(normalized)
+    if article_match:
+        ref_id = article_match.group(1)
+        return {
+            "type": "article",
+            "ref_id": ref_id,
+            "level": ref_id.count(".") + 1,
+            "root": ref_id.split(".")[0],
+        }
+
+    section_match = SECTION_HEADING_WITH_KEYWORD_PATTERN.match(normalized)
+    if section_match:
+        ref_id = section_match.group(1)
+        return {
+            "type": "section",
+            "ref_id": ref_id,
+            "level": ref_id.count(".") + 1,
+            "root": ref_id.split(".")[0],
+        }
+
+    section_numeric_match = SECTION_HEADING_NUMERIC_PATTERN.match(normalized)
+    if section_numeric_match:
+        ref_id = section_numeric_match.group(1)
+        return {
+            "type": "section",
+            "ref_id": ref_id,
+            "level": ref_id.count(".") + 1,
+            "root": ref_id.split(".")[0],
+        }
+
+    return None
+
+
+def expand_reference_scope_indices(
+    *,
+    nodes: list[Node],
+    heading_by_index: dict[int, dict],
+    ref_type: str,
+    ref_id: str,
+    heading_index: int,
+) -> set[int]:
+    scoped_indices: set[int] = {heading_index}
+    heading = heading_by_index.get(heading_index)
+    if heading is None:
+        return scoped_indices
+
+    # For Section references, include the heading and its content block until the next sibling/parent.
+    if ref_type == "section":
+        ref_level = ref_id.count(".") + 1
+        for idx in range(heading_index + 1, len(nodes)):
+            candidate_heading = heading_by_index.get(idx)
+            if candidate_heading is None:
+                scoped_indices.add(idx)
+                continue
+
+            if candidate_heading["type"] == "article":
+                break
+
+            candidate_ref_id = candidate_heading["ref_id"]
+            candidate_level = candidate_heading["level"]
+            if candidate_ref_id == ref_id or candidate_ref_id.startswith(f"{ref_id}."):
+                scoped_indices.add(idx)
+                continue
+
+            if candidate_level <= ref_level:
+                break
+
+            scoped_indices.add(idx)
+
+        return scoped_indices
+
+    # For Article references, include headings/paragraphs under the same article root.
+    if ref_type == "article":
+        article_root = ref_id.split(".")[0]
+        for idx in range(heading_index + 1, len(nodes)):
+            candidate_heading = heading_by_index.get(idx)
+            if candidate_heading is None:
+                scoped_indices.add(idx)
+                continue
+
+            if candidate_heading["type"] == "article":
+                if candidate_heading["root"] != article_root:
+                    break
+                scoped_indices.add(idx)
+                continue
+
+            # section-like heading
+            if candidate_heading["root"] != article_root and candidate_heading["level"] <= 2:
+                break
+
+            scoped_indices.add(idx)
+
+        return scoped_indices
+
+    return scoped_indices
+
+
 def should_skip_semantic_similarity(text: str, repeat_count: int) -> bool:
     normalized = normalize_for_match(text)
     if not normalized:
@@ -186,6 +294,11 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
     logger.info(f"TOTAL NODES {len(nodes)}")
 
     seen_reference_edges: set[tuple[str, str, str, str]] = set()
+    heading_by_index: dict[int, dict] = {}
+    for idx, node in enumerate(nodes):
+        heading_meta = extract_heading_meta(node.text)
+        if heading_meta is not None:
+            heading_by_index[idx] = heading_meta
 
     for i in range(len(nodes)):
         current_text = nodes[i].text
@@ -193,10 +306,32 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
             matches = pattern.finditer(current_text)
             for match in matches:
                 ref_id = match.group(1)
-                for target_node in nodes:
+                direct_target_indices: set[int] = set()
+                for target_idx, target_node in enumerate(nodes):
                     if target_node.id == nodes[i].id:
                         continue
                     if not target_starts_with_reference(target_node.text, ref_type, ref_id):
+                        continue
+                    direct_target_indices.add(target_idx)
+
+                expanded_target_indices: set[int] = set(direct_target_indices)
+                if ref_type in {"section", "article"}:
+                    for target_idx in direct_target_indices:
+                        if target_idx not in heading_by_index:
+                            continue
+                        expanded_target_indices.update(
+                            expand_reference_scope_indices(
+                                nodes=nodes,
+                                heading_by_index=heading_by_index,
+                                ref_type=ref_type,
+                                ref_id=ref_id,
+                                heading_index=target_idx,
+                            )
+                        )
+
+                for target_idx in sorted(expanded_target_indices):
+                    target_node = nodes[target_idx]
+                    if target_node.id == nodes[i].id:
                         continue
 
                     edge_key = (nodes[i].id, target_node.id, ref_type, ref_id)

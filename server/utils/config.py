@@ -16,7 +16,7 @@ class Config:
     os.getenv("GRAPH_CACHE_DIR", "../infra/json/kg_cache")
   )
   GRAPH_CACHE_ENABLED = os.getenv("GRAPH_CACHE_ENABLED", "1").strip() != "0"
-  KG_SCHEMA_VERSION = os.getenv("KG_SCHEMA_VERSION", "kg_v2")
+  KG_SCHEMA_VERSION = os.getenv("KG_SCHEMA_VERSION", "kg_v3")
   REFERENCE_PATTERNS = [
     # Section 1.4.2 / section 3 / Section 10.1
     ("section", re.compile(r'\b[Ss]ection\s+(\d+(?:\.\d+)*)\b')),

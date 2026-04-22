@@ -131,6 +131,39 @@ function buildProcessPages(
 		.map(([pageNumber, elements]) => ({ pageNumber, elements }));
 }
 
+function buildDirectionalRelationsByNodeId(
+	nodes: ParagraphNode[],
+	edges: GraphEdge[]
+): Map<string, number> {
+	const neighborsByNodeId = new Map<string, Set<string>>();
+
+	for (const node of nodes) {
+		neighborsByNodeId.set(node.id, new Set<string>());
+	}
+
+	for (const edge of edges) {
+		if (edge.type === 'reference') {
+			// Keep references directional: source -> target
+			const sourceNeighbors = neighborsByNodeId.get(edge.source);
+			if (sourceNeighbors) sourceNeighbors.add(edge.target);
+			continue;
+		}
+
+		if (edge.type === 'semantic_similarity') {
+			// Semantic similarity is symmetric.
+			const sourceNeighbors = neighborsByNodeId.get(edge.source);
+			if (sourceNeighbors) sourceNeighbors.add(edge.target);
+
+			const targetNeighbors = neighborsByNodeId.get(edge.target);
+			if (targetNeighbors) targetNeighbors.add(edge.source);
+		}
+	}
+
+	return new Map(
+		Array.from(neighborsByNodeId.entries()).map(([nodeId, neighbors]) => [nodeId, neighbors.size] as const)
+	);
+}
+
 export async function fetchBackendGraph(
 	docId: string,
 	nodesSnapshot: ParagraphNode[],
@@ -142,9 +175,7 @@ export async function fetchBackendGraph(
 	});
 
 	const edges = response.data.graph.edges ?? [];
-	const relationsByNodeId = new Map(
-		(response.data.graph.nodes ?? []).map((node) => [String(node.id), node.relationsCount] as const)
-	);
+	const relationsByNodeId = buildDirectionalRelationsByNodeId(nodesSnapshot, edges);
 
 	return { edges, relationsByNodeId };
 }

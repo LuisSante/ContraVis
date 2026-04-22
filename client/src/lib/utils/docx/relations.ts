@@ -39,6 +39,9 @@ export function buildRelatedParagraphs(
 		const isTarget = edge.target === selectedNode.id;
 		if (!isSource && !isTarget) continue;
 
+		// References are directional: only show outgoing references from selected paragraph.
+		if (edge.type === 'reference' && !isSource) continue;
+
 		const candidateId = isSource ? edge.target : edge.source;
 		const candidateNode = nodesById.get(candidateId);
 		if (!candidateNode) continue;
