@@ -291,6 +291,14 @@
 							</div>
 							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
 								<div class="mb-1 flex items-center justify-between">
+									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
+								</div>
+								<p class="text-[10px] leading-relaxed text-red-800">
+									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+								</p>
+							</div>
+							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+								<div class="mb-1 flex items-center justify-between">
 									<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
 									<Badge
 										variant="outline"

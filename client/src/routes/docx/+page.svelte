@@ -2633,6 +2633,50 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 					{/each}
 				</div>
 			{/if}
+
+			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
+				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+					<span
+						class="docx-contradiction-evidence-bracket"
+						style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.topPx}px; height: ${Math.max(
+							6,
+							selectedContradictionEvidenceLink.bottomPx - selectedContradictionEvidenceLink.topPx
+						)}px;`}
+					></span>
+					{#if selectedContradictionEvidenceLink.showA}
+						<span
+							class="docx-contradiction-evidence-cap"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--a"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--a"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
+						>
+							A
+						</span>
+					{/if}
+					{#if selectedContradictionEvidenceLink.showB}
+						<span
+							class="docx-contradiction-evidence-cap"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--b"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						></span>
+						<span
+							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--b"
+							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
+						>
+							B
+						</span>
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -2708,7 +2752,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			<Button
 				variant="outline"
 				size="icon-sm"
-				class="h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
+				class={`h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
+					activeRightPanelTab === 'analysis' ? 'mt-0.5 self-start' : ''
+				}`}
 				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
