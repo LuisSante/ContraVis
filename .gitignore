@@ -2,3 +2,4 @@
 .vscode/
 .codex
 words_paragraph.json
+__pycache__/

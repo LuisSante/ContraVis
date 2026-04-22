@@ -1,20 +1,3 @@
-#!/usr/bin/env python3
-"""
-Independent preprocessing script for CUAD_v1 documents.
-
-What it does:
-1) Reads CUAD_v1.json
-2) Filters the document(s) you want
-3) Splits contract context into paragraphs
-4) Reuses backend graph logic (server/services/graph/relations.py)
-5) Writes JSON artifacts for experimentation
-
-Outputs (by default):
-- infra/json/rerank/context.json
-- infra/json/rerank/paragraphs.json
-- infra/json/rerank/graph.json
-"""
-
 from __future__ import annotations
 
 import json
@@ -30,14 +13,10 @@ SERVER_DIR = ROOT / "server"
 if str(SERVER_DIR) not in sys.path:
     sys.path.insert(0, str(SERVER_DIR))
 
-# ---------------------------
-# User configuration (no CLI)
-# ---------------------------
 INFRA_PATH = ROOT / "infra"
 JSON_PATH = INFRA_PATH / "json" / "rerank"
 CUAD_JSON_PATH = INFRA_PATH / "CUAD_v1" / "CUAD_v1.json"
 
-# Use exact title from CUAD_v1.json, or set None to process first MAX_DOCS.
 MAIN_DOCUMENT: str | None = None
 TITLE_MATCH: str = "exact"  # "exact" | "contains"
 MAX_DOCS: int = 1
