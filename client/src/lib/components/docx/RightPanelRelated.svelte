@@ -7,7 +7,6 @@
 		RelatedParagraph
 	} from '$lib/types/document';
 	import { formatReferenceSummary, getNodeCurrentText, truncateText } from '$lib/utils/edit';
-	import LightningBoltIcon from '$lib/icons/LightningBoltIcon.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 
@@ -48,6 +47,24 @@
 			processingTimer = null;
 		}
 	});
+
+	function hasSemanticRelation(related: RelatedParagraph): boolean {
+		return (
+			related.relationTypes.includes('semantic_similarity') ||
+			related.relationTypes.includes('similarity' as never) ||
+			typeof related.semanticScore === 'number'
+		);
+	}
+
+	function hasReferenceRelation(related: RelatedParagraph): boolean {
+		return (
+			related.relationTypes.includes('reference') ||
+			related.relationTypes.some((relationType) =>
+				String(relationType).toLowerCase().includes('reference')
+			) ||
+			related.references.length > 0
+		);
+	}
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col">
@@ -59,6 +76,12 @@
 
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
 		<div class="flex min-h-full flex-col space-y-2 p-2">
+			{#if selectedParagraph}
+				<p class="px-1 text-[10px] text-gray-500">
+					Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
+				</p>
+			{/if}
+
 			{#if backendGraphLoading}
 				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
 					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
@@ -96,12 +119,9 @@
 					</ul>
 				</div>
 			{:else if !selectedParagraph}
-				<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
-					<LightningBoltIcon className="mb-2 h-6 w-6 opacity-20" />
-					<p class="text-center text-[10px] font-medium">
-						Select a paragraph to view related items
-					</p>
-					<p class="mt-1 text-center text-[10px] text-gray-400">
+				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
+					<p class="text-[10px] font-medium">Select a paragraph to see its related paragraphs.</p>
+					<p class="mt-1 text-[10px] text-gray-400">
 						Choose a paragraph in the document on the left.
 					</p>
 				</div>
@@ -118,15 +138,15 @@
 					>
 						<div class="mb-2 flex items-center justify-between">
 							<div class="flex flex-wrap items-center gap-1.5">
-								{#if related.relationTypes.includes('semantic_similarity')}
+								{#if hasSemanticRelation(related)}
 									<Badge
 										variant="outline"
-										class="h-4 border-green-100 bg-green-50 px-1.5 text-[9px] font-semibold text-green-600"
+										class="h-4 border-green-100 bg-green-50 px-2 text-[9px] font-semibold text-green-600"
 									>
 										Similarity
 									</Badge>
 								{/if}
-								{#if related.relationTypes.includes('reference')}
+								{#if hasReferenceRelation(related)}
 									<Badge
 										variant="outline"
 										class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
@@ -135,12 +155,13 @@
 									</Badge>
 								{/if}
 								{#if related.semanticScore != null}
-									<Badge
-										variant="outline"
-										class="h-4 border-gray-200 bg-white px-1.5 text-[9px] font-semibold text-gray-500"
+									<span
+										class={`text-[10px] font-semibold ${
+											hasSemanticRelation(related) ? 'text-green-600' : 'text-gray-500'
+										}`}
 									>
 										{(related.semanticScore * 100).toFixed(1)}%
-									</Badge>
+									</span>
 								{/if}
 							</div>
 							<span class="text-[9px] font-semibold tracking-tight text-gray-400">

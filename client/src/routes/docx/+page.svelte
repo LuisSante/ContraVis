@@ -117,7 +117,6 @@
 	} from '$lib/components/docx';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	const initialInspectorState = createEmptyInspectorState();
@@ -187,7 +186,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	let contradictionSummaryVisible = true;
-	let paragraphExplanationModel = 'gpt-5-mini';
+	let paragraphExplanationModel = 'gpt-4.1';
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
 	let paragraphExplanationAnswer = '';
@@ -266,9 +265,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			active: contradictionLoading
 		}
 	];
-	$: contradictionModelLabel =
-		CONTRADICTION_OPENAI_MODEL_OPTIONS.find((option) => option.value === contradictionModel)
-			?.label ?? 'gpt-4.1';
 	$: assistantProviderLabel =
 		PROVIDER_OPTIONS.find((option) => option.value === assistantProvider)?.label ?? 'Provider';
 	$: assistantModeLabel =
@@ -316,6 +312,15 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			clearParagraphExplanationHighlights();
 		}
 	}
+	$: {
+		const selectedId = $selectedParagraph?.id ?? '';
+		const tabId = activeRightPanelTab;
+		const relatedIds = selectedRelatedParagraphs.map((related) => related.node.id).join('|');
+		void selectedId;
+		void tabId;
+		void relatedIds;
+		applyRelatedSelectionHighlight();
+	}
 
 	function toTitleCaseLabel(label: string): string {
 		return label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
@@ -344,6 +349,94 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		});
 	}
 
+	function clearRelatedSelectionHighlight() {
+		for (const element of paragraphElementById.values()) {
+			element.classList.remove(
+				'docx-related-selected',
+				'docx-related-linked',
+				'docx-related-context',
+				'docx-related-context--with-sub',
+				'docx-related-context--reference',
+				'docx-related-context--similarity'
+			);
+			delete element.dataset.relatedLabel;
+			delete element.dataset.relatedSub;
+		}
+		for (const host of paragraphRelationHostById.values()) {
+			host.classList.remove(
+				'docx-related-badge-emphasis',
+				'docx-related-badge--reference',
+				'docx-related-badge--similarity'
+			);
+		}
+	}
+
+	function resolveRelatedVisualMeta(related: RelatedParagraph): {
+		kind: 'reference' | 'similarity';
+		label: string;
+		subLabel?: string;
+	} {
+		const hasSimilarityByType = related.relationTypes.some((relationType) =>
+			String(relationType).toLowerCase().includes('semantic')
+		);
+		const hasSimilarityByScore =
+			typeof related.semanticScore === 'number' && Number.isFinite(related.semanticScore);
+		const hasSimilarity = hasSimilarityByType || hasSimilarityByScore;
+		const isReference =
+			related.relationTypes.some((relationType) =>
+				String(relationType).toLowerCase().includes('reference')
+			) || related.references.length > 0;
+		const similarityScore = Math.round((related.semanticScore ?? 0) * 100);
+		if (hasSimilarity && similarityScore > 0) {
+			return {
+				kind: 'similarity',
+				label: 'Similarity',
+				subLabel: `${similarityScore}%`
+			};
+		}
+		if (hasSimilarity) {
+			return { kind: 'similarity', label: 'Similarity' };
+		}
+		if (isReference) {
+			return { kind: 'reference', label: 'Reference' };
+		}
+		return { kind: 'reference', label: 'Reference' };
+	}
+
+	function applyRelatedSelectionHighlight() {
+		clearRelatedSelectionHighlight();
+		if (activeRightPanelTab !== 'related') return;
+		const selected = get(selectedParagraph);
+		if (!selected?.id) return;
+		const selectedElement = paragraphElementById.get(selected.id);
+		selectedElement?.classList.add('docx-related-selected', 'docx-related-linked');
+		paragraphRelationHostById.get(selected.id)?.classList.add('docx-related-badge-emphasis');
+		for (const related of selectedRelatedParagraphs) {
+			const relatedElement = paragraphElementById.get(related.node.id);
+			if (!relatedElement) continue;
+			const visualMeta = resolveRelatedVisualMeta(related);
+			relatedElement.classList.add('docx-related-linked', 'docx-related-context');
+			if (visualMeta.subLabel) {
+				relatedElement.classList.add('docx-related-context--with-sub');
+			}
+			relatedElement.classList.add(
+				visualMeta.kind === 'reference'
+					? 'docx-related-context--reference'
+					: 'docx-related-context--similarity'
+			);
+			relatedElement.dataset.relatedLabel = visualMeta.label;
+			if (visualMeta.subLabel) {
+				relatedElement.dataset.relatedSub = visualMeta.subLabel;
+			}
+			paragraphRelationHostById.get(related.node.id)?.classList.add(
+				'docx-related-badge-emphasis',
+				visualMeta.kind === 'reference'
+					? 'docx-related-badge--reference'
+					: 'docx-related-badge--similarity'
+			);
+		}
+	}
+
 	function flashCitationTarget(nodeId: string) {
 		const element = paragraphElementById.get(nodeId);
 		if (!element) return;
@@ -364,6 +457,13 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			onFallbackFocus: setSelectedParagraphNode
 		});
 		if (emphasize) flashCitationTarget(nodeId);
+	}
+
+	function jumpToNodeWithoutSelecting(nodeId: string) {
+		const element = paragraphElementById.get(nodeId);
+		if (!element) return;
+		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		flashCitationTarget(nodeId);
 	}
 
 	function resetInspectorState() {
@@ -2262,6 +2362,29 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}
 
 	onMount(() => {
+		const handleGlobalPointerDown = (event: MouseEvent) => {
+			if (activeRightPanelTab !== 'related') return;
+			const selected = get(selectedParagraph);
+			if (!selected?.id) return;
+
+			const target = event.target instanceof Element ? event.target : null;
+			if (target?.closest('aside')) return;
+			const paragraphElement = target?.closest('[data-node-id]') as HTMLElement | null;
+			if (!paragraphElement) {
+				setSelectedParagraphNode(null);
+				return;
+			}
+
+			const clickedNodeId = paragraphElement.dataset.nodeId;
+			if (!clickedNodeId || clickedNodeId !== selected.id) return;
+
+			event.preventDefault();
+			if (document.activeElement instanceof HTMLElement) {
+				document.activeElement.blur();
+			}
+			setSelectedParagraphNode(null);
+		};
+
 		const handleDocumentSelectionChange = () => {
 			refreshSimplifyTarget();
 			scheduleContradictionScrollMarkerRefresh();
@@ -2276,6 +2399,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
 		document.addEventListener('mouseup', handleDocumentSelectionChange);
 		document.addEventListener('keyup', handleDocumentSelectionChange);
+		document.addEventListener('mousedown', handleGlobalPointerDown, true);
 		window.addEventListener('resize', handleViewportResize);
 		window.addEventListener('scroll', handleDocumentSelectionChange, true);
 		documentScrollHost?.addEventListener('scroll', handleDocumentSelectionChange, {
@@ -2303,6 +2427,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			document.removeEventListener('selectionchange', handleDocumentSelectionChange);
 			document.removeEventListener('mouseup', handleDocumentSelectionChange);
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
+			document.removeEventListener('mousedown', handleGlobalPointerDown, true);
 			window.removeEventListener('resize', handleViewportResize);
 			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
@@ -2325,7 +2450,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 <main
 	class={`relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans ${
 		activeRightPanelTab === 'related' ? 'related-badges-on' : 'related-badges-off'
-	}`}
+	} ${activeRightPanelTab === 'related' && $selectedParagraph?.id ? 'related-focus-on' : ''}`}
 >
 	<div
 		class="relative flex min-w-0 flex-col border-r border-gray-300"
@@ -2549,13 +2674,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			? ''
 			: `right: ${activeSidebarWidth}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${activeSidebarWidth}px;`}
 	>
-		<header
-			class={`flex justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5 ${
-				activeRightPanelTab === 'analysis' ? 'items-start' : 'items-center'
-			}`}
-		>
+		<header class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5">
 			<div class="min-w-0">
-				<div class="flex flex-wrap items-center gap-2">
+				<div class="flex items-center gap-2">
 					<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
 						<span class="shrink-0 text-blue-700">
 							{#if activeRightPanelTab === 'related'}
@@ -2582,56 +2703,12 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 							)}
 						</span>
 					</h2>
-					{#if activeRightPanelTab === 'analysis'}
-						<div class="flex items-center gap-1">
-							<Select.Root
-								type="single"
-								bind:value={contradictionModel}
-								disabled={contradictionLoading || $loading || backendGraphLoading}
-							>
-								<Select.Trigger
-									size="sm"
-									class="h-7 w-[140px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
-									title="Realtime contradiction model"
-								>
-									{contradictionModelLabel}
-								</Select.Trigger>
-								<Select.Content>
-									{#each CONTRADICTION_OPENAI_MODEL_OPTIONS as option}
-										<Select.Item value={option.value} label={option.label} class="text-[10px]">
-											{option.label}
-										</Select.Item>
-									{/each}
-								</Select.Content>
-							</Select.Root>
-							<Button
-								variant="outline"
-								size="sm"
-								onclick={() => void loadSavedContradictions()}
-								disabled={!activeDocumentId || contradictionLoading || $loading}
-								class="h-7 w-[140px] justify-center border-amber-200 bg-amber-50 px-1.5 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
-							>
-								Saved Contradictions
-							</Button>
-							<Button
-								variant="destructive"
-								size="sm"
-								onclick={() => void searchContradictionsWithLlm()}
-								disabled={!activeDocumentId || contradictionLoading || $loading || backendGraphLoading}
-								class="h-7 w-[140px] justify-center border-red-200 bg-red-50 px-1.5 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
-							>
-								Search contradictions
-							</Button>
-						</div>
-					{/if}
 				</div>
 			</div>
 			<Button
 				variant="outline"
 				size="icon-sm"
-				class={`h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
-					activeRightPanelTab === 'analysis' ? 'mt-0.5 self-start' : ''
-				}`}
+				class="h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
 				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
@@ -2643,6 +2720,11 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		{#if activeRightPanelTab === 'analysis'}
 			<RightPanelAnalysis
 				selectedParagraph={$selectedParagraph}
+				bind:model={contradictionModel}
+				modelOptions={CONTRADICTION_OPENAI_MODEL_OPTIONS}
+				controlsDisabled={contradictionLoading || $loading || backendGraphLoading}
+				canLoadSaved={Boolean(activeDocumentId) && !contradictionLoading && !$loading}
+				canSearchContradictions={Boolean(activeDocumentId) && !contradictionLoading && !$loading && !backendGraphLoading}
 				contradictionLoading={contradictionLoading}
 				revisionProcessingSteps={revisionProcessingSteps}
 				selectedContradictionResult={selectedContradictionResult}
@@ -2657,6 +2739,8 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
+				onLoadSavedContradictions={() => void loadSavedContradictions()}
+				onSearchContradictions={() => void searchContradictionsWithLlm()}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
 				onSubmitAssistantQuestion={submitContradictionAssistantQuestion}
 				onHandleAssistantInputKeydown={handleContradictionAssistantInputKeydown}
@@ -2692,7 +2776,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 				relatedProcessingSteps={relatedProcessingSteps}
 				selectedRelatedParagraphs={selectedRelatedParagraphs}
 				nodeEditStateById={nodeEditStateById}
-				onFocusNodeFromPanel={focusNodeFromPanel}
+				onFocusNodeFromPanel={jumpToNodeWithoutSelecting}
 			/>
 		{:else if activeRightPanelTab === 'paragraph_explanation'}
 			<RightPanelParagraphExplanation
@@ -2929,8 +3013,110 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		display: none;
 	}
 
+	:global(.related-focus-on .docx-relations-badge-host)::before,
+	:global(.related-focus-on .docx-relations-badge-host)::after {
+		opacity: 0.2;
+	}
+
+	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge-emphasis)::before,
+	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge-emphasis)::after {
+		opacity: 1;
+	}
+
+	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--similarity)::before {
+		background: #16a34a;
+	}
+
+	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--similarity)::after {
+		border-color: #86efac;
+		background: #dcfce7;
+		color: #15803d;
+	}
+
+	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--reference)::before {
+		background: #2563eb;
+	}
+
+	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--reference)::after {
+		border-color: #93c5fd;
+		background: #dbeafe;
+		color: #1d4ed8;
+	}
+
 	:global(.docx-citation-flash) {
 		animation: citation-flash 1.2s ease-out;
+	}
+
+	:global(.docx-related-selected) {
+		outline: 2px solid #2563eb !important;
+		outline-offset: 1px !important;
+		background: rgba(37, 99, 235, 0.08) !important;
+	}
+
+	:global(.docx-related-selected:focus),
+	:global(.docx-related-selected:focus-visible) {
+		outline: 2px solid #2563eb !important;
+		outline-offset: 1px !important;
+		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+	}
+
+	:global(.docx-related-linked) {
+		box-shadow: none;
+	}
+
+	:global(.docx-related-context) {
+		position: relative;
+	}
+
+	:global(.docx-related-context)::before {
+		position: absolute;
+		content: '';
+		left: -7px;
+		top: 2px;
+		bottom: 2px;
+		width: 2px;
+		border-radius: 9999px;
+		opacity: 0.9;
+		pointer-events: none;
+	}
+
+	:global(.docx-related-context)::after {
+		position: absolute;
+		content: attr(data-related-label);
+		left: -58px;
+		top: 10px;
+		width: 50px;
+		text-align: right;
+		font-size: 10px;
+		font-weight: 600;
+		line-height: 1.1;
+		white-space: pre-line;
+		opacity: 0.95;
+		pointer-events: none;
+		z-index: 1;
+		text-shadow: 0 0 0.1px currentColor;
+	}
+
+	:global(.docx-related-context--with-sub)::after {
+		content: attr(data-related-label) '\A' attr(data-related-sub);
+		white-space: pre;
+		line-height: 1.15;
+	}
+
+	:global(.docx-related-context--reference)::before {
+		background: #0c41d4;
+	}
+
+	:global(.docx-related-context--reference)::after {
+		color: #0c41d4;
+	}
+
+	:global(.docx-related-context--similarity)::before {
+		background: #09993e;
+	}
+
+	:global(.docx-related-context--similarity)::after {
+		color: #09993e;
 	}
 
 	:global(.docx-paragraph-explanation-selected) {

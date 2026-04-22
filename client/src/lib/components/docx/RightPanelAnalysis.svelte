@@ -11,6 +11,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 
@@ -19,7 +20,17 @@
 		active: boolean;
 	};
 
+	type ModelOption = {
+		value: string;
+		label: string;
+	};
+
 	export let selectedParagraph: ParagraphNode | null = null;
+	export let model = 'gpt-4.1';
+	export let modelOptions: ReadonlyArray<ModelOption> = [];
+	export let controlsDisabled = false;
+	export let canLoadSaved = false;
+	export let canSearchContradictions = false;
 	export let contradictionLoading = false;
 	export let revisionProcessingSteps: ProcessingStep[] = [];
 	export let selectedContradictionResult: ContradictionParagraphResult | null = null;
@@ -34,6 +45,8 @@
 	export let contradictionQuickActionFreeLabel = 'Why is it a contradiction? (Free)';
 	export let contradictionQuickActionAiLabel = 'Why is it a contradiction? (AI cost)';
 	export let onSuggestContradictionFix: () => void | Promise<void> = () => {};
+	export let onLoadSavedContradictions: () => void | Promise<void> = () => {};
+	export let onSearchContradictions: () => void | Promise<void> = () => {};
 	export let onRunContradictionQuickAction: (prompt: string) => void | Promise<void> = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
@@ -161,8 +174,52 @@
 		</p>
 	</header>
 
+	<div class="border-b border-gray-100 bg-white px-3 py-2.5">
+		<div class="flex items-center gap-2">
+			<Select.Root type="single" bind:value={model} disabled={controlsDisabled}>
+				<Select.Trigger
+					size="sm"
+					class="h-7 w-[150px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+					title="Realtime contradiction model"
+				>
+					{modelOptions.find((option) => option.value === model)?.label ?? model}
+				</Select.Trigger>
+				<Select.Content>
+					{#each modelOptions as option}
+						<Select.Item value={option.value} label={option.label} class="text-[10px]">
+							{option.label}
+						</Select.Item>
+					{/each}
+				</Select.Content>
+			</Select.Root>
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-7 border-amber-200 bg-amber-50 px-2 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
+				disabled={!canLoadSaved}
+				onclick={() => void onLoadSavedContradictions()}
+			>
+				Saved contradictions
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-7 border-red-200 bg-red-50 px-2 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
+				disabled={!canSearchContradictions}
+				onclick={() => void onSearchContradictions()}
+			>
+				Search contradictions
+			</Button>
+		</div>
+		{#if selectedParagraph}
+			<p class="mt-1.5 text-[10px] text-gray-500">
+				Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
+			</p>
+		{/if}
+	</div>
+
 	<ScrollArea class="min-h-0 flex-1">
-		<div class="space-y-2 p-3">
+		<div class="space-y-1 p-3">
 			{#if contradictionLoading}
 				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
 					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
@@ -225,11 +282,9 @@
 						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
 							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 						</div>
-						<div class="space-y-2 p-2.5">
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
-								</div>
+						<div class="space-y-1 p-1.5">
+							<div class="px-0.5">
+								<p class="text-[9px] font-semibold text-red-800">Assessment</p>
 								<p class="text-[10px] leading-relaxed text-red-800">
 									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
 								</p>
@@ -282,11 +337,9 @@
 						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
 							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 						</div>
-						<div class="space-y-2 p-2.5">
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
-								</div>
+						<div class="space-y-1 p-1.5">
+							<div class="px-0.5">
+								<p class="text-[9px] font-semibold text-red-800">Assessment</p>
 								<p class="text-[10px] leading-relaxed text-red-800">
 									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
 								</p>
