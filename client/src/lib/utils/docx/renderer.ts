@@ -72,7 +72,7 @@ export function createRenderer(
 		'hover:ring-1',
 		'hover:ring-blue-300',
 		'focus:ring-2',
-		'focus:ring-yellow-400'
+		'focus:ring-blue-400'
 	] as const;
 	const ENTITY_RE = /&(?:#\d+|#x[\da-f]+|[a-z][\w-]+);/i;
 

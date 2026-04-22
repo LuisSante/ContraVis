@@ -52,7 +52,7 @@ def generate_assistant_response(payload: AssistantChatRequest) -> AssistantChatR
 
     allowed_ids = [entry.node.id for entry in context_entries]
 
-    provider = LLMProviderFactory.create(payload.provider)
+    provider = LLMProviderFactory.create(payload.provider, model=payload.model)
     system_prompt = _build_system_prompt(payload.mode)
     user_prompt = _build_user_prompt(payload, context_entries, allowed_ids)
 
