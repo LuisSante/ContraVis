@@ -47,8 +47,8 @@ class Config:
   SEMANTIC_TOP_K = max(1, _env_int("SEMANTIC_TOP_K", 5))
   SEMANTIC_SIMILARITY_THRESHOLD = max(0.0, min(1.0, _env_float("SEMANTIC_SIMILARITY_THRESHOLD", 0.8)))
   
-  kg_link_mode_raw = os.getenv("KG_LINK_MODE", "anchored").strip().lower()
-  KG_LINK_MODE = kg_link_mode_raw if kg_link_mode_raw in {"anchored", "global"} else "anchored"
+  kg_link_mode_raw = os.getenv("KG_LINK_MODE", "global").strip().lower()
+  KG_LINK_MODE = kg_link_mode_raw if kg_link_mode_raw in {"anchored", "global"} else "global"
   
   REFERENCE_PATTERNS = [
     ("section", re.compile(r'\b[Ss]ection\s+(\d+(?:\.\d+)*)\b')),

@@ -1,0 +1,16 @@
+services:
+  neo4j:
+    image: neo4j:5
+    container_name: neo4j-dev
+    restart: unless-stopped
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      NEO4J_AUTH: ${NEO4J_AUTH:-neo4j/neo4j_password}
+      NEO4J_PLUGINS: '["apoc"]'
+    volumes:
+      - ./infra/neo4j/data:/data
+      - ./infra/neo4j/logs:/logs
+      - ./infra/neo4j/import:/import
+      - ./infra/neo4j/plugins:/plugins
