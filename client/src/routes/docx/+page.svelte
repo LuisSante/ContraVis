@@ -127,7 +127,8 @@ const relationsCountByNodeId = new Map<string, number>();
 const simplifyAuditTrail: SimplifyAuditRecord[] = [];
 const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
 const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
-const TOOL_BRAND_SHORT_NAME = 'Nome';
+const TOOL_BRAND_SHORT_NAME = 'ContraGraph';
+const MANUAL_SCROLL_DRAG_SPEED = 100;
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -210,6 +211,11 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}> = [];
 	let paragraphExplanationFrame: number | null = null;
 	let paragraphExplanationRelatedParagraphs: RelatedParagraph[] = [];
+	let isManualScrollDragging = false;
+	let manualScrollStartY = 0;
+	let manualScrollStartTop = 0;
+	let manualScrollMoved = false;
+	let suppressMarkerClickUntil = 0;
 
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
@@ -689,9 +695,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			if (!element) continue;
 
 			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
-			const elementRect = element.getBoundingClientRect();
-			const centerOffset =
-				elementRect.top - hostRect.top + documentScrollHost.scrollTop + elementRect.height / 2;
+			const centerOffset = element.offsetTop + element.offsetHeight / 2;
 			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
 			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
 
@@ -769,6 +773,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}
 
 	function jumpToContradictionParagraph(paragraphId: string) {
+		if (Date.now() < suppressMarkerClickUntil) return;
 		focusNodeFromPanel(paragraphId, true);
 	}
 
@@ -958,9 +963,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 
 	function scheduleParagraphExplanationConnectorRefresh() {
 		if (typeof window === 'undefined') return;
-		if (paragraphExplanationFrame != null) {
-			window.cancelAnimationFrame(paragraphExplanationFrame);
-		}
+		if (paragraphExplanationFrame != null) return;
 		paragraphExplanationFrame = window.requestAnimationFrame(() => {
 			paragraphExplanationFrame = null;
 			refreshParagraphExplanationConnectorPaths();
@@ -968,12 +971,46 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}
 
 	function jumpToRelatedParagraphMarker(paragraphId: string) {
+		if (Date.now() < suppressMarkerClickUntil) return;
 		const element = paragraphElementById.get(paragraphId);
 		if (!element) return;
 		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		element.classList.remove('docx-citation-flash');
 		void element.offsetHeight;
 		element.classList.add('docx-citation-flash');
+	}
+
+	function handleManualScrollDragMove(event: MouseEvent) {
+		if (!isManualScrollDragging || !documentScrollHost) return;
+		const delta = (event.clientY - manualScrollStartY) * MANUAL_SCROLL_DRAG_SPEED;
+		if (Math.abs(delta) > 2) manualScrollMoved = true;
+		documentScrollHost.scrollTop = manualScrollStartTop + delta;
+	}
+
+	function stopManualScrollDrag() {
+		if (!isManualScrollDragging) return;
+		isManualScrollDragging = false;
+		window.removeEventListener('mousemove', handleManualScrollDragMove);
+		window.removeEventListener('mouseup', stopManualScrollDrag);
+		document.body.style.userSelect = '';
+		scheduleContradictionScrollMarkerRefresh();
+		scheduleParagraphExplanationConnectorRefresh();
+		if (manualScrollMoved) {
+			suppressMarkerClickUntil = Date.now() + 140;
+		}
+	}
+
+	function startManualScrollDrag(event: MouseEvent) {
+		if (!documentScrollHost || event.button !== 0) return;
+		if (isManualScrollDragging) return;
+		event.preventDefault();
+		isManualScrollDragging = true;
+		manualScrollMoved = false;
+		manualScrollStartY = event.clientY;
+		manualScrollStartTop = documentScrollHost.scrollTop;
+		document.body.style.userSelect = 'none';
+		window.addEventListener('mousemove', handleManualScrollDragMove);
+		window.addEventListener('mouseup', stopManualScrollDrag);
 	}
 
 	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
@@ -2390,9 +2427,14 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			scheduleContradictionScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
 		};
+		const handleDocumentScroll = () => {
+			scheduleContradictionScrollMarkerRefresh();
+			scheduleParagraphExplanationConnectorRefresh();
+		};
 		const handleViewportResize = () => {
 			refreshViewportMode();
-			handleDocumentSelectionChange();
+			scheduleContradictionScrollMarkerRefresh();
+			scheduleParagraphExplanationConnectorRefresh();
 			setRightDrawerWidth(rightDrawerWidth);
 		};
 
@@ -2401,8 +2443,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		document.addEventListener('keyup', handleDocumentSelectionChange);
 		document.addEventListener('mousedown', handleGlobalPointerDown, true);
 		window.addEventListener('resize', handleViewportResize);
-		window.addEventListener('scroll', handleDocumentSelectionChange, true);
-		documentScrollHost?.addEventListener('scroll', handleDocumentSelectionChange, {
+		documentScrollHost?.addEventListener('scroll', handleDocumentScroll, {
 			passive: true
 		});
 		refreshViewportMode();
@@ -2429,9 +2470,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
 			document.removeEventListener('mousedown', handleGlobalPointerDown, true);
 			window.removeEventListener('resize', handleViewportResize);
-			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
-			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
+			documentScrollHost?.removeEventListener('scroll', handleDocumentScroll);
 			stopRightDrawerResize();
+			stopManualScrollDrag();
 			contradictionMarkerResizeObserver?.disconnect();
 			contradictionMarkerResizeObserver = null;
 			if (contradictionMarkerFrame != null) {
@@ -2517,7 +2558,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			</section>
 
 			{#if shouldShowContradictionDecorations && contradictionScrollMarkers.length > 0}
-				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2" on:mousedown={startManualScrollDrag}>
 					{#each contradictionScrollMarkers as marker (marker.paragraphId)}
 						<span
 							class={`docx-contradiction-scroll-marker docx-contradiction-scroll-marker--${marker.confidenceBand}`}
@@ -2614,7 +2655,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			{/if}
 
 			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationScrollMarkers.length > 0}
-				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2" on:mousedown={startManualScrollDrag}>
 					{#each paragraphExplanationScrollMarkers as marker (`related-marker-${marker.paragraphId}`)}
 						<span
 							class="docx-related-scroll-marker"
@@ -2634,49 +2675,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 				</div>
 			{/if}
 
-			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
-				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
-					<span
-						class="docx-contradiction-evidence-bracket"
-						style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.topPx}px; height: ${Math.max(
-							6,
-							selectedContradictionEvidenceLink.bottomPx - selectedContradictionEvidenceLink.topPx
-						)}px;`}
-					></span>
-					{#if selectedContradictionEvidenceLink.showA}
-						<span
-							class="docx-contradiction-evidence-cap"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--a"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--a"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
-						>
-							A
-						</span>
-					{/if}
-					{#if selectedContradictionEvidenceLink.showB}
-						<span
-							class="docx-contradiction-evidence-cap"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--b"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--b"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
-						>
-							B
-						</span>
-					{/if}
-				</div>
-			{/if}
 		</div>
 	</div>
 
