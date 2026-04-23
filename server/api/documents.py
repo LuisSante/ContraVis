@@ -25,7 +25,10 @@ from services.contract_assistant import (
     generate_assistant_response,
     simplify_paragraph_selection,
 )
+from services.graph.cache import build_graph_cache_key, load_graph_cache, save_graph_cache
+from services.graph.knowledge_graph import build_knowledge_graph
 from services.graph.relations import generate_graph_data
+from utils.config import Config
 from utils.document_store import DocumentStore
 
 router = APIRouter()
@@ -171,13 +174,64 @@ async def process_document(data: dict):
                 }
             )
 
-    graph_obj = generate_graph_data(all_paragraphs_input)
+    cache_schema_fingerprint = (
+        f"{Config.KG_SCHEMA_VERSION}"
+        f"|sem:{Config.SEMANTIC_RELATED_MODE}"
+        f"|k:{Config.SEMANTIC_TOP_K}"
+        f"|thr:{Config.SEMANTIC_SIMILARITY_THRESHOLD}"
+        f"|kg:{Config.KG_LINK_MODE}"
+    )
+    cache_key = build_graph_cache_key(
+        document_id=str(doc_id or "unknown"),
+        paragraphs_data=all_paragraphs_input,
+        schema_version=cache_schema_fingerprint,
+    )
+    if Config.GRAPH_CACHE_ENABLED:
+        cached_payload = load_graph_cache(
+            cache_dir=Config.GRAPH_CACHE_DIR,
+            cache_key=cache_key,
+        )
+        if cached_payload and isinstance(cached_payload.get("graph"), dict):
+            cache_meta = {
+                "enabled": True,
+                "hit": True,
+                "key": cache_key,
+            }
+            response = dict(cached_payload)
+            response["cache"] = cache_meta
+            return response
 
-    return {
+    graph_obj = generate_graph_data(all_paragraphs_input)
+    knowledge_graph = build_knowledge_graph(
+        document_id=str(doc_id or "unknown"),
+        paragraph_graph=graph_obj,
+        schema_version=Config.KG_SCHEMA_VERSION,
+    )
+
+    cache_meta = {
+        "enabled": Config.GRAPH_CACHE_ENABLED,
+        "hit": False,
+        "key": cache_key,
+    }
+    response = {
         "status": "success",
         "documentId": doc_id,
         "graph": graph_obj.model_dump(),
+        "knowledgeGraph": knowledge_graph.model_dump(),
+        "cache": cache_meta,
     }
+
+    if Config.GRAPH_CACHE_ENABLED:
+        try:
+            save_graph_cache(
+                cache_dir=Config.GRAPH_CACHE_DIR,
+                cache_key=cache_key,
+                payload=response,
+            )
+        except Exception:
+            logger.exception("Failed to save graph cache for document_id=%s", doc_id)
+
+    return response
 
 
 @router.post("/assistant/chat", response_model=AssistantChatResponse)

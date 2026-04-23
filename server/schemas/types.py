@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal, List, Optional
+from typing import Any, Literal, List, Optional
 
 class DatasetDocument(BaseModel):
     id: str
@@ -30,6 +30,38 @@ class Edge(BaseModel):
 class Graph(BaseModel):
     nodes: List[Node]
     edges: List[Edge]
+
+
+class KGNode(BaseModel):
+    id: str
+    contract_id: str
+    type: str
+    label: str
+    source_paragraph_id: Optional[str] = None
+    properties: dict[str, Any] = Field(default_factory=dict)
+
+
+class KGEdge(BaseModel):
+    source: str
+    target: str
+    type: str
+    confidence: Optional[float] = None
+    evidence_paragraph_id: Optional[str] = None
+    evidence: dict[str, Any] = Field(default_factory=dict)
+
+
+class KGTriple(BaseModel):
+    head: str
+    relation: str
+    tail: str
+
+
+class KnowledgeGraph(BaseModel):
+    schema_version: str
+    contract_id: str
+    nodes: List[KGNode]
+    edges: List[KGEdge]
+    triples: List[KGTriple] = Field(default_factory=list)
 
 
 AssistantMode = Literal["explain", "quote", "suggest_questions"]

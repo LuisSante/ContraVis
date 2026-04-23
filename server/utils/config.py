@@ -2,24 +2,58 @@
 import os
 import re
 
+def _env_int(name: str, default: int) -> int:
+  raw = os.getenv(name)
+  if raw is None:
+    return default
+  try:
+    return int(raw.strip())
+  except Exception:
+    return default
+
+
+def _env_float(name: str, default: float) -> float:
+  raw = os.getenv(name)
+  if raw is None:
+    return default
+  try:
+    return float(raw.strip())
+  except Exception:
+    return default
+
+
 class Config:
   # CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf")
   # CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx")
   CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf_contradictions")
   CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx_contradictions")
+
   EDITED_PDF_DIR = Path("../infra/edited_pdfs")
   EDITED_DOC_DIR = Path("../infra/edited_docs")
+
   SAVED_CONTRADICTIONS_DIR = Path(
     os.getenv("SAVED_CONTRADICTIONS_DIR", "../infra/contradiction_results")
   )
+  GRAPH_CACHE_DIR = Path(
+    os.getenv("GRAPH_CACHE_DIR", "../infra/json/kg_cache")
+  )
+
+  GRAPH_CACHE_ENABLED = os.getenv("GRAPH_CACHE_ENABLED", "1").strip() != "0"
+  KG_SCHEMA_VERSION = os.getenv("KG_SCHEMA_VERSION", "default")
+  
+  semantic_mode_raw = os.getenv("SEMANTIC_RELATED_MODE", "top_k").strip().lower()
+  SEMANTIC_RELATED_MODE = semantic_mode_raw if semantic_mode_raw in {"top_k", "all"} else "top_k"
+  
+  SEMANTIC_TOP_K = max(1, _env_int("SEMANTIC_TOP_K", 5))
+  SEMANTIC_SIMILARITY_THRESHOLD = max(0.0, min(1.0, _env_float("SEMANTIC_SIMILARITY_THRESHOLD", 0.8)))
+  
+  kg_link_mode_raw = os.getenv("KG_LINK_MODE", "global").strip().lower()
+  KG_LINK_MODE = kg_link_mode_raw if kg_link_mode_raw in {"anchored", "global"} else "global"
+  
   REFERENCE_PATTERNS = [
-    # Section 1.4.2 / section 3 / Section 10.1
     ("section", re.compile(r'\b[Ss]ection\s+(\d+(?:\.\d+)*)\b')),
-    # Article 16 / article 2.1 / Article IV
     ("article", re.compile(r'\b[Aa]rticle\s+(\d+(?:\.\d+)*)\b')),
-    # Exhibit A / exhibit 10.1
     ("exhibit", re.compile(r'\b[Ee]xhibit\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
-    # Schedule 1 / Annex B / Appendix C
     ("schedule", re.compile(r'\b[Ss]chedule\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
     ("annex",    re.compile(r'\b[Aa]nnex\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
     ("appendix", re.compile(r'\b[Aa]ppendix\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
@@ -33,11 +67,3 @@ class Config:
     "definition": 2,
     "other": 1
   }
-
-  # Hierarchical pattern: captures sections with sublevels
-  # ref_match = re.search(r'[Ss]ection\s+(\d+(\.\d+)*)', nodes[i]["text"])        
-  # ref_match.group(1) -> "3.2.1"
-
-  # Simple pattern: only captures the main number
-  # ref_match = re.search(r'[Ss]ection\s+(\d+)', nodes[i]["text"])
-  # ref_match.group(1) -> "3"

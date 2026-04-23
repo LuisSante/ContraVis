@@ -60,7 +60,7 @@ Local base URL: `http://localhost:8300`
 - `GET /health`: health check.
 - `GET /api/v1/list_documents`: list available CUAD documents.
 - `GET /api/v1/document_file/{doc_id}`: download DOCX by id.
-- `POST /api/v1/process`: generate graph (`nodes` + `edges`) from paragraph payload.
+- `POST /api/v1/process`: generate graph (`nodes` + `edges`) plus `knowledgeGraph`, with local JSON cache (`infra/json/cache`).
 - `POST /api/v1/assistant/chat`: contract assistant response with paragraph citations.
 
 ## Data dependency
