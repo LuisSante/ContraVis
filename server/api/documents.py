@@ -26,7 +26,6 @@ from services.contract_assistant import (
     simplify_paragraph_selection,
 )
 from services.graph.cache import build_graph_cache_key, load_graph_cache, save_graph_cache
-from services.graph.knowledge_graph import build_knowledge_graph
 from services.graph.relations import generate_graph_data
 from utils.config import Config
 from utils.document_store import DocumentStore
@@ -175,11 +174,10 @@ async def process_document(data: dict):
             )
 
     cache_schema_fingerprint = (
-        f"{Config.KG_SCHEMA_VERSION}"
+        "graph_only_v1"
         f"|sem:{Config.SEMANTIC_RELATED_MODE}"
         f"|k:{Config.SEMANTIC_TOP_K}"
         f"|thr:{Config.SEMANTIC_SIMILARITY_THRESHOLD}"
-        f"|kg:{Config.KG_LINK_MODE}"
     )
     cache_key = build_graph_cache_key(
         document_id=str(doc_id or "unknown"),
@@ -197,16 +195,15 @@ async def process_document(data: dict):
                 "hit": True,
                 "key": cache_key,
             }
-            response = dict(cached_payload)
+            response = {
+                "status": str(cached_payload.get("status", "success")),
+                "documentId": doc_id,
+                "graph": cached_payload.get("graph", {}),
+            }
             response["cache"] = cache_meta
             return response
 
     graph_obj = generate_graph_data(all_paragraphs_input)
-    knowledge_graph = build_knowledge_graph(
-        document_id=str(doc_id or "unknown"),
-        paragraph_graph=graph_obj,
-        schema_version=Config.KG_SCHEMA_VERSION,
-    )
 
     cache_meta = {
         "enabled": Config.GRAPH_CACHE_ENABLED,
@@ -217,7 +214,6 @@ async def process_document(data: dict):
         "status": "success",
         "documentId": doc_id,
         "graph": graph_obj.model_dump(),
-        "knowledgeGraph": knowledge_graph.model_dump(),
         "cache": cache_meta,
     }
 
