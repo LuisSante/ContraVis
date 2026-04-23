@@ -12,7 +12,12 @@ Short reference for `server/utils/config.py`.
 
 ### Cache and Versioning
 - `GRAPH_CACHE_ENABLED`: Enables/disables graph cache usage (`1` on, `0` off).
-- `KG_SCHEMA_VERSION`: Logical schema tag to invalidate cache when KG logic changes.
+
+### Neo4j Integration
+- `NEO4J_URI`: Neo4j Bolt URI used by backend connectivity checks.
+- `NEO4J_USERNAME`: Neo4j username.
+- `NEO4J_PASSWORD`: Neo4j password.
+- `NEO4J_DATABASE`: Neo4j database name (default `neo4j`).
 
 ### Semantic Graph Controls
 - `SEMANTIC_RELATED_MODE`: Semantic edge strategy.
@@ -20,11 +25,6 @@ Short reference for `server/utils/config.py`.
   - `all`: keep all neighbors above threshold.
 - `SEMANTIC_TOP_K`: Number of semantic neighbors per paragraph when using `top_k`.
 - `SEMANTIC_SIMILARITY_THRESHOLD`: Minimum cosine similarity to create semantic edges.
-
-### KG Clause-Link Controls
-- `KG_LINK_MODE`: How inter-clause KG links are created.
-  - `anchored`: only clause pairs already linked in the base graph.
-  - `global`: can add new clause links from global entity co-occurrence.
 
 ### Extraction Rules
 - `REFERENCE_PATTERNS`: Regex patterns used to detect explicit references (Section, Article, Exhibit, etc.).
