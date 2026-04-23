@@ -117,6 +117,7 @@
 	} from '$lib/components/docx';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	const initialInspectorState = createEmptyInspectorState();
@@ -129,6 +130,17 @@ const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
 const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
 const TOOL_BRAND_SHORT_NAME = 'ContraGraph';
 const MANUAL_SCROLL_DRAG_SPEED = 100;
+const GLOBAL_ANALYSIS_MODEL_OPTIONS = Array.from(
+	new Map(
+		[...CONTRADICTION_OPENAI_MODEL_OPTIONS, ...PARAGRAPH_EXPLANATION_MODEL_OPTIONS].map(
+			(option) => [option.value, option]
+		)
+	).values()
+);
+const GLOBAL_MODEL_FONT_SIZE_PX = 10;
+const GLOBAL_MODEL_TRIGGER_EXTRA_PX = 30;
+const GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX = 34;
+const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -168,7 +180,8 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
-	let contradictionModel = 'gpt-4.1';
+	let globalAnalysisModel = 'gpt-4.1';
+	let globalModelSelectWidthPx = GLOBAL_MODEL_MIN_WIDTH_PX;
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
 	let selectedContradictionEvidenceLink:
@@ -187,7 +200,6 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	let contradictionSummaryVisible = true;
-	let paragraphExplanationModel = 'gpt-4.1';
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
 	let paragraphExplanationAnswer = '';
@@ -1031,7 +1043,7 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 
 	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
 		if (!activeDocumentId) return null;
-		const selectedModel = contradictionModel.trim();
+		const selectedModel = globalAnalysisModel.trim();
 
 		const nodes = get(paragraphs).map((node) => ({
 			...node,
@@ -1190,6 +1202,7 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 			mode: resolvedMode,
 			scope: resolvedScope,
 			provider: assistantProvider,
+			model: globalAnalysisModel.trim() || undefined,
 			selectedParagraphId: selected?.id ?? null,
 			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
 			paragraphNodes,
@@ -1273,7 +1286,7 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 			mode: 'explain',
 			scope: 'selected',
 			provider: assistantProvider,
-			model: paragraphExplanationModel,
+			model: globalAnalysisModel,
 			selectedParagraphId: selected.id,
 			relatedParagraphs: buildAssistantRelatedContext(paragraphExplanationRelatedParagraphs),
 			paragraphNodes,
@@ -1324,6 +1337,7 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 			mode: 'explain',
 			scope: 'selected',
 			provider: assistantProvider,
+			model: globalAnalysisModel.trim() || undefined,
 			selectedParagraphId: selected.id,
 			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
 			paragraphNodes,
@@ -2398,6 +2412,26 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 		sidebarLabelsPinned = !sidebarLabelsPinned;
 	}
 
+	function measureGlobalModelSelectWidthPx(): number {
+		if (typeof document === 'undefined') return GLOBAL_MODEL_MIN_WIDTH_PX;
+
+		const canvas = document.createElement('canvas');
+		const context = canvas.getContext('2d');
+		if (!context) return GLOBAL_MODEL_MIN_WIDTH_PX;
+
+		const rootStyles = getComputedStyle(document.documentElement);
+		const fontFamily = rootStyles.fontFamily || 'sans-serif';
+		context.font = `400 ${GLOBAL_MODEL_FONT_SIZE_PX}px ${fontFamily}`;
+
+		const longestLabelPx = GLOBAL_ANALYSIS_MODEL_OPTIONS.reduce((maxWidth, option) => {
+			const width = context.measureText(option.label).width;
+			return Math.max(maxWidth, width);
+		}, 0);
+
+		const paddingAndIconsPx = Math.max(GLOBAL_MODEL_TRIGGER_EXTRA_PX, GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX);
+		return Math.max(GLOBAL_MODEL_MIN_WIDTH_PX, Math.ceil(longestLabelPx + paddingAndIconsPx));
+	}
+
 	onMount(() => {
 		const handleGlobalPointerDown = (event: MouseEvent) => {
 			if (activeRightPanelTab !== 'related') return;
@@ -2448,6 +2482,13 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 		});
 		refreshViewportMode();
 		setRightDrawerWidth(rightDrawerWidth);
+		globalModelSelectWidthPx = measureGlobalModelSelectWidthPx();
+		const fontSet = (document as Document & { fonts?: FontFaceSet }).fonts;
+		if (fontSet) {
+			void fontSet.ready.then(() => {
+				globalModelSelectWidthPx = measureGlobalModelSelectWidthPx();
+			});
+		}
 
 		if (typeof ResizeObserver !== 'undefined') {
 			contradictionMarkerResizeObserver = new ResizeObserver(() => {
@@ -2502,10 +2543,39 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 		<header
 			class="flex flex-none items-center gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
 		>
-			<div class="min-w-0">
+			<div class="min-w-0 flex-1">
 				<p class="text-[11px] text-gray-500">Document</p>
-				<div class="truncate text-sm font-medium text-gray-800">
-					{activeDocumentName || 'No document selected'}
+				<div class="flex items-center gap-2">
+					<div class="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">
+						{activeDocumentName || 'No document selected'}
+					</div>
+					<div class="mr-5">
+						<Select.Root
+							type="single"
+							bind:value={globalAnalysisModel}
+							disabled={contradictionLoading || paragraphExplanationLoading}
+						>
+							<Select.Trigger
+								size="sm"
+								class="h-7 shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+								style={`width: ${globalModelSelectWidthPx}px;`}
+								title="Global model for Contradiction Analysis and Paragraph Explanation"
+							>
+								{GLOBAL_ANALYSIS_MODEL_OPTIONS.find((option) => option.value === globalAnalysisModel)
+									?.label ?? globalAnalysisModel}
+							</Select.Trigger>
+							<Select.Content
+								class="min-w-0"
+								style={`width: ${globalModelSelectWidthPx}px; min-width: 0;`}
+							>
+								{#each GLOBAL_ANALYSIS_MODEL_OPTIONS as option}
+									<Select.Item value={option.value} label={option.label} class="text-[10px] whitespace-nowrap">
+										{option.label}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</div>
 				</div>
 			</div>
 		</header>
@@ -2717,42 +2787,74 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 			: `right: ${activeSidebarWidth}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${activeSidebarWidth}px;`}
 	>
 		<header class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5">
-			<div class="min-w-0">
-				<div class="flex items-center gap-2">
-					<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
-						<span class="shrink-0 text-blue-700">
-							{#if activeRightPanelTab === 'related'}
-								<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'analysis'}
-								<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'paragraph_explanation'}
-								<ParagraphExplanationIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'redundancy'}
-								<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'summarize'}
-								<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'ambiguity'}
-								<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'revisions'}
-								<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else}
-								<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
-							{/if}
-						</span>
-						<span>
-							{toTitleCaseLabel(
-								RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
-							)}
-						</span>
-					</h2>
-				</div>
+			<div class="min-w-0 flex flex-1 items-center gap-2">
+				<h2 class="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-gray-700">
+					<span class="shrink-0 text-blue-700">
+						{#if activeRightPanelTab === 'related'}
+							<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'analysis'}
+							<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'paragraph_explanation'}
+							<ParagraphExplanationIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'redundancy'}
+							<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'summarize'}
+							<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'ambiguity'}
+							<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'revisions'}
+							<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else}
+							<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
+						{/if}
+					</span>
+					<span>
+						{toTitleCaseLabel(
+							RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
+						)}
+					</span>
+				</h2>
+
+				{#if activeRightPanelTab === 'analysis'}
+					<div class="flex shrink-0 items-center gap-1.5">
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!Boolean(activeDocumentId) || contradictionLoading || $loading}
+							onclick={() => void loadSavedContradictions()}
+						>
+							Saved contradictions
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!Boolean(activeDocumentId) || contradictionLoading || $loading || backendGraphLoading}
+							onclick={() => void searchContradictionsWithLlm()}
+						>
+							Search contradictions
+						</Button>
+					</div>
+				{:else if activeRightPanelTab === 'paragraph_explanation'}
+					<div class="flex shrink-0 items-center gap-1.5">
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!$selectedParagraph || paragraphExplanationLoading}
+							onclick={() => void submitParagraphExplanation()}
+						>
+							Explain paragraph
+						</Button>
+					</div>
+				{/if}
 			</div>
+
 			<Button
 				variant="outline"
 				size="icon-sm"
-				class={`h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
-					activeRightPanelTab === 'analysis' ? 'mt-0.5 self-start' : ''
-				}`}
+				class="ml-2 h-7 w-7 shrink-0 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
 				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
@@ -2764,11 +2866,6 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 		{#if activeRightPanelTab === 'analysis'}
 			<RightPanelAnalysis
 				selectedParagraph={$selectedParagraph}
-				bind:model={contradictionModel}
-				modelOptions={CONTRADICTION_OPENAI_MODEL_OPTIONS}
-				controlsDisabled={contradictionLoading || $loading || backendGraphLoading}
-				canLoadSaved={Boolean(activeDocumentId) && !contradictionLoading && !$loading}
-				canSearchContradictions={Boolean(activeDocumentId) && !contradictionLoading && !$loading && !backendGraphLoading}
 				contradictionLoading={contradictionLoading}
 				revisionProcessingSteps={revisionProcessingSteps}
 				selectedContradictionResult={selectedContradictionResult}
@@ -2783,8 +2880,6 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
-				onLoadSavedContradictions={() => void loadSavedContradictions()}
-				onSearchContradictions={() => void searchContradictionsWithLlm()}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
 				onSubmitAssistantQuestion={submitContradictionAssistantQuestion}
 				onHandleAssistantInputKeydown={handleContradictionAssistantInputKeydown}
@@ -2825,13 +2920,10 @@ const MANUAL_SCROLL_DRAG_SPEED = 100;
 		{:else if activeRightPanelTab === 'paragraph_explanation'}
 			<RightPanelParagraphExplanation
 				selectedParagraph={$selectedParagraph}
-				bind:model={paragraphExplanationModel}
-				modelOptions={PARAGRAPH_EXPLANATION_MODEL_OPTIONS}
 				loading={paragraphExplanationLoading}
 				error={paragraphExplanationError}
 				explanation={paragraphExplanationAnswer}
 				citations={paragraphExplanationCitations}
-				onRunExplanation={submitParagraphExplanation}
 				onFocusNodeFromPanel={focusNodeFromPanel}
 			/>
 		{:else}

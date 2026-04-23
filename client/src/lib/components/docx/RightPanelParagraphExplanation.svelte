@@ -1,22 +1,12 @@
 <script lang="ts">
 	import type { Node as ParagraphNode, AssistantCitation } from '$lib/types/document';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 
-	type ModelOption = {
-		value: string;
-		label: string;
-	};
-
 	export let selectedParagraph: ParagraphNode | null = null;
-	export let model = 'gpt-5-mini';
-	export let modelOptions: ReadonlyArray<ModelOption> = [];
 	export let loading = false;
 	export let error: string | null = null;
 	export let explanation = '';
 	export let citations: AssistantCitation[] = [];
-	export let onRunExplanation: () => void | Promise<void> = () => {};
 	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
 </script>
 
@@ -28,35 +18,8 @@
 	</header>
 
 	<div class="border-b border-gray-100 bg-white px-3 py-2.5">
-		<div class="flex items-center gap-2">
-			<Select.Root type="single" bind:value={model} disabled={loading}>
-				<Select.Trigger
-					size="sm"
-					class="h-7 w-[150px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
-					title="Paragraph explanation model"
-				>
-					{modelOptions.find((option) => option.value === model)?.label ?? model}
-				</Select.Trigger>
-				<Select.Content>
-					{#each modelOptions as option}
-						<Select.Item value={option.value} label={option.label} class="text-[10px]">
-							{option.label}
-						</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
-				disabled={!selectedParagraph || loading}
-				onclick={() => void onRunExplanation()}
-			>
-				Explain paragraph
-			</Button>
-		</div>
 		{#if selectedParagraph}
-			<p class="mt-1.5 text-[10px] text-gray-500">
+			<p class="text-[10px] text-gray-500">
 				Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
 			</p>
 		{/if}
