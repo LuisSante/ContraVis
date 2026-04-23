@@ -1,20 +1,29 @@
 <script lang="ts">
-	import type { Node as ParagraphNode, AssistantCitation } from '$lib/types/document';
+	import type {
+		Node as ParagraphNode,
+		SimplifyResultState
+	} from '$lib/types/document';
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
+	import ParagraphRewriteResult from './ParagraphRewriteResult.svelte';
 
 	export let selectedParagraph: ParagraphNode | null = null;
 	export let loading = false;
 	export let error: string | null = null;
 	export let explanation = '';
-	export let citations: AssistantCitation[] = [];
-	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
+	export let simplifyResult: SimplifyResultState | null = null;
+	export let simplifyError: string | null = null;
+	export let rewriteSource: 'simplify' | 'fix' | null = null;
+	export let rewriteBusy = false;
+	export let onReplaceRewrite: () => void = () => {};
+	export let onCopyRewrite: () => void | Promise<void> = () => {};
+	export let onRejectRewrite: () => void = () => {};
+	export let onFocusParagraph: (paragraphId: string) => void = () => {};
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col">
 	<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
-		<p class="text-[11px] text-gray-500">
-			Get a detailed and plain-language explanation of the selected paragraph and its related context.
-		</p>
+		<p class="text-[11px] text-gray-500">Detailed explanation for the selected paragraph.</p>
 	</header>
 
 	<div class="border-b border-gray-100 bg-white px-3 py-2.5">
@@ -29,10 +38,7 @@
 		<div class="space-y-2 p-3">
 			{#if !selectedParagraph}
 				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-					<p class="text-[10px] font-medium">Select a paragraph to explain</p>
-					<p class="mt-1 text-[10px] text-gray-400">
-						Choose a paragraph in the document on the left.
-					</p>
+					<p class="text-[10px] font-medium">Select a paragraph on the left.</p>
 				</div>
 			{:else}
 				{#if loading}
@@ -43,25 +49,44 @@
 				{#if error}
 					<div class="rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">{error}</div>
 				{/if}
-				{#if explanation}
-					<div class="rounded border border-gray-200 bg-white px-3 py-2">
-						<p class="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">{explanation}</p>
+				{#if simplifyResult || simplifyError}
+					<div class="relative">
+						<div class="pointer-events-none absolute top-1.5 left-2 z-10">
+							<Badge
+								variant="outline"
+								class="h-4 border-blue-100 bg-blue-50 px-2 text-[9px] font-semibold text-blue-600"
+							>
+								Simplify 
+							</Badge>
+						</div>
+						<ParagraphRewriteResult
+							simplifyResult={simplifyResult}
+							rewriteSource={rewriteSource}
+							simplifyError={simplifyError}
+							rewriteBusy={rewriteBusy}
+							selectedParagraphId={selectedParagraph?.id ?? null}
+							applyLabel="Accept"
+							rejectLabel="Reject"
+							minimal={true}
+							showCopyAction={false}
+							onReplace={onReplaceRewrite}
+							onCopy={onCopyRewrite}
+							onReject={onRejectRewrite}
+							onFocusParagraph={onFocusParagraph}
+						/>
 					</div>
 				{/if}
-				{#if citations.length > 0}
+				{#if explanation}
 					<div class="rounded border border-gray-200 bg-white px-3 py-2">
-						<p class="mb-1 text-[10px] font-semibold text-gray-600">Citations</p>
-						<div class="flex flex-wrap gap-1">
-							{#each citations as citation}
-								<button
-									type="button"
-									class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-									onclick={() => onFocusNodeFromPanel(citation.id, true)}
-								>
-									{citation.id}
-								</button>
-							{/each}
+						<div class="mb-1">
+							<Badge
+								variant="outline"
+								class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
+							>
+								Explain
+							</Badge>
 						</div>
+						<p class="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">{explanation}</p>
 					</div>
 				{/if}
 			{/if}

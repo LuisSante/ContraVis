@@ -14,6 +14,10 @@
 	export let onCopy: () => void | Promise<void> = () => {};
 	export let onReject: () => void = () => {};
 	export let onFocusParagraph: ((paragraphId: string) => void) | null = null;
+	export let applyLabel = 'Replace';
+	export let rejectLabel = 'Reject';
+	export let minimal = false;
+	export let showCopyAction = true;
 
 	$: resultParagraphId = simplifyResult?.payload.evidence.paragraph_id ?? null;
 	$: resultIsOnAnotherParagraph = Boolean(
@@ -37,23 +41,28 @@
 {/if}
 
 {#if simplifyResult}
-	<Card.Root size="sm" class="border-blue-200 bg-blue-50/50 py-0 text-[11px]">
-		<Card.Header class="space-y-1 px-3 py-2">
-			<div class="flex items-center justify-between gap-2">
-				<div></div>
-				<Badge
-					variant="outline"
-					class="h-5 border-blue-200 bg-white px-2 text-[9px] font-bold text-blue-700"
-				>
-					{sourceLabel}
-				</Badge>
-			</div>
-			<Card.Description class="text-[10px] text-blue-700/80">
-				Paragraph {simplifyResult.payload.paragraphId}
-			</Card.Description>
-		</Card.Header>
-		<Card.Content class="space-y-2 px-3 pb-3">
-			{#if resultIsOnAnotherParagraph && resultParagraphId}
+	<Card.Root
+		size="sm"
+		class={`py-0 text-[11px] ${minimal ? 'border-gray-200 bg-white' : 'border-blue-200 bg-blue-50/50'}`}
+	>
+		{#if !minimal}
+			<Card.Header class="space-y-1 px-3 py-2">
+				<div class="flex items-center justify-between gap-2">
+					<div></div>
+					<Badge
+						variant="outline"
+						class="h-5 border-blue-200 bg-white px-2 text-[9px] font-bold text-blue-700"
+					>
+						{sourceLabel}
+					</Badge>
+				</div>
+				<Card.Description class="text-[10px] text-blue-700/80">
+					Paragraph {simplifyResult.payload.paragraphId}
+				</Card.Description>
+			</Card.Header>
+		{/if}
+		<Card.Content class={`space-y-2 px-3 pb-3 ${minimal ? 'pt-5' : ''}`}>
+			{#if !minimal && resultIsOnAnotherParagraph && resultParagraphId}
 				<div class="rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-700">
 					Result belongs to paragraph {resultParagraphId}.
 					{#if onFocusParagraph}
@@ -71,7 +80,7 @@
 
 			<div class="overflow-hidden rounded border border-gray-200 bg-white">
 				<div class="border-b border-gray-100 bg-red-50/40 px-2.5 py-1.5">
-					<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
+					<p class="text-[9px] font-semibold text-red-700">{minimal ? 'Original' : 'Original Snippet'}</p>
 					<p class="mt-0.5 font-mono leading-relaxed text-red-800/90">
 						{#if snippetChangeLog}
 							{#each snippetChangeLog.oldSegments as segment}
@@ -87,7 +96,7 @@
 					</p>
 				</div>
 				<div class="bg-green-50/40 px-2.5 py-1.5">
-					<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
+					<p class="text-[9px] font-semibold text-green-700">{minimal ? 'Suggested' : 'Proposed Rewrite'}</p>
 					<p class="mt-0.5 font-mono leading-relaxed text-green-800">
 						{#if snippetChangeLog}
 							{#each snippetChangeLog.newSegments as segment}
@@ -104,7 +113,7 @@
 				</div>
 			</div>
 
-			<div class="grid grid-cols-3 gap-1.5">
+			<div class={`grid gap-1.5 ${showCopyAction && !minimal ? 'grid-cols-3' : 'grid-cols-2'}`}>
 				<Button
 					variant="outline"
 					size="sm"
@@ -112,25 +121,27 @@
 					disabled={rewriteBusy}
 					onclick={onReplace}
 				>
-					Replace
+					{applyLabel}
 				</Button>
+				{#if showCopyAction && !minimal}
+					<Button
+						variant="outline"
+						size="sm"
+						class="h-7 border-sky-200 bg-sky-50 text-[10px] font-semibold text-sky-700 hover:border-sky-300 hover:bg-sky-100"
+						disabled={rewriteBusy}
+						onclick={() => void onCopy()}
+					>
+						Copy
+					</Button>
+				{/if}
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-7 border-sky-200 bg-sky-50 text-[10px] font-semibold text-sky-700 hover:border-sky-300 hover:bg-sky-100"
-					disabled={rewriteBusy}
-					onclick={() => void onCopy()}
-				>
-					Copy
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-7 border-gray-200 bg-white text-[10px] font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+					class="h-7 border-red-200 bg-red-50 text-[10px] font-semibold text-red-700 hover:border-red-300 hover:bg-red-100"
 					disabled={rewriteBusy}
 					onclick={onReject}
 				>
-					Reject
+					{rejectLabel}
 				</Button>
 			</div>
 		</Card.Content>

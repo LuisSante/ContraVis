@@ -203,12 +203,6 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
 	let paragraphExplanationAnswer = '';
-	let paragraphExplanationCitations: Array<{
-		id: string;
-		excerpt: string;
-		page?: number;
-		paragraph_enum?: number;
-	}> = [];
 	let paragraphExplanationConnectors: Array<{
 		topPx: number;
 		bottomPx: number;
@@ -515,7 +509,6 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 	function resetParagraphExplanationState() {
 		paragraphExplanationError = null;
 		paragraphExplanationAnswer = '';
-		paragraphExplanationCitations = [];
 		paragraphExplanationLoading = false;
 	}
 
@@ -1296,7 +1289,6 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 		try {
 			const response = await fetchAssistantResponse(payload);
 			paragraphExplanationAnswer = response.answer;
-			paragraphExplanationCitations = response.citations ?? [];
 		} catch (requestError) {
 			const message = getAxiosErrorMessage(
 				requestError,
@@ -1591,7 +1583,11 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 		}
 	}
 
-	async function runSimplify() {
+	type RunSimplifyOptions = {
+		openRevisionsPanel?: boolean;
+	};
+
+	async function runSimplify(options?: RunSimplifyOptions) {
 		if (simplifyLoading) return;
 		const target = resolveActiveSimplifyTarget();
 
@@ -1615,8 +1611,10 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 
 			simplifyResult = execution.result;
 			latestRewriteSource = 'simplify';
-			activeRightPanelTab = 'revisions';
-			isRightDrawerOpen = true;
+			if (options?.openRevisionsPanel ?? true) {
+				activeRightPanelTab = 'revisions';
+				isRightDrawerOpen = true;
+			}
 
 			simplifyAuditTrail.unshift(execution.auditRecord);
 
@@ -2847,6 +2845,15 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 						>
 							Explain paragraph
 						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!$selectedParagraph || simplifyLoading || fixContradictionLoading}
+							onclick={() => void runSimplify({ openRevisionsPanel: false })}
+						>
+							{simplifyLoading ? 'Simplifying...' : 'Simplify'}
+						</Button>
 					</div>
 				{/if}
 			</div>
@@ -2923,8 +2930,14 @@ const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 				loading={paragraphExplanationLoading}
 				error={paragraphExplanationError}
 				explanation={paragraphExplanationAnswer}
-				citations={paragraphExplanationCitations}
-				onFocusNodeFromPanel={focusNodeFromPanel}
+				simplifyResult={latestRewriteSource === 'simplify' ? simplifyResult : null}
+				simplifyError={latestRewriteSource === 'simplify' ? simplifyError : null}
+				rewriteSource={latestRewriteSource === 'simplify' ? 'simplify' : null}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
+				onReplaceRewrite={replaceSelectionWithSimplifiedText}
+				onCopyRewrite={copySimplifiedSnippet}
+				onRejectRewrite={cancelSimplifyResult}
+				onFocusParagraph={focusNodeFromPanel}
 			/>
 		{:else}
 			<RightPanelAssistant
