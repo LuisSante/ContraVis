@@ -12,7 +12,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-SEMANTIC_SIMILARITY_THRESHOLD = 0.8
 MIN_SEMANTIC_WORDS = 8
 MIN_SEMANTIC_CHARS = 45
 MAX_BOILERPLATE_WORDS = 24
@@ -391,28 +390,69 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
         semantic_texts = [nodes[idx].text for idx in semantic_candidate_indices]
         embeddings = model.encode(semantic_texts, convert_to_tensor=True)
         cosine_scores = util.cos_sim(embeddings, embeddings)
+        semantic_threshold = float(Config.SEMANTIC_SIMILARITY_THRESHOLD)
+        semantic_mode = str(Config.SEMANTIC_RELATED_MODE).strip().lower()
 
-        for left_local_idx in range(len(semantic_candidate_indices)):
-            for right_local_idx in range(left_local_idx + 1, len(semantic_candidate_indices)):
-                score = float(cosine_scores[left_local_idx][right_local_idx])
-                if score <= SEMANTIC_SIMILARITY_THRESHOLD:
-                    continue
+        pair_score_by_indices: dict[tuple[int, int], float] = {}
 
-                left_idx = semantic_candidate_indices[left_local_idx]
-                right_idx = semantic_candidate_indices[right_local_idx]
+        if semantic_mode == "all":
+            for left_local_idx in range(len(semantic_candidate_indices)):
+                for right_local_idx in range(left_local_idx + 1, len(semantic_candidate_indices)):
+                    score = float(cosine_scores[left_local_idx][right_local_idx])
+                    if score <= semantic_threshold:
+                        continue
 
-                if (
-                    normalized_text_keys[left_idx]
-                    and normalized_text_keys[left_idx] == normalized_text_keys[right_idx]
-                ):
-                    continue
+                    left_idx = semantic_candidate_indices[left_local_idx]
+                    right_idx = semantic_candidate_indices[right_local_idx]
 
-                edges.append(Edge(
-                    source=nodes[left_idx].id,
-                    target=nodes[right_idx].id,
-                    type="semantic_similarity",
-                    score=score
-                ))
+                    if (
+                        normalized_text_keys[left_idx]
+                        and normalized_text_keys[left_idx] == normalized_text_keys[right_idx]
+                    ):
+                        continue
+
+                    pair = (left_idx, right_idx) if left_idx < right_idx else (right_idx, left_idx)
+                    previous = pair_score_by_indices.get(pair)
+                    if previous is None or score > previous:
+                        pair_score_by_indices[pair] = score
+        else:
+            semantic_top_k = max(1, int(Config.SEMANTIC_TOP_K))
+            for left_local_idx in range(len(semantic_candidate_indices)):
+                candidates: list[tuple[int, float]] = []
+                for right_local_idx in range(len(semantic_candidate_indices)):
+                    if right_local_idx == left_local_idx:
+                        continue
+
+                    score = float(cosine_scores[left_local_idx][right_local_idx])
+                    if score <= semantic_threshold:
+                        continue
+
+                    left_idx = semantic_candidate_indices[left_local_idx]
+                    right_idx = semantic_candidate_indices[right_local_idx]
+                    if (
+                        normalized_text_keys[left_idx]
+                        and normalized_text_keys[left_idx] == normalized_text_keys[right_idx]
+                    ):
+                        continue
+
+                    candidates.append((right_local_idx, score))
+
+                candidates.sort(key=lambda item: item[1], reverse=True)
+                for right_local_idx, score in candidates[:semantic_top_k]:
+                    left_idx = semantic_candidate_indices[left_local_idx]
+                    right_idx = semantic_candidate_indices[right_local_idx]
+                    pair = (left_idx, right_idx) if left_idx < right_idx else (right_idx, left_idx)
+                    previous = pair_score_by_indices.get(pair)
+                    if previous is None or score > previous:
+                        pair_score_by_indices[pair] = score
+
+        for (left_idx, right_idx), score in sorted(pair_score_by_indices.items()):
+            edges.append(Edge(
+                source=nodes[left_idx].id,
+                target=nodes[right_idx].id,
+                type="semantic_similarity",
+                score=score
+            ))
 
     relations_map: dict[str, set[str]] = {}
     for edge in edges:

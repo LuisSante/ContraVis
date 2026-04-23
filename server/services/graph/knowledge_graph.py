@@ -5,6 +5,7 @@ import re
 from typing import Any, Optional
 
 from schemas.types import Graph, KGEdge, KGNode, KGTriple, KnowledgeGraph
+from utils.config import Config
 
 
 CLAUSE_HEADER_PATTERN = re.compile(
@@ -325,6 +326,9 @@ def build_knowledge_graph(
 ) -> KnowledgeGraph:
     contract_id = _safe_token(document_id)
     contract_node_id = f"{contract_id}:contract"
+    kg_link_mode = str(Config.KG_LINK_MODE).strip().lower()
+    if kg_link_mode not in {"anchored", "global"}:
+        kg_link_mode = "anchored"
 
     nodes_by_id: dict[str, KGNode] = {}
     edges: list[KGEdge] = []
@@ -334,6 +338,7 @@ def build_knowledge_graph(
     clause_record_by_id: dict[str, dict[str, Any]] = {}
     defined_terms_by_key: dict[str, str] = {}
     clause_action_facts: dict[str, list[dict[str, Any]]] = {}
+    anchored_clause_pairs: set[tuple[str, str]] = set()
 
     contradiction_candidate_pairs: set[tuple[str, str]] = set()
 
@@ -884,8 +889,10 @@ def build_knowledge_graph(
             continue
 
         source_text = clause_record_by_id.get(source_clause, {}).get("text", "")
+        anchored_pair = tuple(sorted((source_clause, target_clause)))
 
         if paragraph_edge.type == "reference":
+            anchored_clause_pairs.add(anchored_pair)
             ref_label = _normalize_label(
                 f"{paragraph_edge.ref_label or 'reference'} {paragraph_edge.ref_value or ''}"
             ).strip()
@@ -953,6 +960,7 @@ def build_knowledge_graph(
                 )
 
         elif paragraph_edge.type == "semantic_similarity":
+            anchored_clause_pairs.add(anchored_pair)
             add_edge(
                 KGEdge(
                     source=source_clause,
@@ -965,6 +973,59 @@ def build_knowledge_graph(
             if (paragraph_edge.score or 0) >= 0.82:
                 left, right = sorted([source_clause, target_clause])
                 contradiction_candidate_pairs.add((left, right))
+
+    if kg_link_mode == "global":
+        structural_node_types = {"Clause", "Section", "Contract"}
+        clause_entity_ids: dict[str, set[str]] = {}
+
+        for edge in edges:
+            source_node = nodes_by_id.get(edge.source)
+            target_node = nodes_by_id.get(edge.target)
+            if not source_node or not target_node:
+                continue
+            if source_node.type != "Clause":
+                continue
+            if target_node.type in structural_node_types:
+                continue
+            clause_entity_ids.setdefault(source_node.id, set()).add(target_node.id)
+
+        all_clause_ids = sorted(clause_record_by_id.keys())
+        for left_idx in range(len(all_clause_ids)):
+            left_clause = all_clause_ids[left_idx]
+            left_entities = clause_entity_ids.get(left_clause, set())
+            if not left_entities:
+                continue
+
+            for right_idx in range(left_idx + 1, len(all_clause_ids)):
+                right_clause = all_clause_ids[right_idx]
+                pair = (left_clause, right_clause)
+                if pair in anchored_clause_pairs:
+                    continue
+
+                right_entities = clause_entity_ids.get(right_clause, set())
+                if not right_entities:
+                    continue
+
+                shared_entity_ids = left_entities.intersection(right_entities)
+                if not shared_entity_ids:
+                    continue
+
+                left_paragraph = clause_record_by_id.get(left_clause, {}).get("paragraph_id", "")
+                right_paragraph = clause_record_by_id.get(right_clause, {}).get("paragraph_id", "")
+                confidence = min(0.88, 0.62 + (0.03 * len(shared_entity_ids)))
+                add_edge(
+                    KGEdge(
+                        source=left_clause,
+                        target=right_clause,
+                        type="SHARES_ENTITY",
+                        confidence=confidence,
+                        evidence_paragraph_id=f"{left_paragraph}|{right_paragraph}".strip("|"),
+                        evidence={
+                            "shared_entity_count": len(shared_entity_ids),
+                            "shared_entity_ids": sorted(shared_entity_ids)[:12],
+                        },
+                    )
+                )
 
     # Add CONTRADICTS edges from action-level logical conflicts.
     for left_clause, right_clause in sorted(contradiction_candidate_pairs):

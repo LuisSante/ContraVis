@@ -174,10 +174,17 @@ async def process_document(data: dict):
                 }
             )
 
+    cache_schema_fingerprint = (
+        f"{Config.KG_SCHEMA_VERSION}"
+        f"|sem:{Config.SEMANTIC_RELATED_MODE}"
+        f"|k:{Config.SEMANTIC_TOP_K}"
+        f"|thr:{Config.SEMANTIC_SIMILARITY_THRESHOLD}"
+        f"|kg:{Config.KG_LINK_MODE}"
+    )
     cache_key = build_graph_cache_key(
         document_id=str(doc_id or "unknown"),
         paragraphs_data=all_paragraphs_input,
-        schema_version=Config.KG_SCHEMA_VERSION,
+        schema_version=cache_schema_fingerprint,
     )
     if Config.GRAPH_CACHE_ENABLED:
         cached_payload = load_graph_cache(

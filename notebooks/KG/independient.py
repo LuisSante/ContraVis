@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from dataclasses import dataclass
@@ -20,6 +21,10 @@ CUAD_JSON_PATH = INFRA_PATH / "CUAD_v1" / "CUAD_v1.json"
 MAIN_DOCUMENT: str | None = None
 TITLE_MATCH: str = "exact"  # "exact" | "contains"
 MAX_DOCS: int = 1
+SEMANTIC_RELATED_MODE: str = "top_k"  # "top_k" | "all"
+SEMANTIC_TOP_K: int = 5
+SEMANTIC_SIMILARITY_THRESHOLD: float = 0.8
+KG_LINK_MODE: str = "anchored"  # "anchored" | "global"
 
 MODEL_NAME = "gpt-4.1-mini"
 INPUT_COST_PER_MILLION = 0.40
@@ -208,6 +213,20 @@ def main() -> int:
     dump_json(context_out, context_rows)
     dump_json(paragraphs_out, stage1)
 
+    semantic_mode = SEMANTIC_RELATED_MODE.strip().lower()
+    if semantic_mode not in {"top_k", "all"}:
+        semantic_mode = "top_k"
+    kg_link_mode = KG_LINK_MODE.strip().lower()
+    if kg_link_mode not in {"anchored", "global"}:
+        kg_link_mode = "anchored"
+
+    os.environ["SEMANTIC_RELATED_MODE"] = semantic_mode
+    os.environ["SEMANTIC_TOP_K"] = str(max(1, int(SEMANTIC_TOP_K)))
+    os.environ["SEMANTIC_SIMILARITY_THRESHOLD"] = str(
+        max(0.0, min(1.0, float(SEMANTIC_SIMILARITY_THRESHOLD)))
+    )
+    os.environ["KG_LINK_MODE"] = kg_link_mode
+
     try:
         from services.graph.relations import generate_graph_data  # type: ignore
     except Exception as exc:
@@ -238,6 +257,13 @@ def main() -> int:
     print(f"- paragraphs:{paragraphs_out}")
     print(f"- graph:     {graph_out}")
     print(f"- selected_docs: {len(stage1)}")
+    print(
+        "- graph params: "
+        f"SEMANTIC_RELATED_MODE={semantic_mode}, "
+        f"SEMANTIC_TOP_K={os.environ['SEMANTIC_TOP_K']}, "
+        f"SEMANTIC_SIMILARITY_THRESHOLD={os.environ['SEMANTIC_SIMILARITY_THRESHOLD']}, "
+        f"KG_LINK_MODE={kg_link_mode}"
+    )
     if MAIN_DOCUMENT:
         print(f"- filter: {TITLE_MATCH} '{MAIN_DOCUMENT}'")
 
