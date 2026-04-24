@@ -18,6 +18,7 @@
 	export let rejectLabel = 'Reject';
 	export let minimal = false;
 	export let showCopyAction = true;
+	$: isSimplifyResult = rewriteSource === 'simplify';
 
 	$: resultParagraphId = simplifyResult?.payload.evidence.paragraph_id ?? null;
 	$: resultIsOnAnotherParagraph = Boolean(
@@ -43,9 +44,26 @@
 {#if simplifyResult}
 	<Card.Root
 		size="sm"
-		class={`py-0 text-[11px] ${minimal ? 'border-gray-200 bg-white' : 'border-blue-200 bg-blue-50/50'}`}
+		class={`relative py-0 text-[11px] ${
+			isSimplifyResult
+				? 'border-blue-100 bg-blue-50/35'
+				: minimal
+					? 'border-gray-200 bg-white'
+					: 'border-blue-200 bg-blue-50/50'
+		}`}
 	>
-		{#if !minimal}
+		{#if isSimplifyResult}
+			<div class="pointer-events-none absolute top-1.5 left-2 z-10">
+				<Badge
+					variant="outline"
+					class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
+				>
+					SIMPLIFY
+				</Badge>
+			</div>
+		{/if}
+
+		{#if !minimal && !isSimplifyResult}
 			<Card.Header class="space-y-1 px-3 py-2">
 				<div class="flex items-center justify-between gap-2">
 					<div></div>
@@ -56,13 +74,13 @@
 						{sourceLabel}
 					</Badge>
 				</div>
-				<Card.Description class="text-[10px] text-blue-700/80">
+				<!-- <Card.Description class="text-[10px] text-blue-700/80">
 					Paragraph {simplifyResult.payload.paragraphId}
-				</Card.Description>
+				</Card.Description> -->
 			</Card.Header>
 		{/if}
-		<Card.Content class={`space-y-2 px-3 pb-3 ${minimal ? 'pt-5' : ''}`}>
-			{#if !minimal && resultIsOnAnotherParagraph && resultParagraphId}
+		<Card.Content class={`space-y-2 px-3 pb-3 ${isSimplifyResult || minimal ? 'pt-5' : ''}`}>
+			{#if !minimal && !isSimplifyResult && resultIsOnAnotherParagraph && resultParagraphId}
 				<div class="rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-700">
 					Result belongs to paragraph {resultParagraphId}.
 					{#if onFocusParagraph}
@@ -80,8 +98,8 @@
 
 			<div class="overflow-hidden rounded border border-gray-200 bg-white">
 				<div class="border-b border-gray-100 bg-red-50/40 px-2.5 py-1.5">
-					<p class="text-[9px] font-semibold text-red-700">{minimal ? 'Original' : 'Original Snippet'}</p>
-					<p class="mt-0.5 font-mono leading-relaxed text-red-800/90">
+					<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
+					<p class="mt-0.5 font-mono leading-relaxed text-gray-900">
 						{#if snippetChangeLog}
 							{#each snippetChangeLog.oldSegments as segment}
 								{#if segment.changed}
@@ -96,8 +114,8 @@
 					</p>
 				</div>
 				<div class="bg-green-50/40 px-2.5 py-1.5">
-					<p class="text-[9px] font-semibold text-green-700">{minimal ? 'Suggested' : 'Proposed Rewrite'}</p>
-					<p class="mt-0.5 font-mono leading-relaxed text-green-800">
+					<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
+					<p class="mt-0.5 font-mono leading-relaxed text-gray-900">
 						{#if snippetChangeLog}
 							{#each snippetChangeLog.newSegments as segment}
 								{#if segment.changed}

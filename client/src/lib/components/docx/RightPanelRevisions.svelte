@@ -73,12 +73,12 @@
 				</div>
 			{:else if selectedChangeLog.hasChanges}
 				<div class="overflow-hidden rounded border border-gray-100 text-[11px]">
-					<div class="border-b border-gray-50 bg-red-50/20 px-3 py-2">
-						<span class="mb-1 block text-[8px] font-semibold text-red-300">Original</span>
-						<p class="font-mono leading-relaxed text-red-700/80">
+					<div class="border-b border-gray-100 bg-red-50/40 px-2.5 py-1.5">
+						<span class="mb-1 block text-[9px] font-semibold text-red-700">Original</span>
+						<p class="mt-0.5 font-mono leading-relaxed text-gray-900">
 							{#each selectedChangeLog.oldSegments as segment}
 								{#if segment.changed}
-									<mark class="bg-red-100 px-0.5 text-red-800">{segment.value}</mark>
+									<mark class="rounded-sm bg-red-100 px-[2px] text-red-900">{segment.value}</mark>
 								{:else}
 									<span>{segment.value}</span>
 								{/if}
@@ -86,12 +86,12 @@
 						</p>
 					</div>
 
-					<div class="bg-green-50/20 px-3 py-2">
-						<span class="mb-1 block text-[8px] font-semibold text-green-300">Modified</span>
-						<p class="font-mono leading-relaxed text-green-800">
+					<div class="bg-green-50/40 px-2.5 py-1.5">
+						<span class="mb-1 block text-[9px] font-semibold text-green-700">Modified</span>
+						<p class="mt-0.5 font-mono leading-relaxed text-gray-900">
 							{#each selectedChangeLog.newSegments as segment}
 								{#if segment.changed}
-									<mark class="bg-green-100 px-0.5 text-green-800">{segment.value}</mark>
+									<mark class="rounded-sm bg-green-100 px-[2px] text-green-900">{segment.value}</mark>
 								{:else}
 									<span>{segment.value}</span>
 								{/if}
