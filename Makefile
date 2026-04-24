@@ -29,6 +29,10 @@ dev-frontend:
 	@echo "Init SvelteKit..."
 	$(NPM) run dev -- --open --port 5173
 
+preprocess:
+	@echo "Preprocessing data..."
+	cd notebooks/KG && $(PYTHON) create_kg_neo4j.py
+
 # Neo4j Backup
 backup:
 	@mkdir -p $(BACKUP_DIR)
