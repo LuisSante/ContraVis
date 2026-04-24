@@ -34,11 +34,10 @@ class Config:
   SAVED_CONTRADICTIONS_DIR = Path(
     os.getenv("SAVED_CONTRADICTIONS_DIR", "../infra/contradiction_results")
   )
-  GRAPH_CACHE_DIR = Path(
-    os.getenv("GRAPH_CACHE_DIR", "../infra/json/graph_cache")
+  GRAPH_OUTPUT_DIR = Path(
+    os.getenv("GRAPH_OUTPUT_DIR", "../infra/json/graph")
   )
 
-  GRAPH_CACHE_ENABLED = os.getenv("GRAPH_CACHE_ENABLED", "1").strip() != "0"
   NEO4J_URI = os.getenv("NEO4J_URI", "").strip()
   NEO4J_USERNAME = os.getenv("NEO4J_USERNAME", "").strip()
   NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "").strip()

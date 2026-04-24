@@ -5,10 +5,12 @@ from utils.config import Config
 from schemas.types import Graph, Node, Edge
 from typing import List
 
+from hashlib import sha1
 import json
 import os
 import re
 import logging
+import unicodedata
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +109,20 @@ def create_nodes(text):
 
 def normalize_for_match(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
+
+
+def normalize_for_uid(text: str) -> str:
+    normalized = unicodedata.normalize("NFKC", text or "")
+    normalized = normalized.replace("\r\n", "\n").replace("\r", "\n")
+    normalized = re.sub(r"\s+", " ", normalized).strip().lower()
+    return normalized
+
+
+def paragraph_uid(text: str) -> str:
+    normalized = normalize_for_uid(text)
+    if not normalized:
+        return ""
+    return sha1(normalized.encode("utf-8")).hexdigest()
 
 
 def has_reference_prefix(candidate_text: str, ref_id: str) -> bool:
@@ -298,10 +314,12 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
     edges: List[Edge] = []
     
     for p in paragraphs_data:
+        paragraph_text = p.get("text", "").strip()
         node = Node(
             id=str(p.get("id")),
             documentId=str(p.get("documentId")),
-            text=p.get("text", "").strip(),
+            text=paragraph_text,
+            paragraph_uid=str(p.get("paragraph_uid") or paragraph_uid(paragraph_text)),
             paragraph_enum=p.get("paragraph_enum", 0),
             page=p.get("page", 0),
             relationsCount=0,
