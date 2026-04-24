@@ -1,4 +1,5 @@
 ﻿from collections import Counter
+import json
 import logging
 import re
 
@@ -25,7 +26,6 @@ from services.contract_assistant import (
     generate_assistant_response,
     simplify_paragraph_selection,
 )
-from services.graph.cache import build_graph_cache_key, load_graph_cache, save_graph_cache
 from services.graph.relations import generate_graph_data
 from utils.config import Config
 from utils.document_store import DocumentStore
@@ -57,6 +57,26 @@ def is_repeated_boundary_candidate(text: str) -> bool:
         return False
     words = [token for token in text.split(" ") if token]
     return 0 < len(words) <= 22
+
+
+def safe_graph_filename(value: str) -> str:
+    token = re.sub(r"[^a-zA-Z0-9._-]+", "_", (value or "").strip())
+    token = re.sub(r"_+", "_", token).strip("._")
+    return token or "unknown_document"
+
+
+def save_graph_output_snapshot(*, document_id: str | None, graph_payload: dict) -> None:
+    output_dir = Config.GRAPH_OUTPUT_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    file_stem = str(document_id or "unknown_document")
+    doc_path = document_store.get_path(file_stem)
+    if doc_path is not None:
+        file_stem = doc_path.stem
+
+    output_path = output_dir / f"{safe_graph_filename(file_stem)}.json"
+    with output_path.open("w", encoding="utf-8") as handle:
+        json.dump(graph_payload, handle, ensure_ascii=False, indent=2)
 
 
 def detect_repeated_boundary_texts(
@@ -173,42 +193,12 @@ async def process_document(data: dict):
                 }
             )
 
-    cache_schema_fingerprint = (
-        "graph_only_v1"
-        f"|sem:{Config.SEMANTIC_RELATED_MODE}"
-        f"|k:{Config.SEMANTIC_TOP_K}"
-        f"|thr:{Config.SEMANTIC_SIMILARITY_THRESHOLD}"
-    )
-    cache_key = build_graph_cache_key(
-        document_id=str(doc_id or "unknown"),
-        paragraphs_data=all_paragraphs_input,
-        schema_version=cache_schema_fingerprint,
-    )
-    if Config.GRAPH_CACHE_ENABLED:
-        cached_payload = load_graph_cache(
-            cache_dir=Config.GRAPH_CACHE_DIR,
-            cache_key=cache_key,
-        )
-        if cached_payload and isinstance(cached_payload.get("graph"), dict):
-            cache_meta = {
-                "enabled": True,
-                "hit": True,
-                "key": cache_key,
-            }
-            response = {
-                "status": str(cached_payload.get("status", "success")),
-                "documentId": doc_id,
-                "graph": cached_payload.get("graph", {}),
-            }
-            response["cache"] = cache_meta
-            return response
-
     graph_obj = generate_graph_data(all_paragraphs_input)
 
     cache_meta = {
-        "enabled": Config.GRAPH_CACHE_ENABLED,
+        "enabled": False,
         "hit": False,
-        "key": cache_key,
+        "key": None,
     }
     response = {
         "status": "success",
@@ -217,15 +207,10 @@ async def process_document(data: dict):
         "cache": cache_meta,
     }
 
-    if Config.GRAPH_CACHE_ENABLED:
-        try:
-            save_graph_cache(
-                cache_dir=Config.GRAPH_CACHE_DIR,
-                cache_key=cache_key,
-                payload=response,
-            )
-        except Exception:
-            logger.exception("Failed to save graph cache for document_id=%s", doc_id)
+    try:
+        save_graph_output_snapshot(document_id=doc_id, graph_payload=response["graph"])
+    except Exception:
+        logger.exception("Failed to save graph output snapshot for document_id=%s", doc_id)
 
     return response
 

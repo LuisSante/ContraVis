@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import re
+import unicodedata
 import uuid
 from hashlib import sha1
 from pathlib import Path
@@ -18,29 +20,17 @@ from llama_cloud_services.extract import (
     LlamaExtract,
     SourceText,
 )
-from llama_cloud_services.parse import LlamaParse
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ENV_PATH = PROJECT_ROOT / "server" / ".env"
-PDF_ROOT = PROJECT_ROOT / "infra" / "CUAD_v1" / "full_contract_pdf"
+GRAPH_JSON_ROOT = PROJECT_ROOT / "infra" / "json" / "graph"
 
 ONTOLOGY_VERSION = "legal_ontology_v1"
-EXTRACTION_VERSION = "llamaparse_llamaextract_ontology_v1"
+EXTRACTION_VERSION = "base_graph_json_llamaextract_ontology_v1"
 FORCE_REPROCESS = True
 MAX_DOCS: int | None = None
 
-SELECTED_PDF = [
-    "BELLICUMPHARMACEUTICALS,INC_05_07_2019-EX-10.1-Supply Agreement",
-    "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
-    "EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding Agreement",
-    "HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding Agreement",
-    "LinkPlusCorp_20050802_8-K_EX-10_3240252_EX-10_Affiliate Agreement",
-    "StampscomInc_20001114_10-Q_EX-10.47_2631630_EX-10.47_Co-Branding Agreement",
-    "SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate Agreement",
-    "TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement",
-    "TubeMediaCorp_20060310_8-K_EX-10.1_513921_EX-10.1_Affiliate Agreement",
-    "UnionDentalHoldingsInc_20050204_8-KA_EX-10_3345577_EX-10_Affiliate Agreement",
-]
+SELECTED_GRAPH_JSON: list[str] = []
 
 
 class ClauseNode(BaseModel):
@@ -48,6 +38,14 @@ class ClauseNode(BaseModel):
     title: Optional[str] = Field(None, description="Clause title/header")
     text: str = Field(description="Full clause text")
     clause_level: Optional[int] = Field(None, description="Depth level in contract structure")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph node id when this clause comes from one paragraph",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid from base graph when available",
+    )
 
 
 class DefinedTermNode(BaseModel):
@@ -170,17 +168,24 @@ Rules:
    - Clause ids must preserve the clause reference style used in the document (e.g., 2.6, 2.6(a), Article 3).
    - Party ids should be deterministic (prefer party-1, party-2, ...).
    - Do not invent a new edge endpoint id if no node uses that id.
-5) Evaluate all relation types when present in text:
+5) Input paragraphs can include tags like [BASE_NODE_ID=...] and [PARAGRAPH_UID=...].
+   - If a Clause corresponds to one tagged paragraph, set:
+     - clause.id = BASE_NODE_ID
+     - clause.source_paragraph_id = BASE_NODE_ID
+     - clause.paragraph_uid = PARAGRAPH_UID
+6) Evaluate all relation types when present in text:
 IS_PART_OF, CONTAINS, REFERENCES, DEFINES, USES, ASSIGNS_OBLIGATION_TO,
 GRANTS_RIGHT_TO, DEPENDS_ON, MODIFIES_AMENDS, SUPERSEDES, CONTRADICTS.
-6) Prefer recall for valid relations; do not omit obvious explicit references.
-7) Provide short textual evidence for each edge whenever possible.
+7) Prefer recall for valid relations; do not omit obvious explicit references.
+8) Provide short textual evidence for each edge whenever possible.
 """
 
 CONSTRAINTS_QUERY = [
     "CREATE CONSTRAINT contract_hash_unique IF NOT EXISTS FOR (c:Contract) REQUIRE c.content_hash IS UNIQUE",
     "CREATE CONSTRAINT kg_node_id_unique IF NOT EXISTS FOR (n:KGNode) REQUIRE n.node_id IS UNIQUE",
     "CREATE INDEX kg_node_type_idx IF NOT EXISTS FOR (n:KGNode) ON (n.node_type)",
+    "CREATE INDEX kg_clause_source_paragraph_idx IF NOT EXISTS FOR (n:Clause) ON (n.source_paragraph_id)",
+    "CREATE INDEX kg_clause_paragraph_uid_idx IF NOT EXISTS FOR (n:Clause) ON (n.paragraph_uid)",
 ]
 
 EXISTS_QUERY = """
@@ -274,15 +279,79 @@ FOREACH (_ IN CASE WHEN row.rel_type = 'CONTRADICTS' THEN [1] ELSE [] END |
 """
 
 
-def get_pdf_files(pdf_root: Path) -> list[Path]:
-    return sorted(p for p in pdf_root.rglob("*") if p.is_file() and p.suffix.lower() == ".pdf")
+def get_graph_json_files(graph_root: Path) -> list[Path]:
+    return sorted(p for p in graph_root.glob("*.json") if p.is_file())
 
 
-def get_selected_paths(pdf_files: list[Path], selected_pdf: list[str]) -> list[Path]:
-    if not selected_pdf:
-        return pdf_files
-    selected = [p for p in pdf_files if p.stem in selected_pdf]
-    return selected
+def get_selected_json_paths(json_files: list[Path], selected_json: list[str]) -> list[Path]:
+    if not selected_json:
+        return json_files
+    selected_set = {x.strip() for x in selected_json if x.strip()}
+    return [p for p in json_files if p.stem in selected_set]
+
+
+def load_base_graph_json(json_path: Path) -> dict[str, Any]:
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise TypeError(f"Invalid JSON root type in {json_path.name}: {type(payload)!r}")
+    if isinstance(payload.get("graph"), dict):
+        payload = payload["graph"]
+    nodes = payload.get("nodes")
+    edges = payload.get("edges")
+    if not isinstance(nodes, list) or not isinstance(edges, list):
+        raise ValueError(f"Expected keys 'nodes' and 'edges' as lists in {json_path.name}")
+    return payload
+
+
+def _normalize_text_for_uid(text: Any) -> str:
+    if text is None:
+        return ""
+    s = unicodedata.normalize("NFKC", str(text))
+    s = s.replace("\r\n", "\n").replace("\r", "\n")
+    s = re.sub(r"\s+", " ", s).strip().lower()
+    return s
+
+
+def _paragraph_uid_from_text(text: Any) -> str:
+    normalized = _normalize_text_for_uid(text)
+    if not normalized:
+        return ""
+    return sha1(normalized.encode("utf-8")).hexdigest()
+
+
+def _ordered_base_nodes(base_graph: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes = [n for n in base_graph.get("nodes", []) if isinstance(n, dict)]
+    return sorted(
+        nodes,
+        key=lambda n: (
+            int(n.get("page", 0) or 0),
+            int(n.get("paragraph_enum", 0) or 0),
+            str(n.get("id", "")),
+        ),
+    )
+
+
+def _build_extraction_input_from_base_graph(base_graph: dict[str, Any]) -> tuple[str, dict[str, dict[str, str]]]:
+    ordered_nodes = _ordered_base_nodes(base_graph)
+    lines: list[str] = []
+    index_by_id: dict[str, dict[str, str]] = {}
+    for node in ordered_nodes:
+        base_id = str(node.get("id", "")).strip()
+        if not base_id:
+            continue
+        text = str(node.get("text", "")).strip()
+        if not text:
+            continue
+        paragraph_uid = str(node.get("paragraph_uid") or "").strip()
+        if not paragraph_uid:
+            paragraph_uid = _paragraph_uid_from_text(text)
+        index_by_id[base_id] = {
+            "paragraph_uid": paragraph_uid,
+            "text_normalized": _normalize_text_for_uid(text),
+        }
+        lines.append(f"[BASE_NODE_ID={base_id}] [PARAGRAPH_UID={paragraph_uid}] {text}")
+
+    return "\n\n".join(lines).strip(), index_by_id
 
 
 def _safe_token(value: str) -> str:
@@ -371,7 +440,13 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
     }
 
     node_defaults: dict[str, dict[str, Any]] = {
-        "clauses": {"title": "", "text": "", "clause_level": None},
+        "clauses": {
+            "title": "",
+            "text": "",
+            "clause_level": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
         "defined_terms": {"term": "", "definition": None, "definition_clause_id": None},
         "parties": {"name": "", "role": None, "address": None},
         "obligations": {"action": "", "actor_party_id": None, "deadline": None},
@@ -400,6 +475,11 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
                     row[field] = None
                 else:
                     row[field] = str(val) if isinstance(val, (int, float, bool)) else val
+            if key == "clauses":
+                paragraph_uid = str(row.get("paragraph_uid") or "").strip()
+                if not paragraph_uid:
+                    paragraph_uid = _paragraph_uid_from_text(row.get("text"))
+                row["paragraph_uid"] = paragraph_uid or None
             cleaned[key].append(row)
 
     def has_clause_descendants(base_ref: str) -> bool:
@@ -497,6 +577,67 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
         )
     stats["normalized_edges"] = len(cleaned["edges"])
     return cleaned, stats
+
+
+def _enrich_clause_anchor_fields(
+    payload_dict: dict[str, Any],
+    base_node_index: dict[str, dict[str, str]],
+) -> tuple[dict[str, Any], dict[str, int]]:
+    stats = {
+        "clauses_anchor_direct_id": 0,
+        "clauses_anchor_text_match": 0,
+        "clauses_anchor_uid_match": 0,
+        "clauses_missing_anchor": 0,
+    }
+    if not base_node_index:
+        return payload_dict, stats
+
+    text_to_base_ids: dict[str, list[str]] = {}
+    uid_to_base_ids: dict[str, list[str]] = {}
+    for base_id, meta in base_node_index.items():
+        text_key = str(meta.get("text_normalized") or "")
+        uid = str(meta.get("paragraph_uid") or "")
+        if text_key:
+            text_to_base_ids.setdefault(text_key, []).append(base_id)
+        if uid:
+            uid_to_base_ids.setdefault(uid, []).append(base_id)
+
+    for clause in payload_dict.get("clauses", []):
+        if not isinstance(clause, dict):
+            continue
+
+        clause_id = str(clause.get("id") or "").strip()
+        source_paragraph_id = str(clause.get("source_paragraph_id") or "").strip()
+        paragraph_uid = str(clause.get("paragraph_uid") or "").strip()
+        clause_text_norm = _normalize_text_for_uid(clause.get("text"))
+
+        if not source_paragraph_id and clause_id and clause_id in base_node_index:
+            source_paragraph_id = clause_id
+            stats["clauses_anchor_direct_id"] += 1
+
+        if not source_paragraph_id and clause_text_norm:
+            matched_ids = text_to_base_ids.get(clause_text_norm, [])
+            if len(matched_ids) == 1:
+                source_paragraph_id = matched_ids[0]
+                stats["clauses_anchor_text_match"] += 1
+
+        if not source_paragraph_id and paragraph_uid:
+            matched_ids = uid_to_base_ids.get(paragraph_uid, [])
+            if len(matched_ids) == 1:
+                source_paragraph_id = matched_ids[0]
+                stats["clauses_anchor_uid_match"] += 1
+
+        if source_paragraph_id and not paragraph_uid:
+            paragraph_uid = str(base_node_index.get(source_paragraph_id, {}).get("paragraph_uid") or "").strip()
+
+        if source_paragraph_id:
+            clause["source_paragraph_id"] = source_paragraph_id
+            if paragraph_uid:
+                clause["paragraph_uid"] = paragraph_uid
+        else:
+            stats["clauses_missing_anchor"] += 1
+
+    return payload_dict, stats
 
 
 def _canonicalize_ref(value: Any) -> str:
@@ -644,6 +785,8 @@ def _build_rows(
         aliases: set[str] = set()
         for candidate in [
             props.get("id_raw"),
+            props.get("source_paragraph_id"),
+            props.get("paragraph_uid"),
             label,
             props.get("name"),
             props.get("term"),
@@ -774,21 +917,19 @@ def counters_to_dict(counters: Any) -> dict[str, Any]:
     return {k: getattr(counters, k) for k in keys if hasattr(counters, k)}
 
 
-async def process_pdf_to_neo4j(
+async def process_graph_json_to_neo4j(
     *,
-    pdf_path: Path,
-    parser: LlamaParse,
+    graph_json_path: Path,
     ontology_agent: Any,
     neo4j_driver: Any,
     neo4j_database: str,
     force_reprocess: bool = False,
 ) -> dict[str, Any]:
-    results = await parser.aparse(str(pdf_path))
-    pages = getattr(results, "pages", [])
-    all_text = "\n".join(getattr(el, "text", "") for el in pages).strip()
+    base_graph = load_base_graph_json(graph_json_path)
+    all_text, base_node_index = _build_extraction_input_from_base_graph(base_graph)
 
     if not all_text:
-        return {"path": str(pdf_path), "status": "error", "detail": "Empty parsed text"}
+        return {"path": str(graph_json_path), "status": "error", "detail": "Empty text built from base graph nodes"}
 
     content_hash = sha1(all_text.encode("utf-8")).hexdigest()
 
@@ -802,7 +943,7 @@ async def process_pdf_to_neo4j(
         )
         if existing.records:
             return {
-                "path": str(pdf_path),
+                "path": str(graph_json_path),
                 "status": "skipped",
                 "reason": "already_processed",
                 "content_hash": content_hash,
@@ -811,12 +952,13 @@ async def process_pdf_to_neo4j(
     extraction_result = await ontology_agent.aextract(
         files=SourceText(
             text_content=all_text,
-            filename=pdf_path.name,
+            filename=graph_json_path.name,
         )
     )
 
     payload_dict_raw = _payload_to_dict(extraction_result.data)
     payload_dict, payload_stats = _normalize_payload_dict(payload_dict_raw)
+    payload_dict, anchor_stats = _enrich_clause_anchor_fields(payload_dict, base_node_index)
     payload = ContractOntologyKG.model_validate(payload_dict)
     node_rows, edge_rows, edge_stats = _build_rows(payload, content_hash=content_hash)
 
@@ -835,7 +977,7 @@ async def process_pdf_to_neo4j(
     c_res = await neo4j_driver.execute_query(
         IMPORT_CONTRACT_QUERY,
         content_hash=content_hash,
-        path=str(pdf_path),
+        path=str(graph_json_path),
         ontology_version=ONTOLOGY_VERSION,
         extraction_version=EXTRACTION_VERSION,
         database_=neo4j_database,
@@ -853,12 +995,15 @@ async def process_pdf_to_neo4j(
     )
 
     return {
-        "path": str(pdf_path),
+        "path": str(graph_json_path),
         "status": "ok",
         "content_hash": content_hash,
+        "base_nodes": len(base_graph.get("nodes", [])),
+        "base_edges": len(base_graph.get("edges", [])),
         "nodes_extracted": len(node_rows),
         "edges_extracted": len(edge_rows),
         "payload_stats": payload_stats,
+        "anchor_stats": anchor_stats,
         "edge_stats": edge_stats,
         "contract_counters": counters_to_dict(c_res.summary.counters),
         "node_counters": counters_to_dict(n_res.summary.counters),
@@ -876,20 +1021,19 @@ async def main() -> None:
     neo4j_password = os.getenv("NEO4J_PASSWORD", "neo4j_password")
     neo4j_database = os.getenv("NEO4J_DATABASE", "neo4j")
 
-    if not PDF_ROOT.exists():
-        raise FileNotFoundError(f"PDF root not found: {PDF_ROOT}")
+    if not GRAPH_JSON_ROOT.exists():
+        raise FileNotFoundError(f"Graph JSON root not found: {GRAPH_JSON_ROOT}")
 
-    pdf_files = get_pdf_files(PDF_ROOT)
-    selected_paths = get_selected_paths(pdf_files, SELECTED_PDF)
+    json_files = get_graph_json_files(GRAPH_JSON_ROOT)
+    selected_paths = get_selected_json_paths(json_files, SELECTED_GRAPH_JSON)
     if MAX_DOCS is not None:
         selected_paths = selected_paths[:MAX_DOCS]
 
-    print(f"Found {len(pdf_files)} PDFs")
-    print(f"Selected {len(selected_paths)} PDFs")
+    print(f"Found {len(json_files)} graph JSON files")
+    print(f"Selected {len(selected_paths)} graph JSON files")
     for p in selected_paths:
-        print("-", p.relative_to(PDF_ROOT))
+        print("-", p.relative_to(GRAPH_JSON_ROOT))
 
-    parser = LlamaParse(api_key=llama_api_key, parse_mode="parse_page_without_llm")
     extractor = LlamaExtract(api_key=llama_api_key)
     ontology_agent = extractor.create_agent(
         name=f"contract_ontology_kg_{uuid.uuid4()}",
@@ -906,30 +1050,35 @@ async def main() -> None:
             await neo4j_driver.execute_query(query, database_=neo4j_database)
 
         results_log: list[dict[str, Any]] = []
-        for pdf_path in selected_paths:
+        for graph_json_path in selected_paths:
             try:
-                out = await process_pdf_to_neo4j(
-                    pdf_path=pdf_path,
-                    parser=parser,
+                out = await process_graph_json_to_neo4j(
+                    graph_json_path=graph_json_path,
                     ontology_agent=ontology_agent,
                     neo4j_driver=neo4j_driver,
                     neo4j_database=neo4j_database,
                     force_reprocess=FORCE_REPROCESS,
                 )
             except Exception as exc:
-                out = {"path": str(pdf_path), "status": "error", "detail": str(exc)}
+                out = {"path": str(graph_json_path), "status": "error", "detail": str(exc)}
 
             results_log.append(out)
             print(
                 out.get("status"),
                 "|",
                 Path(out.get("path", "unknown")).name,
+                "| base_nodes:",
+                out.get("base_nodes", 0),
+                "| base_edges:",
+                out.get("base_edges", 0),
                 "| nodes:",
                 out.get("nodes_extracted", 0),
                 "| edges:",
                 out.get("edges_extracted", 0),
                 "| payload_stats:",
                 out.get("payload_stats", {}),
+                "| anchor_stats:",
+                out.get("anchor_stats", {}),
                 "| edge_stats:",
                 out.get("edge_stats", {}),
             )
