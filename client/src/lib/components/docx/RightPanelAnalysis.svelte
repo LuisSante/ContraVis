@@ -67,7 +67,9 @@
 	let resizeStartHeight = 250;
 	let isChatOpen = false;
 	$: activeProcessingStepIndex =
-		revisionProcessingSteps.length > 0 ? Math.floor(processingTick / 3) % revisionProcessingSteps.length : 0;
+		revisionProcessingSteps.length > 0
+			? Math.floor(processingTick / 3) % revisionProcessingSteps.length
+			: 0;
 	$: activeDotCount = (processingTick % 3) + 1;
 	$: isChatOpen = chatPanelHeight > CHAT_PANEL_OPEN_THRESHOLD;
 
@@ -189,9 +191,7 @@
 								{/if}
 								<span
 									class={`h-1.5 w-1.5 rounded-full bg-gray-500 transition-opacity duration-300 ${
-										index === activeProcessingStepIndex
-											? 'animate-pulse opacity-95'
-											: 'opacity-30'
+										index === activeProcessingStepIndex ? 'animate-pulse opacity-95' : 'opacity-30'
 									}`}
 									aria-hidden="true"
 								></span>
@@ -199,7 +199,9 @@
 									{step.label}
 									<span class="ml-px inline-flex min-w-[14px] text-gray-500" aria-hidden="true">
 										{#if index === activeProcessingStepIndex}
-											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2 ? '.' : ''}{activeDotCount >= 3 ? '.' : ''}
+											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2
+												? '.'
+												: ''}{activeDotCount >= 3 ? '.' : ''}
 										{/if}
 									</span>
 								</span>
@@ -227,90 +229,88 @@
 				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
 					<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
 				</div>
-			{:else}
-				{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-					<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+			{:else if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+				<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+					<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+					</div>
+					<div class="space-y-1 p-1.5">
+						<div class="px-0.5">
+							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
+							<p class="text-[10px] leading-relaxed text-red-800">
+								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+							</p>
 						</div>
-						<div class="space-y-1 p-1.5">
-							<div class="px-0.5">
-								<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-								<p class="text-[10px] leading-relaxed text-red-800">
-									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-								</p>
+						<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+							<div class="mb-1 flex items-center justify-between">
+								<span class="text-[9px] font-semibold text-red-800">Assessment</span>
 							</div>
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
-								</div>
-								<p class="text-[10px] leading-relaxed text-red-800">
-									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-								</p>
-							</div>
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
-									<Badge
-										variant="outline"
-										class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
-									>
-										{selectedContradictionEvidence.source_a}
-									</Badge>
-								</div>
-								<Button
-									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
-									onclick={() =>
-										selectedContradictionResult &&
-										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+							<p class="text-[10px] leading-relaxed text-red-800">
+								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+							</p>
+						</div>
+						<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+							<div class="mb-1 flex items-center justify-between">
+								<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
+								<Badge
+									variant="outline"
+									class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
 								>
-									{selectedContradictionEvidence.snippet_a}
-								</Button>
+									{selectedContradictionEvidence.source_a}
+								</Badge>
 							</div>
+							<Button
+								variant="ghost"
+								class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-red-800 hover:bg-transparent hover:text-red-900"
+								onclick={() =>
+									selectedContradictionResult &&
+									onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+							>
+								{selectedContradictionEvidence.snippet_a}
+							</Button>
+						</div>
 
-							<div class="rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
-									<Badge
-										variant="outline"
-										class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
-									>
-										{selectedContradictionEvidence.source_b}
-									</Badge>
-								</div>
-								<Button
-									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-yellow-900 hover:bg-transparent hover:text-yellow-950"
-									onclick={() =>
-										selectedContradictionResult &&
-										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+						<div class="rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
+							<div class="mb-1 flex items-center justify-between">
+								<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
+								<Badge
+									variant="outline"
+									class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
 								>
-									{selectedContradictionEvidence.snippet_b}
-								</Button>
+									{selectedContradictionEvidence.source_b}
+								</Badge>
 							</div>
+							<Button
+								variant="ghost"
+								class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-yellow-900 hover:bg-transparent hover:text-yellow-950"
+								onclick={() =>
+									selectedContradictionResult &&
+									onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+							>
+								{selectedContradictionEvidence.snippet_b}
+							</Button>
 						</div>
 					</div>
-				{:else}
-					<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
-						</div>
-						<div class="space-y-1 p-1.5">
-							<div class="px-0.5">
-								<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-								<p class="text-[10px] leading-relaxed text-red-800">
-									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-								</p>
-							</div>
-							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-gray-600">
-									Evidence snippets are unavailable for this contradiction.
-								</Card.Content>
-							</Card.Root>
-						</div>
+				</div>
+			{:else}
+				<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+					<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 					</div>
-				{/if}
+					<div class="space-y-1 p-1.5">
+						<div class="px-0.5">
+							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
+							<p class="text-[10px] leading-relaxed text-red-800">
+								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+							</p>
+						</div>
+						<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+							<Card.Content class="px-3 py-2 text-gray-600">
+								Evidence snippets are unavailable for this contradiction.
+							</Card.Content>
+						</Card.Root>
+					</div>
+				</div>
 			{/if}
 		</div>
 	</ScrollArea>
@@ -324,13 +324,17 @@
 		<button
 			type="button"
 			class={`absolute top-0 left-1/2 h-2 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize rounded-full border border-gray-200 bg-white transition ${
-				isResizingChatPanel ? 'border-blue-300 bg-blue-50' : 'hover:border-gray-300 hover:bg-gray-50'
+				isResizingChatPanel
+					? 'border-blue-300 bg-blue-50'
+					: 'hover:border-gray-300 hover:bg-gray-50'
 			}`}
 			aria-label="Resize contradiction chat"
 			title="Drag to resize chat area"
 			onmousedown={startChatPanelResize}
 		></button>
-		<div class={`flex flex-nowrap items-center gap-1.5 overflow-x-auto ${isChatOpen ? 'mb-2' : ''}`}>
+		<div
+			class={`flex flex-nowrap items-center gap-1.5 overflow-x-auto ${isChatOpen ? 'mb-2' : ''}`}
+		>
 			<Button
 				variant="outline"
 				size="sm"
@@ -388,7 +392,9 @@
 								<p class="mb-0.5 text-[9px] font-semibold opacity-70">
 									{message.role === 'user' ? 'You' : 'Assistant'}
 								</p>
-								<p class="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.content}</p>
+								<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+									{message.content}
+								</p>
 
 								{#if message.citations && message.citations.length > 0}
 									<div class="mt-1.5 flex flex-wrap gap-1">
@@ -408,14 +414,18 @@
 									{@const structuredContradiction = message.structuredContradiction}
 									<div class="mt-1.5 rounded border border-red-200 bg-red-50/70 px-1.5 py-1">
 										<div class="mb-1 flex flex-wrap items-center gap-1">
-											<Badge variant="outline" class="h-4 border-red-300 bg-white px-1 text-[8px] text-red-700">
+											<Badge
+												variant="outline"
+												class="h-4 border-red-300 bg-white px-1 text-[8px] text-red-700"
+											>
 												Contradictions: {structuredContradiction.contradiction_count}
 											</Badge>
 											{#if structuredContradiction.paragraph_id}
 												<button
 													type="button"
 													class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[8px] text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-													onclick={() => onFocusNodeFromPanel(structuredContradiction.paragraph_id, true)}
+													onclick={() =>
+														onFocusNodeFromPanel(structuredContradiction.paragraph_id, true)}
 												>
 													{structuredContradiction.paragraph_id}
 												</button>
@@ -432,9 +442,13 @@
 														>
 															{contradictionTaxonomyLabels[item.contradiction_type]}
 														</Badge>
-														<span class="text-[8px] text-gray-500">{Math.round(item.confidence)}%</span>
+														<span class="text-[8px] text-gray-500"
+															>{Math.round(item.confidence)}%</span
+														>
 													</div>
-													<p class="max-h-10 overflow-hidden text-[9px] text-gray-700">{item.why}</p>
+													<p class="max-h-10 overflow-hidden text-[9px] text-gray-700">
+														{item.why}
+													</p>
 												</div>
 											{/each}
 										</div>
@@ -465,11 +479,28 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-7 border-gray-200 bg-white px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					class="h-7 w-7 border-gray-200 bg-white px-0 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
 					onclick={() => void onSubmitAssistantQuestion()}
 					disabled={assistantLoading}
+					aria-label="Send contradiction chat message"
+					title="Send"
 				>
-					Send
+					<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+						<path
+							d="M3 10L17 3L10 17L8.2 11.8L3 10Z"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<path
+							d="M17 3L8.2 11.8"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
 				</Button>
 			</div>
 		{/if}

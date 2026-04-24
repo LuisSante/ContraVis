@@ -1,9 +1,6 @@
 <script lang="ts">
 	import type {
 		AssistantChatMessage,
-		AssistantMode,
-		AssistantProvider,
-		AssistantScope,
 		ChatHighlightSegment,
 		ChatPreviewHoverState,
 		ContradictionTaxonomyType,
@@ -12,16 +9,10 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-
-	type LabeledOption<T extends string = string> = {
-		value: T;
-		label: string;
-	};
 
 	type ChatPreviewTab = 'contradiction' | 'claims';
 	type ChatHighlightTooltip = {
@@ -40,9 +31,7 @@
 		specificity: '',
 		other: ''
 	};
-	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<
-		Record<ContradictionTaxonomyType, string>
-	> = {
+	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<Record<ContradictionTaxonomyType, string>> = {
 		temporal: 'The claims conflict on timing, dates, or sequence of events.',
 		numerical: 'The claims conflict on numbers, amounts, percentages, or quantities.',
 		authority: 'The claims conflict on who has authority or who issues the statement.',
@@ -56,25 +45,13 @@
 	let chatPreviewHover: ChatPreviewHoverState | null = null;
 	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
 
-	export let assistantProvider: AssistantProvider = 'openai';
-	export let assistantMode: AssistantMode = 'explain';
-	export let assistantScope: AssistantScope = 'selected';
-	export let selectedQuickAction = '';
 	export let assistantInput = '';
 	export let assistantMessages: AssistantChatMessage[] = [];
 	export let assistantLoading = false;
 	export let assistantError: string | null = null;
 	export let assistantThread: HTMLElement | null = null;
 
-	export let assistantProviderLabel = 'Provider';
-	export let assistantModeLabel = 'Mode';
-	export let assistantScopeLabel = 'Scope';
-	export let quickActionLabel = 'Quick action';
-
-	export let providerOptions: readonly LabeledOption<AssistantProvider>[] = [];
-	export let modeOptions: readonly LabeledOption<AssistantMode>[] = [];
-	export let scopeOptions: readonly LabeledOption<AssistantScope>[] = [];
-	export let quickActions: readonly string[] = [];
+	export let quickActionSuggestions: readonly string[] = [];
 
 	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [];
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
@@ -88,8 +65,8 @@
 		b: '#7c3aed'
 	};
 
-	export let onHandleQuickActionSelectionChange: () => void = () => {};
 	export let onSuggestedQuestionClick: (question: string) => void = () => {};
+	export let onQuickActionSuggestionClick: (question: string) => void = () => {};
 	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
@@ -145,7 +122,10 @@
 		};
 		type SegmentMeta = Omit<ChatHighlightSegment, 'text'>;
 
-		function findPhraseRanges(phrase: string, maxMatches: number): Array<{ start: number; end: number }> {
+		function findPhraseRanges(
+			phrase: string,
+			maxMatches: number
+		): Array<{ start: number; end: number }> {
 			if (!phrase) return [];
 			const ranges: Array<{ start: number; end: number }> = [];
 			const phraseLower = phrase.toLowerCase();
@@ -161,16 +141,25 @@
 
 		const claimIdByChar = new Array<string | null>(sourceText.length).fill(null);
 		const claimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
-		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
+		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(
+			sourceText.length
+		).fill(null);
+		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
 			null
 		);
-		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(null);
 		const highlightWhyByChar = new Array<string | null>(sourceText.length).fill(null);
-		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(Number.POSITIVE_INFINITY);
+		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(
+			Number.POSITIVE_INFINITY
+		);
 		const highlightClaimIdByChar = new Array<string | null>(sourceText.length).fill(null);
 		const highlightClaimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
 
-		const assignClaimRange = (start: number, end: number, claimId: string, claimSide: 'a' | 'b') => {
+		const assignClaimRange = (
+			start: number,
+			end: number,
+			claimId: string,
+			claimSide: 'a' | 'b'
+		) => {
 			const safeStart = Math.max(0, Math.min(sourceText.length, start));
 			const safeEnd = Math.max(0, Math.min(sourceText.length, end));
 			for (let index = safeStart; index < safeEnd; index += 1) {
@@ -487,80 +476,11 @@
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-white">
-	<header class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+	<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
 		<p class="text-[11px] text-gray-500">
 			Ask questions and get contextual help grounded in the selected contract.
 		</p>
-		<Select.Root type="single" bind:value={assistantProvider}>
-			<Select.Trigger
-				size="sm"
-				class="h-6 w-[130px] border-gray-200 bg-white px-1.5 text-[10px] font-semibold text-gray-600"
-			>
-				{assistantProviderLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each providerOptions as option}
-					<Select.Item value={option.value} label={option.label} class="text-[10px] font-semibold">
-						{option.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
 	</header>
-
-	<div class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2">
-		<Select.Root type="single" bind:value={assistantMode}>
-			<Select.Trigger
-				size="sm"
-				class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-			>
-				{assistantModeLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each modeOptions as option}
-					<Select.Item value={option.value} label={option.label} class="text-[10px] font-semibold">
-						{option.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-
-		<Select.Root type="single" bind:value={assistantScope}>
-			<Select.Trigger
-				size="sm"
-				class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-			>
-				{assistantScopeLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each scopeOptions as option}
-					<Select.Item value={option.value} label={option.label} class="text-[10px] font-semibold">
-						{option.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-
-		<Select.Root
-			type="single"
-			bind:value={selectedQuickAction}
-			onValueChange={() => onHandleQuickActionSelectionChange()}
-		>
-			<Select.Trigger
-				size="sm"
-				class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-			>
-				{quickActionLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each quickActions as action}
-					<Select.Item value={action} label={action} class="text-[10px] font-semibold">
-						{action}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-	</div>
 
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30" bind:viewportRef={assistantThread}>
 		<div class="flex min-h-full flex-col gap-2 p-2">
@@ -605,7 +525,7 @@
 
 											<Tabs.Content value="contradiction" class="text-[11px]">
 												<p
-													class="break-words whitespace-normal leading-relaxed text-gray-700"
+													class="leading-relaxed break-words whitespace-normal text-gray-700"
 													on:mouseleave={() => clearChatPreviewHover(message.id)}
 												>
 													{#each chatSegments as segment, segmentIndex}
@@ -651,7 +571,10 @@
 																			>
 																				<span
 																					class="inline rounded-[3px] px-[2px] py-[1px]"
-																					style={resolveChatHighlightSegmentStyle(segment, message.id)}
+																					style={resolveChatHighlightSegmentStyle(
+																						segment,
+																						message.id
+																					)}
 																				>
 																					{segment.text}
 																				</span>
@@ -718,7 +641,7 @@
 											</Tabs.Content>
 
 											<Tabs.Content value="claims" class="text-[11px]">
-												<p class="break-words whitespace-normal leading-relaxed text-gray-700">
+												<p class="leading-relaxed break-words whitespace-normal text-gray-700">
 													{#each chatSegments as segment}
 														{#if segment.claimSide}
 															<span
@@ -824,7 +747,25 @@
 		</div>
 	{/if}
 
-	<form class="border-t border-gray-200 bg-white p-2" on:submit|preventDefault={() => void onSubmitAssistantQuestion()}>
+	<form
+		class="border-t border-gray-200 bg-white p-2"
+		on:submit|preventDefault={() => void onSubmitAssistantQuestion()}
+	>
+		{#if quickActionSuggestions.length}
+			<div class="mb-2 flex flex-nowrap items-center gap-1.5 overflow-x-auto">
+				{#each quickActionSuggestions as action}
+					<Button
+						variant="outline"
+						size="sm"
+						class="h-6 shrink-0 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+						onclick={() => onQuickActionSuggestionClick(action)}
+					>
+						{action}
+					</Button>
+				{/each}
+			</div>
+		{/if}
+
 		<Textarea
 			rows={2}
 			placeholder="Ask about this contract or paragraph..."
@@ -833,7 +774,7 @@
 			class="min-h-[52px] resize-none border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700"
 		></Textarea>
 		<div class="mt-1.5 flex items-center justify-between">
-			<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
+			<!-- <p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p> -->
 			<Button
 				type="submit"
 				variant="outline"
