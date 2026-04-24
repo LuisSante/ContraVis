@@ -1,0 +1,765 @@
+{
+  "documentId": "SteelVaultCorp_with_contradictions",
+  "provider": "openai",
+  "temperature": 0.3,
+  "savedAt": "2026-04-24T19:11:42.148670+00:00",
+  "paragraphResults": [
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-1",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is only an exhibit reference and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-4",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph is just the agreement title and contains no obligations or statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-5",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a preamble identifying the parties and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-6",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section header and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-7",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes Equidata's services and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-8",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph expresses the parties' intent and contains no conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-9",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes marketing methods and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-10",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a transitional clause and contains no conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-11",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section header and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-12",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph sets out permissions and restrictions without internal conflict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-13",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "The paragraph states both bi-monthly and monthly billing cycles with different payment terms, which cannot both apply.",
+      "evidence": {
+        "snippet_a": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 30 days from the invoice date.",
+        "snippet_b": "Such amounts shall be billed monthly by Equidata and are due and payable in full by Marketing Affiliate 15 days from the invoice date.",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-14",
+      "contradiction": true,
+      "confidence": 100,
+      "brief_reason": "The paragraph both imposes and prohibits late fees and returned check fees for the Marketing Affiliate.",
+      "evidence": {
+        "snippet_a": "The Marketing Affiliate agrees to pay a late charge of 1 l/2% per month on the unpaid, past-due amount as well as a returned check fee of not less than $35.00 per returned item.",
+        "snippet_b": "The Marketing Affiliate shall not be charged any late fees or returned check fees under any circumstances.",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-15",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes dispute resolution and payment obligations without conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-16",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the dispute process and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-18",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is an initial/signature line and contains no obligations or statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-20",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph details arbitration procedure and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-21",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes operational specifications and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-22",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph sets out non-solicitation and exclusivity obligations without internal conflict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-23",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph prohibits non-compliant practices and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-24",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists prohibited activities and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-25",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph prohibits misleading or abusive practices and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-26",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph prohibits inconsistent representations and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-27",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph requires approval for marketing materials and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-28",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph requires industry standards and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-29",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph references further guidelines and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-30",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph grants audit rights and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-31",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph introduces the termination section and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-32",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the term and renewal and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-33",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "The paragraph states both 30 and 7 days written notice are required for termination with cause, which is mutually incompatible.",
+      "evidence": {
+        "snippet_a": "This Agreement may be terminated by either party with cause upon thirty (30) days written notice.",
+        "snippet_b": "This Agreement may be terminated by either party with cause upon seven (7) days written notice.",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-34",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph describes obligations upon termination and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-35",
+      "contradiction": true,
+      "confidence": 90,
+      "brief_reason": "The paragraph allows immediate termination for cause by Equidata, but also requires 30 days written notice after CRA notification, which is inconsistent.",
+      "evidence": {
+        "snippet_a": "Equidata reserves the right to terminate this Agreement immediately for cause if Experian, Equifax and/or TransUnion (Credit Reporting Agencies — CRAs) decline to render Services to Marketing Affiliate for any reason or if Equidata is notified by any of the CRAs to cease rendering Services to Marketing Affiliate.",
+        "snippet_b": "Equidata may only terminate this Agreement after providing thirty (30) days written notice following notification from any of the CRAs to cease rendering Services to Marketing Affiliate.",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-36",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a section header for representations and warranties and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-37",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists prohibited business activities and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-38",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph affirms accuracy of information and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-39",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is a partial sentence and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-41",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph affirms legal compliance and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-42",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph affirms Equidata's authority and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-44",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is an initial/signature line and contains no obligations or statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-46",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph sets out mutual indemnification and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-47",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph addresses proprietary information and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-48",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph disclaims warranties and limits liability without internal conflict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-49",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph contains miscellaneous provisions and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-50",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is an acceptance line and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-51",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is an instruction for execution and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-53",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists company names and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-55",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists addresses and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-59",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists phone numbers and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-60",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists a fax number and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-61",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists a phone number and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-64",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists email addresses and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-66",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists print names and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-68",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists titles and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-70",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This paragraph lists signatures and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    },
+    {
+      "paragraph_id": "SteelVaultCorp_with_contradictions-p-72",
+      "contradiction": false,
+      "confidence": 100,
+      "brief_reason": "This is an initial/signature line and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
+    }
+  ],
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 5773, \"estimated_output_tokens_total\": 2268, \"estimated_cost_usd\": \"0.029690\", \"batches\": [{\"batch\": 1, \"rows\": 54, \"estimated_input_tokens\": 5773, \"estimated_output_tokens\": 2268, \"estimated_cost_usd\": \"0.029690\", \"response_chars\": 22154, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"SteelVaultCorp_with_contradictions-p-1\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"This paragraph is only an exhibit reference and contains no substantive statements.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"unknown\\\",\\n        \\\"source_b\\\": \\\"unknown\\\"\\n      }\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"SteelVaultCorp_with_contradictions-p-4\\\",\\n      \\\"contradiction\\\": \"}]}"
+}
