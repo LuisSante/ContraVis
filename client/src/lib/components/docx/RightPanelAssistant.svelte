@@ -766,23 +766,40 @@
 			</div>
 		{/if}
 
-		<Textarea
-			rows={2}
-			placeholder="Ask about this contract or paragraph..."
-			bind:value={assistantInput}
-			onkeydown={onHandleAssistantInputKeydown}
-			class="min-h-[52px] resize-none border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700"
-		></Textarea>
-		<div class="mt-1.5 flex items-center justify-between">
-			<!-- <p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p> -->
+		<div class="mt-2 flex items-end gap-1.5">
+			<Textarea
+				rows={2}
+				placeholder="Ask about this contract or paragraph..."
+				class="min-h-[50px] border-gray-200 bg-white text-[10px] text-gray-700"
+				bind:value={assistantInput}
+				onkeydown={onHandleAssistantInputKeydown}
+				disabled={assistantLoading}
+			/>
 			<Button
 				type="submit"
 				variant="outline"
 				size="sm"
-				disabled={assistantLoading || !assistantInput.trim()}
-				class="h-7 border-gray-200 bg-white px-3 text-[10px] font-bold text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+				disabled={assistantLoading}
+				class="h-7 w-7 border-gray-200 bg-white px-0 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+				aria-label="Send chat message"
+				title="Send"
 			>
-				Ask
+				<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+					<path
+						d="M3 10L17 3L10 17L8.2 11.8L3 10Z"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+					<path
+						d="M17 3L8.2 11.8"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
 			</Button>
 		</div>
 	</form>
