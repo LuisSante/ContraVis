@@ -26,9 +26,11 @@ ENV_PATH = PROJECT_ROOT / "server" / ".env"
 GRAPH_JSON_ROOT = PROJECT_ROOT / "infra" / "json" / "graph"
 
 ONTOLOGY_VERSION = "legal_ontology_v1"
-EXTRACTION_VERSION = "base_graph_json_llamaextract_ontology_v1"
+EXTRACTION_VERSION = "base_graph_json_clause_1to1_llamaextract_ontology_v2"
 FORCE_REPROCESS = True
 MAX_DOCS: int | None = None
+RELATION_CONFIDENCE_THRESHOLD = 0.6
+RELATION_EVIDENCE_REQUIRED = True
 
 SELECTED_GRAPH_JSON: list[str] = []
 
@@ -53,6 +55,14 @@ class DefinedTermNode(BaseModel):
     term: str = Field(description="Defined term string")
     definition: Optional[str] = Field(None, description="Definition text")
     definition_clause_id: Optional[str] = Field(None, description="Clause id where term is defined")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this term was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class PartyNode(BaseModel):
@@ -60,6 +70,14 @@ class PartyNode(BaseModel):
     name: str = Field(description="Party legal name")
     role: Optional[str] = Field(None, description="Role such as Buyer, Supplier, Licensee")
     address: Optional[str] = Field(None, description="Party address/location")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this party mention was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class ObligationNode(BaseModel):
@@ -67,6 +85,14 @@ class ObligationNode(BaseModel):
     action: str = Field(description="Obligation action")
     actor_party_id: Optional[str] = Field(None, description="Party id responsible for the obligation")
     deadline: Optional[str] = Field(None, description="Deadline expression")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this obligation was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class RightNode(BaseModel):
@@ -74,24 +100,56 @@ class RightNode(BaseModel):
     action: str = Field(description="Right/permission action")
     holder_party_id: Optional[str] = Field(None, description="Party id holding the right")
     frequency: Optional[str] = Field(None, description="Frequency/usage constraint")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this right was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class ProhibitionNode(BaseModel):
     id: str = Field(description="Unique prohibition node id")
     action: str = Field(description="Prohibited action")
     subject_party_id: Optional[str] = Field(None, description="Party id subject to prohibition")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this prohibition was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class ConditionNode(BaseModel):
     id: str = Field(description="Unique condition node id")
     trigger: str = Field(description="Condition trigger text")
     operator: Optional[str] = Field(None, description="Operator such as IF_THEN, UNLESS")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this condition was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class ReferenceNode(BaseModel):
     id: str = Field(description="Unique reference node id")
     name: str = Field(description="Reference name, law, standard, or document")
     citation: Optional[str] = Field(None, description="Citation string")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this reference was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 class ValueNode(BaseModel):
@@ -99,6 +157,14 @@ class ValueNode(BaseModel):
     value_type: str = Field(description="Value type: Currency, Percentage, Time, Date, etc.")
     amount: str = Field(description="Value amount")
     unit: Optional[str] = Field(None, description="Unit such as USD, %, days")
+    source_paragraph_id: Optional[str] = Field(
+        None,
+        description="Original base-graph clause id where this value was extracted",
+    )
+    paragraph_uid: Optional[str] = Field(
+        None,
+        description="Stable paragraph uid of the source base-graph clause",
+    )
 
 
 AllowedEdgeType = Literal[
@@ -165,19 +231,19 @@ Rules:
 2) Node IDs must be stable and unique within a contract.
 3) Every edge source_id and target_id must exactly match an existing node id.
 4) ID conventions:
-   - Clause ids must preserve the clause reference style used in the document (e.g., 2.6, 2.6(a), Article 3).
    - Party ids should be deterministic (prefer party-1, party-2, ...).
    - Do not invent a new edge endpoint id if no node uses that id.
 5) Input paragraphs can include tags like [BASE_NODE_ID=...] and [PARAGRAPH_UID=...].
-   - If a Clause corresponds to one tagged paragraph, set:
-     - clause.id = BASE_NODE_ID
-     - clause.source_paragraph_id = BASE_NODE_ID
-     - clause.paragraph_uid = PARAGRAPH_UID
+   - Clause nodes are already fixed externally as one-per-paragraph (1:1). Do not invent extra clause segmentation.
+   - For every non-Clause node, always set:
+     - source_paragraph_id = BASE_NODE_ID
+     - paragraph_uid = PARAGRAPH_UID
 6) Evaluate all relation types when present in text:
 IS_PART_OF, CONTAINS, REFERENCES, DEFINES, USES, ASSIGNS_OBLIGATION_TO,
 GRANTS_RIGHT_TO, DEPENDS_ON, MODIFIES_AMENDS, SUPERSEDES, CONTRADICTS.
-7) Prefer recall for valid relations; do not omit obvious explicit references.
-8) Provide short textual evidence for each edge whenever possible.
+7) Every non-Clause node must be linked to its source Clause by IS_PART_OF.
+8) Prefer recall for valid relations; do not omit obvious explicit references.
+9) For every edge, provide textual evidence and numeric confidence in [0,1].
 """
 
 CONSTRAINTS_QUERY = [
@@ -436,7 +502,8 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
         "normalized_edges": 0,
         "dropped_edges_invalid_type": 0,
         "dropped_edges_invalid_endpoint": 0,
-        "synthetic_clauses_added": 0,
+        "dropped_edges_missing_evidence": 0,
+        "dropped_edges_low_confidence": 0,
     }
 
     node_defaults: dict[str, dict[str, Any]] = {
@@ -447,14 +514,59 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
             "source_paragraph_id": None,
             "paragraph_uid": None,
         },
-        "defined_terms": {"term": "", "definition": None, "definition_clause_id": None},
-        "parties": {"name": "", "role": None, "address": None},
-        "obligations": {"action": "", "actor_party_id": None, "deadline": None},
-        "rights": {"action": "", "holder_party_id": None, "frequency": None},
-        "prohibitions": {"action": "", "subject_party_id": None},
-        "conditions": {"trigger": "", "operator": None},
-        "references": {"name": "", "citation": None},
-        "values": {"value_type": "", "amount": "", "unit": None},
+        "defined_terms": {
+            "term": "",
+            "definition": None,
+            "definition_clause_id": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "parties": {
+            "name": "",
+            "role": None,
+            "address": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "obligations": {
+            "action": "",
+            "actor_party_id": None,
+            "deadline": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "rights": {
+            "action": "",
+            "holder_party_id": None,
+            "frequency": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "prohibitions": {
+            "action": "",
+            "subject_party_id": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "conditions": {
+            "trigger": "",
+            "operator": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "references": {
+            "name": "",
+            "citation": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
+        "values": {
+            "value_type": "",
+            "amount": "",
+            "unit": None,
+            "source_paragraph_id": None,
+            "paragraph_uid": None,
+        },
     }
 
     for key, defaults in node_defaults.items():
@@ -482,68 +594,6 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
                 row["paragraph_uid"] = paragraph_uid or None
             cleaned[key].append(row)
 
-    def has_clause_descendants(base_ref: str) -> bool:
-        for clause in cleaned["clauses"]:
-            clause_id = str(clause.get("id") or "")
-            if clause_id.startswith(f"{base_ref}.") or clause_id.startswith(f"{base_ref}("):
-                return True
-        return False
-
-    def is_structural_heading_ref(ref: str) -> bool:
-        t = (ref or "").strip()
-        if not t or len(t) > 80:
-            return False
-        known = {
-            "recitals",
-            "definitions",
-            "interpretation",
-            "term",
-            "scope",
-            "notices",
-            "miscellaneous",
-            "governing law",
-        }
-        if t.lower() in known:
-            return True
-        if re.fullmatch(r"[A-Z][A-Z\s/&-]{2,80}", t):
-            return True
-        return False
-
-    all_existing_ids = set()
-    for key in ["clauses", "defined_terms", "parties", "obligations", "rights", "prohibitions", "conditions", "references", "values"]:
-        for item in cleaned[key]:
-            node_id = str(item.get("id") or "").strip()
-            if node_id:
-                all_existing_ids.add(node_id)
-
-    def maybe_add_synthetic_clause(ref: str) -> None:
-        ref_clean = (ref or "").strip()
-        if not ref_clean or ref_clean in all_existing_ids:
-            return
-        if is_structural_heading_ref(ref_clean):
-            cleaned["clauses"].append(
-                {
-                    "id": ref_clean,
-                    "title": ref_clean.title(),
-                    "text": f"Synthetic structural clause for heading '{ref_clean}'.",
-                    "clause_level": None,
-                }
-            )
-            all_existing_ids.add(ref_clean)
-            stats["synthetic_clauses_added"] += 1
-            return
-        if re.fullmatch(r"\d+(?:\.\d+)*", ref_clean) and has_clause_descendants(ref_clean):
-            cleaned["clauses"].append(
-                {
-                    "id": ref_clean,
-                    "title": ref_clean,
-                    "text": f"Synthetic parent clause for reference '{ref_clean}'.",
-                    "clause_level": None,
-                }
-            )
-            all_existing_ids.add(ref_clean)
-            stats["synthetic_clauses_added"] += 1
-
     raw_edges = payload_dict.get("edges", [])
     if raw_edges is None:
         raw_edges = []
@@ -560,82 +610,218 @@ def _normalize_payload_dict(payload_dict: dict[str, Any]) -> tuple[dict[str, Any
         if not src or not tgt:
             stats["dropped_edges_invalid_endpoint"] += 1
             continue
-        maybe_add_synthetic_clause(src)
-        maybe_add_synthetic_clause(tgt)
         edge_type = _normalize_edge_type(edge_dict.get("type"))
         if not edge_type:
             stats["dropped_edges_invalid_type"] += 1
+            continue
+        evidence = str(edge_dict.get("evidence") or "").strip()
+        confidence_raw = edge_dict.get("confidence")
+        confidence: Optional[float] = None
+        if confidence_raw is not None:
+            try:
+                confidence = float(confidence_raw)
+            except Exception:
+                confidence = None
+        if RELATION_EVIDENCE_REQUIRED and not evidence:
+            stats["dropped_edges_missing_evidence"] += 1
+            continue
+        if confidence is None or confidence < RELATION_CONFIDENCE_THRESHOLD:
+            stats["dropped_edges_low_confidence"] += 1
             continue
         cleaned["edges"].append(
             {
                 "source_id": src,
                 "target_id": tgt,
                 "type": edge_type,
-                "evidence": edge_dict.get("evidence"),
-                "confidence": edge_dict.get("confidence"),
+                "evidence": evidence,
+                "confidence": confidence,
             }
         )
     stats["normalized_edges"] = len(cleaned["edges"])
     return cleaned, stats
 
 
-def _enrich_clause_anchor_fields(
+def _build_clause_nodes_from_base_graph(
+    base_graph: dict[str, Any],
+) -> list[dict[str, Any]]:
+    clauses: list[dict[str, Any]] = []
+    for node in _ordered_base_nodes(base_graph):
+        base_id = str(node.get("id", "")).strip()
+        text = str(node.get("text", "")).strip()
+        if not base_id or not text:
+            continue
+        paragraph_uid = str(node.get("paragraph_uid") or "").strip() or _paragraph_uid_from_text(text)
+        clauses.append(
+            {
+                "id": base_id,
+                "title": base_id,
+                "text": text,
+                "clause_level": None,
+                "source_paragraph_id": base_id,
+                "paragraph_uid": paragraph_uid or None,
+            }
+        )
+    return clauses
+
+
+def _normalize_entity_key(value: Any) -> str:
+    text = _normalize_text_for_uid(value)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def _dedupe_entities_by_canonical_key(
+    payload_dict: dict[str, Any],
+    *,
+    keys: list[tuple[str, str]],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    stats = {
+        "id_remaps": 0,
+        "parties_merged": 0,
+        "defined_terms_merged": 0,
+    }
+    id_remap: dict[str, str] = {}
+
+    for collection, text_field in keys:
+        items = payload_dict.get(collection, [])
+        if not isinstance(items, list) or not items:
+            continue
+        merged: list[dict[str, Any]] = []
+        index: dict[str, dict[str, Any]] = {}
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            raw_id = str(item.get("id") or "").strip()
+            canon = _normalize_entity_key(item.get(text_field))
+            if not canon:
+                payload_fingerprint = sha1(
+                    json.dumps(item, sort_keys=True, ensure_ascii=False).encode("utf-8")
+                ).hexdigest()[:12]
+                canon = f"__id__:{raw_id or payload_fingerprint}"
+            if canon not in index:
+                index[canon] = item
+                merged.append(item)
+                continue
+            keeper = index[canon]
+            keeper_id = str(keeper.get("id") or "").strip()
+            if raw_id and keeper_id and raw_id != keeper_id:
+                id_remap[raw_id] = keeper_id
+                stats["id_remaps"] += 1
+            for k, v in item.items():
+                if k == "id":
+                    continue
+                if keeper.get(k) in (None, "", []):
+                    keeper[k] = v
+            if collection == "parties":
+                stats["parties_merged"] += 1
+            elif collection == "defined_terms":
+                stats["defined_terms_merged"] += 1
+        payload_dict[collection] = merged
+
+    if id_remap:
+        edges = payload_dict.get("edges", [])
+        for edge in edges if isinstance(edges, list) else []:
+            if not isinstance(edge, dict):
+                continue
+            src = str(edge.get("source_id") or "").strip()
+            tgt = str(edge.get("target_id") or "").strip()
+            if src in id_remap:
+                edge["source_id"] = id_remap[src]
+            if tgt in id_remap:
+                edge["target_id"] = id_remap[tgt]
+
+    stats["id_remap_examples"] = dict(list(id_remap.items())[:10])
+    return payload_dict, stats
+
+
+def _anchor_entities_to_clauses(
     payload_dict: dict[str, Any],
     base_node_index: dict[str, dict[str, str]],
 ) -> tuple[dict[str, Any], dict[str, int]]:
     stats = {
-        "clauses_anchor_direct_id": 0,
-        "clauses_anchor_text_match": 0,
-        "clauses_anchor_uid_match": 0,
-        "clauses_missing_anchor": 0,
+        "entity_anchor_resolved": 0,
+        "entity_anchor_missing": 0,
+        "entity_is_part_of_edges_added": 0,
     }
     if not base_node_index:
         return payload_dict, stats
 
-    text_to_base_ids: dict[str, list[str]] = {}
     uid_to_base_ids: dict[str, list[str]] = {}
     for base_id, meta in base_node_index.items():
-        text_key = str(meta.get("text_normalized") or "")
         uid = str(meta.get("paragraph_uid") or "")
-        if text_key:
-            text_to_base_ids.setdefault(text_key, []).append(base_id)
         if uid:
             uid_to_base_ids.setdefault(uid, []).append(base_id)
 
-    for clause in payload_dict.get("clauses", []):
-        if not isinstance(clause, dict):
-            continue
+    clause_ids = {
+        str(clause.get("id") or "").strip()
+        for clause in payload_dict.get("clauses", [])
+        if isinstance(clause, dict) and str(clause.get("id") or "").strip()
+    }
+    edges = payload_dict.get("edges", [])
+    if not isinstance(edges, list):
+        edges = []
+        payload_dict["edges"] = edges
 
-        clause_id = str(clause.get("id") or "").strip()
-        source_paragraph_id = str(clause.get("source_paragraph_id") or "").strip()
-        paragraph_uid = str(clause.get("paragraph_uid") or "").strip()
-        clause_text_norm = _normalize_text_for_uid(clause.get("text"))
+    existing_edge_keys = {
+        (
+            str(edge.get("source_id") or "").strip(),
+            str(edge.get("type") or "").strip().upper(),
+            str(edge.get("target_id") or "").strip(),
+        )
+        for edge in edges
+        if isinstance(edge, dict)
+    }
 
-        if not source_paragraph_id and clause_id and clause_id in base_node_index:
-            source_paragraph_id = clause_id
-            stats["clauses_anchor_direct_id"] += 1
+    entity_collections = [
+        "defined_terms",
+        "parties",
+        "obligations",
+        "rights",
+        "prohibitions",
+        "conditions",
+        "references",
+        "values",
+    ]
+    for collection in entity_collections:
+        for entity in payload_dict.get(collection, []) if isinstance(payload_dict.get(collection), list) else []:
+            if not isinstance(entity, dict):
+                continue
+            entity_id = str(entity.get("id") or "").strip()
+            if not entity_id:
+                continue
+            source_paragraph_id = str(entity.get("source_paragraph_id") or "").strip()
+            paragraph_uid = str(entity.get("paragraph_uid") or "").strip()
+            if collection == "defined_terms" and not source_paragraph_id:
+                source_paragraph_id = str(entity.get("definition_clause_id") or "").strip()
 
-        if not source_paragraph_id and clause_text_norm:
-            matched_ids = text_to_base_ids.get(clause_text_norm, [])
-            if len(matched_ids) == 1:
-                source_paragraph_id = matched_ids[0]
-                stats["clauses_anchor_text_match"] += 1
+            resolved_clause_id = ""
+            if source_paragraph_id and source_paragraph_id in base_node_index:
+                resolved_clause_id = source_paragraph_id
+            elif paragraph_uid:
+                matched_ids = uid_to_base_ids.get(paragraph_uid, [])
+                if len(matched_ids) == 1:
+                    resolved_clause_id = matched_ids[0]
 
-        if not source_paragraph_id and paragraph_uid:
-            matched_ids = uid_to_base_ids.get(paragraph_uid, [])
-            if len(matched_ids) == 1:
-                source_paragraph_id = matched_ids[0]
-                stats["clauses_anchor_uid_match"] += 1
-
-        if source_paragraph_id and not paragraph_uid:
-            paragraph_uid = str(base_node_index.get(source_paragraph_id, {}).get("paragraph_uid") or "").strip()
-
-        if source_paragraph_id:
-            clause["source_paragraph_id"] = source_paragraph_id
-            if paragraph_uid:
-                clause["paragraph_uid"] = paragraph_uid
-        else:
-            stats["clauses_missing_anchor"] += 1
+            if resolved_clause_id:
+                resolved_uid = str(base_node_index.get(resolved_clause_id, {}).get("paragraph_uid") or "").strip()
+                entity["source_paragraph_id"] = resolved_clause_id
+                entity["paragraph_uid"] = resolved_uid or paragraph_uid or None
+                stats["entity_anchor_resolved"] += 1
+                if resolved_clause_id in clause_ids:
+                    key = (entity_id, "IS_PART_OF", resolved_clause_id)
+                    if key not in existing_edge_keys:
+                        edges.append(
+                            {
+                                "source_id": entity_id,
+                                "target_id": resolved_clause_id,
+                                "type": "IS_PART_OF",
+                                "evidence": f"Anchored from source paragraph {resolved_clause_id}",
+                                "confidence": 1.0,
+                            }
+                        )
+                        existing_edge_keys.add(key)
+                        stats["entity_is_part_of_edges_added"] += 1
+            else:
+                stats["entity_anchor_missing"] += 1
 
     return payload_dict, stats
 
@@ -734,7 +920,10 @@ def _build_rows(
     def add_node(node_type: str, item: Any, label_key: str) -> None:
         d = _as_dict(item)
         raw_id = d.get("id")
-        label = str(d.get(label_key, raw_id or node_type)).strip() or node_type
+        raw_label = d.get(label_key)
+        if raw_label is None or (isinstance(raw_label, str) and not raw_label.strip()):
+            raw_label = raw_id or node_type
+        label = str(raw_label).strip() or node_type
         fallback = sha1(f"{node_type}:{label}".encode("utf-8")).hexdigest()[:12]
         node_id = _normalize_id(content_hash, node_type, raw_id, fallback)
         props = _props_without_none(d)
@@ -958,7 +1147,12 @@ async def process_graph_json_to_neo4j(
 
     payload_dict_raw = _payload_to_dict(extraction_result.data)
     payload_dict, payload_stats = _normalize_payload_dict(payload_dict_raw)
-    payload_dict, anchor_stats = _enrich_clause_anchor_fields(payload_dict, base_node_index)
+    payload_dict["clauses"] = _build_clause_nodes_from_base_graph(base_graph)
+    payload_dict, dedupe_stats = _dedupe_entities_by_canonical_key(
+        payload_dict,
+        keys=[("parties", "name"), ("defined_terms", "term")],
+    )
+    payload_dict, anchor_stats = _anchor_entities_to_clauses(payload_dict, base_node_index)
     payload = ContractOntologyKG.model_validate(payload_dict)
     node_rows, edge_rows, edge_stats = _build_rows(payload, content_hash=content_hash)
 
@@ -1003,6 +1197,7 @@ async def process_graph_json_to_neo4j(
         "nodes_extracted": len(node_rows),
         "edges_extracted": len(edge_rows),
         "payload_stats": payload_stats,
+        "dedupe_stats": dedupe_stats,
         "anchor_stats": anchor_stats,
         "edge_stats": edge_stats,
         "contract_counters": counters_to_dict(c_res.summary.counters),
@@ -1077,6 +1272,8 @@ async def main() -> None:
                 out.get("edges_extracted", 0),
                 "| payload_stats:",
                 out.get("payload_stats", {}),
+                "| dedupe_stats:",
+                out.get("dedupe_stats", {}),
                 "| anchor_stats:",
                 out.get("anchor_stats", {}),
                 "| edge_stats:",
