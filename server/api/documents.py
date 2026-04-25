@@ -65,18 +65,6 @@ def safe_graph_filename(value: str) -> str:
     return token or "unknown_document"
 
 
-def save_graph_output_snapshot(*, document_id: str | None, graph_payload: dict) -> None:
-    output_dir = Config.GRAPH_OUTPUT_DIR
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    file_stem = str(document_id or "unknown_document")
-    doc_path = document_store.get_path(file_stem)
-    if doc_path is not None:
-        file_stem = doc_path.stem
-
-    output_path = output_dir / f"{safe_graph_filename(file_stem)}.json"
-    with output_path.open("w", encoding="utf-8") as handle:
-        json.dump(graph_payload, handle, ensure_ascii=False, indent=2)
 
 
 def detect_repeated_boundary_texts(
@@ -144,6 +132,18 @@ def get_document_file(doc_id: str):
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         filename=path.name,
     )
+def save_graph_output_snapshot(*, document_id: str | None, graph_payload: dict) -> None:
+    output_dir = Config.GRAPH_OUTPUT_DIR
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    file_stem = str(document_id or "unknown_document")
+    doc_path = document_store.get_path(file_stem)
+    if doc_path is not None:
+        file_stem = doc_path.stem
+
+    output_path = output_dir / f"{safe_graph_filename(file_stem)}.json"
+    with output_path.open("w", encoding="utf-8") as handle:
+        json.dump(graph_payload, handle, ensure_ascii=False, indent=2)
 
 
 @router.post("/process")
