@@ -20,6 +20,7 @@
 		AssistantMode,
 		AssistantProvider,
 		AssistantScope,
+		FixContradictionSuggestion,
 		FreeContradictionExplanation,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
@@ -57,6 +58,7 @@
 		parseStructuredContradictionFromAnswer,
 		resolveAssistantSuggestedQuestions
 	} from '$lib/utils/docx/assistant';
+	import { buildChangeLog } from '$lib/utils/docx/change-log';
 	import { ensureNodeEditState, getNodeCurrentText } from '$lib/utils/edit';
 	import {
 		COMMIT_SHORTCUT_HINT,
@@ -1451,6 +1453,64 @@
 		];
 	}
 
+	function truncateFixChangeText(text: string, maxLength = 120): string {
+		const compact = text.replace(/\s+/g, ' ').trim();
+		if (compact.length <= maxLength) return compact;
+		return `${compact.slice(0, maxLength - 1).trimEnd()}…`;
+	}
+
+	function buildFixSuggestionChangeNotes(original: string, rewritten: string): string[] {
+		const changeLog = buildChangeLog(original, rewritten);
+		if (!changeLog.hasChanges) {
+			return ['Review wording alignment with related clauses and payment/obligation timing.'];
+		}
+
+		const removed = changeLog.oldSegments
+			.filter((segment) => segment.changed)
+			.map((segment) => truncateFixChangeText(segment.value))
+			.filter(Boolean);
+		const added = changeLog.newSegments
+			.filter((segment) => segment.changed)
+			.map((segment) => truncateFixChangeText(segment.value))
+			.filter(Boolean);
+
+		const notes: string[] = [];
+		const maxPairs = Math.min(3, Math.max(removed.length, added.length));
+		for (let index = 0; index < maxPairs; index += 1) {
+			const removedText = removed[index];
+			const addedText = added[index];
+			if (removedText && addedText) {
+				notes.push(`Replace "${removedText}" with "${addedText}".`);
+				continue;
+			}
+			if (addedText) {
+				notes.push(`Add "${addedText}".`);
+				continue;
+			}
+			if (removedText) {
+				notes.push(`Remove "${removedText}".`);
+			}
+		}
+
+		if (notes.length === 0) {
+			notes.push('Refine language to keep one consistent legal statement and remove ambiguity.');
+		}
+		return notes;
+	}
+
+	function appendFixContradictionSuggestionMessage(suggestion: FixContradictionSuggestion) {
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'assistant',
+				content: `Structured contradiction-fix suggestion for paragraph ${suggestion.paragraphId}.`,
+				citations: [{ id: suggestion.paragraphId, excerpt: '(selected paragraph)' }],
+				fixContradictionSuggestion: suggestion
+			}
+		];
+	}
+
 	async function askQuickAction(prompt: string) {
 		if (assistantLoading) return;
 		if (
@@ -1577,9 +1637,125 @@
 	}
 
 	function suggestContradictionFixFromChat() {
-		void submitContradictionAssistantQuestion(
-			'Suggest a revised version of the selected paragraph that resolves the contradiction while preserving legal intent and legal style.'
+		void runContradictionFixSuggestionFromChat();
+	}
+
+	async function runContradictionFixSuggestionFromChat() {
+		if (fixContradictionLoading || assistantLoading || simplifyLoading) return;
+		assistantError = null;
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'user',
+				content:
+					'Suggest a contradiction fix and structure the response with the key changes and a ready-to-apply rewrite.'
+			}
+		];
+		await scrollAssistantToBottom();
+
+		const target = resolveActiveSimplifyTarget();
+		const paragraphNode = target
+			? (get(paragraphs).find((node) => node.id === target.paragraphId) ?? null)
+			: null;
+		if (paragraphNode) setSelectedParagraphNode(paragraphNode);
+
+		fixContradictionLoading = true;
+		try {
+			const execution = await executeFixContradictionRewrite({
+				activeDocumentId,
+				assistantProvider,
+				contradictionResultsByParagraphId,
+				selectedRelatedParagraphs,
+				nodeEditStateById,
+				fixRelatedLimit: FIX_CONTRADICTION_TOP_RELATED,
+				viewer,
+				selectedParagraphId: get(selectedParagraph)?.id ?? null,
+				paragraphElementById,
+				fallbackTarget: target ?? simplifyTarget,
+				resolveErrorMessage: getAxiosErrorMessage
+			});
+			if (!execution.ok) {
+				appendAssistantQuickActionMessage(
+					`I could not generate a contradiction-fix suggestion: ${execution.error}`
+				);
+				return;
+			}
+
+			const contradiction = contradictionResultsByParagraphId.get(execution.target.paragraphId);
+			appendFixContradictionSuggestionMessage({
+				paragraphId: execution.target.paragraphId,
+				reason: contradiction?.brief_reason?.trim() || undefined,
+				changeNotes: buildFixSuggestionChangeNotes(
+					execution.result.payload.originalSnippet,
+					execution.result.payload.simplifiedSnippet
+				),
+				rewriteResult: execution.result,
+				status: 'pending'
+			});
+
+			simplifyAuditTrail.unshift(execution.auditRecord);
+			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
+				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
+			}
+		} finally {
+			fixContradictionLoading = false;
+			refreshSimplifyTarget();
+			await scrollAssistantToBottom();
+		}
+	}
+
+	async function acceptFixSuggestionFromChat(messageId: string) {
+		const message = assistantMessages.find((entry) => entry.id === messageId);
+		const suggestion = message?.fixContradictionSuggestion;
+		if (!suggestion || suggestion.status === 'applied') return;
+
+		const applied = applyRewriteToParagraph({
+			simplifyResult: suggestion.rewriteResult,
+			paragraphElementById
+		});
+		if (!applied.ok) {
+			const failureReason = applied.error ?? 'Failed to apply suggestion.';
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `Could not apply the suggestion: ${failureReason}`
+				}
+			];
+			assistantError = failureReason;
+			await scrollAssistantToBottom();
+			return;
+		}
+
+		const appliedParagraphId = applied.paragraphId ?? suggestion.paragraphId;
+		const selectedNode = get(paragraphs).find((node) => node.id === appliedParagraphId) ?? null;
+		if (selectedNode) setSelectedParagraphNode(selectedNode);
+
+		assistantMessages = assistantMessages.map((entry) =>
+			entry.id === messageId && entry.fixContradictionSuggestion
+				? {
+						...entry,
+						fixContradictionSuggestion: {
+							...entry.fixContradictionSuggestion,
+							status: 'applied'
+						}
+					}
+				: entry
 		);
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'assistant',
+				content: `Suggestion applied directly to paragraph ${appliedParagraphId}.`,
+				citations: [{ id: appliedParagraphId, excerpt: '(updated paragraph)' }]
+			}
+		];
+		assistantError = null;
+		refreshSimplifyTarget();
+		await scrollAssistantToBottom();
 	}
 
 	function resetSimplifyState() {
@@ -3032,9 +3208,11 @@
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
+				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
 				onSubmitAssistantQuestion={submitContradictionAssistantQuestion}
 				onHandleAssistantInputKeydown={handleContradictionAssistantInputKeydown}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
 				onFocusNodeFromPanel={focusNodeFromPanel}
 				onFocusEvidenceSnippet={focusEvidenceSnippet}
 			/>
@@ -3099,8 +3277,10 @@
 				onQuickActionSuggestionClick={handleAssistantQuickActionSuggestion}
 				{onSuggestedQuestionClick}
 				onFocusNodeFromPanel={focusNodeFromPanel}
+				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onSubmitAssistantQuestion={submitAssistantQuestion}
 				onHandleAssistantInputKeydown={handleAssistantInputKeydown}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
 			/>
 		{/if}
 	</aside>
@@ -3431,9 +3611,9 @@
 	}
 
 	:global(.docx-paragraph-explanation-related) {
-		outline: 2px solid rgba(59, 130, 246, 0.62) !important;
+		outline: 2px solid #2563eb !important;
 		outline-offset: 1px !important;
-		border-left: 1px solid rgba(59, 130, 246, 0.62) !important;
+		border-left: 1px solid #2563eb !important;
 		background: transparent !important;
 		/* box-shadow: inset 0 0 0 1px #2563eb !important; */
 	}
@@ -3442,9 +3622,9 @@
 		position: absolute;
 		width: 2px;
 		border-radius: 0;
-		background: rgba(59, 130, 246, 0.62);
+		background: #2563eb;
 		transform: translateX(-50%);
-		opacity: 0.82;
+		opacity: 0.7;
 		pointer-events: auto;
 		cursor: pointer;
 		transition:
@@ -3501,7 +3681,6 @@
 	:global(.docx-contradiction-highlight) {
 		background: transparent;
 		box-shadow: inset 3px 0 0 #dc2626;
-		padding-left: 8px !important;
 	}
 
 	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='medium']) {

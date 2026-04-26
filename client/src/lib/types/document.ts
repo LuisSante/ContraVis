@@ -179,6 +179,14 @@ export type FreeContradictionExplanation = {
 	footerMessage: string;
 };
 
+export type FixContradictionSuggestion = {
+	paragraphId: string;
+	reason?: string;
+	changeNotes: string[];
+	rewriteResult: SimplifyResultState;
+	status?: 'pending' | 'applied';
+};
+
 export type AssistantChatMessage = {
 	id: string;
 	role: AssistantMessageRole;
@@ -187,6 +195,7 @@ export type AssistantChatMessage = {
 	suggestedQuestions?: string[];
 	structuredContradiction?: StructuredContradictionAnalysis;
 	freeContradictionExplanation?: FreeContradictionExplanation;
+	fixContradictionSuggestion?: FixContradictionSuggestion;
 };
 
 export type AssistantContextNode = {

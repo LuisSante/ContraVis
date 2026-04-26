@@ -14,7 +14,7 @@
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 
-	type ProcessingStep = {
+type ProcessingStep = {
 		label: string;
 		active: boolean;
 	};
@@ -38,9 +38,11 @@
 	export let contradictionQuickActionFreeLabel = 'Why is it a contradiction? (Free)';
 	export let contradictionQuickActionAiLabel = 'Why is it a contradiction? (AI cost)';
 	export let onSuggestContradictionFix: () => void | Promise<void> = () => {};
+	export let onAcceptFixSuggestion: (messageId: string) => void | Promise<void> = () => {};
 	export let onRunContradictionQuickAction: (prompt: string) => void | Promise<void> = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
+	export let rewriteBusy = false;
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
 		temporal: 'Temporal',
 		numerical: 'Numerical',
@@ -266,7 +268,7 @@
 						<div class="px-0.5">
 							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
 							<p class="text-[10px] leading-relaxed text-red-800">
-								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+								{selectedContradictionResult.brief_reason}
 							</p>
 						</div>
 						<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
@@ -321,7 +323,7 @@
 						<div class="px-0.5">
 							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
 							<p class="text-[10px] leading-relaxed text-red-800">
-								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
+								{selectedContradictionResult.brief_reason}
 							</p>
 						</div>
 						<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
@@ -365,9 +367,10 @@
 					variant="outline"
 					size="sm"
 					class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+					disabled={rewriteBusy || assistantLoading}
 					onclick={() => void handleSuggestContradictionFix()}
 				>
-					Suggest contradiction fix
+					{rewriteBusy ? 'Preparing fix...' : 'Suggest contradiction fix'}
 				</Button>
 				<Button
 					variant="outline"
@@ -442,7 +445,67 @@
 								<p class="mb-0.5 text-[9px] font-semibold opacity-70">
 									{message.role === 'user' ? 'You' : 'Assistant'}
 								</p>
-								{#if message.freeContradictionExplanation}
+								{#if message.fixContradictionSuggestion}
+									{@const fix = message.fixContradictionSuggestion}
+									<div class="space-y-2">
+										<div class="flex flex-wrap items-center justify-between gap-1">
+											<div class="flex flex-wrap items-center gap-1">
+												<span class="text-[10px] font-bold text-gray-800"
+													>Structured contradiction fix</span
+												>
+												<button
+													type="button"
+													class="docx-reference-chip"
+													onclick={() => onFocusNodeFromPanel(fix.paragraphId, true)}
+												>
+													{fix.paragraphId}
+												</button>
+											</div>
+											{#if fix.status === 'applied'}
+												<Badge
+													variant="outline"
+													class="h-4 border-green-200 bg-green-50 px-1.5 text-[8px] font-semibold text-green-700"
+												>
+													Applied
+												</Badge>
+											{/if}
+										</div>
+										{#if fix.reason}
+											<p class="text-[10px] text-gray-700">{fix.reason}</p>
+										{/if}
+										<div class="rounded border border-gray-200 bg-gray-50/80 px-2 py-1.5">
+											<p class="mb-1 text-[9px] font-bold text-gray-700">Changes needed</p>
+											<ul class="space-y-1 text-[10px] text-gray-700">
+												{#each fix.changeNotes as note, noteIndex (`${message.id}-fix-note-${noteIndex}`)}
+													<li class="leading-relaxed">• {note}</li>
+												{/each}
+											</ul>
+										</div>
+										<div class="overflow-hidden rounded border border-gray-200 bg-white">
+											<div class="border-b border-gray-100 bg-red-50/40 px-2 py-1">
+												<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
+												<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+													{fix.rewriteResult.payload.originalSnippet}
+												</p>
+											</div>
+											<div class="bg-green-50/40 px-2 py-1">
+												<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
+												<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+													{fix.rewriteResult.payload.simplifiedSnippet}
+												</p>
+											</div>
+										</div>
+										<Button
+											variant="outline"
+											size="sm"
+											class="h-7 border-green-200 bg-green-50 px-2 text-[10px] font-semibold text-green-700 hover:border-green-300 hover:bg-green-100"
+											disabled={rewriteBusy || fix.status === 'applied'}
+											onclick={() => void onAcceptFixSuggestion(message.id)}
+										>
+											{fix.status === 'applied' ? 'Suggestion applied' : 'Accept suggestion'}
+										</Button>
+									</div>
+								{:else if message.freeContradictionExplanation}
 									{@const free = message.freeContradictionExplanation}
 									<div class="space-y-1.5">
 										<div class="flex flex-wrap items-center gap-1">
@@ -496,7 +559,7 @@
 									</p>
 								{/if}
 
-								{#if !message.freeContradictionExplanation && message.citations && message.citations.length > 0}
+								{#if !message.fixContradictionSuggestion && !message.freeContradictionExplanation && message.citations && message.citations.length > 0}
 									<div class="mt-1.5 flex flex-wrap gap-1">
 										{#each message.citations as citation}
 											<button
@@ -510,7 +573,7 @@
 									</div>
 								{/if}
 
-								{#if message.structuredContradiction}
+								{#if !message.fixContradictionSuggestion && !message.freeContradictionExplanation && message.structuredContradiction}
 									{@const structuredContradiction = message.structuredContradiction}
 									<div class="mt-1.5 rounded border border-red-200 bg-red-50/70 px-1.5 py-1">
 										<div class="mb-1 flex flex-wrap items-center gap-1">

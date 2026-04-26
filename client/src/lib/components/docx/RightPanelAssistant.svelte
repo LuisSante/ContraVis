@@ -73,8 +73,10 @@
 	export let onSuggestedQuestionClick: (question: string) => void = () => {};
 	export let onQuickActionSuggestionClick: (question: string) => void = () => {};
 	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
+	export let onAcceptFixSuggestion: (messageId: string) => void | Promise<void> = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
+	export let rewriteBusy = false;
 
 	function splitReferenceText(value: string): ReferenceTextSegment[] {
 		if (!value) return [];
@@ -526,7 +528,67 @@
 							? 'border-blue-200 bg-blue-50 text-blue-900'
 							: 'border-gray-200 bg-white text-gray-700'}"
 					>
-						{#if message.freeContradictionExplanation}
+						{#if message.fixContradictionSuggestion}
+							{@const fix = message.fixContradictionSuggestion}
+							<div class="space-y-2">
+								<div class="flex flex-wrap items-center justify-between gap-1">
+									<div class="flex flex-wrap items-center gap-1">
+										<span class="text-[10px] font-bold text-gray-800"
+											>Structured contradiction fix</span
+										>
+										<button
+											type="button"
+											class="docx-reference-chip"
+											onclick={() => onFocusNodeFromPanel(fix.paragraphId, true)}
+										>
+											{fix.paragraphId}
+										</button>
+									</div>
+									{#if fix.status === 'applied'}
+										<Badge
+											variant="outline"
+											class="h-4 border-green-200 bg-green-50 px-1.5 text-[8px] font-semibold text-green-700"
+										>
+											Applied
+										</Badge>
+									{/if}
+								</div>
+								{#if fix.reason}
+									<p class="text-[10px] text-gray-700">{fix.reason}</p>
+								{/if}
+								<div class="rounded border border-gray-200 bg-gray-50/80 px-2 py-1.5">
+									<p class="mb-1 text-[9px] font-bold text-gray-700">Changes needed</p>
+									<ul class="space-y-1 text-[10px] text-gray-700">
+										{#each fix.changeNotes as note, noteIndex (`${message.id}-fix-note-${noteIndex}`)}
+											<li class="leading-relaxed">• {note}</li>
+										{/each}
+									</ul>
+								</div>
+								<div class="overflow-hidden rounded border border-gray-200 bg-white">
+									<div class="border-b border-gray-100 bg-red-50/40 px-2 py-1">
+										<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
+										<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+											{fix.rewriteResult.payload.originalSnippet}
+										</p>
+									</div>
+									<div class="bg-green-50/40 px-2 py-1">
+										<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
+										<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+											{fix.rewriteResult.payload.simplifiedSnippet}
+										</p>
+									</div>
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									class="h-7 border-green-200 bg-green-50 px-2 text-[10px] font-semibold text-green-700 hover:border-green-300 hover:bg-green-100"
+									disabled={rewriteBusy || fix.status === 'applied'}
+									onclick={() => void onAcceptFixSuggestion(message.id)}
+								>
+									{fix.status === 'applied' ? 'Suggestion applied' : 'Accept suggestion'}
+								</Button>
+							</div>
+						{:else if message.freeContradictionExplanation}
 							{@const free = message.freeContradictionExplanation}
 							<div class="space-y-2">
 								<div class="flex flex-wrap items-center gap-1">
@@ -783,7 +845,7 @@
 							</div>
 						{/if}
 
-						{#if !message.freeContradictionExplanation && message.citations?.length}
+						{#if !message.freeContradictionExplanation && !message.fixContradictionSuggestion && message.citations?.length}
 							<div class="mt-2 flex flex-wrap gap-1">
 								{#each message.citations as citation}
 									<button
