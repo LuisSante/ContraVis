@@ -1,9 +1,6 @@
 <script lang="ts">
 	import type {
 		AssistantChatMessage,
-		AssistantMode,
-		AssistantProvider,
-		AssistantScope,
 		ChatHighlightSegment,
 		ChatPreviewHoverState,
 		ContradictionTaxonomyType,
@@ -12,18 +9,16 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
-	type LabeledOption<T extends string = string> = {
-		value: T;
-		label: string;
-	};
-
 	type ChatPreviewTab = 'contradiction' | 'claims';
+	type ReferenceTextSegment = {
+		text: string;
+		isReference: boolean;
+	};
 	type ChatHighlightTooltip = {
 		kind: 'claim' | 'highlight';
 		badgeText: string;
@@ -40,9 +35,7 @@
 		specificity: '',
 		other: ''
 	};
-	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<
-		Record<ContradictionTaxonomyType, string>
-	> = {
+	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<Record<ContradictionTaxonomyType, string>> = {
 		temporal: 'The claims conflict on timing, dates, or sequence of events.',
 		numerical: 'The claims conflict on numbers, amounts, percentages, or quantities.',
 		authority: 'The claims conflict on who has authority or who issues the statement.',
@@ -52,29 +45,18 @@
 		specificity: 'One claim is broader while the other is narrower in scope.',
 		other: 'The claims conflict, but not under the main taxonomy categories.'
 	};
+	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 
 	let chatPreviewHover: ChatPreviewHoverState | null = null;
 	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
 
-	export let assistantProvider: AssistantProvider = 'openai';
-	export let assistantMode: AssistantMode = 'explain';
-	export let assistantScope: AssistantScope = 'selected';
-	export let selectedQuickAction = '';
 	export let assistantInput = '';
 	export let assistantMessages: AssistantChatMessage[] = [];
 	export let assistantLoading = false;
 	export let assistantError: string | null = null;
 	export let assistantThread: HTMLElement | null = null;
 
-	export let assistantProviderLabel = 'Provider';
-	export let assistantModeLabel = 'Mode';
-	export let assistantScopeLabel = 'Scope';
-	export let quickActionLabel = 'Quick action';
-
-	export let providerOptions: readonly LabeledOption<AssistantProvider>[] = [];
-	export let modeOptions: readonly LabeledOption<AssistantMode>[] = [];
-	export let scopeOptions: readonly LabeledOption<AssistantScope>[] = [];
-	export let quickActions: readonly string[] = [];
+	export let quickActionSuggestions: readonly string[] = [];
 
 	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [];
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
@@ -88,11 +70,36 @@
 		b: '#7c3aed'
 	};
 
-	export let onHandleQuickActionSelectionChange: () => void = () => {};
 	export let onSuggestedQuestionClick: (question: string) => void = () => {};
+	export let onQuickActionSuggestionClick: (question: string) => void = () => {};
 	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
+	export let onAcceptFixSuggestion: (messageId: string) => void | Promise<void> = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
+	export let rewriteBusy = false;
+
+	function splitReferenceText(value: string): ReferenceTextSegment[] {
+		if (!value) return [];
+		const segments: ReferenceTextSegment[] = [];
+		let lastIndex = 0;
+		for (const match of value.matchAll(PARAGRAPH_REFERENCE_PATTERN)) {
+			const start = match.index ?? 0;
+			const matchedText = match[0] ?? '';
+			if (!matchedText) continue;
+			if (start > lastIndex) {
+				segments.push({ text: value.slice(lastIndex, start), isReference: false });
+			}
+			segments.push({ text: matchedText, isReference: true });
+			lastIndex = start + matchedText.length;
+		}
+		if (lastIndex < value.length) {
+			segments.push({ text: value.slice(lastIndex), isReference: false });
+		}
+		if (segments.length === 0) {
+			segments.push({ text: value, isReference: false });
+		}
+		return segments;
+	}
 
 	function toNonEmptyString(raw: unknown): string {
 		if (typeof raw === 'string') return raw.trim();
@@ -145,7 +152,10 @@
 		};
 		type SegmentMeta = Omit<ChatHighlightSegment, 'text'>;
 
-		function findPhraseRanges(phrase: string, maxMatches: number): Array<{ start: number; end: number }> {
+		function findPhraseRanges(
+			phrase: string,
+			maxMatches: number
+		): Array<{ start: number; end: number }> {
 			if (!phrase) return [];
 			const ranges: Array<{ start: number; end: number }> = [];
 			const phraseLower = phrase.toLowerCase();
@@ -161,16 +171,25 @@
 
 		const claimIdByChar = new Array<string | null>(sourceText.length).fill(null);
 		const claimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
-		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
+		const highlightCategoryByChar = new Array<ContradictionTaxonomyType | null>(
+			sourceText.length
+		).fill(null);
+		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(
 			null
 		);
-		const highlightTypeByChar = new Array<ContradictionTaxonomyType | null>(sourceText.length).fill(null);
 		const highlightWhyByChar = new Array<string | null>(sourceText.length).fill(null);
-		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(Number.POSITIVE_INFINITY);
+		const highlightSpanLengthByChar = new Array<number>(sourceText.length).fill(
+			Number.POSITIVE_INFINITY
+		);
 		const highlightClaimIdByChar = new Array<string | null>(sourceText.length).fill(null);
 		const highlightClaimSideByChar = new Array<'a' | 'b' | null>(sourceText.length).fill(null);
 
-		const assignClaimRange = (start: number, end: number, claimId: string, claimSide: 'a' | 'b') => {
+		const assignClaimRange = (
+			start: number,
+			end: number,
+			claimId: string,
+			claimSide: 'a' | 'b'
+		) => {
 			const safeStart = Math.max(0, Math.min(sourceText.length, start));
 			const safeEnd = Math.max(0, Math.min(sourceText.length, end));
 			for (let index = safeStart; index < safeEnd; index += 1) {
@@ -487,80 +506,11 @@
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col bg-white">
-	<header class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-4 py-2">
+	<header class="border-b border-gray-100 bg-gray-50 px-4 py-2">
 		<p class="text-[11px] text-gray-500">
 			Ask questions and get contextual help grounded in the selected contract.
 		</p>
-		<Select.Root type="single" bind:value={assistantProvider}>
-			<Select.Trigger
-				size="sm"
-				class="h-6 w-[130px] border-gray-200 bg-white px-1.5 text-[10px] font-semibold text-gray-600"
-			>
-				{assistantProviderLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each providerOptions as option}
-					<Select.Item value={option.value} label={option.label} class="text-[10px] font-semibold">
-						{option.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
 	</header>
-
-	<div class="grid grid-cols-3 gap-1.5 border-b border-gray-100 bg-gray-50/60 px-2 py-2">
-		<Select.Root type="single" bind:value={assistantMode}>
-			<Select.Trigger
-				size="sm"
-				class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-			>
-				{assistantModeLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each modeOptions as option}
-					<Select.Item value={option.value} label={option.label} class="text-[10px] font-semibold">
-						{option.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-
-		<Select.Root type="single" bind:value={assistantScope}>
-			<Select.Trigger
-				size="sm"
-				class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-			>
-				{assistantScopeLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each scopeOptions as option}
-					<Select.Item value={option.value} label={option.label} class="text-[10px] font-semibold">
-						{option.label}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-
-		<Select.Root
-			type="single"
-			bind:value={selectedQuickAction}
-			onValueChange={() => onHandleQuickActionSelectionChange()}
-		>
-			<Select.Trigger
-				size="sm"
-				class="h-7 w-full min-w-0 border-gray-200 bg-white px-2 text-[10px] font-semibold text-gray-600"
-			>
-				{quickActionLabel}
-			</Select.Trigger>
-			<Select.Content>
-				{#each quickActions as action}
-					<Select.Item value={action} label={action} class="text-[10px] font-semibold">
-						{action}
-					</Select.Item>
-				{/each}
-			</Select.Content>
-		</Select.Root>
-	</div>
 
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30" bind:viewportRef={assistantThread}>
 		<div class="flex min-h-full flex-col gap-2 p-2">
@@ -578,7 +528,107 @@
 							? 'border-blue-200 bg-blue-50 text-blue-900'
 							: 'border-gray-200 bg-white text-gray-700'}"
 					>
-						{#if message.structuredContradiction}
+						{#if message.fixContradictionSuggestion}
+							{@const fix = message.fixContradictionSuggestion}
+							<div class="space-y-2">
+								<div class="flex flex-wrap items-center justify-between gap-1">
+									<div class="flex flex-wrap items-center gap-1">
+										<span class="text-[10px] font-bold text-gray-800"
+											>Structured contradiction fix</span
+										>
+										<button
+											type="button"
+											class="docx-reference-chip"
+											onclick={() => onFocusNodeFromPanel(fix.paragraphId, true)}
+										>
+											{fix.paragraphId}
+										</button>
+									</div>
+									{#if fix.status === 'applied'}
+										<Badge
+											variant="outline"
+											class="h-4 border-green-200 bg-green-50 px-1.5 text-[8px] font-semibold text-green-700"
+										>
+											Applied
+										</Badge>
+									{/if}
+								</div>
+								{#if fix.reason}
+									<p class="text-[10px] text-gray-700">{fix.reason}</p>
+								{/if}
+								<div class="rounded border border-gray-200 bg-gray-50/80 px-2 py-1.5">
+									<p class="mb-1 text-[9px] font-bold text-gray-700">Changes needed</p>
+									<ul class="space-y-1 text-[10px] text-gray-700">
+										{#each fix.changeNotes as note, noteIndex (`${message.id}-fix-note-${noteIndex}`)}
+											<li class="leading-relaxed">• {note}</li>
+										{/each}
+									</ul>
+								</div>
+								<div class="overflow-hidden rounded border border-gray-200 bg-white">
+									<div class="border-b border-gray-100 bg-red-50/40 px-2 py-1">
+										<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
+										<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+											{fix.rewriteResult.payload.originalSnippet}
+										</p>
+									</div>
+									<div class="bg-green-50/40 px-2 py-1">
+										<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
+										<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+											{fix.rewriteResult.payload.simplifiedSnippet}
+										</p>
+									</div>
+								</div>
+								<Button
+									variant="outline"
+									size="sm"
+									class="h-7 border-green-200 bg-green-50 px-2 text-[10px] font-semibold text-green-700 hover:border-green-300 hover:bg-green-100"
+									disabled={rewriteBusy || fix.status === 'applied'}
+									onclick={() => void onAcceptFixSuggestion(message.id)}
+								>
+									{fix.status === 'applied' ? 'Suggestion applied' : 'Accept suggestion'}
+								</Button>
+							</div>
+						{:else if message.freeContradictionExplanation}
+							{@const free = message.freeContradictionExplanation}
+							<div class="space-y-2">
+								<div class="flex flex-wrap items-center gap-1">
+									<span class="font-bold text-gray-800">Free explanation for paragraph</span>
+									<button
+										type="button"
+										class="docx-reference-chip"
+										onclick={() => onFocusNodeFromPanel(free.paragraphId, true)}
+									>
+										{free.paragraphId}
+									</button>
+									<span class="font-bold text-gray-800">:</span>
+								</div>
+								<p class="text-[10px] text-gray-700">{free.reason}</p>
+								<p class="text-[10px] font-bold text-gray-800">Confidence: {free.confidence}%</p>
+								{#if free.snippetA && free.snippetB}
+									<div class="space-y-1">
+										<p class="text-[10px] font-bold text-red-700">
+											Snippet A ({free.snippetA.source}):
+										</p>
+										<p class="rounded border border-red-300 bg-red-100/70 px-2 py-1 text-[10px] text-red-900">
+											"{free.snippetA.text}"
+										</p>
+									</div>
+									<div class="space-y-1">
+										<p class="text-[10px] font-bold text-yellow-700">
+											Snippet B ({free.snippetB.source}):
+										</p>
+										<p
+											class="rounded border border-yellow-300 bg-yellow-100/75 px-2 py-1 text-[10px] text-yellow-900"
+										>
+											"{free.snippetB.text}"
+										</p>
+									</div>
+								{:else if free.fallbackEvidenceMessage}
+									<p class="text-[10px] text-gray-600">{free.fallbackEvidenceMessage}</p>
+								{/if}
+								<p class="text-[10px] text-gray-600">{free.footerMessage}</p>
+							</div>
+						{:else if message.structuredContradiction}
 							<div class="space-y-2">
 								<p class="whitespace-pre-wrap">{message.content}</p>
 
@@ -605,8 +655,8 @@
 
 											<Tabs.Content value="contradiction" class="text-[11px]">
 												<p
-													class="break-words whitespace-normal leading-relaxed text-gray-700"
-													on:mouseleave={() => clearChatPreviewHover(message.id)}
+													class="leading-relaxed break-words whitespace-normal text-gray-700"
+													onmouseleave={() => clearChatPreviewHover(message.id)}
 												>
 													{#each chatSegments as segment, segmentIndex}
 														{#if segment.interactive}
@@ -634,24 +684,27 @@
 																			<span
 																				{...props}
 																				class="inline bg-transparent p-0 text-left align-baseline leading-[inherit] whitespace-normal text-inherit transition-[background-color,border-color,box-shadow,color] duration-150 ease-out hover:cursor-help focus-visible:outline-none"
-																				on:mouseenter={() =>
+																				onmouseenter={() =>
 																					handleChatPreviewSegmentMouseEnter(
 																						message.id,
 																						segment,
 																						segmentKey
 																					)}
-																				on:mouseleave={() => clearChatPreviewHover(message.id)}
-																				on:focus={() =>
+																				onmouseleave={() => clearChatPreviewHover(message.id)}
+																				onfocus={() =>
 																					handleChatPreviewSegmentMouseEnter(
 																						message.id,
 																						segment,
 																						segmentKey
 																					)}
-																				on:blur={() => clearChatPreviewHover(message.id)}
+																				onblur={() => clearChatPreviewHover(message.id)}
 																			>
 																				<span
 																					class="inline rounded-[3px] px-[2px] py-[1px]"
-																					style={resolveChatHighlightSegmentStyle(segment, message.id)}
+																					style={resolveChatHighlightSegmentStyle(
+																						segment,
+																						message.id
+																					)}
 																				>
 																					{segment.text}
 																				</span>
@@ -684,13 +737,13 @@
 																	type="button"
 																	class="inline appearance-none rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left align-baseline leading-[inherit] whitespace-normal text-inherit"
 																	style={resolveChatHighlightSegmentStyle(segment, message.id)}
-																	on:mouseenter={() =>
+																	onmouseenter={() =>
 																		handleChatPreviewSegmentMouseEnter(
 																			message.id,
 																			segment,
 																			segmentKey
 																		)}
-																	on:mouseleave={() => clearChatPreviewHover(message.id)}
+																	onmouseleave={() => clearChatPreviewHover(message.id)}
 																>
 																	{segment.text}
 																</button>
@@ -718,7 +771,7 @@
 											</Tabs.Content>
 
 											<Tabs.Content value="claims" class="text-[11px]">
-												<p class="break-words whitespace-normal leading-relaxed text-gray-700">
+												<p class="leading-relaxed break-words whitespace-normal text-gray-700">
 													{#each chatSegments as segment}
 														{#if segment.claimSide}
 															<span
@@ -763,7 +816,15 @@
 								{/if}
 							</div>
 						{:else}
-							<p class="whitespace-pre-wrap">{message.content}</p>
+							<p class="whitespace-pre-wrap">
+								{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+									{#if segment.isReference}
+										<span class="docx-reference-chip align-middle">{segment.text}</span>
+									{:else}
+										<span>{segment.text}</span>
+									{/if}
+								{/each}
+							</p>
 						{/if}
 
 						{#if message.suggestedQuestions?.length}
@@ -784,18 +845,17 @@
 							</div>
 						{/if}
 
-						{#if message.citations?.length}
+						{#if !message.freeContradictionExplanation && !message.fixContradictionSuggestion && message.citations?.length}
 							<div class="mt-2 flex flex-wrap gap-1">
 								{#each message.citations as citation}
-									<Button
-										variant="outline"
-										size="xs"
-										class="h-5 border-amber-200 bg-amber-50 px-1.5 text-[9px] font-bold text-amber-700 hover:border-amber-300"
+									<button
+										type="button"
+										class="docx-reference-chip"
 										title={citation.excerpt}
 										onclick={() => onFocusNodeFromPanel(citation.id, true)}
 									>
 										{citation.id}
-									</Button>
+									</button>
 								{/each}
 							</div>
 						{/if}
@@ -824,24 +884,62 @@
 		</div>
 	{/if}
 
-	<form class="border-t border-gray-200 bg-white p-2" on:submit|preventDefault={() => void onSubmitAssistantQuestion()}>
-		<Textarea
-			rows={2}
-			placeholder="Ask about this contract or paragraph..."
-			bind:value={assistantInput}
-			onkeydown={onHandleAssistantInputKeydown}
-			class="min-h-[52px] resize-none border-gray-200 bg-gray-50 px-2 py-1.5 text-[11px] text-gray-700"
-		></Textarea>
-		<div class="mt-1.5 flex items-center justify-between">
-			<p class="text-[9px] text-gray-400">Enter to send | Shift+Enter for newline</p>
+	<form
+		class="border-t border-gray-200 bg-white p-2"
+		onsubmit={(event) => {
+			event.preventDefault();
+			void onSubmitAssistantQuestion();
+		}}
+	>
+		{#if quickActionSuggestions.length}
+			<div class="mb-2 flex flex-nowrap items-center gap-1.5 overflow-x-auto">
+				{#each quickActionSuggestions as action}
+					<Button
+						variant="outline"
+						size="sm"
+						class="h-6 shrink-0 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+						onclick={() => onQuickActionSuggestionClick(action)}
+					>
+						{action}
+					</Button>
+				{/each}
+			</div>
+		{/if}
+
+		<div class="mt-2 flex items-end gap-1.5">
+			<Textarea
+				rows={2}
+				placeholder="Ask about this contract or paragraph..."
+				class="min-h-[50px] border-gray-200 bg-white text-[10px] text-gray-700"
+				bind:value={assistantInput}
+				onkeydown={onHandleAssistantInputKeydown}
+				disabled={assistantLoading}
+			/>
 			<Button
 				type="submit"
 				variant="outline"
 				size="sm"
-				disabled={assistantLoading || !assistantInput.trim()}
-				class="h-7 border-gray-200 bg-white px-3 text-[10px] font-bold text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+				disabled={assistantLoading}
+				class="h-7 w-7 border-gray-200 bg-white px-0 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+				aria-label="Send chat message"
+				title="Send"
 			>
-				Ask
+				<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+					<path
+						d="M3 10L17 3L10 17L8.2 11.8L3 10Z"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+					<path
+						d="M17 3L8.2 11.8"
+						stroke="currentColor"
+						stroke-width="1.6"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				</svg>
 			</Button>
 		</div>
 	</form>

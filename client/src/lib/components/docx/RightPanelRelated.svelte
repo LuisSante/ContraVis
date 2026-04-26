@@ -76,11 +76,11 @@
 
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
 		<div class="flex min-h-full flex-col space-y-2 p-2">
-			{#if selectedParagraph}
+			<!-- {#if selectedParagraph}
 				<p class="px-1 text-[10px] text-gray-500">
 					Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
 				</p>
-			{/if}
+			{/if} -->
 
 			{#if backendGraphLoading}
 				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">

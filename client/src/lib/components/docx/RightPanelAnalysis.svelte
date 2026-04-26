@@ -11,26 +11,19 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 
-	type ProcessingStep = {
+type ProcessingStep = {
 		label: string;
 		active: boolean;
 	};
-
-	type ModelOption = {
-		value: string;
-		label: string;
+	type ReferenceTextSegment = {
+		text: string;
+		isReference: boolean;
 	};
 
 	export let selectedParagraph: ParagraphNode | null = null;
-	export let model = 'gpt-4.1';
-	export let modelOptions: ReadonlyArray<ModelOption> = [];
-	export let controlsDisabled = false;
-	export let canLoadSaved = false;
-	export let canSearchContradictions = false;
 	export let contradictionLoading = false;
 	export let revisionProcessingSteps: ProcessingStep[] = [];
 	export let selectedContradictionResult: ContradictionParagraphResult | null = null;
@@ -45,11 +38,11 @@
 	export let contradictionQuickActionFreeLabel = 'Why is it a contradiction? (Free)';
 	export let contradictionQuickActionAiLabel = 'Why is it a contradiction? (AI cost)';
 	export let onSuggestContradictionFix: () => void | Promise<void> = () => {};
-	export let onLoadSavedContradictions: () => void | Promise<void> = () => {};
-	export let onSearchContradictions: () => void | Promise<void> = () => {};
+	export let onAcceptFixSuggestion: (messageId: string) => void | Promise<void> = () => {};
 	export let onRunContradictionQuickAction: (prompt: string) => void | Promise<void> = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
+	export let rewriteBusy = false;
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
 		temporal: 'Temporal',
 		numerical: 'Numerical',
@@ -75,14 +68,40 @@
 	const CHAT_PANEL_COLLAPSED_HEIGHT = 46;
 	const CHAT_PANEL_OPEN_DEFAULT_HEIGHT = 250;
 	const CHAT_PANEL_OPEN_THRESHOLD = 47;
+	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 	let chatPanelHeight = CHAT_PANEL_COLLAPSED_HEIGHT;
 	let resizeStartY = 0;
 	let resizeStartHeight = 250;
 	let isChatOpen = false;
 	$: activeProcessingStepIndex =
-		revisionProcessingSteps.length > 0 ? Math.floor(processingTick / 3) % revisionProcessingSteps.length : 0;
+		revisionProcessingSteps.length > 0
+			? Math.floor(processingTick / 3) % revisionProcessingSteps.length
+			: 0;
 	$: activeDotCount = (processingTick % 3) + 1;
 	$: isChatOpen = chatPanelHeight > CHAT_PANEL_OPEN_THRESHOLD;
+
+	function splitReferenceText(value: string): ReferenceTextSegment[] {
+		if (!value) return [];
+		const segments: ReferenceTextSegment[] = [];
+		let lastIndex = 0;
+		for (const match of value.matchAll(PARAGRAPH_REFERENCE_PATTERN)) {
+			const start = match.index ?? 0;
+			const matchedText = match[0] ?? '';
+			if (!matchedText) continue;
+			if (start > lastIndex) {
+				segments.push({ text: value.slice(lastIndex, start), isReference: false });
+			}
+			segments.push({ text: matchedText, isReference: true });
+			lastIndex = start + matchedText.length;
+		}
+		if (lastIndex < value.length) {
+			segments.push({ text: value.slice(lastIndex), isReference: false });
+		}
+		if (segments.length === 0) {
+			segments.push({ text: value, isReference: false });
+		}
+		return segments;
+	}
 
 	function clampChatPanelHeight(next: number): number {
 		return Math.max(CHAT_PANEL_COLLAPSED_HEIGHT, Math.round(next));
@@ -174,49 +193,13 @@
 		</p>
 	</header>
 
-	<div class="border-b border-gray-100 bg-white px-3 py-2.5">
-		<div class="flex items-center gap-2">
-			<Select.Root type="single" bind:value={model} disabled={controlsDisabled}>
-				<Select.Trigger
-					size="sm"
-					class="h-7 w-[150px] border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
-					title="Realtime contradiction model"
-				>
-					{modelOptions.find((option) => option.value === model)?.label ?? model}
-				</Select.Trigger>
-				<Select.Content>
-					{#each modelOptions as option}
-						<Select.Item value={option.value} label={option.label} class="text-[10px]">
-							{option.label}
-						</Select.Item>
-					{/each}
-				</Select.Content>
-			</Select.Root>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-7 border-amber-200 bg-amber-50 px-2 text-[10px] text-amber-700 hover:border-amber-300 hover:bg-amber-100"
-				disabled={!canLoadSaved}
-				onclick={() => void onLoadSavedContradictions()}
-			>
-				Saved contradictions
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-7 border-red-200 bg-red-50 px-2 text-[10px] text-red-700 hover:border-red-300 hover:bg-red-100"
-				disabled={!canSearchContradictions}
-				onclick={() => void onSearchContradictions()}
-			>
-				Search contradictions
-			</Button>
-		</div>
+	<!-- <div class="border-b border-gray-100 bg-white px-3 py-2.5">
 		{#if selectedParagraph}
-			<p class="mt-1.5 text-[10px] text-gray-500">
+			<p class="text-[10px] text-gray-500">
 				Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
 			</p>
 		{/if}
-	</div>
+	</div> -->
 
 	<ScrollArea class="min-h-0 flex-1">
 		<div class="space-y-1 p-3">
@@ -238,9 +221,7 @@
 								{/if}
 								<span
 									class={`h-1.5 w-1.5 rounded-full bg-gray-500 transition-opacity duration-300 ${
-										index === activeProcessingStepIndex
-											? 'animate-pulse opacity-95'
-											: 'opacity-30'
+										index === activeProcessingStepIndex ? 'animate-pulse opacity-95' : 'opacity-30'
 									}`}
 									aria-hidden="true"
 								></span>
@@ -248,7 +229,9 @@
 									{step.label}
 									<span class="ml-px inline-flex min-w-[14px] text-gray-500" aria-hidden="true">
 										{#if index === activeProcessingStepIndex}
-											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2 ? '.' : ''}{activeDotCount >= 3 ? '.' : ''}
+											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2
+												? '.'
+												: ''}{activeDotCount >= 3 ? '.' : ''}
 										{/if}
 									</span>
 								</span>
@@ -276,90 +259,80 @@
 				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
 					<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
 				</div>
-			{:else}
-				{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-					<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+			{:else if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+				<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+					<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+					</div>
+					<div class="space-y-1 p-1.5">
+						<div class="px-0.5">
+							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
+							<p class="text-[10px] leading-relaxed text-red-800">
+								{selectedContradictionResult.brief_reason}
+							</p>
 						</div>
-						<div class="space-y-1 p-1.5">
-							<div class="px-0.5">
-								<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-								<p class="text-[10px] leading-relaxed text-red-800">
-									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-								</p>
-							</div>
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Assessment</span>
-								</div>
-								<p class="text-[10px] leading-relaxed text-red-800">
-									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-								</p>
-							</div>
-							<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
-									<Badge
-										variant="outline"
-										class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
-									>
-										{selectedContradictionEvidence.source_a}
-									</Badge>
-								</div>
-								<Button
-									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-red-800 hover:bg-transparent hover:text-red-900"
-									onclick={() =>
-										selectedContradictionResult &&
-										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+						<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+							<div class="mb-1 flex items-center justify-between">
+								<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
+								<Badge
+									variant="outline"
+									class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
 								>
-									{selectedContradictionEvidence.snippet_a}
-								</Button>
+									{selectedContradictionEvidence.source_a}
+								</Badge>
 							</div>
+							<Button
+								variant="ghost"
+								class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-red-800 hover:bg-transparent hover:text-red-900"
+								onclick={() =>
+									selectedContradictionResult &&
+									onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+							>
+								{selectedContradictionEvidence.snippet_a}
+							</Button>
+						</div>
 
-							<div class="rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
-								<div class="mb-1 flex items-center justify-between">
-									<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
-									<Badge
-										variant="outline"
-										class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
-									>
-										{selectedContradictionEvidence.source_b}
-									</Badge>
-								</div>
-								<Button
-									variant="ghost"
-									class="h-auto w-full min-w-0 items-start justify-start whitespace-normal break-words [overflow-wrap:anywhere] px-0 py-0 text-left text-[11px] leading-relaxed text-yellow-900 hover:bg-transparent hover:text-yellow-950"
-									onclick={() =>
-										selectedContradictionResult &&
-										onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+						<div class="rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
+							<div class="mb-1 flex items-center justify-between">
+								<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
+								<Badge
+									variant="outline"
+									class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
 								>
-									{selectedContradictionEvidence.snippet_b}
-								</Button>
+									{selectedContradictionEvidence.source_b}
+								</Badge>
 							</div>
+							<Button
+								variant="ghost"
+								class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-yellow-900 hover:bg-transparent hover:text-yellow-950"
+								onclick={() =>
+									selectedContradictionResult &&
+									onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+							>
+								{selectedContradictionEvidence.snippet_b}
+							</Button>
 						</div>
 					</div>
-				{:else}
-					<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-						<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-							<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
-						</div>
-						<div class="space-y-1 p-1.5">
-							<div class="px-0.5">
-								<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-								<p class="text-[10px] leading-relaxed text-red-800">
-									Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-								</p>
-							</div>
-							<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-								<Card.Content class="px-3 py-2 text-gray-600">
-									Evidence snippets are unavailable for this contradiction.
-								</Card.Content>
-							</Card.Root>
-						</div>
+				</div>
+			{:else}
+				<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
+					<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 					</div>
-				{/if}
+					<div class="space-y-1 p-1.5">
+						<div class="px-0.5">
+							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
+							<p class="text-[10px] leading-relaxed text-red-800">
+								{selectedContradictionResult.brief_reason}
+							</p>
+						</div>
+						<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
+							<Card.Content class="px-3 py-2 text-gray-600">
+								Evidence snippets are unavailable for this contradiction.
+							</Card.Content>
+						</Card.Root>
+					</div>
+				</div>
 			{/if}
 		</div>
 	</ScrollArea>
@@ -373,45 +346,80 @@
 		<button
 			type="button"
 			class={`absolute top-0 left-1/2 h-2 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize rounded-full border border-gray-200 bg-white transition ${
-				isResizingChatPanel ? 'border-blue-300 bg-blue-50' : 'hover:border-gray-300 hover:bg-gray-50'
+				isResizingChatPanel
+					? 'border-blue-300 bg-blue-50'
+					: 'hover:border-gray-300 hover:bg-gray-50'
 			}`}
 			aria-label="Resize contradiction chat"
 			title="Drag to resize chat area"
 			onmousedown={startChatPanelResize}
 		></button>
-		<div class={`flex flex-nowrap items-center gap-1.5 overflow-x-auto ${isChatOpen ? 'mb-2' : ''}`}>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
-				onclick={() => void handleSuggestContradictionFix()}
+		<div class={`flex items-center gap-1.5 ${isChatOpen ? 'mb-2' : ''}`}>
+			<span
+				class="inline-flex h-6 w-6 shrink-0 items-center justify-center text-gray-500"
+				aria-hidden="true"
 			>
-				Suggest contradiction fix
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
-			>
-				Why is it a contradiction? Free
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
-			>
-				Why is it a contradiction? AI cost
-			</Button>
+				<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+			</span>
+
+			<div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto">
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+					disabled={rewriteBusy || assistantLoading}
+					onclick={() => void handleSuggestContradictionFix()}
+				>
+					{rewriteBusy ? 'Preparing fix...' : 'Suggest contradiction fix'}
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
+				>
+					Why is it a contradiction? Free
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
+				>
+					Why is it a contradiction? AI cost
+				</Button>
+			</div>
+
 			<button
 				type="button"
 				class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[10px] border border-gray-200 bg-white text-gray-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
 				onclick={toggleChatPanel}
-				aria-label={isChatOpen ? 'Close contradiction chat' : 'Open contradiction chat'}
-				title={isChatOpen ? 'Close contradiction chat' : 'Open contradiction chat'}
+				aria-label={isChatOpen ? 'Minimize contradiction chat' : 'Maximize contradiction chat'}
+				title={isChatOpen ? 'Minimize contradiction chat' : 'Maximize contradiction chat'}
 			>
-				<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+				{#if isChatOpen}
+					<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+						<path
+							d="M5 10H15"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				{:else}
+					<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+						<rect
+							x="4.5"
+							y="4.5"
+							width="11"
+							height="11"
+							rx="1.5"
+							stroke="currentColor"
+							stroke-width="1.4"
+						/>
+					</svg>
+				{/if}
 			</button>
 		</div>
 
@@ -437,14 +445,126 @@
 								<p class="mb-0.5 text-[9px] font-semibold opacity-70">
 									{message.role === 'user' ? 'You' : 'Assistant'}
 								</p>
-								<p class="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.content}</p>
+								{#if message.fixContradictionSuggestion}
+									{@const fix = message.fixContradictionSuggestion}
+									<div class="space-y-2">
+										<div class="flex flex-wrap items-center justify-between gap-1">
+											<div class="flex flex-wrap items-center gap-1">
+												<span class="text-[10px] font-bold text-gray-800"
+													>Structured contradiction fix</span
+												>
+												<button
+													type="button"
+													class="docx-reference-chip"
+													onclick={() => onFocusNodeFromPanel(fix.paragraphId, true)}
+												>
+													{fix.paragraphId}
+												</button>
+											</div>
+											{#if fix.status === 'applied'}
+												<Badge
+													variant="outline"
+													class="h-4 border-green-200 bg-green-50 px-1.5 text-[8px] font-semibold text-green-700"
+												>
+													Applied
+												</Badge>
+											{/if}
+										</div>
+										{#if fix.reason}
+											<p class="text-[10px] text-gray-700">{fix.reason}</p>
+										{/if}
+										<div class="rounded border border-gray-200 bg-gray-50/80 px-2 py-1.5">
+											<p class="mb-1 text-[9px] font-bold text-gray-700">Changes needed</p>
+											<ul class="space-y-1 text-[10px] text-gray-700">
+												{#each fix.changeNotes as note, noteIndex (`${message.id}-fix-note-${noteIndex}`)}
+													<li class="leading-relaxed">• {note}</li>
+												{/each}
+											</ul>
+										</div>
+										<div class="overflow-hidden rounded border border-gray-200 bg-white">
+											<div class="border-b border-gray-100 bg-red-50/40 px-2 py-1">
+												<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
+												<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+													{fix.rewriteResult.payload.originalSnippet}
+												</p>
+											</div>
+											<div class="bg-green-50/40 px-2 py-1">
+												<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
+												<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
+													{fix.rewriteResult.payload.simplifiedSnippet}
+												</p>
+											</div>
+										</div>
+										<Button
+											variant="outline"
+											size="sm"
+											class="h-7 border-green-200 bg-green-50 px-2 text-[10px] font-semibold text-green-700 hover:border-green-300 hover:bg-green-100"
+											disabled={rewriteBusy || fix.status === 'applied'}
+											onclick={() => void onAcceptFixSuggestion(message.id)}
+										>
+											{fix.status === 'applied' ? 'Suggestion applied' : 'Accept suggestion'}
+										</Button>
+									</div>
+								{:else if message.freeContradictionExplanation}
+									{@const free = message.freeContradictionExplanation}
+									<div class="space-y-1.5">
+										<div class="flex flex-wrap items-center gap-1">
+											<span class="font-bold text-gray-800">Free explanation for paragraph</span>
+											<button
+												type="button"
+												class="docx-reference-chip"
+												onclick={() => onFocusNodeFromPanel(free.paragraphId, true)}
+											>
+												{free.paragraphId}
+											</button>
+											<span class="font-bold text-gray-800">:</span>
+										</div>
+										<p class="text-[10px] text-gray-700">{free.reason}</p>
+										<p class="text-[10px] font-bold text-gray-800">Confidence: {free.confidence}%</p>
+										{#if free.snippetA && free.snippetB}
+											<div class="space-y-1">
+												<p class="text-[10px] font-bold text-red-700">
+													Snippet A ({free.snippetA.source}):
+												</p>
+												<p
+													class="rounded border border-red-300 bg-red-100/70 px-2 py-1 text-[10px] text-red-900"
+												>
+													"{free.snippetA.text}"
+												</p>
+											</div>
+											<div class="space-y-1">
+												<p class="text-[10px] font-bold text-yellow-700">
+													Snippet B ({free.snippetB.source}):
+												</p>
+												<p
+													class="rounded border border-yellow-300 bg-yellow-100/75 px-2 py-1 text-[10px] text-yellow-900"
+												>
+													"{free.snippetB.text}"
+												</p>
+											</div>
+										{:else if free.fallbackEvidenceMessage}
+											<p class="text-[10px] text-gray-600">{free.fallbackEvidenceMessage}</p>
+										{/if}
+										<p class="text-[10px] text-gray-600">{free.footerMessage}</p>
+									</div>
+								{:else}
+									<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+										{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+											{#if segment.isReference}
+												<span class="docx-reference-chip align-middle">{segment.text}</span>
+											{:else}
+												<span>{segment.text}</span>
+											{/if}
+										{/each}
+									</p>
+								{/if}
 
-								{#if message.citations && message.citations.length > 0}
+								{#if !message.fixContradictionSuggestion && !message.freeContradictionExplanation && message.citations && message.citations.length > 0}
 									<div class="mt-1.5 flex flex-wrap gap-1">
 										{#each message.citations as citation}
 											<button
 												type="button"
-												class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+												class="docx-reference-chip"
 												onclick={() => onFocusNodeFromPanel(citation.id, true)}
 											>
 												{citation.id}
@@ -453,18 +573,22 @@
 									</div>
 								{/if}
 
-								{#if message.structuredContradiction}
+								{#if !message.fixContradictionSuggestion && !message.freeContradictionExplanation && message.structuredContradiction}
 									{@const structuredContradiction = message.structuredContradiction}
 									<div class="mt-1.5 rounded border border-red-200 bg-red-50/70 px-1.5 py-1">
 										<div class="mb-1 flex flex-wrap items-center gap-1">
-											<Badge variant="outline" class="h-4 border-red-300 bg-white px-1 text-[8px] text-red-700">
+											<Badge
+												variant="outline"
+												class="h-4 border-red-300 bg-white px-1 text-[8px] text-red-700"
+											>
 												Contradictions: {structuredContradiction.contradiction_count}
 											</Badge>
 											{#if structuredContradiction.paragraph_id}
 												<button
 													type="button"
-													class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[8px] text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-													onclick={() => onFocusNodeFromPanel(structuredContradiction.paragraph_id, true)}
+													class="docx-reference-chip"
+													onclick={() =>
+														onFocusNodeFromPanel(structuredContradiction.paragraph_id, true)}
 												>
 													{structuredContradiction.paragraph_id}
 												</button>
@@ -481,9 +605,13 @@
 														>
 															{contradictionTaxonomyLabels[item.contradiction_type]}
 														</Badge>
-														<span class="text-[8px] text-gray-500">{Math.round(item.confidence)}%</span>
+														<span class="text-[8px] text-gray-500"
+															>{Math.round(item.confidence)}%</span
+														>
 													</div>
-													<p class="max-h-10 overflow-hidden text-[9px] text-gray-700">{item.why}</p>
+													<p class="max-h-10 overflow-hidden text-[9px] text-gray-700">
+														{item.why}
+													</p>
 												</div>
 											{/each}
 										</div>
@@ -514,11 +642,28 @@
 				<Button
 					variant="outline"
 					size="sm"
-					class="h-7 border-gray-200 bg-white px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					class="h-7 w-7 border-gray-200 bg-white px-0 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
 					onclick={() => void onSubmitAssistantQuestion()}
 					disabled={assistantLoading}
+					aria-label="Send contradiction chat message"
+					title="Send"
 				>
-					Send
+					<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+						<path
+							d="M3 10L17 3L10 17L8.2 11.8L3 10Z"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+						<path
+							d="M17 3L8.2 11.8"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
 				</Button>
 			</div>
 		{/if}

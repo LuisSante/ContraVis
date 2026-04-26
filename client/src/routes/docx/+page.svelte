@@ -20,6 +20,8 @@
 		AssistantMode,
 		AssistantProvider,
 		AssistantScope,
+		FixContradictionSuggestion,
+		FreeContradictionExplanation,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
 		ContradictionParagraphResult,
@@ -56,10 +58,8 @@
 		parseStructuredContradictionFromAnswer,
 		resolveAssistantSuggestedQuestions
 	} from '$lib/utils/docx/assistant';
-	import {
-		ensureNodeEditState,
-		getNodeCurrentText
-	} from '$lib/utils/edit';
+	import { buildChangeLog } from '$lib/utils/docx/change-log';
+	import { ensureNodeEditState, getNodeCurrentText } from '$lib/utils/edit';
 	import {
 		COMMIT_SHORTCUT_HINT,
 		COMMIT_SHORTCUT_LABEL,
@@ -72,12 +72,10 @@
 		CONTRADICTION_TAXONOMY_ORDER,
 		CONTRADICTION_TAXONOMY_LABELS,
 		CONTRADICTION_CLAIM_SIDE_COLORS,
-		MODE_OPTIONS,
 		PROVIDER_OPTIONS,
 		QUICK_ACTIONS,
 		QUICK_ACTION_WHY_CONTRADICTION_AI,
 		QUICK_ACTION_WHY_CONTRADICTION_FREE,
-		SCOPE_OPTIONS,
 		RIGHT_DRAWER_DEFAULT_WIDTH,
 		RIGHT_DRAWER_KEYBOARD_STEP,
 		RIGHT_DRAWER_MIN_WIDTH,
@@ -85,9 +83,7 @@
 		RIGHT_PANEL_TOOLS,
 		FIX_CONTRADICTION_TOP_RELATED
 	} from '$lib/constants/docx-viewer';
-	import {
-		type SimplifyTarget
-	} from '$lib/utils/docx/simplify-selection';
+	import { type SimplifyTarget } from '$lib/utils/docx/simplify-selection';
 	import {
 		applyRewriteToParagraph,
 		copyRewriteSnippetToClipboard,
@@ -117,17 +113,36 @@
 	} from '$lib/components/docx';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Select from '$lib/components/ui/select/index.js';
+	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	const initialInspectorState = createEmptyInspectorState();
 	const nodeEditStateById = new Map<string, ParagraphEditState>();
 	const paragraphElementById = new Map<string, HTMLElement>();
-const paragraphRelationHostById = new Map<string, HTMLElement>();
-const relationsCountByNodeId = new Map<string, number>();
-const simplifyAuditTrail: SimplifyAuditRecord[] = [];
-const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
-const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
-const TOOL_BRAND_SHORT_NAME = 'Nome';
+	const paragraphRelationHostById = new Map<string, HTMLElement>();
+	const relationsCountByNodeId = new Map<string, number>();
+	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
+	const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
+	const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
+	const TOOL_BRAND_SHORT_NAME = 'ContraGraph';
+	const MANUAL_SCROLL_DRAG_SPEED = 100;
+	const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
+	const GLOBAL_ANALYSIS_MODEL_OPTIONS = Array.from(
+		new Map(
+			[...CONTRADICTION_OPENAI_MODEL_OPTIONS, ...PARAGRAPH_EXPLANATION_MODEL_OPTIONS].map(
+				(option) => [option.value, option]
+			)
+		).values()
+	);
+	const GLOBAL_MODEL_FONT_SIZE_PX = 10;
+	const GLOBAL_MODEL_TRIGGER_EXTRA_PX = 30;
+	const GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX = 34;
+	const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
+	const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
+		(action) =>
+			action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
+	);
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -153,7 +168,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	let assistantLoading = false;
 	let assistantError: string | null = null;
 	let assistantMessageCounter = 0;
-	let selectedQuickAction = '';
 	let simplifyToolbarVisible = false;
 	let simplifyToolbarTop = 0;
 	let simplifyToolbarLeft = 0;
@@ -167,41 +181,35 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
-	let contradictionModel = 'gpt-4.1';
+	let globalAnalysisModel = 'gpt-4.1';
+	let globalModelSelectWidthPx = GLOBAL_MODEL_MIN_WIDTH_PX;
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
 	let contradictionScrollMarkers: ContradictionScrollMarker[] = [];
-	let selectedContradictionEvidenceLink:
-		| {
-				topPx: number;
-				bottomPx: number;
-				leftPx: number;
-				showA: boolean;
-				showB: boolean;
-				aCenterPx: number;
-				bCenterPx: number;
-		  }
-		| null = null;
+	let selectedContradictionEvidenceLink: {
+		topPx: number;
+		bottomPx: number;
+		leftPx: number;
+		showA: boolean;
+		showB: boolean;
+		aCenterPx: number;
+		bCenterPx: number;
+	} | null = null;
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	let contradictionSummaryVisible = true;
-	let paragraphExplanationModel = 'gpt-4.1';
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
 	let paragraphExplanationAnswer = '';
-	let paragraphExplanationCitations: Array<{
-		id: string;
-		excerpt: string;
-		page?: number;
-		paragraph_enum?: number;
-	}> = [];
 	let paragraphExplanationConnectors: Array<{
 		topPx: number;
 		bottomPx: number;
 		leftPx: number;
 		selectedCapTopPx: number;
+		selectedCapWidthPx: number;
 		relatedCapTopPx: number;
+		relatedCapWidthPx: number;
 		paragraphId: string;
 	}> = [];
 	let paragraphExplanationScrollMarkers: Array<{
@@ -210,6 +218,11 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}> = [];
 	let paragraphExplanationFrame: number | null = null;
 	let paragraphExplanationRelatedParagraphs: RelatedParagraph[] = [];
+	let isManualScrollDragging = false;
+	let manualScrollStartY = 0;
+	let manualScrollStartTop = 0;
+	let manualScrollMoved = false;
+	let suppressMarkerClickUntil = 0;
 
 	let activeRightPanelTab: RightPanelTab = 'related';
 	let isRightDrawerOpen = true;
@@ -217,8 +230,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	let isCompactLayout = false;
 	let rightDrawerWidth = RIGHT_DRAWER_DEFAULT_WIDTH;
 	let isResizingRightDrawer = false;
-	$: shouldShowContradictionDecorations =
-		activeRightPanelTab === 'analysis' && isRightDrawerOpen;
+	$: shouldShowContradictionDecorations = activeRightPanelTab === 'analysis' && isRightDrawerOpen;
 	$: shouldShowParagraphExplanationDecorations =
 		activeRightPanelTab === 'paragraph_explanation' && isRightDrawerOpen;
 	$: activeDrawerWidth = !isCompactLayout && isRightDrawerOpen ? rightDrawerWidth : 0;
@@ -265,13 +277,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			active: contradictionLoading
 		}
 	];
-	$: assistantProviderLabel =
-		PROVIDER_OPTIONS.find((option) => option.value === assistantProvider)?.label ?? 'Provider';
-	$: assistantModeLabel =
-		MODE_OPTIONS.find((option) => option.value === assistantMode)?.label ?? 'Mode';
-	$: assistantScopeLabel =
-		SCOPE_OPTIONS.find((option) => option.value === assistantScope)?.label ?? 'Scope';
-	$: quickActionLabel = selectedQuickAction || 'Quick action';
 	$: paragraphExplanationRelatedParagraphs = [...selectedRelatedParagraphs]
 		.sort((left, right) => {
 			const leftReference = left.relationTypes.includes('reference') ? 1 : 0;
@@ -428,12 +433,14 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			if (visualMeta.subLabel) {
 				relatedElement.dataset.relatedSub = visualMeta.subLabel;
 			}
-			paragraphRelationHostById.get(related.node.id)?.classList.add(
-				'docx-related-badge-emphasis',
-				visualMeta.kind === 'reference'
-					? 'docx-related-badge--reference'
-					: 'docx-related-badge--similarity'
-			);
+			paragraphRelationHostById
+				.get(related.node.id)
+				?.classList.add(
+					'docx-related-badge-emphasis',
+					visualMeta.kind === 'reference'
+						? 'docx-related-badge--reference'
+						: 'docx-related-badge--similarity'
+				);
 		}
 	}
 
@@ -497,7 +504,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	function resetParagraphExplanationState() {
 		paragraphExplanationError = null;
 		paragraphExplanationAnswer = '';
-		paragraphExplanationCitations = [];
 		paragraphExplanationLoading = false;
 	}
 
@@ -689,9 +695,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			if (!element) continue;
 
 			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
-			const elementRect = element.getBoundingClientRect();
-			const centerOffset =
-				elementRect.top - hostRect.top + documentScrollHost.scrollTop + elementRect.height / 2;
+			const centerOffset = element.offsetTop + element.offsetHeight / 2;
 			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
 			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
 
@@ -736,10 +740,45 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		const bCenterPx = markBRect.top - hostRect.top + markBRect.height / 2;
 		const showA = aCenterPx >= 0 && aCenterPx <= hostRect.height;
 		const showB = bCenterPx >= 0 && bCenterPx <= hostRect.height;
-		const clampedACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
-		const clampedBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
-		const topPx = Math.min(clampedACenterPx, clampedBCenterPx);
-		const bottomPx = Math.max(clampedACenterPx, clampedBCenterPx);
+
+		let displayACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
+		let displayBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
+		if (showA && showB) {
+			const currentGap = Math.abs(displayACenterPx - displayBCenterPx);
+			if (currentGap < CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
+				const aIsAbove = displayACenterPx <= displayBCenterPx;
+				const center = (displayACenterPx + displayBCenterPx) / 2;
+				let top =
+					center - CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
+				let bottom =
+					center + CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
+				if (hostRect.height >= CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
+					if (top < 0) {
+						bottom += -top;
+						top = 0;
+					}
+					if (bottom > hostRect.height) {
+						top -= bottom - hostRect.height;
+						bottom = hostRect.height;
+					}
+				} else {
+					top = 0;
+					bottom = hostRect.height;
+				}
+				top = Math.max(0, top);
+				bottom = Math.min(hostRect.height, bottom);
+				if (aIsAbove) {
+					displayACenterPx = top;
+					displayBCenterPx = bottom;
+				} else {
+					displayACenterPx = bottom;
+					displayBCenterPx = top;
+				}
+			}
+		}
+
+		const topPx = Math.min(displayACenterPx, displayBCenterPx);
+		const bottomPx = Math.max(displayACenterPx, displayBCenterPx);
 		if (bottomPx - topPx < 2) {
 			selectedContradictionEvidenceLink = null;
 			return;
@@ -752,8 +791,8 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			leftPx,
 			showA,
 			showB,
-			aCenterPx,
-			bCenterPx
+			aCenterPx: displayACenterPx,
+			bCenterPx: displayBCenterPx
 		};
 	}
 
@@ -769,6 +808,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}
 
 	function jumpToContradictionParagraph(paragraphId: string) {
+		if (Date.now() < suppressMarkerClickUntil) return;
 		focusNodeFromPanel(paragraphId, true);
 	}
 
@@ -882,15 +922,19 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		const hostRect = documentScrollHost.getBoundingClientRect();
 		const selectedRect = selectedElement.getBoundingClientRect();
 		const selectedY = selectedRect.top - hostRect.top + selectedRect.height / 2;
-		const baseLeft = Math.max(12, selectedRect.right - hostRect.left + 16);
+		const selectedEdgeX = selectedRect.left - hostRect.left;
 
-		const anchors: Array<{ y: number; paragraphId: string }> = [];
+		const anchors: Array<{ y: number; edgeX: number; paragraphId: string }> = [];
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
 			const relatedRect = relatedElement.getBoundingClientRect();
 			const relatedY = relatedRect.top - hostRect.top + relatedRect.height / 2;
-			anchors.push({ y: relatedY, paragraphId: related.node.id });
+			anchors.push({
+				y: relatedY,
+				edgeX: relatedRect.left - hostRect.left,
+				paragraphId: related.node.id
+			});
 		}
 
 		if (anchors.length === 0) {
@@ -901,16 +945,19 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 
 		const sortedAnchors = [...anchors].sort(
 			(left, right) =>
-				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) ||
-				left.y - right.y
+				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) || left.y - right.y
 		);
+		const edgeBaseX = Math.min(selectedEdgeX, ...sortedAnchors.map((anchor) => anchor.edgeX));
+		const baseLeft = Math.max(4, edgeBaseX - 14);
 		let laneCounter = 0;
 		const nextConnectors: Array<{
 			topPx: number;
 			bottomPx: number;
 			leftPx: number;
 			selectedCapTopPx: number;
+			selectedCapWidthPx: number;
 			relatedCapTopPx: number;
+			relatedCapWidthPx: number;
 			paragraphId: string;
 		}> = [];
 		for (const anchor of sortedAnchors) {
@@ -922,14 +969,18 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			const topPx = Math.min(selectedCenter, relatedCenter);
 			const bottomPx = Math.max(selectedCenter, relatedCenter);
 			if (bottomPx - topPx < 2) continue;
-			const leftPx = baseLeft + laneCounter * 8;
+			const leftPx = baseLeft - laneCounter * 8;
 			laneCounter += 1;
+			const selectedCapWidthPx = Math.max(8, selectedEdgeX - leftPx + 1);
+			const relatedCapWidthPx = Math.max(8, anchor.edgeX - leftPx + 1);
 			nextConnectors.push({
 				topPx,
 				bottomPx,
 				leftPx,
 				selectedCapTopPx: selectedCenter,
+				selectedCapWidthPx,
 				relatedCapTopPx: relatedCenter,
+				relatedCapWidthPx,
 				paragraphId: anchor.paragraphId
 			});
 		}
@@ -958,9 +1009,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 
 	function scheduleParagraphExplanationConnectorRefresh() {
 		if (typeof window === 'undefined') return;
-		if (paragraphExplanationFrame != null) {
-			window.cancelAnimationFrame(paragraphExplanationFrame);
-		}
+		if (paragraphExplanationFrame != null) return;
 		paragraphExplanationFrame = window.requestAnimationFrame(() => {
 			paragraphExplanationFrame = null;
 			refreshParagraphExplanationConnectorPaths();
@@ -968,12 +1017,46 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}
 
 	function jumpToRelatedParagraphMarker(paragraphId: string) {
+		if (Date.now() < suppressMarkerClickUntil) return;
 		const element = paragraphElementById.get(paragraphId);
 		if (!element) return;
 		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		element.classList.remove('docx-citation-flash');
 		void element.offsetHeight;
 		element.classList.add('docx-citation-flash');
+	}
+
+	function handleManualScrollDragMove(event: MouseEvent) {
+		if (!isManualScrollDragging || !documentScrollHost) return;
+		const delta = (event.clientY - manualScrollStartY) * MANUAL_SCROLL_DRAG_SPEED;
+		if (Math.abs(delta) > 2) manualScrollMoved = true;
+		documentScrollHost.scrollTop = manualScrollStartTop + delta;
+	}
+
+	function stopManualScrollDrag() {
+		if (!isManualScrollDragging) return;
+		isManualScrollDragging = false;
+		window.removeEventListener('mousemove', handleManualScrollDragMove);
+		window.removeEventListener('mouseup', stopManualScrollDrag);
+		document.body.style.userSelect = '';
+		scheduleContradictionScrollMarkerRefresh();
+		scheduleParagraphExplanationConnectorRefresh();
+		if (manualScrollMoved) {
+			suppressMarkerClickUntil = Date.now() + 140;
+		}
+	}
+
+	function startManualScrollDrag(event: MouseEvent) {
+		if (!documentScrollHost || event.button !== 0) return;
+		if (isManualScrollDragging) return;
+		event.preventDefault();
+		isManualScrollDragging = true;
+		manualScrollMoved = false;
+		manualScrollStartY = event.clientY;
+		manualScrollStartTop = documentScrollHost.scrollTop;
+		document.body.style.userSelect = 'none';
+		window.addEventListener('mousemove', handleManualScrollDragMove);
+		window.addEventListener('mouseup', stopManualScrollDrag);
 	}
 
 	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
@@ -994,7 +1077,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 
 	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
 		if (!activeDocumentId) return null;
-		const selectedModel = contradictionModel.trim();
+		const selectedModel = globalAnalysisModel.trim();
 
 		const nodes = get(paragraphs).map((node) => ({
 			...node,
@@ -1107,6 +1190,11 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		scope?: AssistantScope;
 	};
 
+	type QuickActionResponseOptions = {
+		citationId?: string;
+		freeContradictionExplanation?: FreeContradictionExplanation;
+	};
+
 	async function submitAssistantQuestion(
 		questionOverride?: string,
 		options?: SubmitAssistantQuestionOptions
@@ -1117,6 +1205,15 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		if (!question) return;
 		if (!activeDocumentId) {
 			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		if (
+			question === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
+			question === QUICK_ACTION_WHY_CONTRADICTION_AI
+		) {
+			assistantInput = questionOverride ? assistantInput : '';
+			await askQuickAction(question);
 			return;
 		}
 
@@ -1153,6 +1250,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			mode: resolvedMode,
 			scope: resolvedScope,
 			provider: assistantProvider,
+			model: globalAnalysisModel.trim() || undefined,
 			selectedParagraphId: selected?.id ?? null,
 			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
 			paragraphNodes,
@@ -1236,7 +1334,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			mode: 'explain',
 			scope: 'selected',
 			provider: assistantProvider,
-			model: paragraphExplanationModel,
+			model: globalAnalysisModel,
 			selectedParagraphId: selected.id,
 			relatedParagraphs: buildAssistantRelatedContext(paragraphExplanationRelatedParagraphs),
 			paragraphNodes,
@@ -1246,7 +1344,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		try {
 			const response = await fetchAssistantResponse(payload);
 			paragraphExplanationAnswer = response.answer;
-			paragraphExplanationCitations = response.citations ?? [];
 		} catch (requestError) {
 			const message = getAxiosErrorMessage(
 				requestError,
@@ -1287,6 +1384,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			mode: 'explain',
 			scope: 'selected',
 			provider: assistantProvider,
+			model: globalAnalysisModel.trim() || undefined,
 			selectedParagraphId: selected.id,
 			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
 			paragraphNodes,
@@ -1333,14 +1431,82 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		}
 	}
 
-	function appendAssistantQuickActionMessage(content: string, citationId?: string) {
+	function appendAssistantQuickActionMessage(
+		content: string,
+		optionsOrCitation?: QuickActionResponseOptions | string
+	) {
+		const options: QuickActionResponseOptions =
+			typeof optionsOrCitation === 'string'
+				? { citationId: optionsOrCitation }
+				: (optionsOrCitation ?? {});
 		assistantMessages = [
 			...assistantMessages,
 			{
 				id: nextAssistantMessageId(),
 				role: 'assistant',
 				content,
-				citations: citationId ? [{ id: citationId, excerpt: '(selected paragraph)' }] : undefined
+				citations: options.citationId
+					? [{ id: options.citationId, excerpt: '(selected paragraph)' }]
+					: undefined,
+				freeContradictionExplanation: options.freeContradictionExplanation
+			}
+		];
+	}
+
+	function truncateFixChangeText(text: string, maxLength = 120): string {
+		const compact = text.replace(/\s+/g, ' ').trim();
+		if (compact.length <= maxLength) return compact;
+		return `${compact.slice(0, maxLength - 1).trimEnd()}…`;
+	}
+
+	function buildFixSuggestionChangeNotes(original: string, rewritten: string): string[] {
+		const changeLog = buildChangeLog(original, rewritten);
+		if (!changeLog.hasChanges) {
+			return ['Review wording alignment with related clauses and payment/obligation timing.'];
+		}
+
+		const removed = changeLog.oldSegments
+			.filter((segment) => segment.changed)
+			.map((segment) => truncateFixChangeText(segment.value))
+			.filter(Boolean);
+		const added = changeLog.newSegments
+			.filter((segment) => segment.changed)
+			.map((segment) => truncateFixChangeText(segment.value))
+			.filter(Boolean);
+
+		const notes: string[] = [];
+		const maxPairs = Math.min(3, Math.max(removed.length, added.length));
+		for (let index = 0; index < maxPairs; index += 1) {
+			const removedText = removed[index];
+			const addedText = added[index];
+			if (removedText && addedText) {
+				notes.push(`Replace "${removedText}" with "${addedText}".`);
+				continue;
+			}
+			if (addedText) {
+				notes.push(`Add "${addedText}".`);
+				continue;
+			}
+			if (removedText) {
+				notes.push(`Remove "${removedText}".`);
+			}
+		}
+
+		if (notes.length === 0) {
+			notes.push('Refine language to keep one consistent legal statement and remove ambiguity.');
+		}
+		return notes;
+	}
+
+	function appendFixContradictionSuggestionMessage(suggestion: FixContradictionSuggestion) {
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'assistant',
+				content: `Structured contradiction-fix suggestion for paragraph ${suggestion.paragraphId}.`,
+				citations: [{ id: suggestion.paragraphId, excerpt: '(selected paragraph)' }],
+				fixContradictionSuggestion: suggestion
 			}
 		];
 	}
@@ -1393,22 +1559,49 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 				const reason = (contradiction.brief_reason || 'No brief reason is available.').trim();
 				const confidence = Number.isFinite(contradiction.confidence) ? contradiction.confidence : 0;
 				const evidence = contradiction.evidence;
+				const footerMessage =
+					'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.';
+				const freeExplanation: FreeContradictionExplanation = {
+					paragraphId: selected.id,
+					reason,
+					confidence,
+					snippetA: evidence?.snippet_a?.trim()
+						? {
+								source: evidence.source_a?.trim() || 'paragraph',
+								text: evidence.snippet_a.trim()
+							}
+						: undefined,
+					snippetB: evidence?.snippet_b?.trim()
+						? {
+								source: evidence.source_b?.trim() || 'paragraph',
+								text: evidence.snippet_b.trim()
+							}
+						: undefined,
+					fallbackEvidenceMessage:
+						evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
+							? undefined
+							: 'No structured evidence snippets were returned by the classifier.',
+					footerMessage
+				};
 				const evidenceLines =
-					evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
+					freeExplanation.snippetA && freeExplanation.snippetB
 						? [
-								`Snippet A (${evidence.source_a}): "${evidence.snippet_a}"`,
-								`Snippet B (${evidence.source_b}): "${evidence.snippet_b}"`
+								`Snippet A (${freeExplanation.snippetA.source}): "${freeExplanation.snippetA.text}"`,
+								`Snippet B (${freeExplanation.snippetB.source}): "${freeExplanation.snippetB.text}"`
 							]
-						: ['No structured evidence snippets were returned by the classifier.'];
+						: [freeExplanation.fallbackEvidenceMessage ?? 'No structured evidence snippets were returned by the classifier.'];
 				appendAssistantQuickActionMessage(
 					[
 						`Free explanation for paragraph ${selected.id}:`,
 						reason,
 						`Confidence: ${confidence}%`,
 						...evidenceLines,
-						'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.'
+						footerMessage
 					].join('\n\n'),
-					selected.id
+					{
+						citationId: selected.id,
+						freeContradictionExplanation: freeExplanation
+					}
 				);
 				await scrollAssistantToBottom();
 				return;
@@ -1421,14 +1614,12 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		await submitAssistantQuestion(prompt);
 	}
 
-	function handleQuickActionSelectionChange() {
-		if (!selectedQuickAction) return;
-		void askQuickAction(selectedQuickAction);
-		selectedQuickAction = '';
-	}
-
 	function onSuggestedQuestionClick(question: string) {
 		void submitAssistantQuestion(question);
+	}
+
+	function handleAssistantQuickActionSuggestion(question: string) {
+		void askQuickAction(question);
 	}
 
 	async function submitContradictionAssistantQuestion(questionOverride?: string) {
@@ -1446,9 +1637,125 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 	}
 
 	function suggestContradictionFixFromChat() {
-		void submitContradictionAssistantQuestion(
-			'Suggest a revised version of the selected paragraph that resolves the contradiction while preserving legal intent and legal style.'
+		void runContradictionFixSuggestionFromChat();
+	}
+
+	async function runContradictionFixSuggestionFromChat() {
+		if (fixContradictionLoading || assistantLoading || simplifyLoading) return;
+		assistantError = null;
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'user',
+				content:
+					'Suggest a contradiction fix and structure the response with the key changes and a ready-to-apply rewrite.'
+			}
+		];
+		await scrollAssistantToBottom();
+
+		const target = resolveActiveSimplifyTarget();
+		const paragraphNode = target
+			? (get(paragraphs).find((node) => node.id === target.paragraphId) ?? null)
+			: null;
+		if (paragraphNode) setSelectedParagraphNode(paragraphNode);
+
+		fixContradictionLoading = true;
+		try {
+			const execution = await executeFixContradictionRewrite({
+				activeDocumentId,
+				assistantProvider,
+				contradictionResultsByParagraphId,
+				selectedRelatedParagraphs,
+				nodeEditStateById,
+				fixRelatedLimit: FIX_CONTRADICTION_TOP_RELATED,
+				viewer,
+				selectedParagraphId: get(selectedParagraph)?.id ?? null,
+				paragraphElementById,
+				fallbackTarget: target ?? simplifyTarget,
+				resolveErrorMessage: getAxiosErrorMessage
+			});
+			if (!execution.ok) {
+				appendAssistantQuickActionMessage(
+					`I could not generate a contradiction-fix suggestion: ${execution.error}`
+				);
+				return;
+			}
+
+			const contradiction = contradictionResultsByParagraphId.get(execution.target.paragraphId);
+			appendFixContradictionSuggestionMessage({
+				paragraphId: execution.target.paragraphId,
+				reason: contradiction?.brief_reason?.trim() || undefined,
+				changeNotes: buildFixSuggestionChangeNotes(
+					execution.result.payload.originalSnippet,
+					execution.result.payload.simplifiedSnippet
+				),
+				rewriteResult: execution.result,
+				status: 'pending'
+			});
+
+			simplifyAuditTrail.unshift(execution.auditRecord);
+			if (simplifyAuditTrail.length > MAX_SIMPLIFY_AUDIT_TRAIL) {
+				simplifyAuditTrail.length = MAX_SIMPLIFY_AUDIT_TRAIL;
+			}
+		} finally {
+			fixContradictionLoading = false;
+			refreshSimplifyTarget();
+			await scrollAssistantToBottom();
+		}
+	}
+
+	async function acceptFixSuggestionFromChat(messageId: string) {
+		const message = assistantMessages.find((entry) => entry.id === messageId);
+		const suggestion = message?.fixContradictionSuggestion;
+		if (!suggestion || suggestion.status === 'applied') return;
+
+		const applied = applyRewriteToParagraph({
+			simplifyResult: suggestion.rewriteResult,
+			paragraphElementById
+		});
+		if (!applied.ok) {
+			const failureReason = applied.error ?? 'Failed to apply suggestion.';
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `Could not apply the suggestion: ${failureReason}`
+				}
+			];
+			assistantError = failureReason;
+			await scrollAssistantToBottom();
+			return;
+		}
+
+		const appliedParagraphId = applied.paragraphId ?? suggestion.paragraphId;
+		const selectedNode = get(paragraphs).find((node) => node.id === appliedParagraphId) ?? null;
+		if (selectedNode) setSelectedParagraphNode(selectedNode);
+
+		assistantMessages = assistantMessages.map((entry) =>
+			entry.id === messageId && entry.fixContradictionSuggestion
+				? {
+						...entry,
+						fixContradictionSuggestion: {
+							...entry.fixContradictionSuggestion,
+							status: 'applied'
+						}
+					}
+				: entry
 		);
+		assistantMessages = [
+			...assistantMessages,
+			{
+				id: nextAssistantMessageId(),
+				role: 'assistant',
+				content: `Suggestion applied directly to paragraph ${appliedParagraphId}.`,
+				citations: [{ id: appliedParagraphId, excerpt: '(updated paragraph)' }]
+			}
+		];
+		assistantError = null;
+		refreshSimplifyTarget();
+		await scrollAssistantToBottom();
 	}
 
 	function resetSimplifyState() {
@@ -1540,7 +1847,11 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		}
 	}
 
-	async function runSimplify() {
+	type RunSimplifyOptions = {
+		openRevisionsPanel?: boolean;
+	};
+
+	async function runSimplify(options?: RunSimplifyOptions) {
 		if (simplifyLoading) return;
 		const target = resolveActiveSimplifyTarget();
 
@@ -1564,8 +1875,10 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 
 			simplifyResult = execution.result;
 			latestRewriteSource = 'simplify';
-			activeRightPanelTab = 'revisions';
-			isRightDrawerOpen = true;
+			if (options?.openRevisionsPanel ?? true) {
+				activeRightPanelTab = 'revisions';
+				isRightDrawerOpen = true;
+			}
 
 			simplifyAuditTrail.unshift(execution.auditRecord);
 
@@ -2361,6 +2674,29 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		sidebarLabelsPinned = !sidebarLabelsPinned;
 	}
 
+	function measureGlobalModelSelectWidthPx(): number {
+		if (typeof document === 'undefined') return GLOBAL_MODEL_MIN_WIDTH_PX;
+
+		const canvas = document.createElement('canvas');
+		const context = canvas.getContext('2d');
+		if (!context) return GLOBAL_MODEL_MIN_WIDTH_PX;
+
+		const rootStyles = getComputedStyle(document.documentElement);
+		const fontFamily = rootStyles.fontFamily || 'sans-serif';
+		context.font = `400 ${GLOBAL_MODEL_FONT_SIZE_PX}px ${fontFamily}`;
+
+		const longestLabelPx = GLOBAL_ANALYSIS_MODEL_OPTIONS.reduce((maxWidth, option) => {
+			const width = context.measureText(option.label).width;
+			return Math.max(maxWidth, width);
+		}, 0);
+
+		const paddingAndIconsPx = Math.max(
+			GLOBAL_MODEL_TRIGGER_EXTRA_PX,
+			GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX
+		);
+		return Math.max(GLOBAL_MODEL_MIN_WIDTH_PX, Math.ceil(longestLabelPx + paddingAndIconsPx));
+	}
+
 	onMount(() => {
 		const handleGlobalPointerDown = (event: MouseEvent) => {
 			if (activeRightPanelTab !== 'related') return;
@@ -2390,9 +2726,14 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			scheduleContradictionScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
 		};
+		const handleDocumentScroll = () => {
+			scheduleContradictionScrollMarkerRefresh();
+			scheduleParagraphExplanationConnectorRefresh();
+		};
 		const handleViewportResize = () => {
 			refreshViewportMode();
-			handleDocumentSelectionChange();
+			scheduleContradictionScrollMarkerRefresh();
+			scheduleParagraphExplanationConnectorRefresh();
 			setRightDrawerWidth(rightDrawerWidth);
 		};
 
@@ -2401,12 +2742,18 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		document.addEventListener('keyup', handleDocumentSelectionChange);
 		document.addEventListener('mousedown', handleGlobalPointerDown, true);
 		window.addEventListener('resize', handleViewportResize);
-		window.addEventListener('scroll', handleDocumentSelectionChange, true);
-		documentScrollHost?.addEventListener('scroll', handleDocumentSelectionChange, {
+		documentScrollHost?.addEventListener('scroll', handleDocumentScroll, {
 			passive: true
 		});
 		refreshViewportMode();
 		setRightDrawerWidth(rightDrawerWidth);
+		globalModelSelectWidthPx = measureGlobalModelSelectWidthPx();
+		const fontSet = (document as Document & { fonts?: FontFaceSet }).fonts;
+		if (fontSet) {
+			void fontSet.ready.then(() => {
+				globalModelSelectWidthPx = measureGlobalModelSelectWidthPx();
+			});
+		}
 
 		if (typeof ResizeObserver !== 'undefined') {
 			contradictionMarkerResizeObserver = new ResizeObserver(() => {
@@ -2429,9 +2776,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
 			document.removeEventListener('mousedown', handleGlobalPointerDown, true);
 			window.removeEventListener('resize', handleViewportResize);
-			window.removeEventListener('scroll', handleDocumentSelectionChange, true);
-			documentScrollHost?.removeEventListener('scroll', handleDocumentSelectionChange);
+			documentScrollHost?.removeEventListener('scroll', handleDocumentScroll);
 			stopRightDrawerResize();
+			stopManualScrollDrag();
 			contradictionMarkerResizeObserver?.disconnect();
 			contradictionMarkerResizeObserver = null;
 			if (contradictionMarkerFrame != null) {
@@ -2461,10 +2808,44 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		<header
 			class="flex flex-none items-center gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
 		>
-			<div class="min-w-0">
+			<div class="min-w-0 flex-1">
 				<p class="text-[11px] text-gray-500">Document</p>
-				<div class="truncate text-sm font-medium text-gray-800">
-					{activeDocumentName || 'No document selected'}
+				<div class="flex items-center gap-2">
+					<div class="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">
+						{activeDocumentName || 'No document selected'}
+					</div>
+					<div class="mr-5">
+						<Select.Root
+							type="single"
+							bind:value={globalAnalysisModel}
+							disabled={contradictionLoading || paragraphExplanationLoading}
+						>
+							<Select.Trigger
+								size="sm"
+								class="h-7 shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+								style={`width: ${globalModelSelectWidthPx}px;`}
+								title="Global model for Contradiction Analysis and Paragraph Explanation"
+							>
+								{GLOBAL_ANALYSIS_MODEL_OPTIONS.find(
+									(option) => option.value === globalAnalysisModel
+								)?.label ?? globalAnalysisModel}
+							</Select.Trigger>
+							<Select.Content
+								class="min-w-0"
+								style={`width: ${globalModelSelectWidthPx}px; min-width: 0;`}
+							>
+								{#each GLOBAL_ANALYSIS_MODEL_OPTIONS as option}
+									<Select.Item
+										value={option.value}
+										label={option.label}
+										class="text-[10px] whitespace-nowrap"
+									>
+										{option.label}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</div>
 				</div>
 			</div>
 		</header>
@@ -2517,7 +2898,7 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			</section>
 
 			{#if shouldShowContradictionDecorations && contradictionScrollMarkers.length > 0}
-				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2" on:mousedown={startManualScrollDrag}>
 					{#each contradictionScrollMarkers as marker (marker.paragraphId)}
 						<span
 							class={`docx-contradiction-scroll-marker docx-contradiction-scroll-marker--${marker.confidenceBand}`}
@@ -2603,18 +2984,18 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 						></span>
 						<span
 							class="docx-paragraph-explanation-cap"
-							style={`left: ${connector.leftPx}px; top: ${connector.selectedCapTopPx}px;`}
+							style={`left: ${connector.leftPx}px; top: ${connector.selectedCapTopPx}px; width: ${connector.selectedCapWidthPx}px;`}
 						></span>
 						<span
 							class="docx-paragraph-explanation-cap"
-							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px;`}
+							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 						></span>
 					{/each}
 				</div>
 			{/if}
 
 			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationScrollMarkers.length > 0}
-				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2" on:mousedown={startManualScrollDrag}>
 					{#each paragraphExplanationScrollMarkers as marker (`related-marker-${marker.paragraphId}`)}
 						<span
 							class="docx-related-scroll-marker"
@@ -2631,50 +3012,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 							}}
 						></span>
 					{/each}
-				</div>
-			{/if}
-
-			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
-				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
-					<span
-						class="docx-contradiction-evidence-bracket"
-						style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.topPx}px; height: ${Math.max(
-							6,
-							selectedContradictionEvidenceLink.bottomPx - selectedContradictionEvidenceLink.topPx
-						)}px;`}
-					></span>
-					{#if selectedContradictionEvidenceLink.showA}
-						<span
-							class="docx-contradiction-evidence-cap"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--a"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--a"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.aCenterPx}px;`}
-						>
-							A
-						</span>
-					{/if}
-					{#if selectedContradictionEvidenceLink.showB}
-						<span
-							class="docx-contradiction-evidence-cap"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-dot docx-contradiction-evidence-dot--b"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
-						></span>
-						<span
-							class="docx-contradiction-evidence-label docx-contradiction-evidence-label--b"
-							style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.bCenterPx}px;`}
-						>
-							B
-						</span>
-					{/if}
 				</div>
 			{/if}
 		</div>
@@ -2718,43 +3055,134 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			? ''
 			: `right: ${activeSidebarWidth}px; width: ${rightDrawerWidth}px; --drawer-rail-offset: ${activeSidebarWidth}px;`}
 	>
-		<header class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5">
-			<div class="min-w-0">
-				<div class="flex items-center gap-2">
-					<h2 class="inline-flex items-center gap-2 truncate text-sm font-semibold text-gray-700">
-						<span class="shrink-0 text-blue-700">
-							{#if activeRightPanelTab === 'related'}
-								<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'analysis'}
-								<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'paragraph_explanation'}
-								<ParagraphExplanationIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'redundancy'}
-								<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'summarize'}
-								<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'ambiguity'}
-								<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else if activeRightPanelTab === 'revisions'}
-								<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
-							{:else}
-								<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
-							{/if}
-						</span>
-						<span>
-							{toTitleCaseLabel(
-								RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
-							)}
-						</span>
-					</h2>
-				</div>
+		<header
+			class="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5"
+		>
+			<div class="flex min-w-0 flex-1 items-center gap-2">
+				<h2
+					class="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-gray-700"
+				>
+					<span class="shrink-0 text-blue-700">
+						{#if activeRightPanelTab === 'related'}
+							<RelatedParagraphsIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'analysis'}
+							<ContradictionAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'paragraph_explanation'}
+							<ParagraphExplanationIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'redundancy'}
+							<RedundancyAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'summarize'}
+							<SummarizeSimplifyIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'ambiguity'}
+							<AmbiguityAnalysisIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else if activeRightPanelTab === 'revisions'}
+							<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
+						{:else}
+							<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
+						{/if}
+					</span>
+					<span>
+						{toTitleCaseLabel(
+							RIGHT_PANEL_TOOLS.find((item) => item.id === activeRightPanelTab)?.label ?? ''
+						)}
+					</span>
+				</h2>
+
+				{#if activeRightPanelTab === 'analysis'}
+					<div class="flex shrink-0 items-center gap-1.5">
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!Boolean(activeDocumentId) || contradictionLoading || $loading}
+							onclick={() => void loadSavedContradictions()}
+						>
+							Saved contradictions
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!Boolean(activeDocumentId) ||
+								contradictionLoading ||
+								$loading ||
+								backendGraphLoading}
+							onclick={() => void searchContradictionsWithLlm()}
+						>
+							Search contradictions
+						</Button>
+					</div>
+				{:else if activeRightPanelTab === 'paragraph_explanation'}
+					<div class="flex shrink-0 items-center gap-1.5">
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!$selectedParagraph || paragraphExplanationLoading}
+							onclick={() => void submitParagraphExplanation()}
+						>
+							Explain paragraph
+						</Button>
+						<Button
+							variant="outline"
+							size="sm"
+							class="h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+							disabled={!$selectedParagraph || simplifyLoading || fixContradictionLoading}
+							onclick={() => void runSimplify({ openRevisionsPanel: false })}
+						>
+							{simplifyLoading ? 'Simplifying...' : 'Simplify'}
+						</Button>
+					</div>
+				{:else if activeRightPanelTab === 'assistant'}
+					<div class="flex shrink-0 items-center gap-1.5">
+						<Select.Root type="single" bind:value={assistantProvider}>
+							<Select.Trigger
+								size="sm"
+								class="h-7 shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+								style="width: 92px;"
+								title="Assistant provider"
+							>
+								{PROVIDER_OPTIONS.find((option) => option.value === assistantProvider)?.label ??
+									assistantProvider}
+							</Select.Trigger>
+							<Select.Content class="min-w-0" style="width: 92px; min-width: 0;">
+								{#each PROVIDER_OPTIONS as option}
+									<Select.Item
+										value={option.value}
+										label={option.label}
+										class="text-[10px] whitespace-nowrap"
+									>
+										{option.label}
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+
+						<div
+							class="flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2"
+						>
+							<Switch
+								id="assistant-header-full-contract-scope"
+								class="data-checked:bg-blue-600 dark:data-checked:bg-blue-500"
+								checked={assistantScope === 'full_contract'}
+								onCheckedChange={(checked) =>
+									(assistantScope = checked ? 'full_contract' : 'selected')}
+							/>
+							<label
+								for="assistant-header-full-contract-scope"
+								class="text-[10px] font-semibold text-gray-600"
+							>
+								Full contract
+							</label>
+						</div>
+					</div>
+				{/if}
 			</div>
+
 			<Button
 				variant="outline"
 				size="icon-sm"
-				class={`h-7 w-7 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700 ${
-					activeRightPanelTab === 'analysis' ? 'mt-0.5 self-start' : ''
-				}`}
+				class="ml-2 h-7 w-7 shrink-0 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
 				onclick={() => (isRightDrawerOpen = false)}
 				aria-label="Close"
 				title="Close"
@@ -2766,30 +3194,25 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		{#if activeRightPanelTab === 'analysis'}
 			<RightPanelAnalysis
 				selectedParagraph={$selectedParagraph}
-				bind:model={contradictionModel}
-				modelOptions={CONTRADICTION_OPENAI_MODEL_OPTIONS}
-				controlsDisabled={contradictionLoading || $loading || backendGraphLoading}
-				canLoadSaved={Boolean(activeDocumentId) && !contradictionLoading && !$loading}
-				canSearchContradictions={Boolean(activeDocumentId) && !contradictionLoading && !$loading && !backendGraphLoading}
-				contradictionLoading={contradictionLoading}
-				revisionProcessingSteps={revisionProcessingSteps}
-				selectedContradictionResult={selectedContradictionResult}
-				selectedContradictionEvidence={selectedContradictionEvidence}
+				{contradictionLoading}
+				{revisionProcessingSteps}
+				{selectedContradictionResult}
+				{selectedContradictionEvidence}
 				bind:assistantInput
 				bind:assistantThread
-				assistantMessages={assistantMessages}
-				assistantLoading={assistantLoading}
-				assistantError={assistantError}
+				{assistantMessages}
+				{assistantLoading}
+				{assistantError}
 				contradictionQuickActionFreeLabel={QUICK_ACTION_WHY_CONTRADICTION_FREE}
 				contradictionQuickActionAiLabel={QUICK_ACTION_WHY_CONTRADICTION_AI}
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
-				onLoadSavedContradictions={() => void loadSavedContradictions()}
-				onSearchContradictions={() => void searchContradictionsWithLlm()}
+				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
 				onSubmitAssistantQuestion={submitContradictionAssistantQuestion}
 				onHandleAssistantInputKeydown={handleContradictionAssistantInputKeydown}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
 				onFocusNodeFromPanel={focusNodeFromPanel}
 				onFocusEvidenceSnippet={focusEvidenceSnippet}
 			/>
@@ -2802,9 +3225,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		{:else if activeRightPanelTab === 'revisions'}
 			<RightPanelRevisions
 				selectedParagraph={$selectedParagraph}
-				selectedChangeLog={selectedChangeLog}
-				simplifyResult={simplifyResult}
-				simplifyError={simplifyError}
+				{selectedChangeLog}
+				{simplifyResult}
+				{simplifyError}
 				rewriteSource={latestRewriteSource}
 				rewriteBusy={simplifyLoading || fixContradictionLoading}
 				onReplaceRewrite={replaceSelectionWithSimplifiedText}
@@ -2818,52 +3241,46 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		{:else if activeRightPanelTab === 'related'}
 			<RightPanelRelated
 				selectedParagraph={$selectedParagraph}
-				backendGraphLoading={backendGraphLoading}
-				relatedProcessingSteps={relatedProcessingSteps}
-				selectedRelatedParagraphs={selectedRelatedParagraphs}
-				nodeEditStateById={nodeEditStateById}
+				{backendGraphLoading}
+				{relatedProcessingSteps}
+				{selectedRelatedParagraphs}
+				{nodeEditStateById}
 				onFocusNodeFromPanel={jumpToNodeWithoutSelecting}
 			/>
 		{:else if activeRightPanelTab === 'paragraph_explanation'}
 			<RightPanelParagraphExplanation
 				selectedParagraph={$selectedParagraph}
-				bind:model={paragraphExplanationModel}
-				modelOptions={PARAGRAPH_EXPLANATION_MODEL_OPTIONS}
 				loading={paragraphExplanationLoading}
 				error={paragraphExplanationError}
 				explanation={paragraphExplanationAnswer}
-				citations={paragraphExplanationCitations}
-				onRunExplanation={submitParagraphExplanation}
-				onFocusNodeFromPanel={focusNodeFromPanel}
+				simplifyResult={latestRewriteSource === 'simplify' ? simplifyResult : null}
+				simplifyError={latestRewriteSource === 'simplify' ? simplifyError : null}
+				rewriteSource={latestRewriteSource === 'simplify' ? 'simplify' : null}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
+				onReplaceRewrite={replaceSelectionWithSimplifiedText}
+				onCopyRewrite={copySimplifiedSnippet}
+				onRejectRewrite={cancelSimplifyResult}
+				onFocusParagraph={focusNodeFromPanel}
 			/>
 		{:else}
 			<RightPanelAssistant
-				bind:assistantProvider
-				bind:assistantMode
-				bind:assistantScope
-				bind:selectedQuickAction
 				bind:assistantInput
 				bind:assistantThread
-				assistantProviderLabel={assistantProviderLabel}
-				assistantModeLabel={assistantModeLabel}
-				assistantScopeLabel={assistantScopeLabel}
-				quickActionLabel={quickActionLabel}
-				providerOptions={PROVIDER_OPTIONS}
-				modeOptions={MODE_OPTIONS}
-				scopeOptions={SCOPE_OPTIONS}
-				quickActions={QUICK_ACTIONS}
-				assistantMessages={assistantMessages}
-				assistantLoading={assistantLoading}
-				assistantError={assistantError}
+				quickActionSuggestions={ASSISTANT_CHAT_SUGGESTIONS}
+				{assistantMessages}
+				{assistantLoading}
+				{assistantError}
 				contradictionTaxonomyOrder={CONTRADICTION_TAXONOMY_ORDER}
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
-				onHandleQuickActionSelectionChange={handleQuickActionSelectionChange}
-				onSuggestedQuestionClick={onSuggestedQuestionClick}
+				onQuickActionSuggestionClick={handleAssistantQuickActionSuggestion}
+				{onSuggestedQuestionClick}
 				onFocusNodeFromPanel={focusNodeFromPanel}
+				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onSubmitAssistantQuestion={submitAssistantQuestion}
 				onHandleAssistantInputKeydown={handleAssistantInputKeydown}
+				rewriteBusy={simplifyLoading || fixContradictionLoading}
 			/>
 		{/if}
 	</aside>
@@ -2879,9 +3296,13 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 					sidebarLabelsPinned ? 'ml-auto w-[calc(100%-6px)] px-1.5' : 'w-9 items-center px-[2px]'
 				}`}
 			>
-				<div class={`mb-3 flex w-full items-center ${sidebarLabelsPinned ? 'justify-between' : 'justify-center'}`}>
+				<div
+					class={`mb-3 flex w-full items-center ${sidebarLabelsPinned ? 'justify-between' : 'justify-center'}`}
+				>
 					{#if sidebarLabelsPinned}
-						<span class="ml-1 text-[17px] font-semibold tracking-wide text-gray-600">{TOOL_BRAND_SHORT_NAME}</span>
+						<span class="ml-1 text-[17px] font-semibold tracking-wide text-gray-600"
+							>{TOOL_BRAND_SHORT_NAME}</span
+						>
 					{/if}
 					<Button
 						variant="ghost"
@@ -2900,9 +3321,17 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 							aria-hidden="true"
 						>
 							{#if sidebarLabelsPinned}
-								<path d="M5 6v12M8 12h10m0 0-3-3m3 3-3 3" stroke-linecap="round" stroke-linejoin="round" />
+								<path
+									d="M5 6v12M8 12h10m0 0-3-3m3 3-3 3"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
 							{:else}
-								<path d="M19 6v12M16 12H6m0 0 3-3m-3 3 3 3" stroke-linecap="round" stroke-linejoin="round" />
+								<path
+									d="M19 6v12M16 12H6m0 0 3-3m-3 3 3 3"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
 							{/if}
 						</svg>
 					</Button>
@@ -2997,7 +3426,6 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 			</div>
 		</Tooltip.Provider>
 	</aside>
-
 </main>
 
 <style>
@@ -3196,18 +3624,21 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		border-radius: 0;
 		background: #2563eb;
 		transform: translateX(-50%);
-		opacity: 0.9;
+		opacity: 0.7;
 		pointer-events: auto;
 		cursor: pointer;
-		transition: opacity 120ms ease, box-shadow 120ms ease, width 120ms ease;
+		transition:
+			opacity 120ms ease,
+			box-shadow 120ms ease,
+			width 120ms ease;
 	}
 
 	:global(.docx-paragraph-explanation-bracket:hover),
 	:global(.docx-paragraph-explanation-bracket:focus-visible) {
 		outline: none;
-		opacity: 1;
+		opacity: 0.95;
 		width: 3px;
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.16);
 	}
 
 	:global(.docx-paragraph-explanation-cap) {
@@ -3215,9 +3646,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		width: 12px;
 		height: 2px;
 		border-radius: 0;
-		background: #2563eb;
-		transform: translate(-100%, -50%);
-		opacity: 0.92;
+		background: rgba(59, 130, 246, 0.62);
+		transform: translate(0, -50%);
+		opacity: 0.88;
 	}
 
 	:global(.docx-related-scroll-marker) {
@@ -3231,7 +3662,10 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.88);
 		opacity: 0.9;
 		cursor: pointer;
-		transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+		transition:
+			transform 120ms ease,
+			opacity 120ms ease,
+			box-shadow 120ms ease;
 	}
 
 	:global(.docx-related-scroll-marker:hover),
@@ -3239,7 +3673,9 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		outline: none;
 		opacity: 1;
 		transform: translateY(-50%) scaleY(1.4);
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(37, 99, 235, 0.35);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.95),
+			0 0 0 2px rgba(37, 99, 235, 0.35);
 	}
 
 	:global(.docx-contradiction-highlight) {
@@ -3283,12 +3719,16 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
 	}
 
-	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']) {
+	:global(
+		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']
+	) {
 		background: rgba(254, 202, 202, 0.58);
 		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
 	}
 
-	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']) {
+	:global(
+		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']
+	) {
 		background: rgba(254, 240, 138, 0.6);
 		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
 	}
@@ -3304,20 +3744,27 @@ const TOOL_BRAND_SHORT_NAME = 'Nome';
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
 		opacity: 0.92;
 		cursor: pointer;
-		transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+		transition:
+			transform 120ms ease,
+			opacity 120ms ease,
+			box-shadow 120ms ease;
 	}
 
 	:global(.docx-contradiction-scroll-marker:hover) {
 		opacity: 1;
 		transform: translateY(-50%) scaleY(1.4);
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(239, 68, 68, 0.35);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.95),
+			0 0 0 2px rgba(239, 68, 68, 0.35);
 	}
 
 	:global(.docx-contradiction-scroll-marker:focus-visible) {
 		outline: none;
 		opacity: 1;
 		transform: translateY(-50%) scaleY(1.4);
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(239, 68, 68, 0.45);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.95),
+			0 0 0 2px rgba(239, 68, 68, 0.45);
 	}
 
 	:global(.docx-contradiction-scroll-marker--medium) {
