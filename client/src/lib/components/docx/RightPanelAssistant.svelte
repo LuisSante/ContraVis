@@ -15,6 +15,10 @@
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
 
 	type ChatPreviewTab = 'contradiction' | 'claims';
+	type ReferenceTextSegment = {
+		text: string;
+		isReference: boolean;
+	};
 	type ChatHighlightTooltip = {
 		kind: 'claim' | 'highlight';
 		badgeText: string;
@@ -41,6 +45,7 @@
 		specificity: 'One claim is broader while the other is narrower in scope.',
 		other: 'The claims conflict, but not under the main taxonomy categories.'
 	};
+	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 
 	let chatPreviewHover: ChatPreviewHoverState | null = null;
 	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
@@ -70,6 +75,29 @@
 	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
+
+	function splitReferenceText(value: string): ReferenceTextSegment[] {
+		if (!value) return [];
+		const segments: ReferenceTextSegment[] = [];
+		let lastIndex = 0;
+		for (const match of value.matchAll(PARAGRAPH_REFERENCE_PATTERN)) {
+			const start = match.index ?? 0;
+			const matchedText = match[0] ?? '';
+			if (!matchedText) continue;
+			if (start > lastIndex) {
+				segments.push({ text: value.slice(lastIndex, start), isReference: false });
+			}
+			segments.push({ text: matchedText, isReference: true });
+			lastIndex = start + matchedText.length;
+		}
+		if (lastIndex < value.length) {
+			segments.push({ text: value.slice(lastIndex), isReference: false });
+		}
+		if (segments.length === 0) {
+			segments.push({ text: value, isReference: false });
+		}
+		return segments;
+	}
 
 	function toNonEmptyString(raw: unknown): string {
 		if (typeof raw === 'string') return raw.trim();
@@ -498,7 +526,47 @@
 							? 'border-blue-200 bg-blue-50 text-blue-900'
 							: 'border-gray-200 bg-white text-gray-700'}"
 					>
-						{#if message.structuredContradiction}
+						{#if message.freeContradictionExplanation}
+							{@const free = message.freeContradictionExplanation}
+							<div class="space-y-2">
+								<div class="flex flex-wrap items-center gap-1">
+									<span class="font-bold text-gray-800">Free explanation for paragraph</span>
+									<button
+										type="button"
+										class="docx-reference-chip"
+										onclick={() => onFocusNodeFromPanel(free.paragraphId, true)}
+									>
+										{free.paragraphId}
+									</button>
+									<span class="font-bold text-gray-800">:</span>
+								</div>
+								<p class="text-[10px] text-gray-700">{free.reason}</p>
+								<p class="text-[10px] font-bold text-gray-800">Confidence: {free.confidence}%</p>
+								{#if free.snippetA && free.snippetB}
+									<div class="space-y-1">
+										<p class="text-[10px] font-bold text-red-700">
+											Snippet A ({free.snippetA.source}):
+										</p>
+										<p class="rounded border border-red-300 bg-red-100/70 px-2 py-1 text-[10px] text-red-900">
+											"{free.snippetA.text}"
+										</p>
+									</div>
+									<div class="space-y-1">
+										<p class="text-[10px] font-bold text-yellow-700">
+											Snippet B ({free.snippetB.source}):
+										</p>
+										<p
+											class="rounded border border-yellow-300 bg-yellow-100/75 px-2 py-1 text-[10px] text-yellow-900"
+										>
+											"{free.snippetB.text}"
+										</p>
+									</div>
+								{:else if free.fallbackEvidenceMessage}
+									<p class="text-[10px] text-gray-600">{free.fallbackEvidenceMessage}</p>
+								{/if}
+								<p class="text-[10px] text-gray-600">{free.footerMessage}</p>
+							</div>
+						{:else if message.structuredContradiction}
 							<div class="space-y-2">
 								<p class="whitespace-pre-wrap">{message.content}</p>
 
@@ -526,7 +594,7 @@
 											<Tabs.Content value="contradiction" class="text-[11px]">
 												<p
 													class="leading-relaxed break-words whitespace-normal text-gray-700"
-													on:mouseleave={() => clearChatPreviewHover(message.id)}
+													onmouseleave={() => clearChatPreviewHover(message.id)}
 												>
 													{#each chatSegments as segment, segmentIndex}
 														{#if segment.interactive}
@@ -554,20 +622,20 @@
 																			<span
 																				{...props}
 																				class="inline bg-transparent p-0 text-left align-baseline leading-[inherit] whitespace-normal text-inherit transition-[background-color,border-color,box-shadow,color] duration-150 ease-out hover:cursor-help focus-visible:outline-none"
-																				on:mouseenter={() =>
+																				onmouseenter={() =>
 																					handleChatPreviewSegmentMouseEnter(
 																						message.id,
 																						segment,
 																						segmentKey
 																					)}
-																				on:mouseleave={() => clearChatPreviewHover(message.id)}
-																				on:focus={() =>
+																				onmouseleave={() => clearChatPreviewHover(message.id)}
+																				onfocus={() =>
 																					handleChatPreviewSegmentMouseEnter(
 																						message.id,
 																						segment,
 																						segmentKey
 																					)}
-																				on:blur={() => clearChatPreviewHover(message.id)}
+																				onblur={() => clearChatPreviewHover(message.id)}
 																			>
 																				<span
 																					class="inline rounded-[3px] px-[2px] py-[1px]"
@@ -607,13 +675,13 @@
 																	type="button"
 																	class="inline appearance-none rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left align-baseline leading-[inherit] whitespace-normal text-inherit"
 																	style={resolveChatHighlightSegmentStyle(segment, message.id)}
-																	on:mouseenter={() =>
+																	onmouseenter={() =>
 																		handleChatPreviewSegmentMouseEnter(
 																			message.id,
 																			segment,
 																			segmentKey
 																		)}
-																	on:mouseleave={() => clearChatPreviewHover(message.id)}
+																	onmouseleave={() => clearChatPreviewHover(message.id)}
 																>
 																	{segment.text}
 																</button>
@@ -686,7 +754,15 @@
 								{/if}
 							</div>
 						{:else}
-							<p class="whitespace-pre-wrap">{message.content}</p>
+							<p class="whitespace-pre-wrap">
+								{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+									{#if segment.isReference}
+										<span class="docx-reference-chip align-middle">{segment.text}</span>
+									{:else}
+										<span>{segment.text}</span>
+									{/if}
+								{/each}
+							</p>
 						{/if}
 
 						{#if message.suggestedQuestions?.length}
@@ -707,18 +783,17 @@
 							</div>
 						{/if}
 
-						{#if message.citations?.length}
+						{#if !message.freeContradictionExplanation && message.citations?.length}
 							<div class="mt-2 flex flex-wrap gap-1">
 								{#each message.citations as citation}
-									<Button
-										variant="outline"
-										size="xs"
-										class="h-5 border-amber-200 bg-amber-50 px-1.5 text-[9px] font-bold text-amber-700 hover:border-amber-300"
+									<button
+										type="button"
+										class="docx-reference-chip"
 										title={citation.excerpt}
 										onclick={() => onFocusNodeFromPanel(citation.id, true)}
 									>
 										{citation.id}
-									</Button>
+									</button>
 								{/each}
 							</div>
 						{/if}
@@ -749,7 +824,10 @@
 
 	<form
 		class="border-t border-gray-200 bg-white p-2"
-		on:submit|preventDefault={() => void onSubmitAssistantQuestion()}
+		onsubmit={(event) => {
+			event.preventDefault();
+			void onSubmitAssistantQuestion();
+		}}
 	>
 		{#if quickActionSuggestions.length}
 			<div class="mb-2 flex flex-nowrap items-center gap-1.5 overflow-x-auto">

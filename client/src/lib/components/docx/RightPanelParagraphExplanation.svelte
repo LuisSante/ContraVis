@@ -13,6 +13,10 @@
 		label: string;
 		active: boolean;
 	};
+	type ReferenceTextSegment = {
+		text: string;
+		isReference: boolean;
+	};
 
 	export let selectedParagraph: ParagraphNode | null = null;
 	export let loading = false;
@@ -32,6 +36,7 @@
 		{ label: 'Analyzing related context', active: false },
 		{ label: 'Drafting plain-language explanation', active: false }
 	];
+	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 
 	let processingTick = 0;
 	let processingTimer: ReturnType<typeof setInterval> | null = null;
@@ -40,6 +45,29 @@
 			? Math.floor(processingTick / 3) % explanationProcessingSteps.length
 			: 0;
 	$: activeDotCount = (processingTick % 3) + 1;
+
+	function splitReferenceText(value: string): ReferenceTextSegment[] {
+		if (!value) return [];
+		const segments: ReferenceTextSegment[] = [];
+		let lastIndex = 0;
+		for (const match of value.matchAll(PARAGRAPH_REFERENCE_PATTERN)) {
+			const start = match.index ?? 0;
+			const matchedText = match[0] ?? '';
+			if (!matchedText) continue;
+			if (start > lastIndex) {
+				segments.push({ text: value.slice(lastIndex, start), isReference: false });
+			}
+			segments.push({ text: matchedText, isReference: true });
+			lastIndex = start + matchedText.length;
+		}
+		if (lastIndex < value.length) {
+			segments.push({ text: value.slice(lastIndex), isReference: false });
+		}
+		if (segments.length === 0) {
+			segments.push({ text: value, isReference: false });
+		}
+		return segments;
+	}
 
 	$: {
 		if (browser && loading && processingTimer == null) {
@@ -149,7 +177,15 @@
 								Explain
 							</Badge>
 						</div>
-						<p class="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">{explanation}</p>
+						<p class="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">
+							{#each splitReferenceText(explanation) as segment, segmentIndex (`explanation-ref-${segmentIndex}`)}
+								{#if segment.isReference}
+									<span class="docx-reference-chip align-middle">{segment.text}</span>
+								{:else}
+									<span>{segment.text}</span>
+								{/if}
+							{/each}
+						</p>
 					</div>
 				{/if}
 			{/if}

@@ -94,6 +94,38 @@
 	}
 }
 
+@layer components {
+	.docx-reference-chip {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.25rem;
+		border: 1px solid var(--docx-reference-chip-border);
+		background: var(--docx-reference-chip-bg);
+		color: var(--docx-reference-chip-text);
+		border-radius: 0.375rem;
+		padding: 0.125rem 0.375rem;
+		font-size: 9px;
+		font-weight: 600;
+		line-height: 1;
+		transition:
+			background-color 120ms ease,
+			border-color 120ms ease,
+			color 120ms ease,
+			box-shadow 120ms ease;
+	}
+
+	.docx-reference-chip:hover {
+		border-color: var(--docx-reference-chip-border-hover);
+		background: var(--docx-reference-chip-bg-hover);
+		color: var(--docx-reference-chip-text-hover);
+	}
+
+	.docx-reference-chip:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+	}
+}
+
 :root {
 	--background: oklch(1 0 0);
 	--foreground: oklch(0.145 0 0);
@@ -127,6 +159,12 @@
 	--sidebar-accent-foreground: oklch(0.205 0 0);
 	--sidebar-border: oklch(0.922 0 0);
 	--sidebar-ring: oklch(0.708 0 0);
+	--docx-reference-chip-border: #fcd34d;
+	--docx-reference-chip-bg: #fef9c3;
+	--docx-reference-chip-text: #a16207;
+	--docx-reference-chip-border-hover: #f59e0b;
+	--docx-reference-chip-bg-hover: #fef3c7;
+	--docx-reference-chip-text-hover: #92400e;
 }
 
 .dark {
@@ -161,4 +199,10 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.556 0 0);
+	--docx-reference-chip-border: #fbbf24;
+	--docx-reference-chip-bg: rgba(113, 63, 18, 0.42);
+	--docx-reference-chip-text: #fef08a;
+	--docx-reference-chip-border-hover: #f59e0b;
+	--docx-reference-chip-bg-hover: rgba(120, 53, 15, 0.56);
+	--docx-reference-chip-text-hover: #fde68a;
 }

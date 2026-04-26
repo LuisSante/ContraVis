@@ -20,6 +20,7 @@
 		AssistantMode,
 		AssistantProvider,
 		AssistantScope,
+		FreeContradictionExplanation,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
 		ContradictionParagraphResult,
@@ -124,6 +125,7 @@
 	const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
 	const TOOL_BRAND_SHORT_NAME = 'ContraGraph';
 	const MANUAL_SCROLL_DRAG_SPEED = 100;
+	const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
 	const GLOBAL_ANALYSIS_MODEL_OPTIONS = Array.from(
 		new Map(
 			[...CONTRADICTION_OPENAI_MODEL_OPTIONS, ...PARAGRAPH_EXPLANATION_MODEL_OPTIONS].map(
@@ -736,10 +738,45 @@
 		const bCenterPx = markBRect.top - hostRect.top + markBRect.height / 2;
 		const showA = aCenterPx >= 0 && aCenterPx <= hostRect.height;
 		const showB = bCenterPx >= 0 && bCenterPx <= hostRect.height;
-		const clampedACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
-		const clampedBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
-		const topPx = Math.min(clampedACenterPx, clampedBCenterPx);
-		const bottomPx = Math.max(clampedACenterPx, clampedBCenterPx);
+
+		let displayACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
+		let displayBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
+		if (showA && showB) {
+			const currentGap = Math.abs(displayACenterPx - displayBCenterPx);
+			if (currentGap < CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
+				const aIsAbove = displayACenterPx <= displayBCenterPx;
+				const center = (displayACenterPx + displayBCenterPx) / 2;
+				let top =
+					center - CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
+				let bottom =
+					center + CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
+				if (hostRect.height >= CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
+					if (top < 0) {
+						bottom += -top;
+						top = 0;
+					}
+					if (bottom > hostRect.height) {
+						top -= bottom - hostRect.height;
+						bottom = hostRect.height;
+					}
+				} else {
+					top = 0;
+					bottom = hostRect.height;
+				}
+				top = Math.max(0, top);
+				bottom = Math.min(hostRect.height, bottom);
+				if (aIsAbove) {
+					displayACenterPx = top;
+					displayBCenterPx = bottom;
+				} else {
+					displayACenterPx = bottom;
+					displayBCenterPx = top;
+				}
+			}
+		}
+
+		const topPx = Math.min(displayACenterPx, displayBCenterPx);
+		const bottomPx = Math.max(displayACenterPx, displayBCenterPx);
 		if (bottomPx - topPx < 2) {
 			selectedContradictionEvidenceLink = null;
 			return;
@@ -752,8 +789,8 @@
 			leftPx,
 			showA,
 			showB,
-			aCenterPx,
-			bCenterPx
+			aCenterPx: displayACenterPx,
+			bCenterPx: displayBCenterPx
 		};
 	}
 
@@ -1151,6 +1188,11 @@
 		scope?: AssistantScope;
 	};
 
+	type QuickActionResponseOptions = {
+		citationId?: string;
+		freeContradictionExplanation?: FreeContradictionExplanation;
+	};
+
 	async function submitAssistantQuestion(
 		questionOverride?: string,
 		options?: SubmitAssistantQuestionOptions
@@ -1161,6 +1203,15 @@
 		if (!question) return;
 		if (!activeDocumentId) {
 			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		if (
+			question === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
+			question === QUICK_ACTION_WHY_CONTRADICTION_AI
+		) {
+			assistantInput = questionOverride ? assistantInput : '';
+			await askQuickAction(question);
 			return;
 		}
 
@@ -1378,14 +1429,24 @@
 		}
 	}
 
-	function appendAssistantQuickActionMessage(content: string, citationId?: string) {
+	function appendAssistantQuickActionMessage(
+		content: string,
+		optionsOrCitation?: QuickActionResponseOptions | string
+	) {
+		const options: QuickActionResponseOptions =
+			typeof optionsOrCitation === 'string'
+				? { citationId: optionsOrCitation }
+				: (optionsOrCitation ?? {});
 		assistantMessages = [
 			...assistantMessages,
 			{
 				id: nextAssistantMessageId(),
 				role: 'assistant',
 				content,
-				citations: citationId ? [{ id: citationId, excerpt: '(selected paragraph)' }] : undefined
+				citations: options.citationId
+					? [{ id: options.citationId, excerpt: '(selected paragraph)' }]
+					: undefined,
+				freeContradictionExplanation: options.freeContradictionExplanation
 			}
 		];
 	}
@@ -1438,22 +1499,49 @@
 				const reason = (contradiction.brief_reason || 'No brief reason is available.').trim();
 				const confidence = Number.isFinite(contradiction.confidence) ? contradiction.confidence : 0;
 				const evidence = contradiction.evidence;
+				const footerMessage =
+					'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.';
+				const freeExplanation: FreeContradictionExplanation = {
+					paragraphId: selected.id,
+					reason,
+					confidence,
+					snippetA: evidence?.snippet_a?.trim()
+						? {
+								source: evidence.source_a?.trim() || 'paragraph',
+								text: evidence.snippet_a.trim()
+							}
+						: undefined,
+					snippetB: evidence?.snippet_b?.trim()
+						? {
+								source: evidence.source_b?.trim() || 'paragraph',
+								text: evidence.snippet_b.trim()
+							}
+						: undefined,
+					fallbackEvidenceMessage:
+						evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
+							? undefined
+							: 'No structured evidence snippets were returned by the classifier.',
+					footerMessage
+				};
 				const evidenceLines =
-					evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
+					freeExplanation.snippetA && freeExplanation.snippetB
 						? [
-								`Snippet A (${evidence.source_a}): "${evidence.snippet_a}"`,
-								`Snippet B (${evidence.source_b}): "${evidence.snippet_b}"`
+								`Snippet A (${freeExplanation.snippetA.source}): "${freeExplanation.snippetA.text}"`,
+								`Snippet B (${freeExplanation.snippetB.source}): "${freeExplanation.snippetB.text}"`
 							]
-						: ['No structured evidence snippets were returned by the classifier.'];
+						: [freeExplanation.fallbackEvidenceMessage ?? 'No structured evidence snippets were returned by the classifier.'];
 				appendAssistantQuickActionMessage(
 					[
 						`Free explanation for paragraph ${selected.id}:`,
 						reason,
 						`Confidence: ${confidence}%`,
 						...evidenceLines,
-						'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.'
+						footerMessage
 					].join('\n\n'),
-					selected.id
+					{
+						citationId: selected.id,
+						freeContradictionExplanation: freeExplanation
+					}
 				);
 				await scrollAssistantToBottom();
 				return;
@@ -3413,6 +3501,7 @@
 	:global(.docx-contradiction-highlight) {
 		background: transparent;
 		box-shadow: inset 3px 0 0 #dc2626;
+		padding-left: 8px !important;
 	}
 
 	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='medium']) {

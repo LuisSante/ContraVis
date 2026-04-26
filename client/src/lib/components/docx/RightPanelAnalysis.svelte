@@ -18,6 +18,10 @@
 		label: string;
 		active: boolean;
 	};
+	type ReferenceTextSegment = {
+		text: string;
+		isReference: boolean;
+	};
 
 	export let selectedParagraph: ParagraphNode | null = null;
 	export let contradictionLoading = false;
@@ -62,6 +66,7 @@
 	const CHAT_PANEL_COLLAPSED_HEIGHT = 46;
 	const CHAT_PANEL_OPEN_DEFAULT_HEIGHT = 250;
 	const CHAT_PANEL_OPEN_THRESHOLD = 47;
+	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 	let chatPanelHeight = CHAT_PANEL_COLLAPSED_HEIGHT;
 	let resizeStartY = 0;
 	let resizeStartHeight = 250;
@@ -72,6 +77,29 @@
 			: 0;
 	$: activeDotCount = (processingTick % 3) + 1;
 	$: isChatOpen = chatPanelHeight > CHAT_PANEL_OPEN_THRESHOLD;
+
+	function splitReferenceText(value: string): ReferenceTextSegment[] {
+		if (!value) return [];
+		const segments: ReferenceTextSegment[] = [];
+		let lastIndex = 0;
+		for (const match of value.matchAll(PARAGRAPH_REFERENCE_PATTERN)) {
+			const start = match.index ?? 0;
+			const matchedText = match[0] ?? '';
+			if (!matchedText) continue;
+			if (start > lastIndex) {
+				segments.push({ text: value.slice(lastIndex, start), isReference: false });
+			}
+			segments.push({ text: matchedText, isReference: true });
+			lastIndex = start + matchedText.length;
+		}
+		if (lastIndex < value.length) {
+			segments.push({ text: value.slice(lastIndex), isReference: false });
+		}
+		if (segments.length === 0) {
+			segments.push({ text: value, isReference: false });
+		}
+		return segments;
+	}
 
 	function clampChatPanelHeight(next: number): number {
 		return Math.max(CHAT_PANEL_COLLAPSED_HEIGHT, Math.round(next));
@@ -237,14 +265,6 @@
 					<div class="space-y-1 p-1.5">
 						<div class="px-0.5">
 							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-							<p class="text-[10px] leading-relaxed text-red-800">
-								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
-							</p>
-						</div>
-						<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-							<div class="mb-1 flex items-center justify-between">
-								<span class="text-[9px] font-semibold text-red-800">Assessment</span>
-							</div>
 							<p class="text-[10px] leading-relaxed text-red-800">
 								Confidence: {selectedContradictionResult.confidence}% &middot; {selectedContradictionResult.brief_reason}
 							</p>
@@ -422,16 +442,66 @@
 								<p class="mb-0.5 text-[9px] font-semibold opacity-70">
 									{message.role === 'user' ? 'You' : 'Assistant'}
 								</p>
-								<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
-									{message.content}
-								</p>
+								{#if message.freeContradictionExplanation}
+									{@const free = message.freeContradictionExplanation}
+									<div class="space-y-1.5">
+										<div class="flex flex-wrap items-center gap-1">
+											<span class="font-bold text-gray-800">Free explanation for paragraph</span>
+											<button
+												type="button"
+												class="docx-reference-chip"
+												onclick={() => onFocusNodeFromPanel(free.paragraphId, true)}
+											>
+												{free.paragraphId}
+											</button>
+											<span class="font-bold text-gray-800">:</span>
+										</div>
+										<p class="text-[10px] text-gray-700">{free.reason}</p>
+										<p class="text-[10px] font-bold text-gray-800">Confidence: {free.confidence}%</p>
+										{#if free.snippetA && free.snippetB}
+											<div class="space-y-1">
+												<p class="text-[10px] font-bold text-red-700">
+													Snippet A ({free.snippetA.source}):
+												</p>
+												<p
+													class="rounded border border-red-300 bg-red-100/70 px-2 py-1 text-[10px] text-red-900"
+												>
+													"{free.snippetA.text}"
+												</p>
+											</div>
+											<div class="space-y-1">
+												<p class="text-[10px] font-bold text-yellow-700">
+													Snippet B ({free.snippetB.source}):
+												</p>
+												<p
+													class="rounded border border-yellow-300 bg-yellow-100/75 px-2 py-1 text-[10px] text-yellow-900"
+												>
+													"{free.snippetB.text}"
+												</p>
+											</div>
+										{:else if free.fallbackEvidenceMessage}
+											<p class="text-[10px] text-gray-600">{free.fallbackEvidenceMessage}</p>
+										{/if}
+										<p class="text-[10px] text-gray-600">{free.footerMessage}</p>
+									</div>
+								{:else}
+									<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+										{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+											{#if segment.isReference}
+												<span class="docx-reference-chip align-middle">{segment.text}</span>
+											{:else}
+												<span>{segment.text}</span>
+											{/if}
+										{/each}
+									</p>
+								{/if}
 
-								{#if message.citations && message.citations.length > 0}
+								{#if !message.freeContradictionExplanation && message.citations && message.citations.length > 0}
 									<div class="mt-1.5 flex flex-wrap gap-1">
 										{#each message.citations as citation}
 											<button
 												type="button"
-												class="rounded border border-gray-200 bg-gray-50 px-1.5 py-0.5 text-[9px] text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+												class="docx-reference-chip"
 												onclick={() => onFocusNodeFromPanel(citation.id, true)}
 											>
 												{citation.id}
@@ -453,7 +523,7 @@
 											{#if structuredContradiction.paragraph_id}
 												<button
 													type="button"
-													class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[8px] text-gray-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+													class="docx-reference-chip"
 													onclick={() =>
 														onFocusNodeFromPanel(structuredContradiction.paragraph_id, true)}
 												>

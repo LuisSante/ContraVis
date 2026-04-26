@@ -164,6 +164,21 @@ export type StructuredContradictionAnalysis = {
 	highlight_source_text?: string;
 };
 
+export type FreeContradictionSnippet = {
+	source: string;
+	text: string;
+};
+
+export type FreeContradictionExplanation = {
+	paragraphId: string;
+	reason: string;
+	confidence: number;
+	snippetA?: FreeContradictionSnippet;
+	snippetB?: FreeContradictionSnippet;
+	fallbackEvidenceMessage?: string;
+	footerMessage: string;
+};
+
 export type AssistantChatMessage = {
 	id: string;
 	role: AssistantMessageRole;
@@ -171,6 +186,7 @@ export type AssistantChatMessage = {
 	citations?: AssistantCitation[];
 	suggestedQuestions?: string[];
 	structuredContradiction?: StructuredContradictionAnalysis;
+	freeContradictionExplanation?: FreeContradictionExplanation;
 };
 
 export type AssistantContextNode = {
