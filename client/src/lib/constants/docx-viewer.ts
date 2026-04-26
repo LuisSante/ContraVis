@@ -114,7 +114,7 @@ export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
  
 export const RIGHT_TOOLBAR_WIDTH = 58;
 export const RIGHT_DRAWER_MIN_WIDTH = 360;
-export const RIGHT_DRAWER_DEFAULT_WIDTH = 520;
+export const RIGHT_DRAWER_DEFAULT_WIDTH = 550;
 export const RIGHT_DRAWER_MAX_RATIO = 0.68;
 export const RIGHT_DRAWER_KEYBOARD_STEP = 24;
 export const FIX_CONTRADICTION_TOP_RELATED = 3;

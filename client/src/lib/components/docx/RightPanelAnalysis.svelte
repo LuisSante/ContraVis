@@ -332,41 +332,71 @@
 			title="Drag to resize chat area"
 			onmousedown={startChatPanelResize}
 		></button>
-		<div
-			class={`flex flex-nowrap items-center gap-1.5 overflow-x-auto ${isChatOpen ? 'mb-2' : ''}`}
-		>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
-				onclick={() => void handleSuggestContradictionFix()}
+		<div class={`flex items-center gap-1.5 ${isChatOpen ? 'mb-2' : ''}`}>
+			<span
+				class="inline-flex h-6 w-6 shrink-0 items-center justify-center text-gray-500"
+				aria-hidden="true"
 			>
-				Suggest contradiction fix
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
-			>
-				Why is it a contradiction? Free
-			</Button>
-			<Button
-				variant="outline"
-				size="sm"
-				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
-			>
-				Why is it a contradiction? AI cost
-			</Button>
+				<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+			</span>
+
+			<div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto">
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+					onclick={() => void handleSuggestContradictionFix()}
+				>
+					Suggest contradiction fix
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
+				>
+					Why is it a contradiction? Free
+				</Button>
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
+				>
+					Why is it a contradiction? AI cost
+				</Button>
+			</div>
+
 			<button
 				type="button"
 				class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[10px] border border-gray-200 bg-white text-gray-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
 				onclick={toggleChatPanel}
-				aria-label={isChatOpen ? 'Close contradiction chat' : 'Open contradiction chat'}
-				title={isChatOpen ? 'Close contradiction chat' : 'Open contradiction chat'}
+				aria-label={isChatOpen ? 'Minimize contradiction chat' : 'Maximize contradiction chat'}
+				title={isChatOpen ? 'Minimize contradiction chat' : 'Maximize contradiction chat'}
 			>
-				<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+				{#if isChatOpen}
+					<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+						<path
+							d="M5 10H15"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					</svg>
+				{:else}
+					<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
+						<rect
+							x="4.5"
+							y="4.5"
+							width="11"
+							height="11"
+							rx="1.5"
+							stroke="currentColor"
+							stroke-width="1.4"
+						/>
+					</svg>
+				{/if}
 			</button>
 		</div>
 

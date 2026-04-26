@@ -203,7 +203,9 @@
 		bottomPx: number;
 		leftPx: number;
 		selectedCapTopPx: number;
+		selectedCapWidthPx: number;
 		relatedCapTopPx: number;
+		relatedCapWidthPx: number;
 		paragraphId: string;
 	}> = [];
 	let paragraphExplanationScrollMarkers: Array<{
@@ -881,15 +883,19 @@
 		const hostRect = documentScrollHost.getBoundingClientRect();
 		const selectedRect = selectedElement.getBoundingClientRect();
 		const selectedY = selectedRect.top - hostRect.top + selectedRect.height / 2;
-		const baseLeft = Math.max(12, selectedRect.right - hostRect.left + 16);
+		const selectedEdgeX = selectedRect.left - hostRect.left;
 
-		const anchors: Array<{ y: number; paragraphId: string }> = [];
+		const anchors: Array<{ y: number; edgeX: number; paragraphId: string }> = [];
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
 			const relatedRect = relatedElement.getBoundingClientRect();
 			const relatedY = relatedRect.top - hostRect.top + relatedRect.height / 2;
-			anchors.push({ y: relatedY, paragraphId: related.node.id });
+			anchors.push({
+				y: relatedY,
+				edgeX: relatedRect.left - hostRect.left,
+				paragraphId: related.node.id
+			});
 		}
 
 		if (anchors.length === 0) {
@@ -902,13 +908,17 @@
 			(left, right) =>
 				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) || left.y - right.y
 		);
+		const edgeBaseX = Math.min(selectedEdgeX, ...sortedAnchors.map((anchor) => anchor.edgeX));
+		const baseLeft = Math.max(4, edgeBaseX - 14);
 		let laneCounter = 0;
 		const nextConnectors: Array<{
 			topPx: number;
 			bottomPx: number;
 			leftPx: number;
 			selectedCapTopPx: number;
+			selectedCapWidthPx: number;
 			relatedCapTopPx: number;
+			relatedCapWidthPx: number;
 			paragraphId: string;
 		}> = [];
 		for (const anchor of sortedAnchors) {
@@ -920,14 +930,18 @@
 			const topPx = Math.min(selectedCenter, relatedCenter);
 			const bottomPx = Math.max(selectedCenter, relatedCenter);
 			if (bottomPx - topPx < 2) continue;
-			const leftPx = baseLeft + laneCounter * 8;
+			const leftPx = baseLeft - laneCounter * 8;
 			laneCounter += 1;
+			const selectedCapWidthPx = Math.max(8, selectedEdgeX - leftPx + 1);
+			const relatedCapWidthPx = Math.max(8, anchor.edgeX - leftPx + 1);
 			nextConnectors.push({
 				topPx,
 				bottomPx,
 				leftPx,
 				selectedCapTopPx: selectedCenter,
+				selectedCapWidthPx,
 				relatedCapTopPx: relatedCenter,
+				relatedCapWidthPx,
 				paragraphId: anchor.paragraphId
 			});
 		}
@@ -2706,11 +2720,11 @@
 						></span>
 						<span
 							class="docx-paragraph-explanation-cap"
-							style={`left: ${connector.leftPx}px; top: ${connector.selectedCapTopPx}px;`}
+							style={`left: ${connector.leftPx}px; top: ${connector.selectedCapTopPx}px; width: ${connector.selectedCapWidthPx}px;`}
 						></span>
 						<span
 							class="docx-paragraph-explanation-cap"
-							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px;`}
+							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 						></span>
 					{/each}
 				</div>
@@ -3329,9 +3343,9 @@
 	}
 
 	:global(.docx-paragraph-explanation-related) {
-		outline: 2px solid #2563eb !important;
+		outline: 2px solid rgba(59, 130, 246, 0.62) !important;
 		outline-offset: 1px !important;
-		border-left: 1px solid #2563eb !important;
+		border-left: 1px solid rgba(59, 130, 246, 0.62) !important;
 		background: transparent !important;
 		/* box-shadow: inset 0 0 0 1px #2563eb !important; */
 	}
@@ -3340,9 +3354,9 @@
 		position: absolute;
 		width: 2px;
 		border-radius: 0;
-		background: #2563eb;
+		background: rgba(59, 130, 246, 0.62);
 		transform: translateX(-50%);
-		opacity: 0.9;
+		opacity: 0.82;
 		pointer-events: auto;
 		cursor: pointer;
 		transition:
@@ -3354,9 +3368,9 @@
 	:global(.docx-paragraph-explanation-bracket:hover),
 	:global(.docx-paragraph-explanation-bracket:focus-visible) {
 		outline: none;
-		opacity: 1;
+		opacity: 0.95;
 		width: 3px;
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.16);
 	}
 
 	:global(.docx-paragraph-explanation-cap) {
@@ -3364,9 +3378,9 @@
 		width: 12px;
 		height: 2px;
 		border-radius: 0;
-		background: #2563eb;
-		transform: translate(-100%, -50%);
-		opacity: 0.92;
+		background: rgba(59, 130, 246, 0.62);
+		transform: translate(0, -50%);
+		opacity: 0.88;
 	}
 
 	:global(.docx-related-scroll-marker) {
