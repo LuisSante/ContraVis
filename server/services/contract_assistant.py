@@ -334,7 +334,6 @@ def _apply_context_budget(entries: list[ContextEntry]) -> list[ContextEntry]:
 def _build_system_prompt(mode: str) -> str:
     mode_instruction = {
         "explain": "Explain in plain language and avoid legal jargon when possible.",
-        "quote": "Quote the exact clause text from context where relevant before explaining.",
         "suggest_questions": "Focus on generating concise follow-up questions grounded in the contract.",
     }.get(mode, "Explain in plain language.")
 

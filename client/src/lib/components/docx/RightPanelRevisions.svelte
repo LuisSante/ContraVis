@@ -21,6 +21,7 @@
 	export let commitShortcutHint = '';
 	export let commitShortcutLabel = '';
 	export let commitShortcutTooltip = '';
+	$: showRewriteContainer = rewriteSource === 'fix' && Boolean(simplifyResult || simplifyError);
 </script>
 
 <section class="flex min-h-0 flex-1 flex-col">
@@ -46,28 +47,28 @@
 		</div>
 	</header>
 
-	<ScrollArea class="min-h-0 flex-1">
-		<div class="space-y-2 p-3">
-			<ParagraphRewriteResult
-				simplifyResult={simplifyResult}
-				rewriteSource={rewriteSource}
-				simplifyError={simplifyError}
-				rewriteBusy={rewriteBusy}
-				selectedParagraphId={selectedParagraph?.id ?? null}
-				onReplace={onReplaceRewrite}
-				onCopy={onCopyRewrite}
-				onReject={onRejectRewrite}
-				onFocusParagraph={onFocusParagraph}
-			/>
+	<ScrollArea class="min-h-0= flex-1">
+		<div class="flex min-h-full flex-col gap-2 p-3">
+			{#if showRewriteContainer}
+				<ParagraphRewriteResult
+					simplifyResult={simplifyResult}
+					rewriteSource={rewriteSource}
+					showSimplifyBadge={false}
+					simplifyError={simplifyError}
+					rewriteBusy={rewriteBusy}
+					selectedParagraphId={selectedParagraph?.id ?? null}
+					onReplace={onReplaceRewrite}
+					onCopy={onCopyRewrite}
+					onReject={onRejectRewrite}
+					onFocusParagraph={onFocusParagraph}
+				/>
+			{/if}
 
 			{#if !selectedParagraph}
-				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-					<p class="text-[10px] font-medium">Select a paragraph to view revision history</p>
-					<p class="mt-1 text-[10px] text-gray-400">
-						Choose a paragraph in the document on the left.
-					</p>
+				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
+					<p class="text-[10px] italic">Select a paragraph to view revision history</p>
 				</div>
-			{:else if !selectedChangeLog.hasChanges && !simplifyResult}
+			{:else if !selectedChangeLog.hasChanges && !showRewriteContainer}
 				<div class="flex flex-col items-center justify-center py-2 text-gray-300">
 					<p class="text-[10px] italic">No modifications recorded for this paragraph.</p>
 				</div>

@@ -93,8 +93,8 @@
 		resolveActiveRewriteTarget
 	} from '$lib/utils/docx/rewrite';
 	import AmbiguityAnalysisIcon from '$lib/icons/AmbiguityAnalysisIcon.svelte';
+	import ChatIcon from '$lib/icons/ChatIcon.svelte';
 	import CloseIcon from '$lib/icons/CloseIcon.svelte';
-	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 	import ContradictionAnalysisIcon from '$lib/icons/ContradictionAnalysisIcon.svelte';
 	import ParagraphExplanationIcon from '$lib/icons/ParagraphExplanationIcon.svelte';
 	import ParagraphRevisionsIcon from '$lib/icons/ParagraphRevisionsIcon.svelte';
@@ -116,6 +116,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import { Switch } from '$lib/components/ui/switch/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
+	import './page.css';
 
 	const initialInspectorState = createEmptyInspectorState();
 	const nodeEditStateById = new Map<string, ParagraphEditState>();
@@ -139,6 +140,7 @@
 	const GLOBAL_MODEL_TRIGGER_EXTRA_PX = 30;
 	const GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX = 34;
 	const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
+	const PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX = 10;
 	const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
 		(action) =>
 			action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
@@ -212,6 +214,18 @@
 		relatedCapWidthPx: number;
 		paragraphId: string;
 	}> = [];
+	let paragraphExplanationPrimaryConnector:
+		| {
+				topPx: number;
+				bottomPx: number;
+				leftPx: number;
+				selectedCapTopPx: number;
+				selectedCapWidthPx: number;
+				paragraphId: string;
+		  }
+		| null = null;
+	$: paragraphExplanationPrimaryConnector =
+		paragraphExplanationConnectors.length > 0 ? paragraphExplanationConnectors[0] : null;
 	let paragraphExplanationScrollMarkers: Array<{
 		paragraphId: string;
 		topPercent: number;
@@ -948,8 +962,13 @@
 				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) || left.y - right.y
 		);
 		const edgeBaseX = Math.min(selectedEdgeX, ...sortedAnchors.map((anchor) => anchor.edgeX));
-		const baseLeft = Math.max(4, edgeBaseX - 14);
-		let laneCounter = 0;
+		const baseLeft = Math.max(4, edgeBaseX - 20);
+		const trunkTop = Math.min(selectedY, ...sortedAnchors.map((anchor) => anchor.y));
+		const trunkBottom = Math.max(selectedY, ...sortedAnchors.map((anchor) => anchor.y));
+		const selectedCapWidthPx = Math.max(
+			8,
+			selectedEdgeX - baseLeft - PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX
+		);
 		const nextConnectors: Array<{
 			topPx: number;
 			bottomPx: number;
@@ -964,22 +983,17 @@
 			// Keep connector anchors tied to real paragraph positions.
 			// We intentionally avoid clamping to viewport edges so the line does not "snap"
 			// when one paragraph goes out of view.
-			const selectedCenter = selectedY;
-			const relatedCenter = anchor.y;
-			const topPx = Math.min(selectedCenter, relatedCenter);
-			const bottomPx = Math.max(selectedCenter, relatedCenter);
-			if (bottomPx - topPx < 2) continue;
-			const leftPx = baseLeft - laneCounter * 8;
-			laneCounter += 1;
-			const selectedCapWidthPx = Math.max(8, selectedEdgeX - leftPx + 1);
-			const relatedCapWidthPx = Math.max(8, anchor.edgeX - leftPx + 1);
+			const relatedCapWidthPx = Math.max(
+				8,
+				anchor.edgeX - baseLeft - PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX
+			);
 			nextConnectors.push({
-				topPx,
-				bottomPx,
-				leftPx,
-				selectedCapTopPx: selectedCenter,
+				topPx: trunkTop,
+				bottomPx: trunkBottom,
+				leftPx: baseLeft,
+				selectedCapTopPx: selectedY,
 				selectedCapWidthPx,
-				relatedCapTopPx: relatedCenter,
+				relatedCapTopPx: anchor.y,
 				relatedCapWidthPx,
 				paragraphId: anchor.paragraphId
 			});
@@ -2808,52 +2822,49 @@
 		<header
 			class="flex flex-none items-center gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75"
 		>
-			<div class="min-w-0 flex-1">
-				<p class="text-[11px] text-gray-500">Document</p>
-				<div class="flex items-center gap-2">
-					<div class="min-w-0 flex-1 truncate text-sm font-medium text-gray-800">
-						{activeDocumentName || 'No document selected'}
-					</div>
-					<div class="mr-5">
-						<Select.Root
-							type="single"
-							bind:value={globalAnalysisModel}
-							disabled={contradictionLoading || paragraphExplanationLoading}
-						>
-							<Select.Trigger
-								size="sm"
-								class="h-7 shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
-								style={`width: ${globalModelSelectWidthPx}px;`}
-								title="Global model for Contradiction Analysis and Paragraph Explanation"
-							>
-								{GLOBAL_ANALYSIS_MODEL_OPTIONS.find(
-									(option) => option.value === globalAnalysisModel
-								)?.label ?? globalAnalysisModel}
-							</Select.Trigger>
-							<Select.Content
-								class="min-w-0"
-								style={`width: ${globalModelSelectWidthPx}px; min-width: 0;`}
-							>
-								{#each GLOBAL_ANALYSIS_MODEL_OPTIONS as option}
-									<Select.Item
-										value={option.value}
-										label={option.label}
-										class="text-[10px] whitespace-nowrap"
-									>
-										{option.label}
-									</Select.Item>
-								{/each}
-							</Select.Content>
-						</Select.Root>
-					</div>
+			<div class="flex min-w-0 flex-1 items-center gap-2">
+				<p class="shrink-0 text-[11px] text-gray-500">Document</p>
+				<div class="min-w-0 truncate text-sm font-medium text-gray-800">
+					{activeDocumentName || 'No document selected'}
 				</div>
+			</div>
+			<div class="shrink-0">
+				<Select.Root
+					type="single"
+					bind:value={globalAnalysisModel}
+					disabled={contradictionLoading || paragraphExplanationLoading}
+				>
+					<Select.Trigger
+						size="sm"
+						class="h-7 shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+						style={`width: ${globalModelSelectWidthPx}px;`}
+						title="Global model for Contradiction Analysis and Paragraph Explanation"
+					>
+						{GLOBAL_ANALYSIS_MODEL_OPTIONS.find((option) => option.value === globalAnalysisModel)?.label ??
+							globalAnalysisModel}
+					</Select.Trigger>
+					<Select.Content
+						class="min-w-0"
+						style={`width: ${globalModelSelectWidthPx}px; min-width: 0;`}
+					>
+						{#each GLOBAL_ANALYSIS_MODEL_OPTIONS as option}
+							<Select.Item
+								value={option.value}
+								label={option.label}
+								class="text-[10px] whitespace-nowrap"
+							>
+								{option.label}
+							</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 			</div>
 		</header>
 
 		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
 			<Card.Root
 				size="sm"
-				class="absolute top-[64px] right-4 left-4 z-[70] border-gray-200 py-0 text-[10px] shadow-lg"
+				class="absolute top-16 right-4 left-4 z-[70] border-gray-200 py-0 text-[10px] shadow-lg"
 			>
 				<Card.Content class="px-2.5 text-gray-600">
 					<div class="flex items-start justify-between gap-2">
@@ -2964,13 +2975,34 @@
 
 			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationConnectors.length > 0}
 				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+					{#if paragraphExplanationPrimaryConnector}
+						<span
+							class="docx-paragraph-explanation-bracket docx-paragraph-explanation-bracket--interactive"
+							style={`left: ${paragraphExplanationPrimaryConnector.leftPx}px; top: ${paragraphExplanationPrimaryConnector.topPx}px; height: ${Math.max(
+								6,
+								paragraphExplanationPrimaryConnector.bottomPx - paragraphExplanationPrimaryConnector.topPx
+							)}px;`}
+							role="button"
+							tabindex="0"
+							aria-label={`Go to related paragraph ${paragraphExplanationPrimaryConnector.paragraphId}`}
+							on:click={() =>
+								jumpToRelatedParagraphMarker(paragraphExplanationPrimaryConnector.paragraphId)}
+							on:keydown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									jumpToRelatedParagraphMarker(paragraphExplanationPrimaryConnector.paragraphId);
+								}
+							}}
+						></span>
+						<span
+							class="docx-paragraph-explanation-cap"
+							style={`left: ${paragraphExplanationPrimaryConnector.leftPx}px; top: ${paragraphExplanationPrimaryConnector.selectedCapTopPx}px; width: ${paragraphExplanationPrimaryConnector.selectedCapWidthPx}px;`}
+						></span>
+					{/if}
 					{#each paragraphExplanationConnectors as connector, index (`connector-${index}`)}
 						<span
-							class="docx-paragraph-explanation-bracket"
-							style={`left: ${connector.leftPx}px; top: ${connector.topPx}px; height: ${Math.max(
-								6,
-								connector.bottomPx - connector.topPx
-							)}px;`}
+							class="docx-paragraph-explanation-cap docx-paragraph-explanation-cap--interactive"
+							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 							role="button"
 							tabindex="0"
 							aria-label={`Go to related paragraph ${connector.paragraphId}`}
@@ -2981,14 +3013,6 @@
 									jumpToRelatedParagraphMarker(connector.paragraphId);
 								}
 							}}
-						></span>
-						<span
-							class="docx-paragraph-explanation-cap"
-							style={`left: ${connector.leftPx}px; top: ${connector.selectedCapTopPx}px; width: ${connector.selectedCapWidthPx}px;`}
-						></span>
-						<span
-							class="docx-paragraph-explanation-cap"
-							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 						></span>
 					{/each}
 				</div>
@@ -3078,7 +3102,7 @@
 						{:else if activeRightPanelTab === 'revisions'}
 							<ParagraphRevisionsIcon className="h-4 w-4" strokeWidth={1.9} />
 						{:else}
-							<ContractChatAssistantIcon className="h-4 w-4" strokeWidth={1.9} />
+							<ChatIcon className="h-4 w-4" strokeWidth={1.9} />
 						{/if}
 					</span>
 					<span>
@@ -3161,6 +3185,12 @@
 						<div
 							class="flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2"
 						>
+							<label 
+								for=""
+								class="text-[10px] font-semibold text-gray-600"
+							>
+								Parapraph
+							</label>
 							<Switch
 								id="assistant-header-full-contract-scope"
 								class="data-checked:bg-blue-600 dark:data-checked:bg-blue-500"
@@ -3205,8 +3235,10 @@
 				{assistantError}
 				contradictionQuickActionFreeLabel={QUICK_ACTION_WHY_CONTRADICTION_FREE}
 				contradictionQuickActionAiLabel={QUICK_ACTION_WHY_CONTRADICTION_AI}
+				contradictionTaxonomyOrder={CONTRADICTION_TAXONOMY_ORDER}
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
+				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
 				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
@@ -3376,7 +3408,7 @@
 								{:else if item.id === 'revisions'}
 									<ParagraphRevisionsIcon className="h-[17px] w-[17px]" />
 								{:else}
-									<ContractChatAssistantIcon className="h-[17px] w-[17px]" />
+									<ChatIcon className="h-[17px] w-[17px]" />
 								{/if}
 								<span class="truncate">{label}</span>
 							</Button>
@@ -3406,7 +3438,7 @@
 											{:else if item.id === 'revisions'}
 												<ParagraphRevisionsIcon className="h-[17px] w-[17px]" />
 											{:else}
-												<ContractChatAssistantIcon className="h-[17px] w-[17px]" />
+												<ChatIcon className="h-[17px] w-[17px]" />
 											{/if}
 										</Button>
 									{/snippet}
@@ -3427,465 +3459,3 @@
 		</Tooltip.Provider>
 	</aside>
 </main>
-
-<style>
-	:global([contenteditable='true'])::selection {
-		background: rgba(250, 204, 21, 0.3);
-	}
-
-	:global(.docx-relations-badge-host) {
-		position: relative;
-		transition: background-color 140ms ease;
-	}
-
-	:global(.docx-relations-badge-host)::before {
-		content: '';
-		position: absolute;
-		right: -14px;
-		top: 2px;
-		bottom: 2px;
-		width: 2px;
-		border-radius: 9999px;
-		background: #d1d5db;
-		pointer-events: none;
-	}
-
-	:global(.docx-relations-badge-host[data-relations-tone='linked'])::before {
-		background: #60a5fa;
-	}
-
-	:global(.docx-relations-badge-host)::after {
-		content: attr(data-relations-count);
-		position: absolute;
-		right: -24px;
-		top: 50%;
-		display: inline-flex;
-		height: 22px;
-		width: 22px;
-		min-width: 22px;
-		transform: translateY(-50%);
-		align-items: center;
-		justify-content: center;
-		border-radius: 9999px;
-		border: 1px solid #d1d5db;
-		background: #f3f4f6;
-		color: #6b7280;
-		font-size: 10px;
-		font-weight: 700;
-		line-height: 1;
-		pointer-events: none;
-	}
-
-	:global(.docx-relations-badge-host[data-relations-tone='linked'])::after {
-		border-color: #93c5fd;
-		background: #dbeafe;
-		color: #1d4ed8;
-	}
-
-	:global(.related-badges-off .docx-relations-badge-host)::before,
-	:global(.related-badges-off .docx-relations-badge-host)::after {
-		display: none;
-	}
-
-	:global(.related-focus-on .docx-relations-badge-host)::before,
-	:global(.related-focus-on .docx-relations-badge-host)::after {
-		opacity: 0.2;
-	}
-
-	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge-emphasis)::before,
-	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge-emphasis)::after {
-		opacity: 1;
-	}
-
-	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--similarity)::before {
-		background: #16a34a;
-	}
-
-	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--similarity)::after {
-		border-color: #86efac;
-		background: #dcfce7;
-		color: #15803d;
-	}
-
-	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--reference)::before {
-		background: #2563eb;
-	}
-
-	:global(.related-focus-on .docx-relations-badge-host.docx-related-badge--reference)::after {
-		border-color: #93c5fd;
-		background: #dbeafe;
-		color: #1d4ed8;
-	}
-
-	:global(.docx-citation-flash) {
-		animation: citation-flash 1.2s ease-out;
-	}
-
-	:global(.docx-related-selected) {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
-		background: rgba(37, 99, 235, 0.08) !important;
-	}
-
-	:global(.docx-related-selected:focus),
-	:global(.docx-related-selected:focus-visible) {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
-	}
-
-	:global(.docx-related-linked) {
-		box-shadow: none;
-	}
-
-	:global(.docx-related-context) {
-		position: relative;
-	}
-
-	:global(.docx-related-context)::before {
-		position: absolute;
-		content: '';
-		left: -7px;
-		top: 2px;
-		bottom: 2px;
-		width: 2px;
-		border-radius: 9999px;
-		opacity: 0.9;
-		pointer-events: none;
-	}
-
-	:global(.docx-related-context)::after {
-		position: absolute;
-		content: attr(data-related-label);
-		left: -58px;
-		top: 10px;
-		width: 50px;
-		text-align: right;
-		font-size: 10px;
-		font-weight: 600;
-		line-height: 1.1;
-		white-space: pre-line;
-		opacity: 0.95;
-		pointer-events: none;
-		z-index: 1;
-		text-shadow: 0 0 0.1px currentColor;
-	}
-
-	:global(.docx-related-context--with-sub)::after {
-		content: attr(data-related-label) '\A' attr(data-related-sub);
-		white-space: pre;
-		line-height: 1.15;
-	}
-
-	:global(.docx-related-context--reference)::before {
-		background: #0c41d4;
-	}
-
-	:global(.docx-related-context--reference)::after {
-		color: #0c41d4;
-	}
-
-	:global(.docx-related-context--similarity)::before {
-		background: #09993e;
-	}
-
-	:global(.docx-related-context--similarity)::after {
-		color: #09993e;
-	}
-
-	:global(.docx-paragraph-explanation-selected) {
-		outline: 2.5px solid rgba(37, 99, 235, 0.82) !important;
-		/* outline-offset: 1px !important; */
-		background: rgba(59, 130, 246, 0.1) !important;
-		/* border-left: 1px solid rgba(37, 99, 235, 0.9) !important; */
-		box-shadow:
-			inset 0 0 0 9999px rgba(59, 130, 246, 0.08),
-			inset 0 0 0 1px rgba(37, 99, 235, 0.4) !important;
-	}
-
-	:global(.docx-paragraph-explanation-selected:focus),
-	:global(.docx-paragraph-explanation-selected:focus-visible) {
-		outline: 2px solid rgba(37, 99, 235, 0.9) !important;
-		outline-offset: 1px !important;
-		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22) !important;
-	}
-
-	:global(.docx-paragraph-explanation-related) {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
-		border-left: 1px solid #2563eb !important;
-		background: transparent !important;
-		/* box-shadow: inset 0 0 0 1px #2563eb !important; */
-	}
-
-	:global(.docx-paragraph-explanation-bracket) {
-		position: absolute;
-		width: 2px;
-		border-radius: 0;
-		background: #2563eb;
-		transform: translateX(-50%);
-		opacity: 0.7;
-		pointer-events: auto;
-		cursor: pointer;
-		transition:
-			opacity 120ms ease,
-			box-shadow 120ms ease,
-			width 120ms ease;
-	}
-
-	:global(.docx-paragraph-explanation-bracket:hover),
-	:global(.docx-paragraph-explanation-bracket:focus-visible) {
-		outline: none;
-		opacity: 0.95;
-		width: 3px;
-		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.16);
-	}
-
-	:global(.docx-paragraph-explanation-cap) {
-		position: absolute;
-		width: 12px;
-		height: 2px;
-		border-radius: 0;
-		background: rgba(59, 130, 246, 0.62);
-		transform: translate(0, -50%);
-		opacity: 0.88;
-	}
-
-	:global(.docx-related-scroll-marker) {
-		position: absolute;
-		left: 0;
-		right: 0;
-		height: 2px;
-		transform: translateY(-50%);
-		border-radius: 9999px;
-		background: #2563eb;
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.88);
-		opacity: 0.9;
-		cursor: pointer;
-		transition:
-			transform 120ms ease,
-			opacity 120ms ease,
-			box-shadow 120ms ease;
-	}
-
-	:global(.docx-related-scroll-marker:hover),
-	:global(.docx-related-scroll-marker:focus-visible) {
-		outline: none;
-		opacity: 1;
-		transform: translateY(-50%) scaleY(1.4);
-		box-shadow:
-			0 0 0 1px rgba(255, 255, 255, 0.95),
-			0 0 0 2px rgba(37, 99, 235, 0.35);
-	}
-
-	:global(.docx-contradiction-highlight) {
-		background: transparent;
-		box-shadow: inset 3px 0 0 #dc2626;
-	}
-
-	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='medium']) {
-		background: transparent;
-		box-shadow: inset 3px 0 0 #ef4444;
-	}
-
-	:global(.docx-contradiction-highlight[data-contradiction-confidence-band='low']) {
-		background: transparent;
-		box-shadow: inset 3px 0 0 #f97316;
-	}
-
-	:global(.docx-contradiction-selected) {
-		outline: none;
-	}
-
-	:global(mark.docx-contradiction-snippet) {
-		background: transparent;
-		color: #7f1d1d;
-		padding: 0 1px;
-		border-radius: 1px;
-		text-decoration: none;
-	}
-
-	:global(mark.docx-contradiction-snippet[data-contradiction-role='a']) {
-		color: #991b1b;
-		background: rgba(254, 202, 202, 0.26);
-	}
-
-	:global(mark.docx-contradiction-snippet[data-contradiction-role='b']) {
-		color: #854d0e;
-		background: rgba(254, 240, 138, 0.28);
-	}
-
-	:global(mark.docx-contradiction-snippet.docx-contradiction-snippet--active) {
-		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
-	}
-
-	:global(
-		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']
-	) {
-		background: rgba(254, 202, 202, 0.58);
-		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
-	}
-
-	:global(
-		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']
-	) {
-		background: rgba(254, 240, 138, 0.6);
-		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
-	}
-
-	:global(.docx-contradiction-scroll-marker) {
-		position: absolute;
-		left: 0;
-		right: 0;
-		height: 2px;
-		transform: translateY(-50%);
-		border-radius: 9999px;
-		background: #dc2626;
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
-		opacity: 0.92;
-		cursor: pointer;
-		transition:
-			transform 120ms ease,
-			opacity 120ms ease,
-			box-shadow 120ms ease;
-	}
-
-	:global(.docx-contradiction-scroll-marker:hover) {
-		opacity: 1;
-		transform: translateY(-50%) scaleY(1.4);
-		box-shadow:
-			0 0 0 1px rgba(255, 255, 255, 0.95),
-			0 0 0 2px rgba(239, 68, 68, 0.35);
-	}
-
-	:global(.docx-contradiction-scroll-marker:focus-visible) {
-		outline: none;
-		opacity: 1;
-		transform: translateY(-50%) scaleY(1.4);
-		box-shadow:
-			0 0 0 1px rgba(255, 255, 255, 0.95),
-			0 0 0 2px rgba(239, 68, 68, 0.45);
-	}
-
-	:global(.docx-contradiction-scroll-marker--medium) {
-		background: #ef4444;
-	}
-
-	:global(.docx-contradiction-scroll-marker--low) {
-		background: #f87171;
-	}
-
-	:global(.docx-contradiction-evidence-bracket) {
-		position: absolute;
-		width: 2px;
-		border-radius: 0;
-		background: linear-gradient(to bottom, #dc2626 0%, #eab308 100%);
-		transform: translateX(-50%);
-		opacity: 0.92;
-	}
-
-	:global(.docx-contradiction-evidence-cap) {
-		position: absolute;
-		width: 12px;
-		height: 2px;
-		border-radius: 0;
-		background: linear-gradient(to right, rgba(220, 38, 38, 0.95) 0%, rgba(234, 179, 8, 0.95) 100%);
-		transform: translate(-100%, -50%);
-		opacity: 0.92;
-	}
-
-	:global(.docx-contradiction-evidence-dot) {
-		position: absolute;
-		height: 8px;
-		width: 8px;
-		transform: translate(-50%, -50%);
-		border-radius: 9999px;
-		border: 1px solid rgba(255, 255, 255, 0.9);
-		box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.28);
-	}
-
-	:global(.docx-contradiction-evidence-dot--a) {
-		background: #dc2626;
-	}
-
-	:global(.docx-contradiction-evidence-dot--b) {
-		background: #eab308;
-	}
-
-	:global(.docx-contradiction-evidence-label) {
-		position: absolute;
-		transform: translate(9px, -50%);
-		font-size: 10px;
-		font-weight: 700;
-		line-height: 1;
-	}
-
-	:global(.docx-contradiction-evidence-label--a) {
-		color: #b91c1c;
-	}
-
-	:global(.docx-contradiction-evidence-label--b) {
-		color: #a16207;
-	}
-
-	@keyframes bounce {
-		0%,
-		100% {
-			transform: translateY(0);
-		}
-		50% {
-			transform: translateY(-3px);
-		}
-	}
-
-	.animate-bounce {
-		animation: bounce 2s infinite;
-	}
-
-	@keyframes citation-flash {
-		0% {
-			background-color: rgba(254, 243, 199, 0.8);
-			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
-		}
-		70% {
-			background-color: rgba(254, 252, 232, 0.65);
-			box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
-		}
-		100% {
-			background-color: transparent;
-			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
-		}
-	}
-
-	@keyframes processing-dot-pulse {
-		0%,
-		100% {
-			opacity: 0.2;
-			transform: scale(0.85);
-		}
-		45% {
-			opacity: 0.95;
-			transform: scale(1.06);
-		}
-	}
-
-	@keyframes processing-step-fade {
-		0%,
-		100% {
-			opacity: 0.42;
-		}
-		50% {
-			opacity: 0.95;
-		}
-	}
-
-	@keyframes processing-ellipsis-dot {
-		0%,
-		100% {
-			opacity: 0.15;
-		}
-		50% {
-			opacity: 1;
-		}
-	}
-</style>

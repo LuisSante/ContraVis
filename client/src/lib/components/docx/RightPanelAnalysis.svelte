@@ -12,7 +12,11 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
+	import ChatIcon from '$lib/icons/ChatIcon.svelte';
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
+	import UserIcon from '$lib/icons/UserIcon.svelte';
+	import ContradictionActionMessageCard from './ContradictionActionMessageCard.svelte';
+	import StructuredContradictionMessage from './StructuredContradictionMessage.svelte';
 
 type ProcessingStep = {
 		label: string;
@@ -60,6 +64,19 @@ type ProcessingStep = {
 		policy_reversal: '#ef4444',
 		specificity: '#84cc16',
 		other: '#9ca3af'
+	};
+	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [
+		'temporal',
+		'numerical',
+		'authority',
+		'process',
+		'policy_reversal',
+		'specificity',
+		'other'
+	];
+	export let contradictionClaimSideColors: Record<'a' | 'b', string> = {
+		a: '#1d4ed8',
+		b: '#7c3aed'
 	};
 
 	let processingTick = 0;
@@ -202,7 +219,7 @@ type ProcessingStep = {
 	</div> -->
 
 	<ScrollArea class="min-h-0 flex-1">
-		<div class="space-y-1 p-3">
+		<div class="flex min-h-full flex-col gap-1 p-3">
 			{#if contradictionLoading}
 				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
 					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
@@ -242,11 +259,8 @@ type ProcessingStep = {
 			{/if}
 
 			{#if !selectedParagraph}
-				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-					<p class="text-[10px] font-medium">Select a paragraph to analyze contradictions</p>
-					<p class="mt-1 text-[10px] text-gray-400">
-						Choose a paragraph in the document on the left.
-					</p>
+				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
+					<p class="text-[10px] italic">Select a paragraph to analyze contradictions</p>
 				</div>
 			{:else if !selectedContradictionResult}
 				<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
@@ -260,14 +274,14 @@ type ProcessingStep = {
 					<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
 				</div>
 			{:else if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-				<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-					<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
+				<div class="overflow-hidden rounded border text-[11px]">
+					<div class="border-b  px-3 py-1.5">
 						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
 					</div>
 					<div class="space-y-1 p-1.5">
 						<div class="px-0.5">
-							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-							<p class="text-[10px] leading-relaxed text-red-800">
+							<p class="text-[9px] font-semibold">Assessment</p>
+							<p class="text-[10px] leading-relaxed">
 								{selectedContradictionResult.brief_reason}
 							</p>
 						</div>
@@ -359,36 +373,34 @@ type ProcessingStep = {
 				class="inline-flex h-6 w-6 shrink-0 items-center justify-center text-gray-500"
 				aria-hidden="true"
 			>
-				<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
+				<ChatIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
 			</span>
 
-			<div class="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto">
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
-					disabled={rewriteBusy || assistantLoading}
-					onclick={() => void handleSuggestContradictionFix()}
-				>
-					{rewriteBusy ? 'Preparing fix...' : 'Suggest contradiction fix'}
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-					onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
-				>
-					Why is it a contradiction? Free
-				</Button>
-				<Button
-					variant="outline"
-					size="sm"
-					class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-					onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
-				>
-					Why is it a contradiction? AI cost
-				</Button>
-			</div>
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
+			>
+				Why is it a contradiction? Free
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
+			>
+				Why is it a contradiction? AI cost
+			</Button>
+			<Button
+				variant="outline"
+				size="sm"
+				class="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+				disabled={rewriteBusy || assistantLoading}
+				onclick={() => void handleSuggestContradictionFix()}
+			>
+				{rewriteBusy ? 'Preparing fix...' : 'Suggest contradiction fix'}
+			</Button>
 
 			<button
 				type="button"
@@ -435,189 +447,75 @@ type ProcessingStep = {
 						</p>
 					{:else}
 						{#each assistantMessages as message (message.id)}
-							<div
-								class={`rounded px-2 py-1 text-[10px] leading-relaxed ${
-									message.role === 'user'
-										? 'ml-6 border border-blue-200 bg-blue-50 text-blue-800'
-										: 'mr-6 border border-gray-200 bg-white text-gray-700'
-								}`}
-							>
-								<p class="mb-0.5 text-[9px] font-semibold opacity-70">
-									{message.role === 'user' ? 'You' : 'Assistant'}
-								</p>
-								{#if message.fixContradictionSuggestion}
-									{@const fix = message.fixContradictionSuggestion}
-									<div class="space-y-2">
-										<div class="flex flex-wrap items-center justify-between gap-1">
-											<div class="flex flex-wrap items-center gap-1">
-												<span class="text-[10px] font-bold text-gray-800"
-													>Structured contradiction fix</span
-												>
-												<button
-													type="button"
-													class="docx-reference-chip"
-													onclick={() => onFocusNodeFromPanel(fix.paragraphId, true)}
-												>
-													{fix.paragraphId}
-												</button>
-											</div>
-											{#if fix.status === 'applied'}
-												<Badge
-													variant="outline"
-													class="h-4 border-green-200 bg-green-50 px-1.5 text-[8px] font-semibold text-green-700"
-												>
-													Applied
-												</Badge>
-											{/if}
-										</div>
-										{#if fix.reason}
-											<p class="text-[10px] text-gray-700">{fix.reason}</p>
+							{#if message.fixContradictionSuggestion || message.freeContradictionExplanation}
+								<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
+									<ContradictionActionMessageCard
+										{message}
+										{rewriteBusy}
+										compact={true}
+										{onFocusNodeFromPanel}
+										{onAcceptFixSuggestion}
+									/>
+								</div>
+							{:else}
+								<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
+									<div class="inline-flex max-w-[92%] items-start gap-1.5">
+										{#if message.role === 'assistant'}
+											<span class="mt-1 inline-flex shrink-0 items-center justify-center text-gray-500">
+												<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
+												<span class="sr-only">Assistant</span>
+											</span>
 										{/if}
-										<div class="rounded border border-gray-200 bg-gray-50/80 px-2 py-1.5">
-											<p class="mb-1 text-[9px] font-bold text-gray-700">Changes needed</p>
-											<ul class="space-y-1 text-[10px] text-gray-700">
-												{#each fix.changeNotes as note, noteIndex (`${message.id}-fix-note-${noteIndex}`)}
-													<li class="leading-relaxed">• {note}</li>
-												{/each}
-											</ul>
-										</div>
-										<div class="overflow-hidden rounded border border-gray-200 bg-white">
-											<div class="border-b border-gray-100 bg-red-50/40 px-2 py-1">
-												<p class="text-[9px] font-semibold text-red-700">Original Snippet</p>
-												<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
-													{fix.rewriteResult.payload.originalSnippet}
-												</p>
-											</div>
-											<div class="bg-green-50/40 px-2 py-1">
-												<p class="text-[9px] font-semibold text-green-700">Proposed Rewrite</p>
-												<p class="mt-0.5 text-[10px] leading-relaxed text-gray-900">
-													{fix.rewriteResult.payload.simplifiedSnippet}
-												</p>
-											</div>
-										</div>
-										<Button
-											variant="outline"
-											size="sm"
-											class="h-7 border-green-200 bg-green-50 px-2 text-[10px] font-semibold text-green-700 hover:border-green-300 hover:bg-green-100"
-											disabled={rewriteBusy || fix.status === 'applied'}
-											onclick={() => void onAcceptFixSuggestion(message.id)}
+										<div
+											class={`rounded border px-2 py-1 text-[10px] leading-relaxed ${
+												message.role === 'user'
+													? 'border-blue-200 bg-blue-50 text-blue-800'
+													: 'border-gray-200 bg-white text-gray-700'
+											}`}
 										>
-											{fix.status === 'applied' ? 'Suggestion applied' : 'Accept suggestion'}
-										</Button>
-									</div>
-								{:else if message.freeContradictionExplanation}
-									{@const free = message.freeContradictionExplanation}
-									<div class="space-y-1.5">
-										<div class="flex flex-wrap items-center gap-1">
-											<span class="font-bold text-gray-800">Free explanation for paragraph</span>
-											<button
-												type="button"
-												class="docx-reference-chip"
-												onclick={() => onFocusNodeFromPanel(free.paragraphId, true)}
-											>
-												{free.paragraphId}
-											</button>
-											<span class="font-bold text-gray-800">:</span>
-										</div>
-										<p class="text-[10px] text-gray-700">{free.reason}</p>
-										<p class="text-[10px] font-bold text-gray-800">Confidence: {free.confidence}%</p>
-										{#if free.snippetA && free.snippetB}
-											<div class="space-y-1">
-												<p class="text-[10px] font-bold text-red-700">
-													Snippet A ({free.snippetA.source}):
-												</p>
-												<p
-													class="rounded border border-red-300 bg-red-100/70 px-2 py-1 text-[10px] text-red-900"
-												>
-													"{free.snippetA.text}"
-												</p>
-											</div>
-											<div class="space-y-1">
-												<p class="text-[10px] font-bold text-yellow-700">
-													Snippet B ({free.snippetB.source}):
-												</p>
-												<p
-													class="rounded border border-yellow-300 bg-yellow-100/75 px-2 py-1 text-[10px] text-yellow-900"
-												>
-													"{free.snippetB.text}"
-												</p>
-											</div>
-										{:else if free.fallbackEvidenceMessage}
-											<p class="text-[10px] text-gray-600">{free.fallbackEvidenceMessage}</p>
-										{/if}
-										<p class="text-[10px] text-gray-600">{free.footerMessage}</p>
-									</div>
-								{:else}
-									<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
-										{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
-											{#if segment.isReference}
-												<span class="docx-reference-chip align-middle">{segment.text}</span>
+											{#if message.structuredContradiction}
+												<StructuredContradictionMessage
+													messageContent={message.content}
+													structuredContradiction={message.structuredContradiction}
+													{contradictionTaxonomyOrder}
+													{contradictionTaxonomyLabels}
+													{contradictionTaxonomyColors}
+													contradictionClaimSideColors={contradictionClaimSideColors}
+												/>
 											{:else}
-												<span>{segment.text}</span>
+												<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+													{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+														{#if segment.isReference}
+															<span class="docx-reference-chip align-middle">{segment.text}</span>
+														{:else}
+															<span>{segment.text}</span>
+														{/if}
+													{/each}
+												</p>
 											{/if}
-										{/each}
-									</p>
-								{/if}
-
-								{#if !message.fixContradictionSuggestion && !message.freeContradictionExplanation && message.citations && message.citations.length > 0}
-									<div class="mt-1.5 flex flex-wrap gap-1">
-										{#each message.citations as citation}
-											<button
-												type="button"
-												class="docx-reference-chip"
-												onclick={() => onFocusNodeFromPanel(citation.id, true)}
-											>
-												{citation.id}
-											</button>
-										{/each}
-									</div>
-								{/if}
-
-								{#if !message.fixContradictionSuggestion && !message.freeContradictionExplanation && message.structuredContradiction}
-									{@const structuredContradiction = message.structuredContradiction}
-									<div class="mt-1.5 rounded border border-red-200 bg-red-50/70 px-1.5 py-1">
-										<div class="mb-1 flex flex-wrap items-center gap-1">
-											<Badge
-												variant="outline"
-												class="h-4 border-red-300 bg-white px-1 text-[8px] text-red-700"
-											>
-												Contradictions: {structuredContradiction.contradiction_count}
-											</Badge>
-											{#if structuredContradiction.paragraph_id}
-												<button
-													type="button"
-													class="docx-reference-chip"
-													onclick={() =>
-														onFocusNodeFromPanel(structuredContradiction.paragraph_id, true)}
-												>
-													{structuredContradiction.paragraph_id}
-												</button>
-											{/if}
+											<!-- {#if message.citations && message.citations.length > 0}
+											<div class="mt-1.5 flex flex-wrap gap-1">
+												{#each message.citations as citation}
+													<button
+														type="button"
+														class="docx-reference-chip"
+														onclick={() => onFocusNodeFromPanel(citation.id, true)}
+													>
+														{citation.id}
+													</button>
+												{/each}
+											</div>
+											{/if} -->
 										</div>
-										<div class="space-y-1">
-											{#each structuredContradiction.contradictions.slice(0, 3) as item}
-												<div class="rounded border border-red-200/80 bg-white/70 px-1.5 py-1">
-													<div class="mb-0.5 flex items-center gap-1">
-														<Badge
-															variant="outline"
-															class="h-4 px-1 text-[8px] font-semibold"
-															style={`border-color:${contradictionTaxonomyColors[item.contradiction_type]}; color:${contradictionTaxonomyColors[item.contradiction_type]}; background:#fff;`}
-														>
-															{contradictionTaxonomyLabels[item.contradiction_type]}
-														</Badge>
-														<span class="text-[8px] text-gray-500"
-															>{Math.round(item.confidence)}%</span
-														>
-													</div>
-													<p class="max-h-10 overflow-hidden text-[9px] text-gray-700">
-														{item.why}
-													</p>
-												</div>
-											{/each}
-										</div>
+										{#if message.role === 'user'}
+											<span class="mt-1 inline-flex shrink-0 items-center justify-center text-blue-600">
+												<UserIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
+												<span class="sr-only">You</span>
+											</span>
+										{/if}
 									</div>
-								{/if}
-							</div>
+								</div>
+							{/if}
 						{/each}
 					{/if}
 					{#if assistantLoading}
