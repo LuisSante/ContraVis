@@ -103,7 +103,7 @@ export type BuildRelatedOptions = {
 	maxRelatedParagraphs?: number;
 };
 
-export type AssistantMode = 'explain' | 'quote' | 'suggest_questions';
+export type AssistantMode = 'explain' | 'suggest_questions';
 export type AssistantScope = 'selected' | 'full_contract';
 export type AssistantProvider = 'openai' | 'gemini';
 

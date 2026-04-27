@@ -95,19 +95,11 @@
 		<p class="text-[11px] text-gray-500">Detailed explanation for the selected paragraph.</p>
 	</header>
 
-	<!-- <div class="border-b border-gray-100 bg-white px-3 py-2.5">
-		{#if selectedParagraph}
-			<p class="text-[10px] text-gray-500">
-				Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
-			</p>
-		{/if}
-	</div> -->
-
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
-		<div class="space-y-2 p-3">
+		<div class="flex min-h-full flex-col gap-2 p-3">
 			{#if !selectedParagraph}
-				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-					<p class="text-[10px] font-medium">Select a paragraph on the left.</p>
+				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
+					<p class="text-[10px] italic">Select a paragraph on the left.</p>
 				</div>
 			{:else}
 				{#if loading}

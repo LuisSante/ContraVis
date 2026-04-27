@@ -1,0 +1,498 @@
+	[contenteditable='true']::selection {
+		background: rgba(250, 204, 21, 0.3);
+	}
+
+	.docx-relations-badge-host {
+		position: relative;
+		transition: background-color 140ms ease;
+	}
+
+	.docx-relations-badge-host::before {
+		content: '';
+		position: absolute;
+		right: -14px;
+		top: 2px;
+		bottom: 2px;
+		width: 2px;
+		border-radius: 9999px;
+		background: #d1d5db;
+		pointer-events: none;
+	}
+
+	.docx-relations-badge-host[data-relations-tone='linked']::before {
+		background: #60a5fa;
+	}
+
+	.docx-relations-badge-host::after {
+		content: attr(data-relations-count);
+		position: absolute;
+		right: -24px;
+		top: 50%;
+		display: inline-flex;
+		height: 22px;
+		width: 22px;
+		min-width: 22px;
+		transform: translateY(-50%);
+		align-items: center;
+		justify-content: center;
+		border-radius: 9999px;
+		border: 1px solid #d1d5db;
+		background: #f3f4f6;
+		color: #6b7280;
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1;
+		pointer-events: none;
+	}
+
+	.docx-relations-badge-host[data-relations-tone='linked']::after {
+		border-color: #93c5fd;
+		background: #dbeafe;
+		color: #1d4ed8;
+	}
+
+	.related-badges-off .docx-relations-badge-host::before,
+	.related-badges-off .docx-relations-badge-host::after {
+		display: none;
+	}
+
+	.related-focus-on .docx-relations-badge-host::before,
+	.related-focus-on .docx-relations-badge-host::after {
+		opacity: 0.2;
+	}
+
+	.related-focus-on .docx-relations-badge-host.docx-related-badge-emphasis::before,
+	.related-focus-on .docx-relations-badge-host.docx-related-badge-emphasis::after {
+		opacity: 1;
+	}
+
+	.related-focus-on .docx-relations-badge-host.docx-related-badge--similarity::before {
+		background: #16a34a;
+	}
+
+	.related-focus-on .docx-relations-badge-host.docx-related-badge--similarity::after {
+		border-color: #86efac;
+		background: #dcfce7;
+		color: #15803d;
+	}
+
+	.related-focus-on .docx-relations-badge-host.docx-related-badge--reference::before {
+		background: #2563eb;
+	}
+
+	.related-focus-on .docx-relations-badge-host.docx-related-badge--reference::after {
+		border-color: #93c5fd;
+		background: #dbeafe;
+		color: #1d4ed8;
+	}
+
+	.docx-citation-flash {
+		animation: citation-flash 1.2s ease-out;
+	}
+
+	.docx-related-selected {
+		outline: 2px solid #2563eb !important;
+		outline-offset: 1px !important;
+		background: rgba(37, 99, 235, 0.08) !important;
+	}
+
+	.docx-related-selected:focus,
+	.docx-related-selected:focus-visible {
+		outline: 2px solid #2563eb !important;
+		outline-offset: 1px !important;
+		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+	}
+
+	.docx-related-linked {
+		box-shadow: none;
+	}
+
+	.docx-related-context {
+		position: relative;
+	}
+
+	.docx-related-context::before {
+		position: absolute;
+		content: '';
+		left: -7px;
+		top: 2px;
+		bottom: 2px;
+		width: 2px;
+		border-radius: 9999px;
+		opacity: 0.9;
+		pointer-events: none;
+	}
+
+	.docx-related-context::after {
+		position: absolute;
+		content: attr(data-related-label);
+		left: -58px;
+		top: 10px;
+		width: 50px;
+		text-align: right;
+		font-size: 10px;
+		font-weight: 600;
+		line-height: 1.1;
+		white-space: pre-line;
+		opacity: 0.95;
+		pointer-events: none;
+		z-index: 1;
+		text-shadow: 0 0 0.1px currentColor;
+	}
+
+	.docx-related-context--with-sub::after {
+		content: attr(data-related-label) '\A' attr(data-related-sub);
+		white-space: pre;
+		line-height: 1.15;
+	}
+
+	.docx-related-context--reference::before {
+		background: #0c41d4;
+	}
+
+	.docx-related-context--reference::after {
+		color: #0c41d4;
+	}
+
+	.docx-related-context--similarity::before {
+		background: #09993e;
+	}
+
+	.docx-related-context--similarity::after {
+		color: #09993e;
+	}
+
+	.docx-paragraph-explanation-selected {
+		outline: 2.5px solid rgba(37, 99, 235, 0.82) !important;
+		/* outline-offset: 1px !important; */
+		background: rgba(59, 130, 246, 0.1) !important;
+		/* border-left: 1px solid rgba(37, 99, 235, 0.9) !important; */
+		box-shadow:
+			inset 0 0 0 9999px rgba(59, 130, 246, 0.08),
+			inset 0 0 0 1px rgba(37, 99, 235, 0.4) !important;
+	}
+
+	.docx-paragraph-explanation-selected:focus,
+	.docx-paragraph-explanation-selected:focus-visible {
+		outline: 2px solid rgba(37, 99, 235, 0.9) !important;
+		outline-offset: 1px !important;
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22) !important;
+	}
+
+	.docx-paragraph-explanation-related {
+		outline: 2px solid #2563eb !important;
+		outline-offset: 1px !important;
+		border-left: 1px solid #2563eb !important;
+		background: transparent !important;
+		/* box-shadow: inset 0 0 0 1px #2563eb !important; */
+	}
+
+	.docx-paragraph-explanation-bracket {
+		position: absolute;
+		width: 2px;
+		border-radius: 0;
+		background: #2563eb;
+		transform: translateX(-50%);
+		opacity: 1;
+		pointer-events: none;
+		transition:
+			opacity 120ms ease,
+			box-shadow 120ms ease,
+			width 120ms ease;
+	}
+
+	.docx-paragraph-explanation-bracket--interactive {
+		pointer-events: auto;
+		cursor: pointer;
+	}
+
+	.docx-paragraph-explanation-bracket--interactive:hover,
+	.docx-paragraph-explanation-bracket--interactive:focus-visible {
+		outline: none;
+		width: 3px;
+		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.24);
+	}
+
+	.docx-paragraph-explanation-cap {
+		position: absolute;
+		width: 12px;
+		height: 2px;
+		border-radius: 0;
+		background: #2563eb;
+		transform: translate(0, -50%);
+		opacity: 1;
+		transition:
+			opacity 120ms ease,
+			background-color 120ms ease,
+			box-shadow 120ms ease;
+	}
+
+	.docx-paragraph-explanation-cap--interactive {
+		pointer-events: auto;
+		cursor: pointer;
+	}
+
+	.docx-paragraph-explanation-cap--interactive::after {
+		content: '';
+		position: absolute;
+		right: 0;
+		top: 50%;
+		width: 6px;
+		height: 6px;
+		border-radius: 9999px;
+		transform: translate(50%, -50%);
+		background: #2563eb;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+	}
+
+	.docx-paragraph-explanation-cap--interactive:hover,
+	.docx-paragraph-explanation-cap--interactive:focus-visible {
+		outline: none;
+		background: rgba(37, 99, 235, 0.9);
+		opacity: 1;
+		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+	}
+
+	.docx-paragraph-explanation-cap--interactive:hover::after,
+	.docx-paragraph-explanation-cap--interactive:focus-visible::after {
+		background: #1d4ed8;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(37, 99, 235, 0.24);
+	}
+
+	.docx-related-scroll-marker {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 2px;
+		transform: translateY(-50%);
+		border-radius: 9999px;
+		background: #2563eb;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.88);
+		opacity: 0.9;
+		cursor: pointer;
+		transition:
+			transform 120ms ease,
+			opacity 120ms ease,
+			box-shadow 120ms ease;
+	}
+
+	.docx-related-scroll-marker:hover,
+	.docx-related-scroll-marker:focus-visible {
+		outline: none;
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.95),
+			0 0 0 2px rgba(37, 99, 235, 0.35);
+	}
+
+	.docx-contradiction-highlight {
+		background: transparent;
+		box-shadow: inset 3px 0 0 #dc2626;
+	}
+
+	.docx-contradiction-highlight[data-contradiction-confidence-band='medium'] {
+		background: transparent;
+		box-shadow: inset 3px 0 0 #ef4444;
+	}
+
+	.docx-contradiction-highlight[data-contradiction-confidence-band='low'] {
+		background: transparent;
+		box-shadow: inset 3px 0 0 #f97316;
+	}
+
+	.docx-contradiction-selected {
+		outline: none;
+	}
+
+	mark.docx-contradiction-snippet {
+		background: transparent;
+		color: #7f1d1d;
+		padding: 0 1px;
+		border-radius: 1px;
+		text-decoration: none;
+	}
+
+	mark.docx-contradiction-snippet[data-contradiction-role='a'] {
+		color: #991b1b;
+		background: rgba(254, 202, 202, 0.26);
+	}
+
+	mark.docx-contradiction-snippet[data-contradiction-role='b'] {
+		color: #854d0e;
+		background: rgba(254, 240, 138, 0.28);
+	}
+
+	mark.docx-contradiction-snippet.docx-contradiction-snippet--active {
+		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
+	}
+
+	
+		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']
+	 {
+		background: rgba(254, 202, 202, 0.58);
+		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
+	}
+
+	
+		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']
+	 {
+		background: rgba(254, 240, 138, 0.6);
+		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
+	}
+
+	.docx-contradiction-scroll-marker {
+		position: absolute;
+		left: 0;
+		right: 0;
+		height: 2px;
+		transform: translateY(-50%);
+		border-radius: 9999px;
+		background: #dc2626;
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
+		opacity: 0.92;
+		cursor: pointer;
+		transition:
+			transform 120ms ease,
+			opacity 120ms ease,
+			box-shadow 120ms ease;
+	}
+
+	.docx-contradiction-scroll-marker:hover {
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.95),
+			0 0 0 2px rgba(239, 68, 68, 0.35);
+	}
+
+	.docx-contradiction-scroll-marker:focus-visible {
+		outline: none;
+		opacity: 1;
+		transform: translateY(-50%) scaleY(1.4);
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.95),
+			0 0 0 2px rgba(239, 68, 68, 0.45);
+	}
+
+	.docx-contradiction-scroll-marker--medium {
+		background: #ef4444;
+	}
+
+	.docx-contradiction-scroll-marker--low {
+		background: #f87171;
+	}
+
+	.docx-contradiction-evidence-bracket {
+		position: absolute;
+		width: 2px;
+		border-radius: 0;
+		background: linear-gradient(to bottom, #dc2626 0%, #eab308 100%);
+		transform: translateX(-50%);
+		opacity: 0.92;
+	}
+
+	.docx-contradiction-evidence-cap {
+		position: absolute;
+		width: 12px;
+		height: 2px;
+		border-radius: 0;
+		background: linear-gradient(to right, rgba(220, 38, 38, 0.95) 0%, rgba(234, 179, 8, 0.95) 100%);
+		transform: translate(-100%, -50%);
+		opacity: 0.92;
+	}
+
+	.docx-contradiction-evidence-dot {
+		position: absolute;
+		height: 8px;
+		width: 8px;
+		transform: translate(-50%, -50%);
+		border-radius: 9999px;
+		border: 1px solid rgba(255, 255, 255, 0.9);
+		box-shadow: 0 0 0 1px rgba(100, 116, 139, 0.28);
+	}
+
+	.docx-contradiction-evidence-dot--a {
+		background: #dc2626;
+	}
+
+	.docx-contradiction-evidence-dot--b {
+		background: #eab308;
+	}
+
+	.docx-contradiction-evidence-label {
+		position: absolute;
+		transform: translate(9px, -50%);
+		font-size: 10px;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.docx-contradiction-evidence-label--a {
+		color: #b91c1c;
+	}
+
+	.docx-contradiction-evidence-label--b {
+		color: #a16207;
+	}
+
+	@keyframes bounce {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-3px);
+		}
+	}
+
+	.animate-bounce {
+		animation: bounce 2s infinite;
+	}
+
+	@keyframes citation-flash {
+		0% {
+			background-color: rgba(254, 243, 199, 0.8);
+			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+		}
+		70% {
+			background-color: rgba(254, 252, 232, 0.65);
+			box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
+		}
+		100% {
+			background-color: transparent;
+			box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+		}
+	}
+
+	@keyframes processing-dot-pulse {
+		0%,
+		100% {
+			opacity: 0.2;
+			transform: scale(0.85);
+		}
+		45% {
+			opacity: 0.95;
+			transform: scale(1.06);
+		}
+	}
+
+	@keyframes processing-step-fade {
+		0%,
+		100% {
+			opacity: 0.42;
+		}
+		50% {
+			opacity: 0.95;
+		}
+	}
+
+	@keyframes processing-ellipsis-dot {
+		0%,
+		100% {
+			opacity: 0.15;
+		}
+		50% {
+			opacity: 1;
+		}
+	}

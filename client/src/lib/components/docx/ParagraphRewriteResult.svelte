@@ -18,7 +18,9 @@
 	export let rejectLabel = 'Reject';
 	export let minimal = false;
 	export let showCopyAction = true;
+	export let showSimplifyBadge = true;
 	$: isSimplifyResult = rewriteSource === 'simplify';
+	$: shouldShowSimplifyBadge = isSimplifyResult && showSimplifyBadge;
 
 	$: resultParagraphId = simplifyResult?.payload.evidence.paragraph_id ?? null;
 	$: resultIsOnAnotherParagraph = Boolean(
@@ -52,7 +54,7 @@
 					: 'border-blue-200 bg-blue-50/50'
 		}`}
 	>
-		{#if isSimplifyResult}
+		{#if shouldShowSimplifyBadge}
 			<div class="pointer-events-none absolute top-1.5 left-2 z-10">
 				<Badge
 					variant="outline"
@@ -79,7 +81,7 @@
 				</Card.Description> -->
 			</Card.Header>
 		{/if}
-		<Card.Content class={`space-y-2 px-3 pb-3 ${isSimplifyResult || minimal ? 'pt-5' : ''}`}>
+		<Card.Content class={`space-y-2 px-3 pb-3 ${shouldShowSimplifyBadge || minimal ? 'pt-5' : ''}`}>
 			{#if !minimal && !isSimplifyResult && resultIsOnAnotherParagraph && resultParagraphId}
 				<div class="rounded border border-amber-200 bg-amber-50 px-2 py-1.5 text-[10px] text-amber-700">
 					Result belongs to paragraph {resultParagraphId}.

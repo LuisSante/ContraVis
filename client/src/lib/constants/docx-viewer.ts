@@ -12,14 +12,13 @@ export const QUICK_ACTION_WHY_CONTRADICTION_AI = 'Why is it a contradiction? (AI
 export const QUICK_ACTIONS = [
 	QUICK_ACTION_WHY_CONTRADICTION_FREE,
 	QUICK_ACTION_WHY_CONTRADICTION_AI,
-	"What happens if I don't?",
+	'Who is liable?',
 	'Can I terminate?',
-	'Who is liable?'
+	"What happens if I don't?",
 ];
 
 export const MODE_OPTIONS: ReadonlyArray<{ value: AssistantMode; label: string }> = [
 	{ value: 'explain', label: 'Explain' },
-	{ value: 'quote', label: 'Quote' },
 	{ value: 'suggest_questions', label: 'Suggestion Question' }
 ];
 

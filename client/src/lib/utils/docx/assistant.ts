@@ -391,7 +391,7 @@ export function buildContradictionAiCostQuestion(
 		'  policy_reversal: one statement directly negates the other.',
 		'  specificity: one statement is broader/narrower than the other.',
 		'- Ground every contradiction only on provided paragraph/context.',
-		'- Prefer exact quoted claim text.',
+		'- Prefer exact claim text.',
 		'- Keep contradiction_count equal to contradictions.length.',
 		'- Include at least 3 highlights when possible.',
 		'- For each highlight, set claim_side as a or b when it belongs to Claim A/B.',
@@ -418,13 +418,6 @@ function getFallbackSuggestedQuestions(options?: ResolveSuggestedQuestionsOption
 			'How can I rewrite this paragraph to remove the contradiction?',
 			'Which snippet is riskier to keep and why?',
 			'Show a safer clause version preserving business intent.'
-		];
-	}
-	if (options?.mode === 'quote') {
-		return [
-			'Can you show the exact sentence that supports your answer?',
-			'What is the key obligation in this paragraph?',
-			'What term could create legal risk here?'
 		];
 	}
 	if (options?.scope === 'full_contract') {

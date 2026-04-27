@@ -65,7 +65,7 @@ class KnowledgeGraph(BaseModel):
     triples: List[KGTriple] = Field(default_factory=list)
 
 
-AssistantMode = Literal["explain", "quote", "suggest_questions"]
+AssistantMode = Literal["explain", "suggest_questions"]
 AssistantScope = Literal["selected", "full_contract"]
 AssistantProvider = Literal["openai", "gemini"]
 AssistantMessageRole = Literal["user", "assistant"]

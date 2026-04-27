@@ -76,12 +76,6 @@
 
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
 		<div class="flex min-h-full flex-col space-y-2 p-2">
-			<!-- {#if selectedParagraph}
-				<p class="px-1 text-[10px] text-gray-500">
-					Selected: {selectedParagraph.id} &middot; Page {selectedParagraph.page}
-				</p>
-			{/if} -->
-
 			{#if backendGraphLoading}
 				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
 					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
@@ -119,11 +113,8 @@
 					</ul>
 				</div>
 			{:else if !selectedParagraph}
-				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-					<p class="text-[10px] font-medium">Select a paragraph to see its related paragraphs.</p>
-					<p class="mt-1 text-[10px] text-gray-400">
-						Choose a paragraph in the document on the left.
-					</p>
+				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
+					<p class="text-[10px] italic">Select a paragraph to see its related paragraphs.</p>
 				</div>
 			{:else if selectedRelatedParagraphs.length === 0}
 				<div class="flex flex-1 flex-col items-center justify-center py-12 text-gray-300">
@@ -141,7 +132,7 @@
 								{#if hasSemanticRelation(related)}
 									<Badge
 										variant="outline"
-										class="h-4 border-green-100 bg-green-50 px-2 text-[9px] font-semibold text-green-600"
+										class="flex items-center justify-center h-4 border-green-500 bg-green-100 px-2 text-[9px] font-semibold text-green-600"
 									>
 										Similarity
 									</Badge>
@@ -149,7 +140,7 @@
 								{#if hasReferenceRelation(related)}
 									<Badge
 										variant="outline"
-										class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
+										class="flex items-center justify-center h-4 border-blue-500 bg-blue-100 px-1.5 text-[9px] font-semibold text-blue-600"
 									>
 										Reference
 									</Badge>
@@ -164,9 +155,6 @@
 									</span>
 								{/if}
 							</div>
-							<span class="text-[9px] font-semibold tracking-tight text-gray-400">
-								Page {related.node.page}
-							</span>
 						</div>
 
 						<p class="text-[11px] leading-relaxed text-gray-600">

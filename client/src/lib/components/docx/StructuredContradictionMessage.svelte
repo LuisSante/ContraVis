@@ -1,44 +1,27 @@
 <script lang="ts">
 	import type {
-		AssistantChatMessage,
 		ChatHighlightSegment,
-		ChatPreviewHoverState,
 		ContradictionTaxonomyType,
 		StructuredContradictionAnalysis
 	} from '$lib/types/document';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { ScrollArea } from '$lib/components/ui/scroll-area/index.js';
-	import { Skeleton } from '$lib/components/ui/skeleton/index.js';
 	import * as Tabs from '$lib/components/ui/tabs/index.js';
 	import * as Tooltip from '$lib/components/ui/tooltip/index.js';
-	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
-	import UserIcon from '$lib/icons/UserIcon.svelte';
-	import ContradictionActionMessageCard from './ContradictionActionMessageCard.svelte';
-	import StructuredContradictionMessage from './StructuredContradictionMessage.svelte';
 
 	type ChatPreviewTab = 'contradiction' | 'claims';
-	type ReferenceTextSegment = {
-		text: string;
-		isReference: boolean;
-	};
 	type ChatHighlightTooltip = {
 		kind: 'claim' | 'highlight';
 		badgeText: string;
 		badgeStyle: string;
 		description?: string;
 	} | null;
-
-	const EMPTY_TAXONOMY_LOOKUP: Record<ContradictionTaxonomyType, string> = {
-		temporal: '',
-		numerical: '',
-		authority: '',
-		process: '',
-		policy_reversal: '',
-		specificity: '',
-		other: ''
+	type ChatPreviewHoverState = {
+		segmentKey: string;
+		contradictionId: string;
+		claimSide: 'a' | 'b' | null;
+		kind: 'claim' | 'highlight';
 	};
+
 	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<Record<ContradictionTaxonomyType, string>> = {
 		temporal: 'The claims conflict on timing, dates, or sequence of events.',
 		numerical: 'The claims conflict on numbers, amounts, percentages, or quantities.',
@@ -49,65 +32,45 @@
 		specificity: 'One claim is broader while the other is narrower in scope.',
 		other: 'The claims conflict, but not under the main taxonomy categories.'
 	};
-	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 
-	let chatPreviewHover: ChatPreviewHoverState | null = null;
-	let chatPreviewTabByMessageId: Record<string, ChatPreviewTab> = {};
-
-	export let assistantInput = '';
-	export let assistantMessages: AssistantChatMessage[] = [];
-	export let assistantLoading = false;
-	export let assistantError: string | null = null;
-	export let assistantThread: HTMLElement | null = null;
-
-	export let quickActionSuggestions: readonly string[] = [];
-
-	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [];
+	export let messageContent = '';
+	export let structuredContradiction: StructuredContradictionAnalysis | null = null;
+	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [
+		'temporal',
+		'numerical',
+		'authority',
+		'process',
+		'policy_reversal',
+		'specificity',
+		'other'
+	];
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
-		...EMPTY_TAXONOMY_LOOKUP
+		temporal: 'Temporal',
+		numerical: 'Numerical',
+		authority: 'Authority',
+		process: 'Process',
+		policy_reversal: 'Policy Reversal',
+		specificity: 'Specificity',
+		other: 'Other'
 	};
 	export let contradictionTaxonomyColors: Record<ContradictionTaxonomyType, string> = {
-		...EMPTY_TAXONOMY_LOOKUP
+		temporal: '#8b5cf6',
+		numerical: '#14b8a6',
+		authority: '#f97316',
+		process: '#0ea5e9',
+		policy_reversal: '#ef4444',
+		specificity: '#84cc16',
+		other: '#9ca3af'
 	};
 	export let contradictionClaimSideColors: Record<'a' | 'b', string> = {
 		a: '#1d4ed8',
 		b: '#7c3aed'
 	};
 
-	export let onSuggestedQuestionClick: (question: string) => void = () => {};
-	export let onQuickActionSuggestionClick: (question: string) => void = () => {};
-	export let onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void = () => {};
-	export let onAcceptFixSuggestion: (messageId: string) => void | Promise<void> = () => {};
-	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
-	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
-	export let rewriteBusy = false;
-	$: showQuickActionSuggestions =
-		quickActionSuggestions.length > 0 &&
-		assistantMessages.length === 0 &&
-		assistantInput.trim().length === 0;
+	let chatPreviewHover: ChatPreviewHoverState | null = null;
+	let chatPreviewTab: ChatPreviewTab = 'contradiction';
 
-	function splitReferenceText(value: string): ReferenceTextSegment[] {
-		if (!value) return [];
-		const segments: ReferenceTextSegment[] = [];
-		let lastIndex = 0;
-		for (const match of value.matchAll(PARAGRAPH_REFERENCE_PATTERN)) {
-			const start = match.index ?? 0;
-			const matchedText = match[0] ?? '';
-			if (!matchedText) continue;
-			if (start > lastIndex) {
-				segments.push({ text: value.slice(lastIndex, start), isReference: false });
-			}
-			segments.push({ text: matchedText, isReference: true });
-			lastIndex = start + matchedText.length;
-		}
-		if (lastIndex < value.length) {
-			segments.push({ text: value.slice(lastIndex), isReference: false });
-		}
-		if (segments.length === 0) {
-			segments.push({ text: value, isReference: false });
-		}
-		return segments;
-	}
+	$: chatSegments = buildChatHighlightSegments(structuredContradiction);
 
 	function toNonEmptyString(raw: unknown): string {
 		if (typeof raw === 'string') return raw.trim();
@@ -125,7 +88,7 @@
 	}
 
 	function buildChatHighlightSegments(
-		analysis: StructuredContradictionAnalysis | undefined
+		analysis: StructuredContradictionAnalysis | null | undefined
 	): ChatHighlightSegment[] {
 		if (!analysis) return [];
 
@@ -351,45 +314,26 @@
 		return segments;
 	}
 
-	function getChatPreviewTab(messageId: string): ChatPreviewTab {
-		return chatPreviewTabByMessageId[messageId] ?? 'contradiction';
-	}
-
-	function setChatPreviewTab(messageId: string, value: string) {
+	function setChatPreviewTab(value: string) {
 		const nextTab: ChatPreviewTab = value === 'claims' ? 'claims' : 'contradiction';
-		if (getChatPreviewTab(messageId) === nextTab) return;
-		chatPreviewTabByMessageId = {
-			...chatPreviewTabByMessageId,
-			[messageId]: nextTab
-		};
-		if (nextTab !== 'contradiction') clearChatPreviewHover(messageId);
+		if (chatPreviewTab === nextTab) return;
+		chatPreviewTab = nextTab;
+		if (nextTab !== 'contradiction') clearChatPreviewHover();
 	}
 
-	function getChatPreviewHover(messageId: string): ChatPreviewHoverState | null {
-		if (!chatPreviewHover) return null;
-		return chatPreviewHover.messageId === messageId ? chatPreviewHover : null;
-	}
-
-	function clearChatPreviewHover(messageId?: string) {
-		if (!chatPreviewHover) return;
-		if (messageId && chatPreviewHover.messageId !== messageId) return;
+	function clearChatPreviewHover() {
 		chatPreviewHover = null;
 	}
 
-	function handleChatPreviewSegmentMouseEnter(
-		messageId: string,
-		segment: ChatHighlightSegment,
-		segmentKey: string
-	) {
+	function handleChatPreviewSegmentMouseEnter(segment: ChatHighlightSegment, segmentKey: string) {
 		const contradictionId = toNonEmptyString(segment.claimId);
 		if (!contradictionId) {
-			clearChatPreviewHover(messageId);
+			clearChatPreviewHover();
 			return;
 		}
 
 		if (segment.claimSide) {
 			chatPreviewHover = {
-				messageId,
 				segmentKey,
 				contradictionId,
 				claimSide: segment.claimSide,
@@ -400,39 +344,31 @@
 
 		if (segment.category) {
 			chatPreviewHover = {
-				messageId,
 				segmentKey,
 				contradictionId,
 				claimSide: segment.claimSide ?? null,
 				kind: 'highlight'
 			};
-			return;
 		}
 	}
 
-	function isChatPreviewTooltipOpen(messageId: string, segmentKey: string): boolean {
-		const hover = getChatPreviewHover(messageId);
-		if (!hover) return false;
-		return hover.segmentKey === segmentKey;
+	function isChatPreviewTooltipOpen(segmentKey: string): boolean {
+		if (!chatPreviewHover) return false;
+		return chatPreviewHover.segmentKey === segmentKey;
 	}
 
-	function isHoveringContradiction(messageId: string, contradictionId?: string): boolean {
-		const hover = getChatPreviewHover(messageId);
-		if (!hover || !contradictionId) return false;
-		return hover.contradictionId.toLowerCase() === contradictionId.toLowerCase();
+	function isHoveringContradiction(contradictionId?: string): boolean {
+		if (!chatPreviewHover || !contradictionId) return false;
+		return chatPreviewHover.contradictionId.toLowerCase() === contradictionId.toLowerCase();
 	}
 
-	function resolveChatHighlightSegmentStyle(
-		segment: ChatHighlightSegment,
-		messageId: string
-	): string {
-		const hover = getChatPreviewHover(messageId);
-		const hoverMatchesContradiction = isHoveringContradiction(messageId, segment.claimId);
+	function resolveChatHighlightSegmentStyle(segment: ChatHighlightSegment): string {
+		const hoverMatchesContradiction = isHoveringContradiction(segment.claimId);
 
-		if (hover?.kind === 'claim' && hover.claimSide) {
-			const claimColor = contradictionClaimSideColors[hover.claimSide];
+		if (chatPreviewHover?.kind === 'claim' && chatPreviewHover.claimSide) {
+			const claimColor = contradictionClaimSideColors[chatPreviewHover.claimSide];
 
-			if (segment.claimSide === hover.claimSide) {
+			if (segment.claimSide === chatPreviewHover.claimSide) {
 				return [
 					`background: ${claimColor}3a;`,
 					`border-bottom: 2px solid ${claimColor};`,
@@ -455,7 +391,7 @@
 			return '';
 		}
 
-		if (hover?.kind === 'highlight' && hoverMatchesContradiction && segment.category) {
+		if (chatPreviewHover?.kind === 'highlight' && hoverMatchesContradiction && segment.category) {
 			const contradictionType = segment.contradictionType || segment.category;
 			const color = contradictionTaxonomyColors[contradictionType];
 			return [
@@ -513,186 +449,158 @@
 	}
 </script>
 
-<section class="flex min-h-0 flex-1 flex-col bg-white">
-	<ScrollArea class="min-h-0 flex-1" bind:viewportRef={assistantThread}>
-		<div class="flex min-h-full flex-col gap-2 p-2">
-			{#if assistantMessages.length === 0 && !assistantLoading}
-				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
-					<p class="text-[10px] italic">Chat about this contract</p>
-				</div>
-			{/if}
+<div class="space-y-2">
+	<p class="whitespace-pre-wrap">{messageContent}</p>
 
-			{#each assistantMessages as message (message.id)}
-				{#if message.fixContradictionSuggestion || message.freeContradictionExplanation}
-					<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
-						<ContradictionActionMessageCard
-							{message}
-							{rewriteBusy}
-							{onFocusNodeFromPanel}
-							{onAcceptFixSuggestion}
-						/>
-					</div>
-				{:else}
-					<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
-						<div class="inline-flex max-w-[92%] items-start gap-1.5">
-							{#if message.role === 'assistant'}
-								<span class="mt-1 inline-flex shrink-0 items-center justify-center text-gray-500">
-									<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-									<span class="sr-only">Assistant</span>
-								</span>
-							{/if}
-							<div
-								class={`rounded border px-2 py-1 text-[10px] leading-relaxed ${
-									message.role === 'user'
-										? 'border-blue-200 bg-blue-50 text-blue-800'
-										: 'border-gray-200 bg-white text-gray-700'
-								}`}
-							>
-								{#if message.structuredContradiction}
-									<StructuredContradictionMessage
-										messageContent={message.content}
-										structuredContradiction={message.structuredContradiction}
-										{contradictionTaxonomyOrder}
-										{contradictionTaxonomyLabels}
-										{contradictionTaxonomyColors}
-										contradictionClaimSideColors={contradictionClaimSideColors}
-									/>
-								{:else}
-									<p class="whitespace-pre-wrap">
-										{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
-											{#if segment.isReference}
-												<span class="docx-reference-chip align-middle">{segment.text}</span>
-											{:else}
-												<span>{segment.text}</span>
-											{/if}
-										{/each}
-									</p>
-								{/if}
+	{#if structuredContradiction?.highlight_source_text?.trim()}
+		<div
+			class="rounded-xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/65 to-sky-50/35 px-2.5 py-2.5 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)]"
+		>
+			<Tabs.Root value={chatPreviewTab} onValueChange={setChatPreviewTab} class="gap-1.5">
+				<Tabs.List class="h-6 w-full border border-gray-200 bg-white p-[2px]">
+					<Tabs.Trigger value="contradiction" class="text-[9px] font-semibold">
+						Contradiction
+					</Tabs.Trigger>
+					<Tabs.Trigger value="claims" class="text-[9px] font-semibold">Snippet</Tabs.Trigger>
+				</Tabs.List>
 
-								{#if message.suggestedQuestions?.length}
-									<div class="mt-2">
-										<p class="mb-1 text-[9px] font-semibold text-gray-500">Suggested questions</p>
-										<div class="flex flex-wrap gap-1">
-											{#each message.suggestedQuestions as suggestedQuestion}
-												<Button
-													variant="outline"
-													size="xs"
-													class="h-5 border-gray-200 bg-gray-50 px-1.5 text-[9px] text-gray-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
-													onclick={() => onSuggestedQuestionClick(suggestedQuestion)}
+				<Tabs.Content value="contradiction" class="text-[11px]">
+					<p
+						class="leading-relaxed break-words whitespace-normal text-gray-700"
+						onmouseleave={clearChatPreviewHover}
+					>
+						{#each chatSegments as segment, segmentIndex}
+							{#if segment.interactive}
+								{@const tooltipData = resolveChatHighlightSegmentTooltip(segment)}
+								{@const segmentKey = `segment:${segmentIndex}`}
+								{#if tooltipData}
+									<Tooltip.Root
+										open={isChatPreviewTooltipOpen(segmentKey)}
+										onOpenChange={(open) => {
+											if (open) {
+												handleChatPreviewSegmentMouseEnter(segment, segmentKey);
+												return;
+											}
+											if (isChatPreviewTooltipOpen(segmentKey)) {
+												clearChatPreviewHover();
+											}
+										}}
+									>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<span
+													{...props}
+													class="inline bg-transparent p-0 text-left align-baseline leading-[inherit] whitespace-normal text-inherit transition-[background-color,border-color,box-shadow,color] duration-150 ease-out hover:cursor-help focus-visible:outline-none"
+													onmouseenter={() => handleChatPreviewSegmentMouseEnter(segment, segmentKey)}
+													onmouseleave={clearChatPreviewHover}
+													onfocus={() => handleChatPreviewSegmentMouseEnter(segment, segmentKey)}
+													onblur={clearChatPreviewHover}
 												>
-													{suggestedQuestion}
-												</Button>
-											{/each}
-										</div>
-									</div>
+													<span
+														class="inline rounded-[3px] px-[2px] py-[1px]"
+														style={resolveChatHighlightSegmentStyle(segment)}
+													>
+														{segment.text}
+													</span>
+												</span>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content
+											side="top"
+											sideOffset={6}
+											class="max-w-[290px] border border-gray-200 bg-white px-2 py-1.5 text-gray-700 shadow-md"
+										>
+											<div class="space-y-1">
+												<Badge
+													variant="outline"
+													class="h-4 px-1.5 text-[9px] font-semibold"
+													style={tooltipData.badgeStyle}
+												>
+													{tooltipData.badgeText}
+												</Badge>
+												{#if tooltipData.description}
+													<p class="text-[9px] leading-relaxed text-gray-600">
+														{tooltipData.description}
+													</p>
+												{/if}
+											</div>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								{:else}
+									<button
+										type="button"
+										class="inline appearance-none rounded-sm border-0 bg-transparent px-[2px] py-[1px] text-left align-baseline leading-[inherit] whitespace-normal text-inherit"
+										style={resolveChatHighlightSegmentStyle(segment)}
+										onmouseenter={() => handleChatPreviewSegmentMouseEnter(segment, segmentKey)}
+										onmouseleave={clearChatPreviewHover}
+									>
+										{segment.text}
+									</button>
 								{/if}
-
-								{#if message.citations?.length}
-									<div class="mt-2 flex flex-wrap gap-1">
-										{#each message.citations as citation}
-											<button
-												type="button"
-												class="docx-reference-chip"
-												title={citation.excerpt}
-												onclick={() => onFocusNodeFromPanel(citation.id, true)}
-											>
-												{citation.id}
-											</button>
-										{/each}
-									</div>
-								{/if}
-							</div>
-							{#if message.role === 'user'}
-								<span class="mt-1 inline-flex shrink-0 items-center justify-center text-blue-600">
-									<UserIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-									<span class="sr-only">You</span>
-								</span>
+							{:else}
+								<span>{segment.text}</span>
 							{/if}
-						</div>
-					</div>
-				{/if}
-			{/each}
+						{/each}
+					</p>
 
-			{#if assistantLoading}
-				<div class="flex justify-start">
-					<div class="w-[82%] max-w-[92%] rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-						<div class="space-y-2">
-							<Skeleton class="h-3.5 w-28" />
-							<Skeleton class="h-3 w-full" />
-							<Skeleton class="h-3 w-[92%]" />
-							<Skeleton class="h-3 w-[70%]" />
-						</div>
-					</div>
-				</div>
-			{/if}
-		</div>
-	</ScrollArea>
-
-	{#if assistantError}
-		<div class="border-t border-red-100 bg-red-50 px-3 py-1.5 text-[10px] text-red-700">
-			{assistantError}
-		</div>
-	{/if}
-
-	<form
-		class="bg-white p-2"
-		onsubmit={(event) => {
-			event.preventDefault();
-			void onSubmitAssistantQuestion();
-		}}
-	>
-			{#if showQuickActionSuggestions}
-				<div class="mb-2 flex justify-end">
-					<div class="inline-flex flex-col items-end gap-1.5">
-						{#each quickActionSuggestions as action}
-							<Button
+					<div class="mt-2 flex flex-wrap gap-2">
+						{#each contradictionTaxonomyOrder as category}
+							<Badge
 								variant="outline"
-								size="sm"
-								class="h-6 w-auto shrink-0 border-black bg-white px-2 text-[10px] text-black hover:text-white hover:bg-blue-600"
-								onclick={() => onQuickActionSuggestionClick(action)}
+								class="h-4 items-center gap-1 border-gray-200 bg-white px-1.5 text-[9px] text-gray-600"
 							>
-								{action}
-							</Button>
+								<span
+									class="inline-flex h-2 w-2 rounded-full"
+									style={`background: ${contradictionTaxonomyColors[category]};`}
+								></span>
+								{contradictionTaxonomyLabels[category]}
+							</Badge>
 						{/each}
 					</div>
-				</div>
-			{/if}
+				</Tabs.Content>
 
-		<div class="mt-2 flex items-end gap-1.5">
-			<Textarea
-				rows={2}
-				placeholder="Ask about this contract or paragraph..."
-				class="min-h-[50px] border-black bg-white text-[10px] text-gray-700"
-				bind:value={assistantInput}
-				onkeydown={onHandleAssistantInputKeydown}
-				disabled={assistantLoading}
-			/>
-			<Button
-				type="submit"
-				variant="outline"
-				size="sm"
-				disabled={assistantLoading}
-				class="h-7 w-7 border-black bg-white px-0 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				aria-label="Send chat message"
-				title="Send"
-			>
-				<svg viewBox="0 0 20 20" fill="none" class="h-3.5 w-3.5" aria-hidden="true">
-					<path
-						d="M3 10L17 3L10 17L8.2 11.8L3 10Z"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-					<path
-						d="M17 3L8.2 11.8"
-						stroke="currentColor"
-						stroke-width="1.6"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-			</Button>
+				<Tabs.Content value="claims" class="text-[11px]">
+					<p class="leading-relaxed break-words whitespace-normal text-gray-700">
+						{#each chatSegments as segment}
+							{#if segment.claimSide}
+								<span
+									class="inline rounded-[3px] px-[2px] py-[1px]"
+									style={resolveChatClaimSegmentStyle(segment)}
+								>
+									{segment.text}
+								</span>
+							{:else}
+								<span>{segment.text}</span>
+							{/if}
+						{/each}
+					</p>
+
+					<div class="mt-2 flex flex-wrap gap-1.5">
+						<Badge
+							variant="outline"
+							class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+							style={`border-color: ${contradictionClaimSideColors.a}55; background: ${contradictionClaimSideColors.a}14; color: ${contradictionClaimSideColors.a};`}
+						>
+							<span
+								class="inline-flex h-2 w-2 rounded-full"
+								style={`background: ${contradictionClaimSideColors.a};`}
+							></span>
+							Snippet A
+						</Badge>
+						<Badge
+							variant="outline"
+							class="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+							style={`border-color: ${contradictionClaimSideColors.b}55; background: ${contradictionClaimSideColors.b}14; color: ${contradictionClaimSideColors.b};`}
+						>
+							<span
+								class="inline-flex h-2 w-2 rounded-full"
+								style={`background: ${contradictionClaimSideColors.b};`}
+							></span>
+							Snippet B
+						</Badge>
+					</div>
+				</Tabs.Content>
+			</Tabs.Root>
 		</div>
-	</form>
-</section>
+	{/if}
+</div>

@@ -17,9 +17,6 @@
 			{#if !selectedParagraph}
 				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
 					<p class="text-[10px] font-medium">Select a paragraph to summarize and simplify</p>
-					<p class="mt-1 text-[10px] text-gray-400">
-						Choose a paragraph in the document on the left.
-					</p>
 				</div>
 			{:else}
 				<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">

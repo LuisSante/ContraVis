@@ -70,8 +70,8 @@ MODEL_PRICING_USD_PER_1M: dict[str, dict[str, float]] = {
 #       "confidence": integer from 0 to 100,
 #       "brief_reason": "one short sentence",
 #       "evidence": {{
-#         "snippet_a": "exact short quote #1 that conflicts",
-#         "snippet_b": "exact short quote #2 that conflicts",
+#         "snippet_a": "exact short excerpt #1 that conflicts",
+#         "snippet_b": "exact short excerpt #2 that conflicts",
 #         "source_a": "paragraph | context | unknown",
 #         "source_b": "paragraph | context | unknown"
 #       }}
@@ -101,8 +101,8 @@ Return ONLY valid JSON (no markdown, no extra text) with this shape:
       "confidence": integer from 0 to 100,
       "brief_reason": "one short sentence",
       "evidence": {{
-        "snippet_a": "exact short quote #1 that conflicts",
-        "snippet_b": "exact short quote #2 that conflicts",
+        "snippet_a": "exact short excerpt #1 that conflicts",
+        "snippet_b": "exact short excerpt #2 that conflicts",
         "source_a": "paragraph | context | unknown",
         "source_b": "paragraph | context | unknown"
       }}
