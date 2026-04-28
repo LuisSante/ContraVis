@@ -99,9 +99,63 @@ export function updateRelationBadge(
 	if (!target) return;
 
 	const relationsCount = getRelationsCount(relationsCountByNodeId, nodeId);
+	if (relationsCount <= 0) {
+		target.classList.remove(
+			'docx-relations-badge-host',
+			'docx-related-badge-emphasis',
+			'docx-related-badge--reference',
+			'docx-related-badge--similarity'
+		);
+		delete target.dataset.relationsCount;
+		delete target.dataset.relationsTone;
+		target.style.removeProperty('--docx-relations-badge-right');
+		target.style.removeProperty('--docx-relations-guide-right');
+		return;
+	}
+
 	target.classList.add('docx-relations-badge-host');
 	target.dataset.relationsCount = String(relationsCount);
-	target.dataset.relationsTone = relationsCount > 0 ? 'linked' : 'none';
+	target.dataset.relationsTone = 'linked';
+	alignRelationBadgeToPage(target);
+}
+
+function parseCssPx(value: string): number {
+	const parsed = Number.parseFloat(value);
+	return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function alignRelationBadgeToPage(target: HTMLElement) {
+	if (typeof window === 'undefined') return;
+
+	const applyAlignment = () => {
+		const section = target.closest('section');
+		if (!(section instanceof HTMLElement)) return;
+
+		const targetRect = target.getBoundingClientRect();
+		const sectionRect = section.getBoundingClientRect();
+		if (targetRect.width <= 0 || sectionRect.width <= 0) return;
+
+		const sectionStyles = window.getComputedStyle(section);
+		const sectionPaddingRight = parseCssPx(sectionStyles.paddingRight);
+		const pageTextRightPx = sectionRect.right - sectionPaddingRight;
+		const badgeCenterX = pageTextRightPx + 14;
+
+		target.style.setProperty(
+			'--docx-relations-badge-right',
+			`${targetRect.right - badgeCenterX - 11}px`
+		);
+		target.style.setProperty(
+			'--docx-relations-guide-right',
+			`${targetRect.right - badgeCenterX - 1}px`
+		);
+	};
+
+	if (target.isConnected) {
+		applyAlignment();
+		return;
+	}
+
+	window.requestAnimationFrame(applyAlignment);
 }
 
 function buildProcessPages(

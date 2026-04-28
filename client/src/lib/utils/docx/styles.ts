@@ -70,8 +70,8 @@ export function getParagraphStyles(pr?: XmlNode | null): Record<string, string> 
 	const firstLine = toTwipsPx(getAttr(indent, 'firstLine'));
 	const hanging = toTwipsPx(getAttr(indent, 'hanging'));
 
-	if (left != null) style['padding-left'] = `${left}px`;
-	if (right != null) style['padding-right'] = `${right}px`;
+	if (left != null) style['margin-left'] = `${left}px`;
+	if (right != null) style['margin-right'] = `${right}px`;
 	if (firstLine != null) style['text-indent'] = `${firstLine}px`;
 	if (hanging != null) style['text-indent'] = `${-hanging}px`;
 
@@ -93,6 +93,7 @@ export function getRunStyles(pr?: XmlNode | null): Record<string, string> {
 	const size = findChild(pr, 'sz');
 	const fonts = findChild(pr, 'rfonts');
 	const highlight = findChild(pr, 'highlight');
+	const characterSpacing = toNumber(getAttr(pr, 'spacing'));
 
 	if (isOn(bold)) style['font-weight'] = '700';
 	if (isOn(italic)) style['font-style'] = 'italic';
@@ -122,6 +123,9 @@ export function getRunStyles(pr?: XmlNode | null): Record<string, string> {
 		getAttr(fonts, 'eastAsia') ??
 		getAttr(fonts, 'cs');
 	if (fontFamily) style['font-family'] = `"${fontFamily}"`;
+	if (characterSpacing != null && characterSpacing !== 0) {
+		style['letter-spacing'] = `${characterSpacing / 20}pt`;
+	}
 
 	const highlightKey = getAttr(highlight, 'val')?.toLowerCase();
 	if (highlightKey) {

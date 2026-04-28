@@ -9,6 +9,14 @@ export type SimplifyTarget = {
 	anchorRect: DOMRect;
 };
 
+export function getParagraphTextElement(paragraphElement: HTMLElement): HTMLElement {
+	if (paragraphElement.matches('[data-docx-editable-root="true"]')) return paragraphElement;
+	return (
+		paragraphElement.querySelector<HTMLElement>('[data-docx-editable-root="true"]') ??
+		paragraphElement
+	);
+}
+
 export function normalizeBounds(start: number, end: number, totalLength: number) {
 	const clampedStart = Math.max(0, Math.min(start, totalLength));
 	const clampedEnd = Math.max(0, Math.min(end, totalLength));
@@ -25,7 +33,8 @@ export function buildTargetForWholeParagraph(
 	const paragraphElement = paragraphElementById.get(paragraphId);
 	if (!paragraphElement) return null;
 
-	const paragraphText = normalizeEditableText(paragraphElement.innerText ?? '');
+	const textElement = getParagraphTextElement(paragraphElement);
+	const paragraphText = normalizeEditableText(textElement.innerText ?? '');
 	const anchorRect = paragraphElement.getBoundingClientRect();
 	return {
 		paragraphId,
@@ -56,17 +65,26 @@ export function buildTargetFromSelectionRange(options: {
 	const paragraphId = startElement.dataset.nodeId;
 	if (!paragraphId) return null;
 
-	const paragraphText = normalizeEditableText(startElement.innerText ?? '');
+	const textElement = getParagraphTextElement(startElement);
+	if (!textElement.contains(range.startContainer) || !textElement.contains(range.endContainer)) {
+		return null;
+	}
+
+	const paragraphText = normalizeEditableText(textElement.innerText ?? '');
 
 	const startRange = document.createRange();
-	startRange.selectNodeContents(startElement);
+	startRange.selectNodeContents(textElement);
 	startRange.setEnd(range.startContainer, range.startOffset);
 
 	const endRange = document.createRange();
-	endRange.selectNodeContents(startElement);
+	endRange.selectNodeContents(textElement);
 	endRange.setEnd(range.endContainer, range.endOffset);
 
-	const bounds = normalizeBounds(startRange.toString().length, endRange.toString().length, paragraphText.length);
+	const bounds = normalizeBounds(
+		startRange.toString().length,
+		endRange.toString().length,
+		paragraphText.length
+	);
 	if (bounds.start === bounds.end) return null;
 
 	const originalSnippet = paragraphText.slice(bounds.start, bounds.end);
@@ -96,10 +114,7 @@ export function computeSimplifyToolbarPosition(
 	const margin = 12;
 	const gap = 10;
 
-	const left = Math.max(
-		margin,
-		Math.min(viewportWidth - toolbarWidth - margin, anchorRect.left)
-	);
+	const left = Math.max(margin, Math.min(viewportWidth - toolbarWidth - margin, anchorRect.left));
 
 	const preferredTop = anchorRect.top - estimatedToolbarHeight - gap;
 	const fallbackTop = anchorRect.bottom + gap;
@@ -109,7 +124,10 @@ export function computeSimplifyToolbarPosition(
 	return { left, top };
 }
 
-export function preserveBoundaryWhitespace(originalSnippet: string, simplifiedSnippet: string): string {
+export function preserveBoundaryWhitespace(
+	originalSnippet: string,
+	simplifiedSnippet: string
+): string {
 	const leadingWhitespace = originalSnippet.match(/^\s*/)?.[0] ?? '';
 	const trailingWhitespace = originalSnippet.match(/\s*$/)?.[0] ?? '';
 	const core = simplifiedSnippet.trim();
@@ -154,11 +172,15 @@ export function replaceParagraphTextRange(
 function getClosestParagraphElement(node: Node | null): HTMLElement | null {
 	if (!node) return null;
 	if (node instanceof HTMLElement) return node.closest<HTMLElement>('[data-node-id]');
-	if (node instanceof Text) return node.parentElement?.closest<HTMLElement>('[data-node-id]') ?? null;
+	if (node instanceof Text)
+		return node.parentElement?.closest<HTMLElement>('[data-node-id]') ?? null;
 	return null;
 }
 
-function resolveDomPointByOffset(root: HTMLElement, offset: number): { node: Node; offset: number } {
+function resolveDomPointByOffset(
+	root: HTMLElement,
+	offset: number
+): { node: Node; offset: number } {
 	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
 		acceptNode: (node) => {
 			if (node.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT;
@@ -259,7 +281,11 @@ function findDeepTextNode(node: Node | null, direction: 'left' | 'right'): Text 
 function collectInlineStyleChain(root: HTMLElement, anchorNode: Node): HTMLElement[] {
 	const chain: HTMLElement[] = [];
 	let current: HTMLElement | null =
-		anchorNode instanceof Text ? anchorNode.parentElement : anchorNode instanceof HTMLElement ? anchorNode : null;
+		anchorNode instanceof Text
+			? anchorNode.parentElement
+			: anchorNode instanceof HTMLElement
+				? anchorNode
+				: null;
 
 	while (current && current !== root) {
 		if (isInlineStyleContainer(current)) {
