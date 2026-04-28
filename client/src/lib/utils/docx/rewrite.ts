@@ -10,6 +10,7 @@ import {
 	buildTargetForWholeParagraph,
 	buildTargetFromSelectionRange,
 	computeSimplifyToolbarPosition,
+	getParagraphTextElement,
 	normalizeBounds,
 	preserveBoundaryWhitespace,
 	replaceParagraphTextRange,
@@ -121,14 +122,18 @@ export async function executeFixContradictionRewrite(
 
 	const target = resolveActiveRewriteTarget(params);
 	if (!target) {
-		return { ok: false, error: 'Select text in a paragraph or focus a paragraph to fix contradictions.' };
+		return {
+			ok: false,
+			error: 'Select text in a paragraph or focus a paragraph to fix contradictions.'
+		};
 	}
 
 	const contradiction = params.contradictionResultsByParagraphId.get(target.paragraphId);
 	if (!contradiction) {
 		return {
 			ok: false,
-			error: 'No contradiction result is available for this paragraph yet. Run "Search contradictions" first.'
+			error:
+				'No contradiction result is available for this paragraph yet. Run "Search contradictions" first.'
 		};
 	}
 
@@ -136,7 +141,11 @@ export async function executeFixContradictionRewrite(
 		return { ok: false, error: 'This paragraph is not currently classified as contradiction.' };
 	}
 
-	const bounds = normalizeBounds(target.selectionStart, target.selectionEnd, target.paragraphText.length);
+	const bounds = normalizeBounds(
+		target.selectionStart,
+		target.selectionEnd,
+		target.paragraphText.length
+	);
 	const selectionStart = bounds.start;
 	const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
 
@@ -193,7 +202,11 @@ export async function executeSimplifyRewrite(
 		return { ok: false, error: 'Select text in a paragraph or focus a paragraph to simplify.' };
 	}
 
-	const bounds = normalizeBounds(target.selectionStart, target.selectionEnd, target.paragraphText.length);
+	const bounds = normalizeBounds(
+		target.selectionStart,
+		target.selectionEnd,
+		target.paragraphText.length
+	);
 	const selectionStart = bounds.start;
 	const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
 
@@ -262,7 +275,8 @@ export function applyRewriteToParagraph(params: ApplyRewriteParams): {
 		return { ok: false, error: 'Could not find the paragraph to replace.' };
 	}
 
-	const currentParagraphText = normalizeEditableText(paragraphElement.innerText ?? '');
+	const paragraphTextElement = getParagraphTextElement(paragraphElement);
+	const currentParagraphText = normalizeEditableText(paragraphTextElement.innerText ?? '');
 	let bounds = normalizeBounds(
 		payload.evidence.selection_start,
 		payload.evidence.selection_end,
@@ -280,15 +294,19 @@ export function applyRewriteToParagraph(params: ApplyRewriteParams): {
 		} else {
 			return {
 				ok: false,
-				error: 'The paragraph changed after simplification. Please run Simplify again on the latest text.'
+				error:
+					'The paragraph changed after simplification. Please run Simplify again on the latest text.'
 			};
 		}
 	}
 
-	const replacement = preserveBoundaryWhitespace(payload.originalSnippet, payload.simplifiedSnippet);
-	replaceParagraphTextRange(paragraphElement, bounds.start, bounds.end, replacement);
-	paragraphElement.dispatchEvent(new Event('input', { bubbles: true }));
-	paragraphElement.focus();
+	const replacement = preserveBoundaryWhitespace(
+		payload.originalSnippet,
+		payload.simplifiedSnippet
+	);
+	replaceParagraphTextRange(paragraphTextElement, bounds.start, bounds.end, replacement);
+	paragraphTextElement.dispatchEvent(new Event('input', { bubbles: true }));
+	paragraphTextElement.focus();
 
 	return { ok: true, paragraphId };
 }

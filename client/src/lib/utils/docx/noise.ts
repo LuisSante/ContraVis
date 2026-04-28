@@ -5,6 +5,9 @@ const PAGE_LABEL_RE = /^(?:page|pagina|p[aá]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+
 const MAX_REPEATED_BOUNDARY_LENGTH = 180;
 const MAX_REPEATED_BOUNDARY_WORDS = 22;
 const BOUNDARY_SCAN_LINES = 3;
+const MAX_LEADING_TITLE_NODES = 12;
+const MIN_BODY_START_WORDS = 12;
+const SECTION_HEADING_RE = /^(?:article\s+)?\d+(?:\.\d+)*\b/i;
 
 type BoundaryNode = {
 	nodeId: string;
@@ -29,6 +32,16 @@ function isLikelyRepeatedBoundary(text: string): boolean {
 	return words.length > 0 && words.length <= MAX_REPEATED_BOUNDARY_WORDS;
 }
 
+function countWords(text: string): number {
+	return text.split(/\s+/).filter(Boolean).length;
+}
+
+function isLikelyBodyStart(text: string): boolean {
+	if (!text || isLikelyPageMarker(text)) return false;
+	if (SECTION_HEADING_RE.test(text)) return true;
+	return countWords(text) >= MIN_BODY_START_WORDS;
+}
+
 function collectSectionParagraphNodes(section: HTMLElement): BoundaryNode[] {
 	const orderedNodes = Array.from(section.querySelectorAll<HTMLElement>('[data-node-id]'));
 	const nodes: BoundaryNode[] = [];
@@ -42,6 +55,23 @@ function collectSectionParagraphNodes(section: HTMLElement): BoundaryNode[] {
 	}
 
 	return nodes;
+}
+
+function findLeadingTitleNodeIds(section: HTMLElement): string[] {
+	const sectionNodes = collectSectionParagraphNodes(section);
+	if (sectionNodes.length === 0) return [];
+
+	const titleNodeIds: string[] = [];
+	for (const entry of sectionNodes.slice(0, MAX_LEADING_TITLE_NODES)) {
+		if (isLikelyPageMarker(entry.text)) {
+			titleNodeIds.push(entry.nodeId);
+			continue;
+		}
+		if (isLikelyBodyStart(entry.text)) break;
+		titleNodeIds.push(entry.nodeId);
+	}
+
+	return titleNodeIds;
 }
 
 function findRepeatedBoundaryTexts(entries: BoundaryNode[]): Set<string> {
@@ -76,6 +106,10 @@ export function detectDocxNoiseNodeIds(root: ParentNode): string[] {
 
 	const sections = Array.from(root.querySelectorAll<HTMLElement>('section'));
 	if (sections.length === 0) return Array.from(noiseNodeIds);
+
+	for (const nodeId of findLeadingTitleNodeIds(sections[0])) {
+		noiseNodeIds.add(nodeId);
+	}
 
 	const topEntries: BoundaryNode[] = [];
 	const bottomEntries: BoundaryNode[] = [];

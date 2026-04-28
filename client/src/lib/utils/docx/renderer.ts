@@ -32,10 +32,15 @@ export type DocxRendererDeps = {
 	getSelectedNodeId: () => string | null;
 };
 
+export type DocxRendererOptions = {
+	renderExternalPart?: (part: unknown, rootLocalName: 'hdr' | 'ftr') => unknown;
+};
+
 export function createRenderer(
 	docId: string,
 	callbacks: DocxRendererCallbacks,
-	deps: DocxRendererDeps
+	deps: DocxRendererDeps,
+	options: DocxRendererOptions = {}
 ) {
 	const { onNodeUpsert, onNodeFocus, onNodeCommit, onNodeRemove } = callbacks;
 	const {
@@ -53,16 +58,32 @@ export function createRenderer(
 	};
 	type ParagraphStyleDefinition = {
 		basedOn: string | null;
+		pPr: XmlNode | null;
 		runPr: XmlNode | null;
+	};
+	type TextSegmentRange = {
+		start: number;
+		end: number;
+	};
+	type ParagraphIndent = {
+		left: number | null;
+		right: number | null;
+		firstLine: number | null;
+		hanging: number | null;
 	};
 
 	const listState = new Map<string, number[]>();
 	const listDefinitionsByNumId = new Map<string, Map<number, ListLevelDefinition>>();
 	const paragraphStyleDefinitionsById = new Map<string, ParagraphStyleDefinition>();
+	const paragraphStyleCache = new Map<string, Record<string, string>>();
 	const paragraphRunStyleCache = new Map<string, Record<string, string>>();
 	let defaultRunPr: XmlNode | null = null;
 	let paragraphCounter = 0;
+	let readOnlyDepth = 0;
+	let inheritedHeaders: Map<string, unknown> | null = null;
+	let inheritedFooters: Map<string, unknown> | null = null;
 	const htmlEntityDecoder = document.createElement('textarea');
+	const EMU_PER_PX = 9525;
 	const INTERACTIVE_PARAGRAPH_CLASSES = [
 		'rounded-[2px]',
 		'-mx-[2px]',
@@ -75,6 +96,8 @@ export function createRenderer(
 		'focus:ring-blue-400'
 	] as const;
 	const ENTITY_RE = /&(?:#\d+|#x[\da-f]+|[a-z][\w-]+);/i;
+	const DEFINITION_BOUNDARY_RE =
+		/\.\s+(?=[“"][^”"]{1,120}[”"](?:\s+(?:and|or)\s+[“"][^”"]{1,120}[”"])?\s+(?:means|mean|shall|has|is|are|refers|includes)\b)/gi;
 
 	const decodeDocxText = (value: string): string => {
 		if (!value.includes('&') || !ENTITY_RE.test(value)) return value;
@@ -87,6 +110,106 @@ export function createRenderer(
 			decoded = next;
 		}
 		return decoded;
+	};
+
+	const getXmlText = (node?: XmlNode | null): string => {
+		if (!node) return '';
+		if (node.type === 'text') return node.data ?? '';
+		return node.children?.map((child) => getXmlText(child)).join('') ?? '';
+	};
+
+	const emuToPx = (value: unknown): number | null => {
+		const parsed = toNumber(value);
+		if (parsed == null) return null;
+		return parsed / EMU_PER_PX;
+	};
+
+	const trimTextRange = (text: string, start: number, end: number): TextSegmentRange => {
+		let trimmedStart = start;
+		let trimmedEnd = end;
+		while (trimmedStart < trimmedEnd && /\s/.test(text[trimmedStart] ?? '')) {
+			trimmedStart += 1;
+		}
+		while (trimmedEnd > trimmedStart && /\s/.test(text[trimmedEnd - 1] ?? '')) {
+			trimmedEnd -= 1;
+		}
+		return { start: trimmedStart, end: trimmedEnd };
+	};
+
+	const getDefinitionParagraphSplitRanges = (text: string): TextSegmentRange[] => {
+		const firstVisibleIndex = text.search(/\S/);
+		if (firstVisibleIndex < 0) return [];
+		const firstVisible = text[firstVisibleIndex];
+		if (!(firstVisible === '“' || firstVisible === '"')) return [];
+
+		const firstDefinitionProbe = text.slice(firstVisibleIndex, firstVisibleIndex + 220);
+		if (!/\b(?:means|mean|shall|has|is|are|refers|includes)\b/i.test(firstDefinitionProbe)) {
+			return [];
+		}
+
+		DEFINITION_BOUNDARY_RE.lastIndex = 0;
+		const boundaries: number[] = [];
+		let match: RegExpExecArray | null;
+		while ((match = DEFINITION_BOUNDARY_RE.exec(text)) !== null) {
+			boundaries.push(match.index + 1);
+		}
+		if (boundaries.length === 0) return [];
+
+		const points = [0, ...boundaries, text.length];
+		const ranges = points
+			.slice(0, -1)
+			.map((start, index) => trimTextRange(text, start, points[index + 1]))
+			.filter((range) => range.end > range.start);
+
+		return ranges.length > 1 ? ranges : [];
+	};
+
+	const resolveDomPointByTextOffset = (
+		root: HTMLElement,
+		offset: number
+	): { node: Node; offset: number } => {
+		const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+		let remaining = Math.max(offset, 0);
+		let lastTextNode: Text | null = null;
+
+		while (walker.nextNode()) {
+			const node = walker.currentNode as Text;
+			lastTextNode = node;
+			const length = node.data.length;
+			if (remaining <= length) {
+				return { node, offset: remaining };
+			}
+			remaining -= length;
+		}
+
+		if (lastTextNode) {
+			return { node: lastTextNode, offset: lastTextNode.data.length };
+		}
+		return { node: root, offset: root.childNodes.length };
+	};
+
+	const cloneInlineContentRange = (
+		root: HTMLElement,
+		range: TextSegmentRange
+	): DocumentFragment => {
+		const selectionRange = document.createRange();
+		const start = resolveDomPointByTextOffset(root, range.start);
+		const end = resolveDomPointByTextOffset(root, range.end);
+		selectionRange.setStart(start.node, start.offset);
+		selectionRange.setEnd(end.node, end.offset);
+		return selectionRange.cloneContents();
+	};
+
+	const splitDefinitionParagraph = (paragraph: HTMLElement): HTMLElement[] => {
+		const text = paragraph.textContent ?? '';
+		const ranges = getDefinitionParagraphSplitRanges(text);
+		if (ranges.length === 0) return [];
+
+		return ranges.map((range) => {
+			const splitParagraph = paragraph.cloneNode(false) as HTMLElement;
+			splitParagraph.appendChild(cloneInlineContentRange(paragraph, range));
+			return splitParagraph;
+		});
 	};
 
 	const toAlphabetic = (value: number, uppercase: boolean): string => {
@@ -150,10 +273,13 @@ export function createRenderer(
 	const parseStylesNode = (stylesNode?: XmlNode | null) => {
 		defaultRunPr = null;
 		paragraphStyleDefinitionsById.clear();
+		paragraphStyleCache.clear();
 		paragraphRunStyleCache.clear();
 		if (!stylesNode?.children) return;
 
-		const docDefaults = stylesNode.children.find((child) => localName(child.name) === 'docdefaults');
+		const docDefaults = stylesNode.children.find(
+			(child) => localName(child.name) === 'docdefaults'
+		);
 		const rPrDefault = findChild(docDefaults, 'rprdefault');
 		const runDefaults = findChild(rPrDefault, 'rpr');
 		if (runDefaults) {
@@ -166,8 +292,9 @@ export function createRenderer(
 			const styleId = getAttr(child, 'styleId');
 			if (!styleId) continue;
 			const basedOn = getAttr(findChild(child, 'basedon'), 'val') ?? null;
+			const pPr = findChild(child, 'ppr') ?? null;
 			const runPr = findChild(child, 'rpr') ?? null;
-			paragraphStyleDefinitionsById.set(styleId, { basedOn, runPr });
+			paragraphStyleDefinitionsById.set(styleId, { basedOn, pPr, runPr });
 		}
 	};
 
@@ -280,6 +407,31 @@ export function createRenderer(
 		return inherited;
 	};
 
+	const getParagraphInheritedParagraphStyles = (pr?: XmlNode | null): Record<string, string> => {
+		const styleId = getParagraphStyleId(pr);
+		if (!styleId) return {};
+
+		const cached = paragraphStyleCache.get(styleId);
+		if (cached) return cached;
+
+		const inherited: Record<string, string> = {};
+		const visited = new Set<string>();
+		const applyStyleChain = (id: string | null) => {
+			if (!id || visited.has(id)) return;
+			visited.add(id);
+			const styleDef = paragraphStyleDefinitionsById.get(id);
+			if (!styleDef) return;
+			applyStyleChain(styleDef.basedOn);
+			if (styleDef.pPr) {
+				Object.assign(inherited, getParagraphStyles(styleDef.pPr));
+			}
+		};
+		applyStyleChain(styleId);
+
+		paragraphStyleCache.set(styleId, inherited);
+		return inherited;
+	};
+
 	const getParagraphTabStopsPx = (pr?: XmlNode | null): number[] => {
 		const tabsNode = findChild(pr, 'tabs');
 		if (!tabsNode?.children) return [];
@@ -292,6 +444,31 @@ export function createRenderer(
 		}
 		stops.sort((left, right) => left - right);
 		return stops;
+	};
+
+	const getParagraphIndentPx = (pr?: XmlNode | null): ParagraphIndent => {
+		const indent = findChild(pr, 'ind');
+		return {
+			left: toTwipsPx(getAttr(indent, 'left')),
+			right: toTwipsPx(getAttr(indent, 'right')),
+			firstLine: toTwipsPx(getAttr(indent, 'firstLine')),
+			hanging: toTwipsPx(getAttr(indent, 'hanging'))
+		};
+	};
+
+	const getHangingListLayout = (
+		pr?: XmlNode | null
+	): { left: number; hanging: number } | null => {
+		const indent = getParagraphIndentPx(pr);
+		const left = indent.left ?? 0;
+		const hanging = indent.hanging ?? 0;
+		if (left <= 0 || hanging <= 0 || left < hanging) return null;
+
+		const tabStop = getParagraphTabStopsPx(pr)[0];
+		if (tabStop == null || Math.abs(tabStop - left) > 3) return null;
+		if (left < 24 || hanging < 12) return null;
+
+		return { left, hanging };
 	};
 
 	const applyParagraphTabStopMetadata = (element: HTMLElement, pr?: XmlNode | null) => {
@@ -317,13 +494,16 @@ export function createRenderer(
 		if (!levelDef) return `${counters[level]}.`;
 		if (levelDef.numFmt.toLowerCase() === 'bullet') return levelDef.lvlText || '•';
 
-		const marker = (levelDef.lvlText || `%${level + 1}`).replace(/%(\d+)/g, (_, rawIndex: string) => {
-			const levelIndex = Math.max(Number(rawIndex) - 1, 0);
-			const referencedLevel = levels?.get(levelIndex);
-			const levelValue = counters[levelIndex] ?? referencedLevel?.start ?? 1;
-			const numberFormat = referencedLevel?.numFmt ?? levelDef.numFmt;
-			return formatCounter(levelValue, numberFormat);
-		});
+		const marker = (levelDef.lvlText || `%${level + 1}`).replace(
+			/%(\d+)/g,
+			(_, rawIndex: string) => {
+				const levelIndex = Math.max(Number(rawIndex) - 1, 0);
+				const referencedLevel = levels?.get(levelIndex);
+				const levelValue = counters[levelIndex] ?? referencedLevel?.start ?? 1;
+				const numberFormat = referencedLevel?.numFmt ?? levelDef.numFmt;
+				return formatCounter(levelValue, numberFormat);
+			}
+		);
 
 		return marker || `${formatCounter(counters[level], levelDef.numFmt)}.`;
 	};
@@ -333,6 +513,8 @@ export function createRenderer(
 		delete host.dataset.relationsCount;
 		delete host.dataset.relationsTone;
 	};
+
+	const isReadOnlyRender = () => readOnlyDepth > 0;
 
 	const isHeaderOrFooterStyle = (pr?: XmlNode | null): boolean => {
 		const styleId = getParagraphStyleId(pr)?.toLowerCase();
@@ -344,9 +526,13 @@ export function createRenderer(
 		element: HTMLElement,
 		kind: ParagraphKind,
 		relationHost: HTMLElement = element,
-		options: { disabled?: boolean } = {}
+		options: { disabled?: boolean; visualElement?: HTMLElement; textPrefix?: string } = {}
 	) => {
-		if (options.disabled) {
+		const visualElement = options.visualElement ?? element;
+		const textPrefix = normalizeEditableText(options.textPrefix ?? '').trim();
+
+		if (options.disabled || isReadOnlyRender()) {
+			visualElement.dataset.ignoredParagraph = 'true';
 			element.dataset.ignoredParagraph = 'true';
 			element.setAttribute('contenteditable', 'false');
 			element.setAttribute('spellcheck', 'false');
@@ -366,18 +552,24 @@ export function createRenderer(
 			relationsCount: 0
 		};
 
-		element.dataset.nodeId = nodeId;
-		element.dataset.paragraphKind = kind;
+		visualElement.dataset.nodeId = nodeId;
+		visualElement.dataset.paragraphKind = kind;
+		element.dataset.docxEditableRoot = 'true';
 		element.setAttribute('contenteditable', 'true');
 		element.setAttribute('spellcheck', 'false');
-		paragraphElementById.set(nodeId, element);
+		paragraphElementById.set(nodeId, visualElement);
 		paragraphRelationHostById.set(nodeId, relationHost);
-		element.classList.add(...INTERACTIVE_PARAGRAPH_CLASSES);
+		visualElement.classList.add(...INTERACTIVE_PARAGRAPH_CLASSES);
 
 		let hasNodeInStore = false;
 
 		const syncText = (): ParagraphNode | null => {
-			const text = normalizeEditableText(element.innerText ?? '').trim();
+			const editableText = normalizeEditableText(element.innerText ?? '').trim();
+			const text = editableText
+				? textPrefix
+					? `${textPrefix} ${editableText}`
+					: editableText
+				: '';
 			if (!text) {
 				if (hasNodeInStore) {
 					onNodeRemove(nodeId);
@@ -399,10 +591,10 @@ export function createRenderer(
 		};
 
 		element.addEventListener('input', () => {
-			const state = ensureNodeEditState(nodeEditStateById, nodeId, element.innerText ?? '');
-			state.editedSinceCommit = true;
 			const node = syncText();
 			if (!node) return;
+			const state = ensureNodeEditState(nodeEditStateById, nodeId, node.text);
+			state.editedSinceCommit = true;
 			if (getSelectedNodeId() === node.id || document.activeElement === element) {
 				onNodeFocus(node);
 			}
@@ -426,10 +618,82 @@ export function createRenderer(
 			onNodeCommit(node);
 		});
 
+		if (visualElement !== element) {
+			visualElement.addEventListener('click', (event: MouseEvent) => {
+				const target = event.target;
+				if (!(target instanceof Node) || !visualElement.contains(target)) return;
+				const node = syncText();
+				if (!node) return;
+				onNodeFocus(node);
+				if (
+					!(target instanceof HTMLElement && target.closest('[data-docx-editable-root="true"]'))
+				) {
+					element.focus();
+				}
+			});
+		}
+
 		const node = syncText();
 		if (node && getSelectedNodeId() === node.id) {
 			onNodeFocus(node);
 		}
+	};
+
+	const getPartMap = (value: unknown): Map<string, unknown> | null => {
+		if (!(value instanceof Map) || value.size === 0) return null;
+		return value as Map<string, unknown>;
+	};
+
+	const selectHeaderFooterPart = (
+		current: Map<string, unknown> | null,
+		inherited: Map<string, unknown> | null
+	): unknown => {
+		const source = current && current.size > 0 ? current : inherited;
+		return source?.get('default') ?? source?.get('first') ?? source?.values().next().value;
+	};
+
+	const renderHeaderFooterPart = (part: unknown, rootLocalName: 'hdr' | 'ftr'): unknown => {
+		if (!part || !options.renderExternalPart) return null;
+		readOnlyDepth += 1;
+		try {
+			return options.renderExternalPart(part, rootLocalName);
+		} finally {
+			readOnlyDepth -= 1;
+		}
+	};
+
+	const createPageChromeLayer = (headerPart: unknown, footerPart: unknown): HTMLElement | null => {
+		const chrome = document.createElement('div');
+		chrome.dataset.docxPageChrome = 'true';
+		chrome.className = 'pointer-events-none absolute inset-0 overflow-hidden text-gray-900';
+		chrome.setAttribute('contenteditable', 'false');
+		chrome.setAttribute('aria-hidden', 'true');
+		chrome.style.zIndex = '2';
+
+		appendChildren(chrome, renderHeaderFooterPart(headerPart, 'hdr'));
+		appendChildren(chrome, renderHeaderFooterPart(footerPart, 'ftr'));
+
+		if (chrome.childNodes.length === 0) return null;
+		return chrome;
+	};
+
+	const applyAnchorPositionStyles = (element: HTMLElement, anchorNode?: XmlNode | null) => {
+		const positionH = findChild(anchorNode, 'positionh');
+		const positionV = findChild(anchorNode, 'positionv');
+		const x = emuToPx(getXmlText(findChild(positionH, 'posoffset')).trim());
+		const y = emuToPx(getXmlText(findChild(positionV, 'posoffset')).trim());
+		const extent = findChild(anchorNode, 'extent');
+		const width = emuToPx(getAttr(extent, 'cx'));
+		const height = emuToPx(getAttr(extent, 'cy'));
+
+		if (x != null || y != null) {
+			element.style.position = 'absolute';
+			element.style.left = `${x ?? 0}px`;
+			element.style.top = `${y ?? 0}px`;
+			element.style.margin = '0';
+		}
+		if (width != null) element.style.width = `${width}px`;
+		if (height != null) element.style.height = `${height}px`;
 	};
 
 	return (type: string, props: Record<string, unknown> = {}, children: unknown) => {
@@ -459,10 +723,20 @@ export function createRenderer(
 					section.className =
 						'overflow-hidden bg-white text-gray-900 shadow-[0_8px_24px_rgba(17,24,39,0.1)]';
 					const layout = getSectionLayout((safeProps.node as XmlNode) ?? null);
+					const currentHeaders = getPartMap(safeProps.headers);
+					const currentFooters = getPartMap(safeProps.footers);
+					const headerPart = selectHeaderFooterPart(currentHeaders, inheritedHeaders);
+					const footerPart = selectHeaderFooterPart(currentFooters, inheritedFooters);
+					if (currentHeaders) inheritedHeaders = currentHeaders;
+					if (currentFooters) inheritedFooters = currentFooters;
+
 					section.style.width = `${layout.width}px`;
 					section.style.height = `${layout.height}px`;
 					section.style.minHeight = `${layout.height}px`;
 					section.style.padding = `${layout.marginTop}px ${layout.marginRight}px ${layout.marginBottom}px ${layout.marginLeft}px`;
+					section.style.position = 'relative';
+					const pageChrome = createPageChromeLayer(headerPart, footerPart);
+					if (pageChrome) section.appendChild(pageChrome);
 					appendChildren(section, children);
 					return section;
 				}
@@ -471,6 +745,7 @@ export function createRenderer(
 					const pr = (safeProps.pr as XmlNode) ?? null;
 					const heading = document.createElement(`h${level}`);
 					heading.className = 'font-bold whitespace-pre-wrap break-words [tab-size:4]';
+					setStyles(heading, getParagraphInheritedParagraphStyles(pr));
 					setStyles(heading, getParagraphStyles(pr));
 					setStyles(heading, getParagraphInheritedRunStyles(pr));
 					applyParagraphTabStopMetadata(heading, pr);
@@ -483,48 +758,53 @@ export function createRenderer(
 				case 'list': {
 					const item = document.createElement('p');
 					item.dataset.docxListItem = 'true';
-					item.className = 'grid items-start whitespace-pre-wrap break-words [tab-size:4]';
-					item.style.gridTemplateColumns = 'max-content minmax(0, 1fr)';
-					item.style.columnGap = '4px';
+					item.className = 'whitespace-pre-wrap break-words [tab-size:4]';
 					const level = Math.max(toNumber(safeProps.level) ?? 0, 0);
 					const pr = (safeProps.pr as XmlNode) ?? null;
-
-					const marker = document.createElement('span');
-					marker.className = 'shrink-0 text-right whitespace-nowrap';
-					marker.textContent = nextListMarker(
+					const markerText = nextListMarker(
 						typeof safeProps.numId === 'string' ? safeProps.numId : undefined,
 						level
 					);
+					const hangingLayout = getHangingListLayout(pr);
+
+					const marker = document.createElement('span');
+					marker.className = 'inline-block whitespace-nowrap';
+					marker.textContent = markerText;
+					marker.dataset.docxListMarker = markerText;
 					marker.style.whiteSpace = 'nowrap';
 					marker.style.overflow = 'visible';
-					marker.style.fontSize = '0.74em';
+					marker.style.fontSize = '0.80em';
 					marker.style.fontWeight = '400';
 					marker.style.lineHeight = 'inherit';
 					marker.style.display = 'inline-block';
+					marker.style.marginRight = '4px';
+					marker.style.verticalAlign = 'baseline';
 					marker.setAttribute('contenteditable', 'false');
 
 					const content = document.createElement('span');
-					content.className = 'block min-w-0 flex-1 whitespace-pre-wrap break-words [tab-size:4]';
+					content.className = 'inline whitespace-pre-wrap break-words outline-none [tab-size:4]';
 					appendChildren(content, children);
 
+					setStyles(item, getParagraphInheritedParagraphStyles(pr));
 					setStyles(item, getParagraphStyles(pr));
 					setStyles(item, getParagraphInheritedRunStyles(pr));
 					applyParagraphTabStopMetadata(item, pr);
+					item.style.paddingLeft = '0';
 					item.style.textIndent = '0';
-
-					const indent = findChild(pr, 'ind');
-					const leftIndent = toTwipsPx(getAttr(indent, 'left'));
-					const hangingIndent = toTwipsPx(getAttr(indent, 'hanging'));
-					if (leftIndent != null && hangingIndent != null && hangingIndent > 0) {
-						item.style.paddingLeft = `${Math.max(leftIndent - hangingIndent, 0)}px`;
-						item.style.columnGap = `${Math.min(Math.max(hangingIndent * 0.22, 2), 8)}px`;
+					if (hangingLayout) {
+						item.style.paddingLeft = `${hangingLayout.left}px`;
+						item.style.textIndent = `${-hangingLayout.hanging}px`;
+						marker.style.width = `${hangingLayout.hanging}px`;
+						marker.style.marginRight = '0';
 					}
-					if (!item.style.paddingLeft) item.style.paddingLeft = `${(level + 1) * 18}px`;
+					item.dataset.docxListMarker = markerText;
 
 					item.appendChild(marker);
 					item.appendChild(content);
 					attachParagraphEditor(content, 'list', item, {
-						disabled: isHeaderOrFooterStyle(pr)
+						visualElement: item,
+						disabled: isHeaderOrFooterStyle(pr),
+						textPrefix: markerText
 					});
 					return item;
 				}
@@ -532,6 +812,7 @@ export function createRenderer(
 					const paragraph = document.createElement('p');
 					const pr = (safeProps.pr as XmlNode) ?? null;
 					paragraph.className = 'whitespace-pre-wrap break-words [tab-size:4]';
+					setStyles(paragraph, getParagraphInheritedParagraphStyles(pr));
 					setStyles(paragraph, getParagraphStyles(pr));
 					setStyles(paragraph, getParagraphInheritedRunStyles(pr));
 					applyParagraphTabStopMetadata(paragraph, pr);
@@ -539,6 +820,17 @@ export function createRenderer(
 						paragraph.classList.add('min-h-[1px]');
 					}
 					appendChildren(paragraph, children);
+					const splitParagraphs = splitDefinitionParagraph(paragraph);
+					if (splitParagraphs.length > 0) {
+						const fragment = document.createDocumentFragment();
+						for (const splitParagraph of splitParagraphs) {
+							attachParagraphEditor(splitParagraph, 'paragraph', splitParagraph, {
+								disabled: isHeaderOrFooterStyle(pr)
+							});
+							fragment.appendChild(splitParagraph);
+						}
+						return fragment;
+					}
 					attachParagraphEditor(paragraph, 'paragraph', paragraph, {
 						disabled: isHeaderOrFooterStyle(pr)
 					});
@@ -559,6 +851,8 @@ export function createRenderer(
 								.join('')
 						)
 					);
+				case 'instrText':
+					return document.createDocumentFragment();
 				case 'tab': {
 					const tab = document.createElement('span');
 					tab.dataset.docxTab = '1';
@@ -656,6 +950,9 @@ export function createRenderer(
 				case 'drawing.anchor': {
 					const drawing = document.createElement('span');
 					drawing.className = 'inline-block';
+					if (type === 'drawing.anchor') {
+						applyAnchorPositionStyles(drawing, (safeProps.node as XmlNode) ?? null);
+					}
 					appendChildren(drawing, children);
 					return drawing;
 				}
@@ -664,6 +961,15 @@ export function createRenderer(
 					drawing.className = 'inline-block max-w-full';
 					appendChildren(drawing, children);
 					return drawing;
+				}
+				case 'shape': {
+					const shape = document.createElement('span');
+					shape.className = 'block overflow-visible';
+					const xfrm = safeProps.xfrm as { width?: number; height?: number } | undefined;
+					if (xfrm?.width != null) shape.style.width = `${xfrm.width}px`;
+					if (xfrm?.height != null) shape.style.height = `${xfrm.height}px`;
+					appendChildren(shape, children);
+					return shape;
 				}
 				case 'picture': {
 					const img = document.createElement('img');

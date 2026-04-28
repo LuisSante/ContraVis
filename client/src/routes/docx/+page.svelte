@@ -214,16 +214,14 @@
 		relatedCapWidthPx: number;
 		paragraphId: string;
 	}> = [];
-	let paragraphExplanationPrimaryConnector:
-		| {
-				topPx: number;
-				bottomPx: number;
-				leftPx: number;
-				selectedCapTopPx: number;
-				selectedCapWidthPx: number;
-				paragraphId: string;
-		  }
-		| null = null;
+	let paragraphExplanationPrimaryConnector: {
+		topPx: number;
+		bottomPx: number;
+		leftPx: number;
+		selectedCapTopPx: number;
+		selectedCapWidthPx: number;
+		paragraphId: string;
+	} | null = null;
 	$: paragraphExplanationPrimaryConnector =
 		paragraphExplanationConnectors.length > 0 ? paragraphExplanationConnectors[0] : null;
 	let paragraphExplanationScrollMarkers: Array<{
@@ -762,10 +760,8 @@
 			if (currentGap < CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
 				const aIsAbove = displayACenterPx <= displayBCenterPx;
 				const center = (displayACenterPx + displayBCenterPx) / 2;
-				let top =
-					center - CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
-				let bottom =
-					center + CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
+				let top = center - CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
+				let bottom = center + CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
 				if (hostRect.height >= CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
 					if (top < 0) {
 						bottom += -top;
@@ -1174,13 +1170,23 @@
 		delete host.dataset.relationsTone;
 	}
 
+	function getEditableRootElement(element: HTMLElement): HTMLElement {
+		if (element.matches('[data-docx-editable-root="true"]')) return element;
+		return element.querySelector<HTMLElement>('[data-docx-editable-root="true"]') ?? element;
+	}
+
 	function freezeIgnoredParagraphElement(element: HTMLElement) {
+		const editableRoot = getEditableRootElement(element);
 		element.dataset.ignoredParagraph = 'true';
-		element.removeAttribute('contenteditable');
-		element.removeAttribute('spellcheck');
-		element.removeAttribute('data-node-id');
-		element.removeAttribute('data-paragraph-kind');
-		element.classList.remove(...EDITABLE_PARAGRAPH_CLASSES);
+		editableRoot.dataset.ignoredParagraph = 'true';
+		for (const target of new Set([element, editableRoot])) {
+			target.removeAttribute('contenteditable');
+			target.removeAttribute('spellcheck');
+			target.removeAttribute('data-node-id');
+			target.removeAttribute('data-paragraph-kind');
+			target.removeAttribute('data-docx-editable-root');
+			target.classList.remove(...EDITABLE_PARAGRAPH_CLASSES);
+		}
 	}
 
 	function nextAssistantMessageId() {
@@ -1603,7 +1609,10 @@
 								`Snippet A (${freeExplanation.snippetA.source}): "${freeExplanation.snippetA.text}"`,
 								`Snippet B (${freeExplanation.snippetB.source}): "${freeExplanation.snippetB.text}"`
 							]
-						: [freeExplanation.fallbackEvidenceMessage ?? 'No structured evidence snippets were returned by the classifier.'];
+						: [
+								freeExplanation.fallbackEvidenceMessage ??
+									'No structured evidence snippets were returned by the classifier.'
+							];
 				appendAssistantQuickActionMessage(
 					[
 						`Free explanation for paragraph ${selected.id}:`,
@@ -2020,34 +2029,46 @@
 		return node.nodeType === Node.TEXT_NODE && !(node.textContent ?? '').trim();
 	}
 
+	function isPageChromeNode(node: Node): boolean {
+		return node instanceof HTMLElement && node.dataset.docxPageChrome === 'true';
+	}
+
+	function isIgnorablePageNode(node: Node): boolean {
+		return isIgnorableTextNode(node) || isPageChromeNode(node);
+	}
+
 	function getMeaningfulNodes(parent: HTMLElement): Node[] {
-		return Array.from(parent.childNodes).filter((child) => !isIgnorableTextNode(child));
+		return Array.from(parent.childNodes).filter((child) => !isIgnorablePageNode(child));
 	}
 
 	function countMeaningfulChildren(parent: HTMLElement): number {
 		let count = 0;
 		for (const child of Array.from(parent.childNodes)) {
-			if (isIgnorableTextNode(child)) continue;
+			if (isIgnorablePageNode(child)) continue;
 			count += 1;
 		}
 		return count;
 	}
 
-	function getLastMeaningfulElement(parent: HTMLElement): HTMLElement | null {
+	function getLastMeaningfulNode(parent: HTMLElement): Node | null {
 		const children = Array.from(parent.childNodes);
 		for (let i = children.length - 1; i >= 0; i -= 1) {
 			const node = children[i];
-			if (isIgnorableTextNode(node)) continue;
-			if (node instanceof HTMLElement) return node;
-			break;
+			if (isIgnorablePageNode(node)) continue;
+			return node;
 		}
 		return null;
+	}
+
+	function getLastMeaningfulElement(parent: HTMLElement): HTMLElement | null {
+		const node = getLastMeaningfulNode(parent);
+		return node instanceof HTMLElement ? node : null;
 	}
 
 	function getPreviousMeaningfulSibling(node: Node | null): HTMLElement | null {
 		let current = node?.previousSibling ?? null;
 		while (current) {
-			if (!isIgnorableTextNode(current)) {
+			if (!isIgnorablePageNode(current)) {
 				return current instanceof HTMLElement ? current : null;
 			}
 			current = current.previousSibling;
@@ -2141,11 +2162,22 @@
 		container.style.alignItems = 'start';
 	}
 
+	function collectDocxTabContainers(targetViewer: HTMLElement): HTMLElement[] {
+		const containers = new Set<HTMLElement>();
+		const tabs = targetViewer.querySelectorAll<HTMLElement>('span[data-docx-tab="1"]');
+		for (const tab of tabs) {
+			const container = tab.closest<HTMLElement>(
+				'[data-docx-editable-root="true"], [data-node-id]'
+			);
+			if (container) containers.add(container);
+		}
+		return Array.from(containers);
+	}
+
 	function applyDocxTabStops(targetViewer: HTMLElement) {
-		const containers = targetViewer.querySelectorAll<HTMLElement>('[data-docx-tab-stops]');
+		const containers = collectDocxTabContainers(targetViewer);
 		for (const container of containers) {
 			const stops = parseDocxTabStops(container.dataset.docxTabStops);
-			if (stops.length === 0) continue;
 
 			const tabs = container.querySelectorAll<HTMLElement>('span[data-docx-tab=\"1\"]');
 			if (tabs.length === 0) continue;
@@ -2190,6 +2222,11 @@
 	function createContinuationSection(section: HTMLElement): HTMLElement {
 		const continuation = section.cloneNode(false) as HTMLElement;
 		continuation.replaceChildren();
+		for (const chromeNode of section.querySelectorAll<HTMLElement>(
+			':scope > [data-docx-page-chrome="true"]'
+		)) {
+			continuation.appendChild(chromeNode.cloneNode(true));
+		}
 		return continuation;
 	}
 
@@ -2319,7 +2356,7 @@
 			let keptCurrentPageByAllowance = false;
 			while (current.scrollHeight - current.clientHeight > PAGE_OVERFLOW_TOLERANCE_PX) {
 				if (countMeaningfulChildren(current) <= 1) break;
-				const lastNode = current.lastChild;
+				const lastNode = getLastMeaningfulNode(current);
 				if (!lastNode) break;
 				if (lastNode instanceof HTMLElement) {
 					const overflowPx = current.scrollHeight - current.clientHeight;
@@ -2542,27 +2579,51 @@
 				return officeDocument.constructor.identify(node, officeDocument);
 			};
 
-			const renderedRoot = parsedDoc.render(
-				createRenderer(
-					docId,
-					{
-						onNodeUpsert: upsertParagraphNode,
-						onNodeFocus: focusParagraphNode,
-						onNodeCommit: commitParagraphNode,
-						onNodeRemove: (nodeId: string) => {
-							removeParagraphNode(nodeId);
-						}
-					},
-					{
-						nodeEditStateById,
-						paragraphElementById,
-						paragraphRelationHostById,
-						relationsCountByNodeId,
-						getSelectedNodeId: () => selectedNodeId
+			type DocxRenderFactory = ReturnType<typeof createRenderer>;
+			type DocxOfficeDocument = {
+				renderNode: (
+					node: XmlNode,
+					createElement: DocxRenderFactory,
+					identifyNode: typeof identify
+				) => unknown;
+			};
+			type DocxPartQuery = {
+				children: () => { toArray: () => XmlNode[] };
+			};
+			type DocxPart = (selector: string) => DocxPartQuery;
+
+			const officeDocument = (
+				parsedDoc as typeof parsedDoc & { officeDocument?: DocxOfficeDocument }
+			).officeDocument;
+			let renderer: DocxRenderFactory;
+			const renderExternalPart = (part: unknown, rootLocalName: 'hdr' | 'ftr') => {
+				if (!officeDocument || typeof part !== 'function') return null;
+				const root = (part as DocxPart)(`w\\:${rootLocalName}`);
+				const nodes = root.children().toArray();
+				return nodes.map((node) => officeDocument.renderNode(node, renderer, identify));
+			};
+
+			renderer = createRenderer(
+				docId,
+				{
+					onNodeUpsert: upsertParagraphNode,
+					onNodeFocus: focusParagraphNode,
+					onNodeCommit: commitParagraphNode,
+					onNodeRemove: (nodeId: string) => {
+						removeParagraphNode(nodeId);
 					}
-				),
-				identify
+				},
+				{
+					nodeEditStateById,
+					paragraphElementById,
+					paragraphRelationHostById,
+					relationsCountByNodeId,
+					getSelectedNodeId: () => selectedNodeId
+				},
+				{ renderExternalPart }
 			);
+
+			const renderedRoot = parsedDoc.render(renderer, identify);
 			if (token !== renderToken || !viewer) return;
 
 			viewer.replaceChildren();
@@ -2840,8 +2901,8 @@
 						style={`width: ${globalModelSelectWidthPx}px;`}
 						title="Global model for Contradiction Analysis and Paragraph Explanation"
 					>
-						{GLOBAL_ANALYSIS_MODEL_OPTIONS.find((option) => option.value === globalAnalysisModel)?.label ??
-							globalAnalysisModel}
+						{GLOBAL_ANALYSIS_MODEL_OPTIONS.find((option) => option.value === globalAnalysisModel)
+							?.label ?? globalAnalysisModel}
 					</Select.Trigger>
 					<Select.Content
 						class="min-w-0"
@@ -2980,7 +3041,8 @@
 							class="docx-paragraph-explanation-bracket docx-paragraph-explanation-bracket--interactive"
 							style={`left: ${paragraphExplanationPrimaryConnector.leftPx}px; top: ${paragraphExplanationPrimaryConnector.topPx}px; height: ${Math.max(
 								6,
-								paragraphExplanationPrimaryConnector.bottomPx - paragraphExplanationPrimaryConnector.topPx
+								paragraphExplanationPrimaryConnector.bottomPx -
+									paragraphExplanationPrimaryConnector.topPx
 							)}px;`}
 							role="button"
 							tabindex="0"
@@ -3185,12 +3247,7 @@
 						<div
 							class="flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2"
 						>
-							<label 
-								for=""
-								class="text-[10px] font-semibold text-gray-600"
-							>
-								Parapraph
-							</label>
+							<label for="" class="text-[10px] font-semibold text-gray-600"> Parapraph </label>
 							<Switch
 								id="assistant-header-full-contract-scope"
 								class="data-checked:bg-blue-600 dark:data-checked:bg-blue-500"

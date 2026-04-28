@@ -13,6 +13,11 @@ import {
 	updateSelectionHighlight
 } from '$lib/utils/edit';
 
+function getEditableRootElement(element: HTMLElement): HTMLElement {
+	if (element.matches('[data-docx-editable-root="true"]')) return element;
+	return element.querySelector<HTMLElement>('[data-docx-editable-root="true"]') ?? element;
+}
+
 export type DocxInspectorState = {
 	selectedNodeId: string | null;
 	selectedChangeLog: ChangeLogState;
@@ -79,7 +84,7 @@ export function focusNodeFromPanel(options: {
 	const nodeElement = paragraphElementById.get(nodeId);
 	if (nodeElement) {
 		nodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-		nodeElement.focus();
+		getEditableRootElement(nodeElement).focus();
 		return;
 	}
 
