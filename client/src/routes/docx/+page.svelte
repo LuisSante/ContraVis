@@ -3220,7 +3220,7 @@
 					{activeDocumentName || 'No document selected'}
 				</div>
 			</div>
-			<div class="shrink-0">
+			<!-- <div class="shrink-0">
 				<Button
 					variant="outline"
 					size="sm"
@@ -3231,7 +3231,7 @@
 				>
 					{renderedPdfExporting ? 'Preparing PDF...' : 'Download rendered PDF'}
 				</Button>
-			</div>
+			</div> -->
 			<div class="shrink-0">
 				<Select.Root
 					type="single"

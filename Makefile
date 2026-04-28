@@ -31,7 +31,7 @@ dev-frontend:
 
 preprocess:
 	@echo "Preprocessing data..."
-	cd notebooks/KG && $(PYTHON) create_kg_neo4j.py
+	cd notebooks/KG && $(PYTHON) create_kg.py
 
 # Neo4j Backup
 backup:
