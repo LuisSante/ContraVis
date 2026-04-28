@@ -71,6 +71,10 @@ export function createRenderer(
 		firstLine: number | null;
 		hanging: number | null;
 	};
+	type ParagraphNumberingInfo = {
+		numId: string;
+		level: number;
+	};
 
 	const listState = new Map<string, number[]>();
 	const listDefinitionsByNumId = new Map<string, Map<number, ListLevelDefinition>>();
@@ -78,6 +82,7 @@ export function createRenderer(
 	const paragraphStyleCache = new Map<string, Record<string, string>>();
 	const paragraphRunStyleCache = new Map<string, Record<string, string>>();
 	let defaultRunPr: XmlNode | null = null;
+	let defaultParagraphStyleId: string | null = null;
 	let paragraphCounter = 0;
 	let readOnlyDepth = 0;
 	let inheritedHeaders: Map<string, unknown> | null = null;
@@ -97,7 +102,7 @@ export function createRenderer(
 	] as const;
 	const ENTITY_RE = /&(?:#\d+|#x[\da-f]+|[a-z][\w-]+);/i;
 	const DEFINITION_BOUNDARY_RE =
-		/\.\s+(?=[“"][^”"]{1,120}[”"](?:\s+(?:and|or)\s+[“"][^”"]{1,120}[”"])?\s+(?:means|mean|shall|has|is|are|refers|includes)\b)/gi;
+		/\.\s*(?=[“"][^”"]{1,120}[”"](?:\s+(?:and|or)\s+[“"][^”"]{1,120}[”"])?\s+(?:means|mean|shall|has|is|are|refers|includes)\b)/gi;
 
 	const decodeDocxText = (value: string): string => {
 		if (!value.includes('&') || !ENTITY_RE.test(value)) return value;
@@ -272,6 +277,7 @@ export function createRenderer(
 
 	const parseStylesNode = (stylesNode?: XmlNode | null) => {
 		defaultRunPr = null;
+		defaultParagraphStyleId = null;
 		paragraphStyleDefinitionsById.clear();
 		paragraphStyleCache.clear();
 		paragraphRunStyleCache.clear();
@@ -291,6 +297,9 @@ export function createRenderer(
 			if ((getAttr(child, 'type') ?? '').toLowerCase() !== 'paragraph') continue;
 			const styleId = getAttr(child, 'styleId');
 			if (!styleId) continue;
+			if ((getAttr(child, 'default') ?? '').toLowerCase() === '1') {
+				defaultParagraphStyleId = styleId;
+			}
 			const basedOn = getAttr(findChild(child, 'basedon'), 'val') ?? null;
 			const pPr = findChild(child, 'ppr') ?? null;
 			const runPr = findChild(child, 'rpr') ?? null;
@@ -381,7 +390,7 @@ export function createRenderer(
 	};
 
 	const getParagraphInheritedRunStyles = (pr?: XmlNode | null): Record<string, string> => {
-		const styleId = getParagraphStyleId(pr) ?? '__default__';
+		const styleId = getParagraphStyleId(pr) ?? defaultParagraphStyleId ?? '__default__';
 		const cached = paragraphRunStyleCache.get(styleId);
 		if (cached) return cached;
 
@@ -408,7 +417,7 @@ export function createRenderer(
 	};
 
 	const getParagraphInheritedParagraphStyles = (pr?: XmlNode | null): Record<string, string> => {
-		const styleId = getParagraphStyleId(pr);
+		const styleId = getParagraphStyleId(pr) ?? defaultParagraphStyleId;
 		if (!styleId) return {};
 
 		const cached = paragraphStyleCache.get(styleId);
@@ -431,6 +440,9 @@ export function createRenderer(
 		paragraphStyleCache.set(styleId, inherited);
 		return inherited;
 	};
+
+	const getParagraphDirectRunStyles = (pr?: XmlNode | null): Record<string, string> =>
+		getRunStyles(findChild(pr, 'rpr'));
 
 	const getParagraphTabStopsPx = (pr?: XmlNode | null): number[] => {
 		const tabsNode = findChild(pr, 'tabs');
@@ -471,6 +483,33 @@ export function createRenderer(
 		return { left, hanging };
 	};
 
+	const shouldShrinkParagraphBox = (element: HTMLElement, pr?: XmlNode | null): boolean => {
+		if (element.querySelector('table,img,svg,canvas,video,audio,object,iframe')) return false;
+
+		const alignment = getAttr(findChild(pr, 'jc'), 'val')?.toLowerCase();
+		if (alignment === 'both' || alignment === 'justify') return false;
+
+		const text = normalizeEditableText(element.textContent ?? '').trim();
+		if (!text || text.length > 140) return false;
+		return true;
+	};
+
+	const applyShrinkToTextBox = (element: HTMLElement) => {
+		element.dataset.docxShrinkToText = 'true';
+		element.style.display =
+			element.dataset.docxListLayout === 'hanging-grid' ? 'inline-grid' : 'inline-block';
+		element.style.width = 'fit-content';
+		element.style.maxWidth = '100%';
+		element.style.verticalAlign = 'top';
+	};
+
+	const removeLeadingDocxTab = (element: HTMLElement) => {
+		const firstChild = element.firstElementChild;
+		if (firstChild instanceof HTMLElement && firstChild.dataset.docxTab === '1') {
+			firstChild.remove();
+		}
+	};
+
 	const applyParagraphTabStopMetadata = (element: HTMLElement, pr?: XmlNode | null) => {
 		const stops = getParagraphTabStopsPx(pr);
 		if (stops.length === 0) {
@@ -506,6 +545,18 @@ export function createRenderer(
 		);
 
 		return marker || `${formatCounter(counters[level], levelDef.numFmt)}.`;
+	};
+
+	const getParagraphNumberingInfo = (pr?: XmlNode | null): ParagraphNumberingInfo | null => {
+		const numPr = findChild(pr, 'numpr');
+		if (!numPr) return null;
+
+		const numId = getAttr(findChild(numPr, 'numid'), 'val');
+		if (!numId) return null;
+
+		const rawLevel = toNumber(getAttr(findChild(numPr, 'ilvl'), 'val'));
+		const level = rawLevel != null ? Math.max(Math.trunc(rawLevel), 0) : 0;
+		return { numId, level };
 	};
 
 	const clearRelationBadge = (host: HTMLElement) => {
@@ -735,6 +786,8 @@ export function createRenderer(
 					section.style.minHeight = `${layout.height}px`;
 					section.style.padding = `${layout.marginTop}px ${layout.marginRight}px ${layout.marginBottom}px ${layout.marginLeft}px`;
 					section.style.position = 'relative';
+					section.dataset.docxPageWidthPx = String(layout.width);
+					section.dataset.docxPageHeightPx = String(layout.height);
 					const pageChrome = createPageChromeLayer(headerPart, footerPart);
 					if (pageChrome) section.appendChild(pageChrome);
 					appendChildren(section, children);
@@ -745,13 +798,70 @@ export function createRenderer(
 					const pr = (safeProps.pr as XmlNode) ?? null;
 					const heading = document.createElement(`h${level}`);
 					heading.className = 'font-bold whitespace-pre-wrap break-words [tab-size:4]';
+					const content = document.createElement('span');
+					content.className = 'inline whitespace-pre-wrap break-words outline-none [tab-size:4]';
+					appendChildren(content, children);
+
+					let headingTextPrefix = '';
+					let headingMarker: HTMLSpanElement | null = null;
+					const numberingInfo = getParagraphNumberingInfo(pr);
+					if (numberingInfo) {
+						const markerText = nextListMarker(numberingInfo.numId, numberingInfo.level);
+						if (markerText) {
+							const marker = document.createElement('span');
+							marker.className = 'inline-block whitespace-nowrap';
+							marker.textContent = markerText;
+							marker.dataset.docxListMarker = markerText;
+							marker.style.whiteSpace = 'nowrap';
+							marker.style.overflow = 'visible';
+							marker.style.fontSize = 'inherit';
+							marker.style.fontWeight = '400';
+							marker.style.lineHeight = 'inherit';
+							marker.style.display = 'inline-block';
+							marker.style.marginRight = '4px';
+							marker.style.verticalAlign = 'baseline';
+							marker.setAttribute('contenteditable', 'false');
+							heading.dataset.docxListMarker = markerText;
+							heading.appendChild(marker);
+							headingMarker = marker;
+							headingTextPrefix = markerText;
+						}
+					}
+
+					heading.appendChild(content);
 					setStyles(heading, getParagraphInheritedParagraphStyles(pr));
 					setStyles(heading, getParagraphStyles(pr));
 					setStyles(heading, getParagraphInheritedRunStyles(pr));
+					setStyles(heading, getParagraphDirectRunStyles(pr));
 					applyParagraphTabStopMetadata(heading, pr);
-					appendChildren(heading, children);
-					attachParagraphEditor(heading, 'heading', heading, {
-						disabled: isHeaderOrFooterStyle(pr)
+
+					const hangingLayout = getHangingListLayout(pr);
+					if (headingMarker && hangingLayout) {
+						heading.style.marginLeft = `${Math.max(hangingLayout.left - hangingLayout.hanging, 0)}px`;
+						heading.style.display = 'grid';
+						heading.style.gridTemplateColumns = `${hangingLayout.hanging}px minmax(0, 1fr)`;
+						heading.style.columnGap = '0';
+						heading.style.alignItems = 'baseline';
+						heading.style.paddingLeft = '0';
+						heading.style.textIndent = '0';
+						heading.dataset.docxListLayout = 'hanging-grid';
+						heading.dataset.docxListMarkerColumnPx = String(hangingLayout.hanging);
+						headingMarker.style.gridColumn = '1';
+						headingMarker.style.width = '100%';
+						headingMarker.style.marginRight = '0';
+						content.style.display = 'block';
+						content.style.gridColumn = '2';
+						content.style.minWidth = '0';
+						removeLeadingDocxTab(content);
+					}
+
+					if (shouldShrinkParagraphBox(heading, pr)) {
+						applyShrinkToTextBox(heading);
+					}
+					attachParagraphEditor(content, 'heading', heading, {
+						visualElement: heading,
+						disabled: isHeaderOrFooterStyle(pr),
+						textPrefix: headingTextPrefix
 					});
 					return heading;
 				}
@@ -773,7 +883,7 @@ export function createRenderer(
 					marker.dataset.docxListMarker = markerText;
 					marker.style.whiteSpace = 'nowrap';
 					marker.style.overflow = 'visible';
-					marker.style.fontSize = '0.80em';
+					marker.style.fontSize = 'inherit';
 					marker.style.fontWeight = '400';
 					marker.style.lineHeight = 'inherit';
 					marker.style.display = 'inline-block';
@@ -788,19 +898,35 @@ export function createRenderer(
 					setStyles(item, getParagraphInheritedParagraphStyles(pr));
 					setStyles(item, getParagraphStyles(pr));
 					setStyles(item, getParagraphInheritedRunStyles(pr));
+					setStyles(item, getParagraphDirectRunStyles(pr));
 					applyParagraphTabStopMetadata(item, pr);
 					item.style.paddingLeft = '0';
 					item.style.textIndent = '0';
 					if (hangingLayout) {
-						item.style.paddingLeft = `${hangingLayout.left}px`;
-						item.style.textIndent = `${-hangingLayout.hanging}px`;
-						marker.style.width = `${hangingLayout.hanging}px`;
+						item.style.marginLeft = `${Math.max(hangingLayout.left - hangingLayout.hanging, 0)}px`;
+						item.style.display = 'grid';
+						item.style.gridTemplateColumns = `${hangingLayout.hanging}px minmax(0, 1fr)`;
+						item.style.columnGap = '0';
+						item.style.alignItems = 'baseline';
+						item.style.paddingLeft = '0';
+						item.style.textIndent = '0';
+						item.dataset.docxListLayout = 'hanging-grid';
+						item.dataset.docxListMarkerColumnPx = String(hangingLayout.hanging);
+						marker.style.gridColumn = '1';
+						marker.style.width = '100%';
 						marker.style.marginRight = '0';
+						content.style.display = 'block';
+						content.style.gridColumn = '2';
+						content.style.minWidth = '0';
+						removeLeadingDocxTab(content);
 					}
 					item.dataset.docxListMarker = markerText;
 
 					item.appendChild(marker);
 					item.appendChild(content);
+					if (shouldShrinkParagraphBox(item, pr)) {
+						applyShrinkToTextBox(item);
+					}
 					attachParagraphEditor(content, 'list', item, {
 						visualElement: item,
 						disabled: isHeaderOrFooterStyle(pr),
@@ -815,15 +941,22 @@ export function createRenderer(
 					setStyles(paragraph, getParagraphInheritedParagraphStyles(pr));
 					setStyles(paragraph, getParagraphStyles(pr));
 					setStyles(paragraph, getParagraphInheritedRunStyles(pr));
+					setStyles(paragraph, getParagraphDirectRunStyles(pr));
 					applyParagraphTabStopMetadata(paragraph, pr);
 					if (hasOnlySectionBreak(pr) && toNodeList(children).length === 0) {
 						paragraph.classList.add('min-h-[1px]');
 					}
 					appendChildren(paragraph, children);
+					if (shouldShrinkParagraphBox(paragraph, pr)) {
+						applyShrinkToTextBox(paragraph);
+					}
 					const splitParagraphs = splitDefinitionParagraph(paragraph);
 					if (splitParagraphs.length > 0) {
 						const fragment = document.createDocumentFragment();
 						for (const splitParagraph of splitParagraphs) {
+							if (shouldShrinkParagraphBox(splitParagraph, pr)) {
+								applyShrinkToTextBox(splitParagraph);
+							}
 							attachParagraphEditor(splitParagraph, 'paragraph', splitParagraph, {
 								disabled: isHeaderOrFooterStyle(pr)
 							});

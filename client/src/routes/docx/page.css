@@ -10,7 +10,7 @@
 	.docx-relations-badge-host::before {
 		content: '';
 		position: absolute;
-		right: -14px;
+		right: var(--docx-relations-guide-right, -14px);
 		top: 2px;
 		bottom: 2px;
 		width: 2px;
@@ -26,7 +26,7 @@
 	.docx-relations-badge-host::after {
 		content: attr(data-relations-count);
 		position: absolute;
-		right: -24px;
+		right: var(--docx-relations-badge-right, -24px);
 		top: 50%;
 		display: inline-flex;
 		height: 22px;
@@ -123,43 +123,12 @@
 		pointer-events: none;
 	}
 
-	.docx-related-context::after {
-		position: absolute;
-		content: attr(data-related-label);
-		left: -58px;
-		top: 10px;
-		width: 50px;
-		text-align: right;
-		font-size: 10px;
-		font-weight: 600;
-		line-height: 1.1;
-		white-space: pre-line;
-		opacity: 0.95;
-		pointer-events: none;
-		z-index: 1;
-		text-shadow: 0 0 0.1px currentColor;
-	}
-
-	.docx-related-context--with-sub::after {
-		content: attr(data-related-label) '\A' attr(data-related-sub);
-		white-space: pre;
-		line-height: 1.15;
-	}
-
 	.docx-related-context--reference::before {
 		background: #0c41d4;
 	}
 
-	.docx-related-context--reference::after {
-		color: #0c41d4;
-	}
-
 	.docx-related-context--similarity::before {
 		background: #09993e;
-	}
-
-	.docx-related-context--similarity::after {
-		color: #09993e;
 	}
 
 	.docx-paragraph-explanation-selected {
@@ -274,6 +243,14 @@
 			transform 120ms ease,
 			opacity 120ms ease,
 			box-shadow 120ms ease;
+	}
+
+	.docx-related-scroll-marker--reference {
+		background: #2563eb;
+	}
+
+	.docx-related-scroll-marker--similarity {
+		background: #16a34a;
 	}
 
 	.docx-related-scroll-marker:hover,

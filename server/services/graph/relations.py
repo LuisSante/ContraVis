@@ -19,6 +19,8 @@ MIN_SEMANTIC_CHARS = 45
 MAX_BOILERPLATE_WORDS = 24
 BOILERPLATE_REPEAT_THRESHOLD = 3
 UPPERCASE_HEADING_WORDS = 10
+UNNUMBERED_HEADING_MAX_WORDS = 8
+UNNUMBERED_HEADING_MAX_CHARS = 90
 
 REFERENCE_PREFIX_BY_TYPE = {
     "section": "section",
@@ -223,6 +225,76 @@ def is_self_heading_reference(
     return heading_type == ref_type and heading_ref_id == ref_id
 
 
+def heading_ref_contains_reference(heading_ref_id: str, ref_id: str) -> bool:
+    if heading_ref_id == ref_id:
+        return True
+    return heading_ref_id.startswith(f"{ref_id}.")
+
+
+def looks_like_unnumbered_heading(text: str) -> bool:
+    normalized = normalize_for_match(text)
+    if not normalized:
+        return False
+    if extract_heading_meta(normalized) is not None:
+        return False
+    if len(normalized) > UNNUMBERED_HEADING_MAX_CHARS:
+        return False
+    if normalized.endswith((".", ";", ",")):
+        return False
+    if re.match(r"^[A-Za-z]\.", normalized):
+        return False
+
+    words = normalized.split()
+    if len(words) == 0 or len(words) > UNNUMBERED_HEADING_MAX_WORDS:
+        return False
+
+    alpha_words = [re.sub(r"[^A-Za-z]+", "", word) for word in words]
+    alpha_words = [word for word in alpha_words if word]
+    if not alpha_words:
+        return False
+
+    alpha_text = "".join(alpha_words)
+    if alpha_text.isupper():
+        return True
+
+    title_like_words = sum(1 for word in alpha_words if word[0].isupper())
+    return title_like_words / len(alpha_words) >= 0.6
+
+
+def build_reference_context_by_index(
+    *,
+    node_count: int,
+    heading_by_index: dict[int, dict],
+) -> dict[int, dict[str, dict]]:
+    context_by_index: dict[int, dict[str, dict]] = {}
+    current_by_type: dict[str, dict] = {}
+
+    for idx in range(node_count):
+        heading = heading_by_index.get(idx)
+        if heading is not None:
+            current_by_type[str(heading["type"])] = heading
+        context_by_index[idx] = dict(current_by_type)
+
+    return context_by_index
+
+
+def is_contextual_self_reference(
+    *,
+    context_by_type: dict[str, dict],
+    ref_type: str,
+    ref_id: str,
+) -> bool:
+    context_heading = context_by_type.get(ref_type)
+    if context_heading is None:
+        return False
+
+    context_ref_id = str(context_heading.get("ref_id", ""))
+    if not context_ref_id:
+        return False
+
+    return heading_ref_contains_reference(context_ref_id, ref_id)
+
+
 def expand_reference_scope_indices(
     *,
     nodes: list[Node],
@@ -239,10 +311,14 @@ def expand_reference_scope_indices(
     # For Section references, include the heading and its content block until the next sibling/parent.
     if ref_type == "section":
         ref_level = ref_id.count(".") + 1
+        content_seen = False
         for idx in range(heading_index + 1, len(nodes)):
             candidate_heading = heading_by_index.get(idx)
             if candidate_heading is None:
+                if content_seen and looks_like_unnumbered_heading(nodes[idx].text):
+                    break
                 scoped_indices.add(idx)
+                content_seen = True
                 continue
 
             if candidate_heading["type"] == "article":
@@ -252,12 +328,14 @@ def expand_reference_scope_indices(
             candidate_level = candidate_heading["level"]
             if candidate_ref_id == ref_id or candidate_ref_id.startswith(f"{ref_id}."):
                 scoped_indices.add(idx)
+                content_seen = False
                 continue
 
             if candidate_level <= ref_level:
                 break
 
             scoped_indices.add(idx)
+            content_seen = False
 
         return scoped_indices
 
@@ -340,10 +418,15 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
         heading_meta = extract_heading_meta(node.text)
         if heading_meta is not None:
             heading_by_index[idx] = heading_meta
+    context_by_index = build_reference_context_by_index(
+        node_count=len(nodes),
+        heading_by_index=heading_by_index,
+    )
 
     for i in range(len(nodes)):
         current_text = nodes[i].text
         current_heading_meta = heading_by_index.get(i)
+        current_context = context_by_index.get(i, {})
         for ref_type, pattern in Config.REFERENCE_PATTERNS:
             matches = pattern.finditer(current_text)
             for match in matches:
@@ -353,6 +436,12 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                     ref_type=ref_type,
                     ref_id=ref_id,
                     match_start=match.start(),
+                ):
+                    continue
+                if is_contextual_self_reference(
+                    context_by_type=current_context,
+                    ref_type=ref_type,
+                    ref_id=ref_id,
                 ):
                     continue
                 direct_target_indices: set[int] = set()

@@ -145,6 +145,74 @@
 		(action) =>
 			action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
 	);
+	type RelatedVisualKind = 'reference' | 'similarity';
+	type RelatedScrollMarker = {
+		paragraphId: string;
+		topPercent: number;
+		kind: RelatedVisualKind;
+	};
+	const RENDERED_PDF_PRINT_STYLE = `
+		html,
+		body {
+			margin: 0 !important;
+			padding: 0 !important;
+			background: #fff !important;
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+
+		body {
+			width: max-content;
+			min-width: 0;
+			overflow: visible !important;
+		}
+
+		.docx-rendered-pdf-export {
+			display: block !important;
+			width: max-content !important;
+			min-width: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			background: #fff !important;
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+
+		.docx-rendered-pdf-export > div,
+		.docx-rendered-pdf-export > div > div {
+			display: block !important;
+			width: max-content !important;
+			max-width: none !important;
+			min-height: 0 !important;
+			margin: 0 !important;
+			padding: 0 !important;
+			gap: 0 !important;
+		}
+
+		.docx-rendered-pdf-export section {
+			margin: 0 !important;
+			box-shadow: none !important;
+			break-after: page;
+			page-break-after: always;
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+
+		.docx-rendered-pdf-export section:last-of-type {
+			break-after: auto;
+			page-break-after: auto;
+		}
+
+		.docx-rendered-pdf-export [contenteditable='true'] {
+			caret-color: transparent !important;
+		}
+
+		.docx-rendered-pdf-export * {
+			transition: none !important;
+			-webkit-print-color-adjust: exact;
+			print-color-adjust: exact;
+		}
+	`;
 
 	let viewer: HTMLDivElement | null = null;
 	let documentScrollHost: HTMLElement | null = null;
@@ -224,12 +292,11 @@
 	} | null = null;
 	$: paragraphExplanationPrimaryConnector =
 		paragraphExplanationConnectors.length > 0 ? paragraphExplanationConnectors[0] : null;
-	let paragraphExplanationScrollMarkers: Array<{
-		paragraphId: string;
-		topPercent: number;
-	}> = [];
+	let paragraphExplanationScrollMarkers: RelatedScrollMarker[] = [];
 	let paragraphExplanationFrame: number | null = null;
 	let paragraphExplanationRelatedParagraphs: RelatedParagraph[] = [];
+	let relatedScrollMarkers: RelatedScrollMarker[] = [];
+	let relatedScrollMarkerFrame: number | null = null;
 	let isManualScrollDragging = false;
 	let manualScrollStartY = 0;
 	let manualScrollStartTop = 0;
@@ -242,6 +309,7 @@
 	let isCompactLayout = false;
 	let rightDrawerWidth = RIGHT_DRAWER_DEFAULT_WIDTH;
 	let isResizingRightDrawer = false;
+	let renderedPdfExporting = false;
 	$: shouldShowContradictionDecorations = activeRightPanelTab === 'analysis' && isRightDrawerOpen;
 	$: shouldShowParagraphExplanationDecorations =
 		activeRightPanelTab === 'paragraph_explanation' && isRightDrawerOpen;
@@ -337,10 +405,190 @@
 		void tabId;
 		void relatedIds;
 		applyRelatedSelectionHighlight();
+		scheduleRelatedScrollMarkerRefresh();
 	}
 
 	function toTitleCaseLabel(label: string): string {
 		return label.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
+	}
+
+	function getRenderedPdfTitle(): string {
+		const rawName = activeDocumentName || activeDocumentId || 'rendered-document';
+		const stem = rawName.replace(/\.[^.]+$/i, '').trim() || 'rendered-document';
+		const safeStem = stem.replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').trim();
+		return `${safeStem || 'rendered-document'}__system-render.pdf`;
+	}
+
+	function getRenderedPdfExportClass(): string {
+		const classes = [
+			'docx-rendered-pdf-export',
+			activeRightPanelTab === 'related' ? 'related-badges-on' : 'related-badges-off'
+		];
+		if (activeRightPanelTab === 'related' && get(selectedParagraph)?.id) {
+			classes.push('related-focus-on');
+		}
+		return classes.join(' ');
+	}
+
+	function copyRenderedPdfExportStyles(printDocument: Document) {
+		const base = printDocument.createElement('base');
+		base.href = `${window.location.origin}/`;
+		printDocument.head.appendChild(base);
+
+		const styleNodes = document.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
+			'link[rel="stylesheet"], style'
+		);
+		for (const node of styleNodes) {
+			printDocument.head.appendChild(node.cloneNode(true));
+		}
+
+		const printStyle = printDocument.createElement('style');
+		printStyle.textContent = `${getRenderedPdfPageRule()}\n${RENDERED_PDF_PRINT_STYLE}`;
+		printDocument.head.appendChild(printStyle);
+	}
+
+	function getRenderedPdfPageRule(): string {
+		const firstPage = viewer?.querySelector('section');
+		if (!(firstPage instanceof HTMLElement)) {
+			return '@page { size: auto; margin: 0; }';
+		}
+
+		const pageRect = firstPage.getBoundingClientRect();
+		const widthPx =
+			parsePxValue(firstPage.dataset.docxPageWidthPx) ??
+			parsePxValue(firstPage.style.width) ??
+			pageRect.width;
+		const heightPx =
+			parsePxValue(firstPage.dataset.docxPageHeightPx) ??
+			parsePxValue(firstPage.style.minHeight) ??
+			parsePxValue(firstPage.style.height) ??
+			pageRect.height;
+		if (!Number.isFinite(widthPx) || !Number.isFinite(heightPx) || widthPx <= 0 || heightPx <= 0) {
+			return '@page { size: auto; margin: 0; }';
+		}
+
+		return `@page { size: ${widthPx / 96}in ${heightPx / 96}in; margin: 0; }`;
+	}
+
+	function normalizeRenderedPdfExportClone(exportRoot: HTMLElement) {
+		const sections = exportRoot.querySelectorAll<HTMLElement>('section[data-docx-page-height-px]');
+		for (const section of sections) {
+			const widthPx = parsePxValue(section.dataset.docxPageWidthPx);
+			const heightPx = parsePxValue(section.dataset.docxPageHeightPx);
+			if (widthPx != null && widthPx > 0) {
+				section.style.width = `${widthPx}px`;
+			}
+			if (heightPx != null && heightPx > 0) {
+				section.style.height = `${heightPx}px`;
+				section.style.minHeight = `${heightPx}px`;
+				section.style.maxHeight = `${heightPx}px`;
+				section.style.overflow = 'hidden';
+			}
+		}
+	}
+
+	function waitForImageLoad(image: HTMLImageElement): Promise<void> {
+		if (image.complete) return Promise.resolve();
+
+		return new Promise((resolve) => {
+			const finish = () => {
+				image.removeEventListener('load', finish);
+				image.removeEventListener('error', finish);
+				resolve();
+			};
+			image.addEventListener('load', finish, { once: true });
+			image.addEventListener('error', finish, { once: true });
+		});
+	}
+
+	async function waitForRenderedPdfExportAssets(printDocument: Document) {
+		const fontSet = (printDocument as Document & { fonts?: FontFaceSet }).fonts;
+		const fontPromise = fontSet?.ready.catch(() => undefined) ?? Promise.resolve();
+		const imagePromises = Array.from(printDocument.images).map((image) => waitForImageLoad(image));
+		const assetPromise = Promise.all([fontPromise, ...imagePromises]).then(() => undefined);
+		const timeoutPromise = new Promise<void>((resolve) => window.setTimeout(resolve, 2500));
+
+		await Promise.race([assetPromise, timeoutPromise]);
+	}
+
+	function removePrintFrame(printFrame: HTMLIFrameElement | null) {
+		if (printFrame?.parentNode) {
+			printFrame.parentNode.removeChild(printFrame);
+		}
+	}
+
+	async function downloadRenderedPdf() {
+		if (renderedPdfExporting) return;
+		if (!viewer?.firstElementChild || !activeDocumentId) {
+			localError = 'No rendered document is available to export.';
+			return;
+		}
+
+		renderedPdfExporting = true;
+		localError = null;
+		let printFrame: HTMLIFrameElement | null = null;
+
+		try {
+			await tick();
+			const sourceFontSet = (document as Document & { fonts?: FontFaceSet }).fonts;
+			await sourceFontSet?.ready.catch(() => undefined);
+
+			printFrame = document.createElement('iframe');
+			printFrame.title = 'Rendered document PDF export';
+			printFrame.setAttribute('aria-hidden', 'true');
+			printFrame.style.position = 'fixed';
+			printFrame.style.left = '0';
+			printFrame.style.top = '0';
+			printFrame.style.width = `${Math.max(
+				1,
+				Math.ceil(viewer.scrollWidth || viewer.getBoundingClientRect().width || window.innerWidth)
+			)}px`;
+			printFrame.style.height = '1px';
+			printFrame.style.border = '0';
+			printFrame.style.opacity = '0';
+			printFrame.style.pointerEvents = 'none';
+			document.body.appendChild(printFrame);
+
+			const printWindow = printFrame.contentWindow;
+			const printDocument = printFrame.contentDocument ?? printWindow?.document;
+			if (!printWindow || !printDocument) {
+				throw new Error('Unable to prepare the rendered PDF export.');
+			}
+
+			printDocument.open();
+			printDocument.write(
+				'<!doctype html><html><head><meta charset="utf-8"></head><body></body></html>'
+			);
+			printDocument.close();
+			printDocument.title = getRenderedPdfTitle();
+			copyRenderedPdfExportStyles(printDocument);
+
+			const exportRoot = printDocument.createElement('main');
+			exportRoot.className = getRenderedPdfExportClass();
+			exportRoot.appendChild(viewer.cloneNode(true));
+			normalizeRenderedPdfExportClone(exportRoot);
+			printDocument.body.appendChild(exportRoot);
+
+			await waitForRenderedPdfExportAssets(printDocument);
+			await new Promise<void>((resolve) => printWindow.requestAnimationFrame(() => resolve()));
+
+			const cleanup = () => {
+				removePrintFrame(printFrame);
+				printFrame = null;
+			};
+			printWindow.addEventListener('afterprint', cleanup, { once: true });
+			printWindow.focus();
+			printWindow.print();
+			window.setTimeout(cleanup, 60000);
+		} catch (exportError) {
+			removePrintFrame(printFrame);
+			localError =
+				exportError instanceof Error
+					? exportError.message
+					: 'Failed to prepare rendered PDF export.';
+		} finally {
+			renderedPdfExporting = false;
+		}
 	}
 
 	function refreshInspector(selectedNode: ParagraphNode | null = get(selectedParagraph)) {
@@ -360,7 +608,15 @@
 		const nodeWithCurrent = toSelectedParagraphNode(selectedNode, nodeEditStateById);
 		selectedParagraph.set(nodeWithCurrent);
 		refreshInspector(nodeWithCurrent);
+		if (nodeWithCurrent?.id) {
+			const selectedElement = paragraphElementById.get(nodeWithCurrent.id);
+			if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
+		}
 		void tick().then(() => {
+			if (nodeWithCurrent?.id) {
+				const selectedElement = paragraphElementById.get(nodeWithCurrent.id);
+				if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
+			}
 			refreshSimplifyTarget();
 			applyContradictionHighlights();
 		});
@@ -372,12 +628,9 @@
 				'docx-related-selected',
 				'docx-related-linked',
 				'docx-related-context',
-				'docx-related-context--with-sub',
 				'docx-related-context--reference',
 				'docx-related-context--similarity'
 			);
-			delete element.dataset.relatedLabel;
-			delete element.dataset.relatedSub;
 		}
 		for (const host of paragraphRelationHostById.values()) {
 			host.classList.remove(
@@ -388,10 +641,69 @@
 		}
 	}
 
+	function buildRelatedScrollMarkers(relatedParagraphs: RelatedParagraph[]): RelatedScrollMarker[] {
+		if (!documentScrollHost) return [];
+
+		const hostRect = documentScrollHost.getBoundingClientRect();
+		const hostScrollHeight = documentScrollHost.scrollHeight;
+		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) return [];
+
+		const nextMarkers: RelatedScrollMarker[] = [];
+		for (const related of relatedParagraphs) {
+			const relatedElement = paragraphElementById.get(related.node.id);
+			if (!relatedElement) continue;
+			const relatedRect = relatedElement.getBoundingClientRect();
+			const centerOffset =
+				relatedRect.top - hostRect.top + documentScrollHost.scrollTop + relatedRect.height / 2;
+			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
+			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
+			nextMarkers.push({
+				paragraphId: related.node.id,
+				topPercent,
+				kind: resolveRelatedVisualMeta(related).kind
+			});
+		}
+
+		return nextMarkers.sort((left, right) => left.topPercent - right.topPercent);
+	}
+
+	function refreshRelatedScrollMarkers() {
+		if (activeRightPanelTab !== 'related' || !get(selectedParagraph)?.id) {
+			relatedScrollMarkers = [];
+			return;
+		}
+		relatedScrollMarkers = buildRelatedScrollMarkers(selectedRelatedParagraphs);
+	}
+
+	function scheduleRelatedScrollMarkerRefresh() {
+		if (typeof window === 'undefined') return;
+		if (relatedScrollMarkerFrame != null) {
+			window.cancelAnimationFrame(relatedScrollMarkerFrame);
+		}
+		relatedScrollMarkerFrame = window.requestAnimationFrame(() => {
+			relatedScrollMarkerFrame = null;
+			refreshRelatedScrollMarkers();
+		});
+	}
+
+	function fitShortParagraphSelectionBox(element: HTMLElement) {
+		if (element.querySelector('table,img,svg,canvas,video,audio,object,iframe')) return;
+		const text = normalizeEditableText(element.textContent ?? '').trim();
+		if (!text || text.length > 140) return;
+
+		const computedStyle = window.getComputedStyle(element);
+		if (computedStyle.textAlign === 'justify') return;
+
+		element.dataset.docxShrinkToText = 'true';
+		element.style.display =
+			element.dataset.docxListLayout === 'hanging-grid' ? 'inline-grid' : 'inline-block';
+		element.style.width = 'fit-content';
+		element.style.maxWidth = '100%';
+		element.style.verticalAlign = 'top';
+	}
+
 	function resolveRelatedVisualMeta(related: RelatedParagraph): {
-		kind: 'reference' | 'similarity';
-		label: string;
-		subLabel?: string;
+		kind: RelatedVisualKind;
 	} {
 		const hasSimilarityByType = related.relationTypes.some((relationType) =>
 			String(relationType).toLowerCase().includes('semantic')
@@ -405,27 +717,30 @@
 			) || related.references.length > 0;
 		const similarityScore = Math.round((related.semanticScore ?? 0) * 100);
 		if (hasSimilarity && similarityScore > 0) {
-			return {
-				kind: 'similarity',
-				label: 'Similarity',
-				subLabel: `${similarityScore}%`
-			};
+			return { kind: 'similarity' };
 		}
 		if (hasSimilarity) {
-			return { kind: 'similarity', label: 'Similarity' };
+			return { kind: 'similarity' };
 		}
 		if (isReference) {
-			return { kind: 'reference', label: 'Reference' };
+			return { kind: 'reference' };
 		}
-		return { kind: 'reference', label: 'Reference' };
+		return { kind: 'reference' };
 	}
 
 	function applyRelatedSelectionHighlight() {
 		clearRelatedSelectionHighlight();
-		if (activeRightPanelTab !== 'related') return;
+		if (activeRightPanelTab !== 'related') {
+			relatedScrollMarkers = [];
+			return;
+		}
 		const selected = get(selectedParagraph);
-		if (!selected?.id) return;
+		if (!selected?.id) {
+			relatedScrollMarkers = [];
+			return;
+		}
 		const selectedElement = paragraphElementById.get(selected.id);
+		if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
 		selectedElement?.classList.add('docx-related-selected', 'docx-related-linked');
 		paragraphRelationHostById.get(selected.id)?.classList.add('docx-related-badge-emphasis');
 		for (const related of selectedRelatedParagraphs) {
@@ -433,18 +748,11 @@
 			if (!relatedElement) continue;
 			const visualMeta = resolveRelatedVisualMeta(related);
 			relatedElement.classList.add('docx-related-linked', 'docx-related-context');
-			if (visualMeta.subLabel) {
-				relatedElement.classList.add('docx-related-context--with-sub');
-			}
 			relatedElement.classList.add(
 				visualMeta.kind === 'reference'
 					? 'docx-related-context--reference'
 					: 'docx-related-context--similarity'
 			);
-			relatedElement.dataset.relatedLabel = visualMeta.label;
-			if (visualMeta.subLabel) {
-				relatedElement.dataset.relatedSub = visualMeta.subLabel;
-			}
 			paragraphRelationHostById
 				.get(related.node.id)
 				?.classList.add(
@@ -500,6 +808,7 @@
 		selectedNodeId = resetState.selectedNodeId;
 		selectedChangeLog = resetState.selectedChangeLog;
 		selectedRelatedParagraphs = resetState.selectedRelatedParagraphs;
+		relatedScrollMarkers = [];
 		nodeEditStateById.clear();
 		paragraphElementById.clear();
 		paragraphRelationHostById.clear();
@@ -517,6 +826,8 @@
 		paragraphExplanationError = null;
 		paragraphExplanationAnswer = '';
 		paragraphExplanationLoading = false;
+		paragraphExplanationConnectors = [];
+		paragraphExplanationScrollMarkers = [];
 	}
 
 	function clearSnippetMarks(element: HTMLElement) {
@@ -900,7 +1211,9 @@
 
 		const selected = get(selectedParagraph);
 		if (!selected?.id) return;
-		paragraphElementById.get(selected.id)?.classList.add('docx-paragraph-explanation-selected');
+		const selectedElement = paragraphElementById.get(selected.id);
+		if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
+		selectedElement?.classList.add('docx-paragraph-explanation-selected');
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			paragraphElementById
 				.get(related.node.id)
@@ -1002,7 +1315,7 @@
 			paragraphExplanationScrollMarkers = [];
 			return;
 		}
-		const nextScrollMarkers: Array<{ paragraphId: string; topPercent: number }> = [];
+		const nextScrollMarkers: RelatedScrollMarker[] = [];
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
@@ -1011,7 +1324,11 @@
 				relatedRect.top - hostRect.top + documentScrollHost.scrollTop + relatedRect.height / 2;
 			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
 			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
-			nextScrollMarkers.push({ paragraphId: related.node.id, topPercent });
+			nextScrollMarkers.push({
+				paragraphId: related.node.id,
+				topPercent,
+				kind: resolveRelatedVisualMeta(related).kind
+			});
 		}
 		nextScrollMarkers.sort((left, right) => left.topPercent - right.topPercent);
 		paragraphExplanationScrollMarkers = nextScrollMarkers;
@@ -1051,6 +1368,7 @@
 		document.body.style.userSelect = '';
 		scheduleContradictionScrollMarkerRefresh();
 		scheduleParagraphExplanationConnectorRefresh();
+		scheduleRelatedScrollMarkerRefresh();
 		if (manualScrollMoved) {
 			suppressMarkerClickUntil = Date.now() + 140;
 		}
@@ -2004,6 +2322,7 @@
 		contradictionError = null;
 		contradictionScrollMarkers = [];
 		selectedContradictionEvidenceLink = null;
+		relatedScrollMarkers = [];
 		resetInspectorState();
 		resetAssistantState();
 		resetParagraphExplanationState();
@@ -2637,6 +2956,8 @@
 			paginateRenderedSections(viewer);
 			pruneBlankSections();
 			applyContradictionHighlights();
+			scheduleRelatedScrollMarkerRefresh();
+			scheduleParagraphExplanationConnectorRefresh();
 
 			const structuralNoiseNodeIds = detectDocxNoiseNodeIds(viewer);
 			if (structuralNoiseNodeIds.length > 0) {
@@ -2800,15 +3121,18 @@
 			refreshSimplifyTarget();
 			scheduleContradictionScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
+			scheduleRelatedScrollMarkerRefresh();
 		};
 		const handleDocumentScroll = () => {
 			scheduleContradictionScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
+			scheduleRelatedScrollMarkerRefresh();
 		};
 		const handleViewportResize = () => {
 			refreshViewportMode();
 			scheduleContradictionScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
+			scheduleRelatedScrollMarkerRefresh();
 			setRightDrawerWidth(rightDrawerWidth);
 		};
 
@@ -2833,6 +3157,8 @@
 		if (typeof ResizeObserver !== 'undefined') {
 			contradictionMarkerResizeObserver = new ResizeObserver(() => {
 				scheduleContradictionScrollMarkerRefresh();
+				scheduleParagraphExplanationConnectorRefresh();
+				scheduleRelatedScrollMarkerRefresh();
 			});
 			if (documentScrollHost) contradictionMarkerResizeObserver.observe(documentScrollHost);
 			if (viewer) contradictionMarkerResizeObserver.observe(viewer);
@@ -2842,9 +3168,14 @@
 			void openFromRoute($page.url.searchParams.get('id'));
 		});
 		scheduleContradictionScrollMarkerRefresh();
+		scheduleRelatedScrollMarkerRefresh();
 
 		return () => {
 			renderToken += 1;
+			if (relatedScrollMarkerFrame != null) {
+				window.cancelAnimationFrame(relatedScrollMarkerFrame);
+				relatedScrollMarkerFrame = null;
+			}
 			unsubscribe();
 			document.removeEventListener('selectionchange', handleDocumentSelectionChange);
 			document.removeEventListener('mouseup', handleDocumentSelectionChange);
@@ -2888,6 +3219,18 @@
 				<div class="min-w-0 truncate text-sm font-medium text-gray-800">
 					{activeDocumentName || 'No document selected'}
 				</div>
+			</div>
+			<div class="shrink-0">
+				<Button
+					variant="outline"
+					size="sm"
+					class="h-7 border-gray-200 bg-white px-2 text-[10px] text-gray-600 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-800"
+					disabled={!Boolean(activeDocumentId) || $loading || renderedPdfExporting}
+					onclick={() => void downloadRenderedPdf()}
+					title="Export the current system-rendered document as a PDF"
+				>
+					{renderedPdfExporting ? 'Preparing PDF...' : 'Download rendered PDF'}
+				</Button>
 			</div>
 			<div class="shrink-0">
 				<Select.Root
@@ -2990,6 +3333,27 @@
 				</div>
 			{/if}
 
+			{#if activeRightPanelTab === 'related' && relatedScrollMarkers.length > 0}
+				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
+					{#each relatedScrollMarkers as marker (`related-panel-marker-${marker.paragraphId}`)}
+						<span
+							class={`docx-related-scroll-marker docx-related-scroll-marker--${marker.kind}`}
+							style={`top: ${marker.topPercent}%;`}
+							role="button"
+							tabindex="0"
+							aria-label={`Go to ${marker.kind} paragraph ${marker.paragraphId}`}
+							on:click={() => jumpToRelatedParagraphMarker(marker.paragraphId)}
+							on:keydown={(event) => {
+								if (event.key === 'Enter' || event.key === ' ') {
+									event.preventDefault();
+									jumpToRelatedParagraphMarker(marker.paragraphId);
+								}
+							}}
+						></span>
+					{/each}
+				</div>
+			{/if}
+
 			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
 				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
 					<span
@@ -3084,11 +3448,11 @@
 				<div class="absolute top-2 right-1 bottom-2 z-20 w-2" on:mousedown={startManualScrollDrag}>
 					{#each paragraphExplanationScrollMarkers as marker (`related-marker-${marker.paragraphId}`)}
 						<span
-							class="docx-related-scroll-marker"
+							class={`docx-related-scroll-marker docx-related-scroll-marker--${marker.kind}`}
 							style={`top: ${marker.topPercent}%;`}
 							role="button"
 							tabindex="0"
-							aria-label={`Go to related paragraph ${marker.paragraphId}`}
+							aria-label={`Go to ${marker.kind} paragraph ${marker.paragraphId}`}
 							on:click={() => jumpToRelatedParagraphMarker(marker.paragraphId)}
 							on:keydown={(event) => {
 								if (event.key === 'Enter' || event.key === ' ') {
