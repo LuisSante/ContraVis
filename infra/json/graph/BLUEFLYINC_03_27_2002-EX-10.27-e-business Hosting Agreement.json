@@ -1,2608 +1,1524 @@
 {
+  "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
   "nodes": [
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-14",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Under this e-business Hosting Agreement (\"Agreement\") between International Business Machines Corporation (\"IBM\") and Bluefly, Inc. (\"Customer\"), IBM will provide Web hosting and related services (\"Services\") to Customer. The Agreement includes these terms and conditions and the documents referenced herein (\"Base Terms\"), e-business hosting services order forms accepted by IBM (\"Order Forms\"), and the following attachments:",
       "paragraph_uid": "1001c3e076b3d1f05d8878ddbc003e47e0e439bf",
       "paragraph_enum": 0,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-16",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. Attachment A: Facilities Services;",
       "paragraph_uid": "00a82e8996b5ea05f12dd7e3d11d1b1179567023",
       "paragraph_enum": 1,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-18",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. Service Option Attachment for Facilities Services; and",
       "paragraph_uid": "b9a9d8b348d663bf66fadf9f47e96230009e5774",
       "paragraph_enum": 2,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-20",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. all other applicable attachments referenced in the Order Forms for Services options selected by Customer (\"Service Option Attachments\").",
       "paragraph_uid": "3ca338427137da2537d12dcc76e601c9b88513e7",
       "paragraph_enum": 3,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-22",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "In the event of a conflict between the Base Terms and an attachment, the Base Terms will govern, except where an attachment or a provision contained therein expressly states that it will govern over the Base Terms. The Base Terms and the attachments always govern over any inconsistent provision in an Order Form.",
       "paragraph_uid": "0ff05482ea247e1ab35d17e3a6242f6dd79aeb56",
       "paragraph_enum": 4,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-24",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "1.0 Definitions",
       "paragraph_uid": "d64d89906504267d00dbdbb476b1f66eed9fb73a",
       "paragraph_enum": 5,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-26",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. \"Acceptable Use Policy\" means the Acceptable Use Policy for IBM e-business Services, located on the Internet at http://www.ibm.com/services/",
       "paragraph_uid": "d5b8d9db84d751c236573392d5bec89e4abb8e21",
       "paragraph_enum": 6,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-27",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "e-business/aup.html, as of the Effective Date, and any subsequent modification in accordance with Section 13.2 below.",
       "paragraph_uid": "f00d8814072b0f9ce2a3ec09cd132c3fe0ed6ca1",
       "paragraph_enum": 7,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-29",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. \"Affiliates\" means entities that control, are controlled by, or are under common control with a party to this Agreement.",
       "paragraph_uid": "30f3d46b0a7d070b84dc73526f9e056ab33c9f5f",
       "paragraph_enum": 8,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-31",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. \"Base Components\" means the hardware and software that IBM makes available, if any, as specified in Order Forms and associated Service Option Attachments.",
       "paragraph_uid": "de2bf619b4b8e6a6875ef0a2c7e78e0b8913885b",
       "paragraph_enum": 9,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-33",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "d. \"Content\" means information, software, and data that Customer provides, including, without limitation, any hypertext markup language files, scripts, programs, recordings, sound, music, graphics, images, applets or servlets that Customer or its Subcontractors or Services Recipients create, install, upload or transfer in or through the e-business Hosting Environment and/or Customer Components.",
       "paragraph_uid": "157b2a0db1fffc2c00bd2d5098c4a4e924c9e4b9",
       "paragraph_enum": 10,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-35",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "e. \"Content Administrator\" means an employee or Subcontractor of Customer who is authorized by Customer to install, upload and/or maintain Content using a User Identification.",
       "paragraph_uid": "c425010ee9576097d2e5a8c48c3360ce3213368d",
       "paragraph_enum": 11,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-37",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "f. \"Customer Components\" means the hardware, software and other products, data and Content that Customer provides, including those specified in Service Option Attachments.",
       "paragraph_uid": "6a80c32ab087d413d86ba9251c2facb8303ba4cf",
       "paragraph_enum": 12,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-39",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "g. \"e-business Hosting Environment\" means the Base Components and the IBM provided Internet access bandwidth, collectively.",
       "paragraph_uid": "a9f978d7c8041c99ae8a99891c01c9ffdd1b0270",
       "paragraph_enum": 13,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-41",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "h. \"Enterprise\" means any legal entity and the subsidiaries it owns by more than 50 percent. The term \"Enterprise\" applies only to the portion of the Enterprise physically located within the United States of America.",
       "paragraph_uid": "567cb1fa8f828a489695905e682b0fd1be26691c",
       "paragraph_enum": 14,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-43",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "i. \"IBM e-business Hosting Center\" means the facility used by IBM to provide the Services.",
       "paragraph_uid": "04e62f502a794d4503e20653d9a8335883666ad9",
       "paragraph_enum": 15,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-45",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "j. \"Internet\" means the public worldwide network of TCP/IP-based networks.",
       "paragraph_uid": "a4b4cbd937d7951f5bd7f51c8abb9ee2502f3815",
       "paragraph_enum": 16,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-47",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "k. \"Materials\" means literary or other works of authorship (such as programs, program listings, programming tools, documentation, reports, drawings and similar works) that IBM may deliver to Customer. \"Materials\" does not include licensed program products available under their own license agreements or Base Components.",
       "paragraph_uid": "bce715f9c18bd87438ef0aa63d5692f73d359f31",
       "paragraph_enum": 17,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-49",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "l. \"Required Consents\" means any consents or approvals required to give IBM and its Subcontractors the right or license to access, use and/or modify in electronic form and in other forms, including derivative works, the Customer Components, without infringing the ownership or intellectual property rights of the providers, licensors, or owners of such Customer Components.",
       "paragraph_uid": "8af11a5afecf66d9849d4a566f64eaba4bbcfc8f",
       "paragraph_enum": 18,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-51",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "m. \"Service Option Ready Date\" means the date that IBM has notified Customer that IBM has completed the implementation activities",
       "paragraph_uid": "750d2294bdfad1bc8604734f284635362a541d91",
       "paragraph_enum": 19,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-56",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "specified in an applicable Service Option Attachment.",
       "paragraph_uid": "428342b37361eeb31578a84fc2dc652dc04f350f",
       "paragraph_enum": 20,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-58",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "n. \"Services Recipients\" means any entities or individuals receiving or using the Services, or the results or products of the Services.",
       "paragraph_uid": "3fb04ae2d7ec52e34f6e2cc77aafd6cbe85b04b6",
       "paragraph_enum": 21,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-60",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "o. \"Service Option Attachment Start Date\" means the day after the date of the last signature on an Order Form authorizing the Services under an applicable Service Option Attachment.",
       "paragraph_uid": "be0ddc83dc775f5bc9c296121d9bb9eb57811d44",
       "paragraph_enum": 22,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-62",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "p. \"Subcontractor\" means a contractor, vendor, agent, or consultant selected and retained by IBM or Customer, respectively.",
       "paragraph_uid": "1ebf1436cf1b438e6eeb9919ebef85c24cb7e02c",
       "paragraph_enum": 23,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-64",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "q. \"TCP/IP\" means Transmission Control Protocol/Internet Protocol.",
       "paragraph_uid": "cca4c92b30452c5ac5bcc1aefb4f036f7f44d2c8",
       "paragraph_enum": 24,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-66",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "r. \"User Identification\" or \"ID\" means a string of characters that uniquely identifies a Content Administrator.",
       "paragraph_uid": "3c6443a5af2c06bd5aee5d8958819e0a4bd2198b",
       "paragraph_enum": 25,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-68",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "2.0 IBM Services Responsibilities",
       "paragraph_uid": "1c6d4a8f6f298ba9d3fa71392eadb9a031394524",
       "paragraph_enum": 26,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-70",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM will perform the Services described in Attachment A and applicable Service Option Attachments.",
       "paragraph_uid": "e4f066ceeb2efb5c41630aac4a70eef56e48685d",
       "paragraph_enum": 27,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-72",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3.0 Term and Termination",
       "paragraph_uid": "380d1c9f311fd0e46c24648490dd0aa23099c559",
       "paragraph_enum": 28,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-74",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3.1 Term",
       "paragraph_uid": "4d4eafc9bc68a872fc438d8a34d8f04050909210",
       "paragraph_enum": 29,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-76",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "This Agreement will be effective beginning on 12:01 a.m., Eastern Time, on the day after the date of last signature to these Base Terms (\"Effective Date\") and ending on the expiration and/or termination of all Service Option Attachments, unless the Agreement is terminated earlier in accordance with the terms herein. The term of each Service Option Attachment is as specified on the applicable Order Form.",
       "paragraph_uid": "c0aaedaa6ba9ab8f47c3f8f9ce63d249af2b8f9a",
       "paragraph_enum": 30,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-78",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3.2 Renewal",
       "paragraph_uid": "e9a9480a801038a34df77868be0fa0d2ceb7f107",
       "paragraph_enum": 31,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-80",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Each Service Option Attachment will renew automatically for an additional term equal in duration to the previous term of the applicable Service Option Attachment unless either party notifies the other party in writing at least ninety (90) days prior to the end of the then-current term for the applicable Service Option Attachment that it has elected to terminate such Service Option Attachment.",
       "paragraph_uid": "0b8431ccf2775736182eff5ae015fa8857d9d03a",
       "paragraph_enum": 32,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-82",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3.3 Termination for Cause",
       "paragraph_uid": "c4b2cd89a5b882f3d79f061eabfebb486a8ad682",
       "paragraph_enum": 33,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-84",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer or IBM may terminate this Agreement for material breach of this Agreement by the other upon written notice containing the specific nature and dates of the material breach. The breaching party will have thirty (30) days from receipt of notice to cure such breach, except for nonpayment by Customer, which must be cured within seven (7) business days from receipt of notice. If such breach has not been timely cured, then the non-breaching party may immediately terminate this Agreement upon written notice; provided, however, it is understood that in the event IBM has so breached this Agreement IBM shall not be entitled to recover the early termination charges described in Section 3.4(b) below.",
       "paragraph_uid": "e0633e8c9bba5eb0a6944c50bb5eb38b71b7b184",
       "paragraph_enum": 34,
-      "page": 1,
-      "relationsCount": 6,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 6
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-86",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3.4 Termination for Convenience",
       "paragraph_uid": "a2ae8e186ef1f0a4fd9158dfc44ab8640f50937e",
       "paragraph_enum": 35,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-88",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer may terminate this Agreement (including all Service Option Attachments) or any Service Option Attachment (with the exception of any Service Option Attachment that is a prerequisite for the provision of Services under a",
       "paragraph_uid": "10f784645582a120ad5c8d108b2d4d7fe9c2e93e",
       "paragraph_enum": 36,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-89",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "non-terminated Service Option Attachment) for convenience at the end of any calendar month by:",
       "paragraph_uid": "781f6d95f341de1d1c4d9a2d7b2567b2f3c83e49",
       "paragraph_enum": 37,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-91",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. providing at least one month's prior written notice to IBM; and",
       "paragraph_uid": "bd5210d097f1d5916079b667a9362c4107e77826",
       "paragraph_enum": 38,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-93",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. paying the applicable early termination charges, if any, specified in Attachment A and applicable Service Option Attachments.",
       "paragraph_uid": "a5ccafe61bb8883db91db2b8901ab01bb5224a32",
       "paragraph_enum": 39,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-95",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "In the event that Customer exercises its rights under this Section 3.4, IBM shall continue to fulfill all of its duties and obligations following the notice date and until the final termination date.",
       "paragraph_uid": "15909c4fda4151151fb8a2bc4cccbe82ae8a61ea",
       "paragraph_enum": 40,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-97",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3.5 Effect of&sbsp;Termination",
       "paragraph_uid": "bbba9160d5b1123ffee27f55c13abfcfccc22a61",
       "paragraph_enum": 41,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-99",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Upon the date of termination, all Customer payment obligations accrued hereunder through the date of termination will become due and payable. The termination of selected Service Option Attachments will not affect Customer's obligation to pay charges under other Service Option Attachments.",
       "paragraph_uid": "cd88b1a9e5805304dc45b1f6b9bc56f408b80af2",
       "paragraph_enum": 42,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-101",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "4.0 Charges and Payment",
       "paragraph_uid": "939888901ca8f7b6aef00f2caeb0c83fbee2e4a8",
       "paragraph_enum": 43,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-103",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "4.1 Charges",
       "paragraph_uid": "971bf62e686b4b843d4c6a4f941cdd0112df3e08",
       "paragraph_enum": 44,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-105",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Charges for applicable Services will be specified in Service Option Attachments and Order Forms. Charges can be specified as one-time, installment, recurring, or usage. IBM will invoice such Charges when they begin or are due as set forth in Service Option Attachments.",
       "paragraph_uid": "4b053eb694925711b58f138e66f2366211127f4b",
       "paragraph_enum": 45,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-107",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "4.2 Payment",
       "paragraph_uid": "7e5e0d4610438422e07527ba5eac4b6dd054159e",
       "paragraph_enum": 46,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-109",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM invoices will specify the amount due. Payment is due upon receipt and payable as specified in such invoice. Customer agrees to pay accordingly, including any late payment fees. Payment will be made in United States dollars.",
       "paragraph_uid": "20b1ef8f402e186a5476271c302ead446976e564",
       "paragraph_enum": 47,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-111",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "4.3 Taxes",
       "paragraph_uid": "f2f5d32fa372cea6645357b1541d41fef4ead280",
       "paragraph_enum": 48,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-117",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer will pay or provide appropriate exemption documentation for all taxes, duties, levies, and any other fees (except for taxes based upon IBM's net income) related to the Services imposed by any governmental authorities. Charges specified herein (including in an Order Form) are exclusive of any such taxes, duties, levies or fees.",
       "paragraph_uid": "d7647633cd1e9e76c1b3a2f9bcdd1ecb300480e2",
       "paragraph_enum": 49,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-119",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "5.0 Warranties and Disclaimers",
       "paragraph_uid": "936e065c57b35b86940fbee22149634e4cf6cc99",
       "paragraph_enum": 50,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-121",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "5.1 IBM Representations and Warranties IBM represents and warrants that:",
       "paragraph_uid": "e2e4dca086c17920e7687907b6f1c29fd0fe4cb8",
       "paragraph_enum": 51,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-122",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. it will perform the Services using reasonable care and skill and in accordance with the applicable Service Option Attachments (which means the degree of knowledge, skill and judgment customarily exercised by members of the applicable profession with respect to work of a similar nature); and that it will provide Customer with competent, fully trained, fully qualified and responsible personnel to perform the Services; and",
       "paragraph_uid": "82229e2899828410c50a80f582a39c76a26cc978",
       "paragraph_enum": 52,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-124",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. it has the requisite corporate power and authority to execute, deliver and perform its obligations under this Agreement.",
       "paragraph_uid": "552c056cc4629abdf941c16f99c8d73adc2b5c9c",
       "paragraph_enum": 53,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-126",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM covenants that it will comply with the laws applicable to IBM's business.",
       "paragraph_uid": "ed5403be2029191574e6d5703c07ec3a4be90f48",
       "paragraph_enum": 54,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-128",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "5.2 Exclusivity of Warranties",
       "paragraph_uid": "509feffa35f2465b2f4de00ce22e6148cb97fea7",
       "paragraph_enum": 55,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-130",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "THE WARRANTIES IN SECTION 5.1 ARE THE EXCLUSIVE WARRANTIES FROM IBM. THEY REPLACE ALL OTHER WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF MERCHANTABILITY, SATISFACTORY QUALITY, AND FITNESS FOR A PARTICULAR PURPOSE.",
       "paragraph_uid": "23dfd832c8bf96cfe398891a3f1628c7908002ab",
       "paragraph_enum": 56,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-132",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "5.3 Security",
       "paragraph_uid": "4d3d18bdba2ce74b339cff2537b45b56a9fc8df6",
       "paragraph_enum": 57,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-134",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. Customer acknowledges that IBM does not control the transfer of data over telecommunications facilities, including the Internet.",
       "paragraph_uid": "04f9342b9d60fc7cd747e5c171d1e545e952a9cd",
       "paragraph_enum": 58,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-136",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. Subject to the other disclaimers contained herein, IBM will implement the security features specified herein, including the IBM perform security obligations identified in Section 8.0 of the Facilities Services Service Option Attachment. However, IBM does not warrant secure operation of the Services or that it will be able to prevent third party disruptions of the e-business Hosting Environment or Customer Components.",
       "paragraph_uid": "e285c1d3743c3e4d2be556a8960c9e97d22df05a",
       "paragraph_enum": 59,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-138",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. Customer acknowledges that IBM offers numerous security options, specified in Service Option Attachments. Customer is responsible for selecting on Order Forms the set of security options that it determines meet Customer's needs.",
       "paragraph_uid": "43aede9e861baa92115e4072ac901c13c36e8a0f",
       "paragraph_enum": 60,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-140",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "d. Customer agrees that IBM shall have no liability for any provision of security-related services or advice that IBM may voluntarily provide outside the scope of selected Service Option Attachments.",
       "paragraph_uid": "abb8ce0a414592d8ebad617840fca9fbd22f8fa1",
       "paragraph_enum": 61,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-142",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "5.4 Other Disclaimers",
       "paragraph_uid": "3f15c8d8daabe0ef7ee7171ea50f19cf3b117eb3",
       "paragraph_enum": 62,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-144",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. IBM does not warrant uninterrupted or error-free operation of any Service or that IBM will correct all defects. open",
       "paragraph_uid": "5e3a5ed654de04639df099e42fe398df89afeca0",
       "paragraph_enum": 63,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-146",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. IBM does not make any representation or warranty as to the capacity, performance or scalability of the Services, e-business Hosting Environment, or Customer Components.",
       "paragraph_uid": "b0115134c7a1d2af094f9313be6a06d7e91d4233",
       "paragraph_enum": 64,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-148",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. IBM PROVIDES ALL MATERIALS AND ALL NON-IBM SERVICES, PRODUCTS, DATA, APPARATUS AND SOFTWARE \"AS IS\", WITHOUT WARRANTY OF ANY KIND, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF MERCHANTABILITY, SATISFACTORY QUALITY, AND FITNESS FOR&sbsp;A PARTICULAR PURPOSE. Non-IBM",
       "paragraph_uid": "a5e6ce3cd195f20973fbf74458e5a7b706a74741",
       "paragraph_enum": 65,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-149",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "suppliers may provide their own warranties to you.",
       "paragraph_uid": "fc308993315ac186438956a10478fe2c8cb3bdd2",
       "paragraph_enum": 66,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-151",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "6.0 Confidentiality",
       "paragraph_uid": "2f57fa6242be4e71f2fc8f7b6ac1e7bb64e1eb2c",
       "paragraph_enum": 67,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-153",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "All information exchanged between the parties is non-confidential; provided, however if either or both parties require the exchange of confidential information, such information will be exchanged under the terms and conditions of the Agreement for Exchange of Confidential Information executed by IBM on August 3, 2001 (the \"AECI\") (it being further agreed as follows: (a) the AECI is hereby modified so that any information that is disclosed by a party hereto that a reasonable person would construe, based upon the nature of the information and the circumstances surrounding the disclosure, as intended to be confidential shalll be deemed to be confidential Information under the AECI and shall be accorded all protections of the AECI and (b) after the date hereof the parties hereto shall enter into a modification of the AECI whereby the provisions of (a) immediately above are documented and (c) the parties shall also amend the AECI so as to reflect the following agreement: in the event that a breach or",
       "paragraph_uid": "960460b8fddcbc96000d93b0fdc68655a06aee89",
       "paragraph_enum": 68,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-155",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "threatened breach of a party's obligations hereunder shall cause irreparable harm wherein a remedy at law would",
       "paragraph_uid": "82cdc8668e9b697ebc77fa8c75e3ae779c0f6022",
       "paragraph_enum": 69,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-161",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "prove inadequate, the aggrieved party shall have the right to seek and obtain an injunction so as to prevent any further disclosure of the confidential Information. With respect to any confidential information contained in or traveling through the e-business Hosting Environment or Customer Components, the provisions of Sections 5, 9, and 10 herein will prevail to the extent of any inconsistent provisions in the confidentiality agreement.",
       "paragraph_uid": "086fa866e55e9110990c4c8f21f1d96a1e17ede8",
       "paragraph_enum": 70,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-163",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "7.0 Materials",
       "paragraph_uid": "8980abdfb588ace2a3386faf841b7194bcd5ced3",
       "paragraph_enum": 71,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-165",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. IBM will specify Materials to be delivered to Customer. IBM will identify them as being \"Type I Materials,\" \"Type II Materials,\" or otherwise as Customer and IBM agree in writing. If not specified, Materials will be considered Type II Materials.",
       "paragraph_uid": "90792dc3c855a94419433d8d12ce86bdfa564a5e",
       "paragraph_enum": 72,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-167",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. Type I Materials are those, created during the Service performance period, in which Customer will have all right, title, and interest (including ownership of copyright). IBM will retain one copy of the Materials. Customer grants to IBM:",
       "paragraph_uid": "fa4f15d8fcc4286582240a3e1c240a6e9797ef6e",
       "paragraph_enum": 73,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-169",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "1. an irrevocable, nonexclusive, worldwide, paid-up license to use, execute, reproduce, display, perform, distribute (internally and externally) copies of, and prepare derivative works based on Type I Materials; and",
       "paragraph_uid": "e08662b19b6bbc37138ff79baa66d89b04dfdf05",
       "paragraph_enum": 74,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-170",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "2. the right to authorize others to do any of the same.",
       "paragraph_uid": "a5efbfa495542156aa9db54b3948a2411c549d33",
       "paragraph_enum": 75,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-172",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. Type II Materials are those, created during the Service performance period or otherwise (such as those that preexist the Service), in which IBM or third parties have all right, title, and interest (including ownership of copyright). IBM will deliver one copy of the specified Materials to Customer. IBM grants Customer an irrevocable, nonexclusive, worldwide, paid-up license to use, execute, reproduce, display, perform, and distribute, within Customer's Enterprise only, copies of Type II Materials.",
       "paragraph_uid": "1ef2b38963508e1eda0c7d6f4d6556342d09c3b1",
       "paragraph_enum": 76,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-174",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "d. The parties agree to reproduce the copyright notice and any other legend of ownership on any copies made under the licenses granted in this Section 7.",
       "paragraph_uid": "533f1585621ef59bd35a3058755064d36f2c3b2b",
       "paragraph_enum": 77,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-176",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "8.0 Indemnification",
       "paragraph_uid": "cce5a902abd0d834c70502cbd0f3af667cf712c2",
       "paragraph_enum": 78,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-178",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "8.1 Indemnification by IBM",
       "paragraph_uid": "46d78d9d42806b5b85c805c17f3cba7b5ac5416c",
       "paragraph_enum": 79,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-180",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "If a third party claims or threatens a claim that Materials or Base Components IBM provides to Customer or uses in connection with the performance of the Services infringe that party's patent, trademark, copyright, or trade secret, then IBM will indemnify, defend and hold harmless the Customer, its Enterprise and their respective employees, officers, agents and directors against that claim or threatened claim at IBM's expense and pay all costs, damages, penalties and reasonable attorneys' fees that a court finally awards in connection with",
       "paragraph_uid": "c5588533046436a0f9da3599930405a27af7c13e",
       "paragraph_enum": 80,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-181",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "that claim (or which IBM&sbsp;agrees in any final settlement) provided that Customer:",
       "paragraph_uid": "2131f73b123098f528ea72a5e221c0305ca95687",
       "paragraph_enum": 81,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-183",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. promptly notifies IBM in writing of the claim; and",
       "paragraph_uid": "706435ccaa0a87521c5928c12da2c3924308c274",
       "paragraph_enum": 82,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-185",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. allows IBM to control, and cooperates with IBM in, the defense and any related settlement negotiations (it being understood and agreed that if Customer incurs any costs in connection with such cooperation, over and above nominal costs, IBM shall reimburse Customer therefor, such costs to potentially include, without limitation, the costs incurred by Customer in connection with depositions, responses to interrogatories, or testimony at trial or any similar proceeding, and travel costs in connection therewith; provided, however, such obligation of IBM as set forth in this parenthetical is conditioned upon Customer first obtaining IBM's consent to the incurring of such costs, such consent to be reasonably granted). If such a claim is made or appears likely to be made, Customer agrees to permit IBM to enable Customer to continue to use the Materials or Base Components, or to modify them, or replace them with non-infringing Materials or Base Components that are at least functionally equivalent. If IBM determines that none of these alternatives is reasonably available, Customer agrees to return the Materials or Base Components (if in Customer's possession) to IBM on IBM's written request. IBM will give Customer a credit equal to the amount Customer paid IBM for the applicable Materials or for use of the applicable Base Components up to a maximum of twelve (12) months of applicable charges. This is IBM's entire obligation to Customer with regard to any claim of infringement. Notwithstanding the foregoing, IBM is not responsible for third party claims based on:",
       "paragraph_uid": "94ce01a236add569a5d66013a545e95b8add426b",
       "paragraph_enum": 83,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-187",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "1. anything Customer provides which is incorporated into the Materials;",
       "paragraph_uid": "b6ce33d2632694479114b99c9312ca580a739276",
       "paragraph_enum": 84,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-189",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "2. Customer's modification of the Materials;",
       "paragraph_uid": "f9e39c857d329463cba7c0aa119f4e431607ac34",
       "paragraph_enum": 85,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-195",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3. the combination, operation, or use of the Materials with any product, data, or apparatus that IBM did not provide; or",
       "paragraph_uid": "151f3d8543dd96fdff35dcffe64204c0873e38a7",
       "paragraph_enum": 86,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-197",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "4. non-IBM hardware, software, or data, including those that may be in the Base Components.",
       "paragraph_uid": "42458230aaeae9578b05aa8e990508d06bbba4eb",
       "paragraph_enum": 87,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-199",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "8.2 Indemnification by Customer",
       "paragraph_uid": "6e549c5deef3e148fb5bef184b355a9a6af2e248",
       "paragraph_enum": 88,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-201",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. Customer will defend IBM and its Enterprise and their employees, officers, and directors against any third party claim (and pay all damages that a court of competent jurisdiction awards, or which Customer agrees in any final settlement to such third party and any reasonable attorneys' fees and expenses of defense incurred by IBM):",
       "paragraph_uid": "f8d6b6d36d6d0bd5c5eb00b90160f78c1514d154",
       "paragraph_enum": 89,
-      "page": 1,
-      "relationsCount": 4,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 4
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-203",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "1. that Content or Customer's use of the Services violates Customer's obligation in Section 11.2(b);",
       "paragraph_uid": "3927ba7f5465c6381f332904b7bd04e3a627745c",
       "paragraph_enum": 90,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-205",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "2. that Customer Components infringe that party's patent or copyright;",
       "paragraph_uid": "a0793366534229e6c1b51780712f072f3f386336",
       "paragraph_enum": 91,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-207",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3. that is brought by a Services Recipient and is related, directly or indirectly, to the Services; or",
       "paragraph_uid": "c443f639b29e585e270029e0a1f15d534e8e013c",
       "paragraph_enum": 92,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-209",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "4. arising out of or related to a mechanics' lien Customer is required to cancel and discharge pursuant to this Agreement.",
       "paragraph_uid": "6f18590899d7445056a8b1ee86b9700dad6896f0",
       "paragraph_enum": 93,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-211",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. For indemnification under this Section 8.2, IBM will:",
       "paragraph_uid": "01f2ee5c1acda52de78ac0f3da781d9dabeb704e",
       "paragraph_enum": 94,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-213",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "1. promptly notify Customer in writing of the claim; and",
       "paragraph_uid": "5191ebc414f6ce517a25b338cbe34c7188fda445",
       "paragraph_enum": 95,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-215",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "2. allow Customer to control, and will cooperate with Customer in, the defense and any related settlement negotiations.",
       "paragraph_uid": "67c0dbb22a35bb041b0031ba274eed6573ec2247",
       "paragraph_enum": 96,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-217",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. Notwithstanding anything else to the contrary contained herein, Customer shall be relieved of its indemnification duty or obligation to the extent that IBM's bad faith, willful misconduct or gross negligence. breach of its contractual obligations hereunder is a cause of the damages suffered by the Services Recipient.",
       "paragraph_uid": "a88d2cf08f6186c9974614d84603053cfae81a4a",
       "paragraph_enum": 97,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-219",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "9.0 Limitation of Liability",
       "paragraph_uid": "e5420c1d14ea2739dbaa058a92b9b1600332add9",
       "paragraph_enum": 98,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-221",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "9.1 IBM's Limitation of Liability",
       "paragraph_uid": "25ad47b0624ce88a23597bf5a38f89bdd1870485",
       "paragraph_enum": 99,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-223",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Circumstances may arise where, because of a default on IBM's part or other liability, Customer is entitled to recover damages from IBM. Regardless of the basis on which Customer is entitled to claim damages from IBM (including fundamental breach, negligence, misrepresentation, or other contract or tort claim), IBM is liable for no more than:",
       "paragraph_uid": "678bcea51b40fbcdf3a9adfa45292e4b8f583a47",
       "paragraph_enum": 100,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-225",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. indemnification payments as provided in Section 8.1;",
       "paragraph_uid": "e66ef6eee17776881f3fa30b0de56fd46c847b2b",
       "paragraph_enum": 101,
-      "page": 1,
-      "relationsCount": 6,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 6
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-227",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. damages for bodily injury (including death) and damage to real property and tangible personal property; and",
       "paragraph_uid": "de07ab5f692caa75e777c0ce7eabfb03b15c9165",
       "paragraph_enum": 102,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-229",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. the amount of any other actual direct damages, up to the greater of",
       "paragraph_uid": "7f64f80ab28447be906946bf4c77a2e7d85c4075",
       "paragraph_enum": 103,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-230",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "$100,000 or the charges paid by Customer to IBM for the Services in the twelve (12) months immediately preceding the accrual of the first claim related to the Services. The foregoing limit also applies to any of IBM's Affiliates and Subcontractors. It is the cumulative maximum for which IBM and its Affiliates and Subcontractors are collectively responsible. Under no circumstances is IBM, its Affiliates or its Subcontractors liable for any of the following:",
       "paragraph_uid": "4cd01795c6ebbc5495fb0c3c9aa6ab9fef30e87f",
       "paragraph_enum": 104,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-232",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "1. third party claims against Customer for damages (other than those expressly provided in Subsections 9.1(a) and 9.1(b)); or",
       "paragraph_uid": "a9c6bc2dd6c895a8d9531af338f79eae2248e654",
       "paragraph_enum": 105,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-234",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "2. loss of, or damage to, Customer's or any other entity's records or data.",
       "paragraph_uid": "8b930d4f17d1310ed2ec6b689a9975ab464e6107",
       "paragraph_enum": 106,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-236",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "9.2 Customer's Limitation of Liability",
       "paragraph_uid": "3cab4dc9fea9cafcbbdeef34d18d66c452a7df06",
       "paragraph_enum": 107,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-238",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Circumstances may arise where, because of a default on Customer's part or other liability, IBM is entitled to recover damages from Customer. Regardless of the basis on which IBM is entitled to claim damages from Customer (including fundamental breach, negligence, misrepresentation, or other contract or tort claim), Customer is liable for no more than:",
       "paragraph_uid": "ef53cbc2059d898fafe3569c9a9e15ab7f6028dd",
       "paragraph_enum": 108,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-240",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. Indemnification payments as provided in Section 8.2;",
       "paragraph_uid": "0168586dfa4c856e00b2579b6c2c53ebf73071db",
       "paragraph_enum": 109,
-      "page": 1,
-      "relationsCount": 3,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 3
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-242",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. damages for bodily injury (including death) and damage to real property and tangible personal property; and",
       "paragraph_uid": "de07ab5f692caa75e777c0ce7eabfb03b15c9165",
       "paragraph_enum": 110,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-244",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "(c) the amount of any other actual direct damages, up to the greater of $100,000 or the charges paid by Customer to IBM for the Services in the twelve (12) months immediately preceding the accrual of the first claim related to the Services. The foregoing limit also applies to any of Customer's Affiliates. It is the cumulative maximum for which Customer and its Affiliates are collectively responsible. Under no circumstances is Customer or its Affiliates liable for any third party claims against IBM for damages (other than those",
       "paragraph_uid": "25f14406e0d1e8745815b54d28ba932f4ab095b2",
       "paragraph_enum": 111,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-250",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "expressly provided in Subsections 9.2(a) and 9.2(b)).",
       "paragraph_uid": "656622b99769701a8ac379d139cc1e39b1781811",
       "paragraph_enum": 112,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-252",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "10.0 Disclaimer of Consequential Damages",
       "paragraph_uid": "52b36da24eabe32a8554b03d76e0e24cf6c29de9",
       "paragraph_enum": 113,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-254",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. In no event will either party be liable to the other for special, incidental, or indirect damages or for any consequential damages (including lost profits or savings), even if they are informed of the possibility; provided that this Section 10 does not apply to Customer's failure to pay any amounts owing to IBM under this Agreement (including amounts owing for Services that would have been rendered but for Customer's breach of this Agreement).",
       "paragraph_uid": "ba9f13cbc49e70cc0460257cbcb84118c3a9bbf8",
       "paragraph_enum": 114,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-256",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.0 Other Customer Obligations",
       "paragraph_uid": "c01bed604b2033526aedcd0c9d6158db28a13771",
       "paragraph_enum": 115,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-258",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.1 Services Support",
       "paragraph_uid": "057bd8b348e0ab20219f1aa309659d9c1afce5f8",
       "paragraph_enum": 116,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-260",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer will comply with its responsibilities to support the Services as specified in Attachment A and in applicable Service Option Attachments. Such obligations are to be performed at no charge to IBM. IBM's obligations are contingent on Customer meeting such support obligations.",
       "paragraph_uid": "ec8b156b9ba9fc17e247773c6b6babd2dab983b9",
       "paragraph_enum": 117,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-262",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.2 Representations and Warranties Customer represents and warrants that:",
       "paragraph_uid": "72eb06a9aefd6250247708b500b5835b4d5b08f6",
       "paragraph_enum": 118,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-263",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. it has the requisite corporate power and authority to execute, deliver and perform its obligations under this Agreement; Customer has no contractual or other obligation that (i) restricts or prohibits Customer's execution or performance of this Agreement, or (ii) Customer will breach in connection with the execution or performance of this Agreement; and",
       "paragraph_uid": "557249948811ccba90c53bc90987b696b5afa4bc",
       "paragraph_enum": 119,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-265",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. its use of the Services and all Content will comply with the Acceptable Use Policy.",
       "paragraph_uid": "d49f5af2949e3c0ba5e8f1512b0818e15d161e0b",
       "paragraph_enum": 120,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-267",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.3 Suspected Violations",
       "paragraph_uid": "4a65afc3b39ecdcb6d8ae7c882eb2f48161f2e1f",
       "paragraph_enum": 121,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-269",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM reserves the right to investigate potential violations of the representations and warranties in Subsection 11.2(b). If IBM reasonably determines that a breach of any such warranty has occurred, then IBM may, in its sole and reasonable discretion:",
       "paragraph_uid": "3a595740c34a6ccb5832c9d599b42840a0bca5f4",
       "paragraph_enum": 122,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-271",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. restrict Customer's access to the Services;",
       "paragraph_uid": "441e68bfc60c6ea795c64a10c5e8a328646afc2d",
       "paragraph_enum": 123,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-273",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. remove or require removal of any offending Content;",
       "paragraph_uid": "e1823433558324c8b014a87188639a3e13a8d08d",
       "paragraph_enum": 124,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-275",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "c. terminate this Agreement for cause; and/or",
       "paragraph_uid": "7abbf02c59ac7e6737dc5fa856512f9e7de38230",
       "paragraph_enum": 125,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-277",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "d. exercise other rights and remedies, at law or in equity.",
       "paragraph_uid": "0731dc8ab649f572cd9d5091c95efe1e417b7a25",
       "paragraph_enum": 126,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-279",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Except in an emergency or as may otherwise be required by law, before undertaking the activities in Subsection 11.3(a) or 11.3(b), IBM will attempt to notify Customer by any reasonably practical means under the circumstances, such as, without limitation, by telephone or e-mail.",
       "paragraph_uid": "adc306e3f861ff9f2f2eef03bd05622138775968",
       "paragraph_enum": 127,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-281",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer will promptly notify IBM of any event or circumstance related to this Agreement, Customer's use of the Services, or Content of which Customer becomes aware that could lead to a claim or demand against IBM, and Customer will provide all relevant information relating to such event or circumstance to IBM at IBM's request.",
       "paragraph_uid": "ed891d451f49a41712f1666796a71f5f1b37e018",
       "paragraph_enum": 128,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-283",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.4 Required Consents",
       "paragraph_uid": "a264310848913e231782271a7733fe86934bdc4c",
       "paragraph_enum": 129,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-285",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer will promptly obtain and upon request provide to IBM evidence of such Required Consents necessary for IBM to provide the Services. IBM will be relieved of its obligations to the extent that they are affected by Customer's failure to obtain and provide promptly to IBM any Required Consents.",
       "paragraph_uid": "417a105eff082e622bfb6fcc01ff711faa0bb0a6",
       "paragraph_enum": 130,
-      "page": 1,
-      "relationsCount": 1,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 1
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-287",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.5 Capacity Planning",
       "paragraph_uid": "781aa05692d78bb547eea708ceacfcce639162d9",
       "paragraph_enum": 131,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-289",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer is responsible for determining whether the Base Components, IBM provided Internet access bandwidth, Customer Components and their combination will meet Customer's capacity or performance needs. Customer is responsible for planning for and requesting changes to the Base Components or IBM provided Internet access bandwidth, as determined by Customer, including any additional capacity required to support anticipated peaks in demand that may significantly increase Web site hits, transaction volumes, or otherwise increase system resource utilization.",
       "paragraph_uid": "86cf43bcd5153a0df974157c4d53ce63be0c9a07",
       "paragraph_enum": 132,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-291",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "11.6 Content and Digital Certificates Customer is solely responsible for:",
       "paragraph_uid": "64076d558040e8099600b4d4864e2675b4378ca3",
       "paragraph_enum": 133,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-292",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "a. all Content including, without limitation, its selection, licensing, accuracy, performance, maintenance, and support; and",
       "paragraph_uid": "3930fac0710a09277dbcd23125d048e649635534",
       "paragraph_enum": 134,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-294",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "b. the selection, management and use of any public and private keys and digital certificates it may use with the Services.",
       "paragraph_uid": "75f69798e0df3f095134bf03c4cb5a8cddc25d9d",
       "paragraph_enum": 135,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-296",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "12.0 Base Components",
       "paragraph_uid": "3a5b2e5d089c724da29df7bd3e43813104926f7c",
       "paragraph_enum": 136,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-298",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "12.1 License",
       "paragraph_uid": "a3a6ee294f33a560cd00c8b0c63daa8c1eace56c",
       "paragraph_enum": 137,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-300",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM grants Customer a nonexclusive, revocable license to use the Base Components solely in connection with the Services as provided under this Agreement.",
       "paragraph_uid": "7298a460e5979e7e106d471784b68715eccd0151",
       "paragraph_enum": 138,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-301",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer agrees not to download or otherwise copy, reverse assemble, reverse compile, or otherwise translate the software",
       "paragraph_uid": "417b410d3f9c3c6abe4f3d36d5ce9349978147d0",
       "paragraph_enum": 139,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-306",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "portions of the Base Components, other than to make one copy for backup purposes.",
       "paragraph_uid": "0b8c5cd17582f80dbd8c28c017daaa76662f6128",
       "paragraph_enum": 140,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-308",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "12.2 Maintenance of Base Components",
       "paragraph_uid": "488dd332e32b6c294a40ac2ff0ed263214667cd7",
       "paragraph_enum": 141,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-310",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "For Base Components provided hereunder, IBM will provide, at no additional cost to Customer, maintenance as reasonably determined by IBM and upon notice to Customer. Unless otherwise specified in an SOA, such maintenance excludes upgrades to Base Components. Call back response times for Base Component failures through issue resolution is designated in the relevant Service Option Attachment.",
       "paragraph_uid": "ed72cade673c547249addbe9b7d2afd631d22b40",
       "paragraph_enum": 142,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-312",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "12.3 No Sale or Lease of Goods",
       "paragraph_uid": "006b41758739a73bf70ed8be7c397685c45802dc",
       "paragraph_enum": 143,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-314",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "As between Customer and IBM, IBM retains all right, title and interest in the Base Components. No goods are sold or leased by IBM under this Agreement. If Customer desires to purchase or to lease goods from IBM, such purchase or lease will be governed by a separate mutually acceptable written agreement between Customer and IBM or an IBM Affiliate.",
       "paragraph_uid": "bebf2e5897dfd73281b5a4aec16fac9caf9197ee",
       "paragraph_enum": 144,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-316",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "12.4 No Lease of Real Property",
       "paragraph_uid": "049bc9ad5355f7e2657ba5a53be5ff15e7271f4e",
       "paragraph_enum": 145,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-318",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "This Agreement is a services agreement and not a lease of any real property.",
       "paragraph_uid": "5e69bd18a76180fe8b664fee54c090dcbfae56a7",
       "paragraph_enum": 146,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-320",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "13.0 Changes",
       "paragraph_uid": "301e863fcb955c1923507fabc54639a56d189d6e",
       "paragraph_enum": 147,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-322",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "13.1 Services",
       "paragraph_uid": "bce50b6f497663f8964939b0efa0d2e4b5e184af",
       "paragraph_enum": 148,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-324",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM, in its reasonable discretion, may change the terms and conditions of Attachment A and/or Service Option Attachments, upon at least ninety (90) days prior notice to Customer. IBM may change the prices of Service Option Attachments after twelve (12) months following the applicable Service Option Attachment Start Date upon at least ninety (90) days prior written notice to Customer. Any such changes will not apply retroactively. If Customer disagrees with any such changes, Customer may in its sole discretion terminate this Agreement (or some or all of the affected Service Option Attachments) without the payment of termination charges upon notice to IBM at least thirty (30) days prior to the effective date of the applicable change.",
       "paragraph_uid": "2c4efd0344ef1457c9529d1b905eb83dfd290fa4",
       "paragraph_enum": 149,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-326",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "13.2 Acceptable Use Policy",
       "paragraph_uid": "4f9c82c464bb96fb1b8ffe0b9df02315528acc1b",
       "paragraph_enum": 150,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-328",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM, in its reasonable discretion, may modify the Acceptable Use Policy upon thirty (30) days' notice to Customer.",
       "paragraph_uid": "b8f716efd57aedce6258243412789e9fdf0ae9a2",
       "paragraph_enum": 151,
-      "page": 1,
-      "relationsCount": 2,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 2
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-330",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "13.3 Amendments",
       "paragraph_uid": "5952d0cc18958c0577ad3ceb0e027bef7e48b882",
       "paragraph_enum": 152,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-332",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Except for changes pursuant to Sections 13.1 and 13.2, this Agreement may be amended only by a writing signed by authorized representatives of both parties.",
       "paragraph_uid": "c01c12cff3b778ff259b665fc0bbab8574652324",
       "paragraph_enum": 153,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-334",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.0 General",
       "paragraph_uid": "f5ebec6a6d37d7db1b94c60af976522c06a2e8aa",
       "paragraph_enum": 154,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-336",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.1 Headings",
       "paragraph_uid": "28afc4e198f5df20483427fb9aea3d048119d32a",
       "paragraph_enum": 155,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-338",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "The headings of the various sections of this Agreement have been inserted for convenience only and shall not affect the interpretation of this Agreement.",
       "paragraph_uid": "3d846bfdf597b2fc692d3aac4d059628752c7eb4",
       "paragraph_enum": 156,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-340",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.2 Survival",
       "paragraph_uid": "866361bc57c5edd28c80f433cd10cc0a80263930",
       "paragraph_enum": 157,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-342",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Any of these terms and conditions which by their nature extend beyond the Agreement termination or expiration remain in effect until fulfilled, including, without limitation, Sections 3.5, 4, 5, 6, 7, 8, 9, 10, 11.2, 11.3, 11.6, 12.2, 12.3, and 14, and apply to both Customer's and IBM's respective successors and assignees.",
       "paragraph_uid": "2db22a963ef2daece52417133db5569534667c7f",
       "paragraph_enum": 158,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-344",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.3 Choice of Law",
       "paragraph_uid": "c254db8c26ff104dcdd26b2356ee31028df760f2",
       "paragraph_enum": 159,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-346",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "This Agreement will be governed by the substantive laws of the State of New York, without regard for its conflict of laws provisions.",
       "paragraph_uid": "ab99c238cd53e26dafb6e924c7af29cb1b29ad9b",
       "paragraph_enum": 160,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-348",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.4 Waiver of Jury Trial",
       "paragraph_uid": "05a56d5495dbc6a2c15dd370ab16b0a400a69291",
       "paragraph_enum": 161,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-350",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "The parties waive any right to a jury trial in any proceeding arising out of or related to this Agreement.",
       "paragraph_uid": "f8bf29340fcde84832492044090271e0b4804d1f",
       "paragraph_enum": 162,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-352",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.5 Severability",
       "paragraph_uid": "3e7cf50c5c4df3146be0d03d1bfc12e44f53ded1",
       "paragraph_enum": 163,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-354",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "If any provision of this Agreement shall be held by a court of competent jurisdiction to be invalid, illegal, or unenforceable, the validity, legality, and enforceability of the remaining provisions of this Agreement shall in no way be affected or impaired thereby, so long as the remaining provisions of this Agreement still express the original intent of the parties. If the original intent of the parties can not be preserved, this Agreement shall either be renegotiated or terminated.",
       "paragraph_uid": "326ee527ba5c46001972979f2ab0d58412380d6b",
       "paragraph_enum": 164,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-356",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.6 Publicity and Trademarks",
       "paragraph_uid": "35c487e63a9792b06b80f7766f1e5f6bf9570646",
       "paragraph_enum": 165,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-358",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Neither party grants the other the right to use its or any of its Affiliates' trademarks, trade names, or other designations in any promotion, publication, or Web site without prior written consent. Except as may be required by law or as may be required by IBM to perform the Services, neither party may disclose to any third party the terms and conditions of this Agreement, without prior",
       "paragraph_uid": "8f9a2d8b9d9b663ad1e820206ebddec3995aca49",
       "paragraph_enum": 166,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-360",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "written consent.",
       "paragraph_uid": "07387bc0dd229638e0898cf3c47c2ebb7f92bff6",
       "paragraph_enum": 167,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-362",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.7 No Third-Party Beneficiaries",
       "paragraph_uid": "bae7215443010b80c2df5b7c56ed61d5b5c9fcbc",
       "paragraph_enum": 168,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-364",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Except as expressly provided in Section 8, this Agreement does not create any intended third party beneficiary rights.",
       "paragraph_uid": "73d6b2e02e341ef55b895737ad0340470d984fb0",
       "paragraph_enum": 169,
-      "page": 1,
-      "relationsCount": 8,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 8
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-366",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.8 Personnel",
       "paragraph_uid": "e300c6373e2e889504f5f72c3e3b583c9014e940",
       "paragraph_enum": 170,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-368",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Each party is responsible for the supervision, direction, and control of its respective personnel. IBM reserves the right to determine the assignment of its personnel. IBM may subcontract portions of",
       "paragraph_uid": "a976acb33110116c9e7bb4604ed30b1b363ff3eb",
       "paragraph_enum": 171,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-374",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "the Services to Subcontractors and Affiliates selected by IBM.",
       "paragraph_uid": "5583c10c48ceb4dc2ed77eda0151085c49ff4f4b",
       "paragraph_enum": 172,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-376",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.9 No Agency",
       "paragraph_uid": "464951a57ff7eb340f04c423ffe90b4dc6b821a8",
       "paragraph_enum": 173,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-378",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "This Agreement does not create an agency, joint venture, or partnership between the parties.",
       "paragraph_uid": "49bfc3c99abef259aaf6384b2e58459859d3f692",
       "paragraph_enum": 174,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-380",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.10 Assignment",
       "paragraph_uid": "41f43c59ffd0b3c768cca21f9054993b08bcf6de",
       "paragraph_enum": 175,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-382",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer will not assign this Agreement or any of its rights hereunder without the prior written consent of IBM, such consent not to be unreasonably withheld. Notwithstanding the foregoing, Customer may assign this Agreement to a successor organization by merger, consolidation or acquisition. Any attempted assignment in violation of the foregoing will be void. In any permitted assignment, Customer will remain liable for its obligations hereunder.",
       "paragraph_uid": "d0ca18c475876aac338b082c1f2d5ad6f219d17b",
       "paragraph_enum": 176,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-384",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.11 No Resale",
       "paragraph_uid": "087868b7e021782295bdefad0da1d686312a79c4",
       "paragraph_enum": 177,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-386",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer shall not resell the Services, in whole or in part.",
       "paragraph_uid": "aeb7528836be148a885bd7a7ffdc1de98daaa978",
       "paragraph_enum": 178,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-388",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.12 Risk of Loss",
       "paragraph_uid": "c7d1d19b2652f844d25ce95457003a6a61b6edfd",
       "paragraph_enum": 179,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-390",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Risk of loss for all Base Components shall at all times remain with IBM. Risk of loss for all Customer Components shall at all times remain with Customer.",
       "paragraph_uid": "aaf8c54b5a49ff5afc809afa7ceca9f26a7b779f",
       "paragraph_enum": 180,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-392",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.13 Force Majeure",
       "paragraph_uid": "3e34d8e4cf997411b8eca9c831b38f50a39a3fd0",
       "paragraph_enum": 181,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-394",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Except for payment obligations hereunder, neither party is responsible to fulfill its obligations to the extent due to causes beyond its control.",
       "paragraph_uid": "be9dcaa4d04c4a9cec49e860349b7680c21f742b",
       "paragraph_enum": 182,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-396",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.14 Actions Period",
       "paragraph_uid": "12a0901f611a1a213928fb594bdcc7f1e60db2e9",
       "paragraph_enum": 183,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-398",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Neither party will bring a legal action related to this Agreement more than two years after the cause of action accrued.",
       "paragraph_uid": "256d75a070e1209f4e633701a24e48d3d92c94d1",
       "paragraph_enum": 184,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-400",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.15 Waiver",
       "paragraph_uid": "7380421b709ffc9eb96969b5a4e0712d548e84fe",
       "paragraph_enum": 185,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-402",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "The failure of one party to insist upon strict adherence to any term of this Agreement on any occasion shall not be considered a waiver, nor shall it deprive that party of the right to insist later on adherence thereto. Any waiver must be in writing and signed by an authorized representative of the waiving party.",
       "paragraph_uid": "6bbc71da5f7ec7f9048bb10b45f5c83d741f2b31",
       "paragraph_enum": 186,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-404",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.16 Freedom of Action",
       "paragraph_uid": "844f43896a8beaa1305b9ec7ae0cedac24e8f0c2",
       "paragraph_enum": 187,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-406",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Each party is free to enter into similar agreements with others.",
       "paragraph_uid": "9ff77f90f6b6f90ce09959b661740bcc22fd5ae2",
       "paragraph_enum": 188,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-408",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.17 Limitation of Licenses",
       "paragraph_uid": "df8187ad80f1b366970ab6071442f4ac52ef7ad9",
       "paragraph_enum": 189,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-410",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Each of us grants only the licenses expressly specified herein. No other licenses or rights (including licenses or rights under patents) are granted.",
       "paragraph_uid": "1201ce5469747dd79b26335bf448d1f27db927d5",
       "paragraph_enum": 190,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-412",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.18 Data Protection",
       "paragraph_uid": "e19c5bf540a22d67749a59b0a17669c4f6e0ae10",
       "paragraph_enum": 191,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-414",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "You agree to allow International Business Machines Corporation and entities within its Enterprise to store and use your contact information, including names, phone numbers, and e-mail addresses, anywhere they do business. Such information will be processed and used in connection with our business relationship, and may be provided to contractors, Business Partners, and assignees of IBM Corp. and entities within its Enterprise for uses consistent with their collective business activities, including communicating with you (for example, for processing orders, for promotions, and for marketing research). For personal information processed by IBM on your behalf as part of the Services, IBM will act in accordance with your instructions by following such processing and security obligations as are contained in this Agreement. You also confirm that you are solely responsible for ensuring that any processing and security obligations comply with applicable data protection laws. Your contact information shall not be considered personal information processed on your behalf.",
       "paragraph_uid": "7a5c18aa39754ff7860114a38cf4e5d076913716",
       "paragraph_enum": 192,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-416",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.19 Geographic Scope",
       "paragraph_uid": "fc3e0849dddead2fe166e6f7d1fb9ede84ab6bcf",
       "paragraph_enum": 193,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-418",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Although it is possible that Services Recipients outside of the United States of America may access Customer's Web site, IBM's delivery of the Services will only occur within the United States of America, and IBM's obligations hereunder are valid only in the United States of America.",
       "paragraph_uid": "32b17c2358b2d226e0c358e6348585e0193ce515",
       "paragraph_enum": 194,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-420",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "14.20 Notices",
       "paragraph_uid": "64d20554b56e81d548ede94a07a38087a8698f7e",
       "paragraph_enum": 195,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-422",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Any notices required or permitted hereunder will be effective upon receipt and",
       "paragraph_uid": "d270476bb2a650d69dc87ab374846834dffe6191",
       "paragraph_enum": 196,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-424",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "will be personally delivered; mailed via the postal service; sent by reliable overnight courier; or transmitted by confirmed facsimile. Except for notices under Section 11.3, all notices will be in writing and addressed to the applicable party's designated representative at the address specified in this Agreement. Except as to notices permitted or required under Sections 3 or 8, the parties agree that electronic mail messages sent between them using security procedures sufficient to reasonably authenticate them will be deemed writings.",
       "paragraph_uid": "c222917d975e61e910f6bd65ca4d075e445d9692",
       "paragraph_enum": 197,
-      "page": 1,
-      "relationsCount": 8,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 8
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-425",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "In addition, IBM may provide notice under Section 13.2 by a posting to the Web site identified in Section 1.0(a).",
       "paragraph_uid": "5b869cb5dd4181e2d1fa9369658bade12df646aa",
       "paragraph_enum": 198,
-      "page": 1,
-      "relationsCount": 23,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 23
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-431",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer and IBM agree that this Agreement, including the Base Terms and applicable attachments and Order Forms, is the complete agreement between the parties relating to the subject matter hereof. This Agreement replaces and supersedes any other prior or contemporaneous agreements or communications between the parties related to the subject matter hereof.",
       "paragraph_uid": "60d14c5be620131cf5b557237d73e4279606bccd",
       "paragraph_enum": 199,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-433",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Agreed and Accepted:",
       "paragraph_uid": "52b3cfe36a73913f697d1092a235e49090c00f12",
       "paragraph_enum": 200,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-435",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Bluefly Inc. International Business Machines Corporation",
       "paragraph_uid": "9c6bbfb0b50f5b6223bbfb4471f0b37fea2862c4",
       "paragraph_enum": 201,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-437",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "By: /s/ Patrick C. Barry By: /s/ Maura Lynch Gray Customer Authorized Signature Authorized Signature",
       "paragraph_uid": "b939b5a9370cf596892b8d15ddb5fc8a499ea40e",
       "paragraph_enum": 202,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-438",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Patrick C. Barry 1/9/02 Maura Lynch Gray 1/14/02",
       "paragraph_uid": "aa9377e2fdfb93fe9f19bed08790fa74e955c2ce",
       "paragraph_enum": 203,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-440",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Name (type or print) Date Name (type or print) Date",
       "paragraph_uid": "495471d4477b2db94b64186e1b9afd9443f8e54e",
       "paragraph_enum": 204,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-442",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Chief Financial Officer and Chief",
       "paragraph_uid": "000f31f17e872f80e797ce8a4fc71ce317b12c3a",
       "paragraph_enum": 205,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-443",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Operating Officer Business Unit Executive",
       "paragraph_uid": "12cd855af95c2ae883052b6e905cd562e7df1b4e",
       "paragraph_enum": 206,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-445",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Title Title",
       "paragraph_uid": "d848c655898144f67bc675bd2b4283f5d28d835e",
       "paragraph_enum": 207,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-447",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Customer number: Agreement number: Customer address:",
       "paragraph_uid": "3b581a0322babe530b6ec730bb8ecb4681605ed7",
       "paragraph_enum": 208,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-448",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "42 West 39th Street 9th Floor",
       "paragraph_uid": "b2094db7183cfa38a1c9f2fe332a16cd6fcd755e",
       "paragraph_enum": 209,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-449",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "NY,NY 10018",
       "paragraph_uid": "49d2c752cba21d0af6da5d9a84956a48d78559d3",
       "paragraph_enum": 210,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-451",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Engagement number:",
       "paragraph_uid": "b9dbde293a93b4f505d01fc35fb9ce982918a965",
       "paragraph_enum": 211,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-452",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM contract representative: IBM Services identifier: FL",
       "paragraph_uid": "41f21946555a63a72e66ebf2a9deb70f288abce4",
       "paragraph_enum": 212,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-454",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "After signing, please return a copy of this Agreement to the following address:",
       "paragraph_uid": "1f78172c92da3e8b133ee775839b379352e88910",
       "paragraph_enum": 213,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-456",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "IBM Global Services",
       "paragraph_uid": "b2c72b9f76e28ecbec74d860b1e74e18aaf3665e",
       "paragraph_enum": 214,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-457",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "3109 W. Dr. M. L. King, Jr. Blvd. Tampa, FL 33607",
       "paragraph_uid": "cfb94ba5028e4973c1d88ff806b98ebc3f52cb49",
       "paragraph_enum": 215,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     },
     {
       "id": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement-p-458",
-      "documentId": "BLUEFLYINC_03_27_2002-EX-10.27-e-business Hosting Agreement",
       "text": "Attention: Order Fulfillment Services",
       "paragraph_uid": "4a3bfdbf0b4ab6af699403c752d1a35a28e2e192",
       "paragraph_enum": 216,
-      "page": 1,
-      "relationsCount": 0,
-      "x": 0.0,
-      "y": 0.0,
-      "fontSize": 0.0
+      "relationsCount": 0
     }
   ],
   "edges": [

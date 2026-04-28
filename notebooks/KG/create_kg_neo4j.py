@@ -390,7 +390,6 @@ def _ordered_base_nodes(base_graph: dict[str, Any]) -> list[dict[str, Any]]:
     return sorted(
         nodes,
         key=lambda n: (
-            int(n.get("page", 0) or 0),
             int(n.get("paragraph_enum", 0) or 0),
             str(n.get("id", "")),
         ),
