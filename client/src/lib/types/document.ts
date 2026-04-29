@@ -2,6 +2,9 @@ export interface DocumentMeta {
 	id: string;
 	name: string;
 	full_path: string;
+	relative_path?: string;
+	group_label?: string;
+	display_name?: string;
 	origin: 'dataset' | 'upload';
 	processed: boolean;
 }

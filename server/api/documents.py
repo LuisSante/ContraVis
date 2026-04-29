@@ -73,7 +73,11 @@ def save_graph_output_snapshot(*, document_id: str | None, graph_payload: dict) 
     file_stem = str(document_id or "unknown_document")
     doc_path = document_store.get_path(file_stem)
     if doc_path is not None:
-        file_stem = doc_path.stem
+        try:
+            relative = doc_path.relative_to(Config.CUAD_DOC_DIR).as_posix()
+            file_stem = relative.rsplit(".", 1)[0].replace("/", "__")
+        except Exception:
+            file_stem = doc_path.stem
 
     output_path = output_dir / f"{safe_graph_filename(file_stem)}.json"
     with output_path.open("w", encoding="utf-8") as handle:
@@ -149,7 +153,8 @@ def get_document_file(doc_id: str):
 
 @router.post("/process")
 async def process_document(data: dict):
-    doc_id = data.get("documentId")
+    raw_doc_id = data.get("documentId")
+    doc_id = document_store.get_canonical_id(raw_doc_id) or raw_doc_id
     pages = data.get("pages", [])
     boundaries_by_page, repeated_top_texts, repeated_bottom_texts = detect_repeated_boundary_texts(pages)
 
@@ -252,9 +257,17 @@ def assistant_fix_contradiction(payload: SimplifySelectionRequest):
 @router.post("/contradictions/analyze", response_model=ContradictionAnalysisResponse)
 def analyze_document_contradictions_endpoint(payload: ContradictionAnalysisRequest):
     try:
+        canonical_doc_id = document_store.get_canonical_id(payload.documentId)
+        if canonical_doc_id and canonical_doc_id != payload.documentId:
+            payload = payload.model_copy(update={"documentId": canonical_doc_id})
         response = analyze_document_contradictions(payload)
         try:
-            saved_path = save_analyzed_contradictions(response)
+            doc_meta = document_store.get_document(payload.documentId)
+            saved_path = save_analyzed_contradictions(
+                response,
+                document_relative_path=doc_meta.relative_path if doc_meta else None,
+                document_group=doc_meta.group_label if doc_meta else None,
+            )
             logger.info("Saved contradiction analysis: %s", saved_path)
         except Exception:
             logger.exception("Failed to persist contradiction analysis result")
@@ -272,9 +285,15 @@ def get_saved_contradictions(
     mode: ContradictionGraphMode = Query(default="with_kg"),
 ):
     try:
-        rows, source_file = load_saved_contradictions_for_document(document_id, mode=mode)
+        aliases = document_store.get_document_aliases(document_id)
+        rows, source_file = load_saved_contradictions_for_document(
+            document_id,
+            mode=mode,
+            aliases=aliases,
+        )
+        canonical_id = document_store.get_canonical_id(document_id) or document_id
         return SavedContradictionsResponse(
-            documentId=document_id,
+            documentId=canonical_id,
             sourceFile=source_file,
             mode=mode,
             paragraphResults=rows,

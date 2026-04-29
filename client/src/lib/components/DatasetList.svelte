@@ -7,8 +7,15 @@
 	export let documents: DocumentMeta[];
 	let query = '';
 
+	function getDocumentSearchText(doc: DocumentMeta): string {
+		return [doc.name, doc.group_label, doc.relative_path, doc.display_name]
+			.filter(Boolean)
+			.join(' ')
+			.toLowerCase();
+	}
+
 	$: filteredDocuments = documents.filter((doc) =>
-		doc.name.toLowerCase().includes(query.toLowerCase())
+		getDocumentSearchText(doc).includes(query.toLowerCase())
 	);
 
 	async function selectDocument(doc: DocumentMeta) {
@@ -43,8 +50,12 @@
 					class="w-full cursor-pointer rounded px-3 py-2 text-left transition hover:bg-gray-100"
 					on:click={() => selectDocument(doc)}
 				>
-					<div class="flex items-center space-x-6">
-						<DocumentIcon/> {doc.name}
+					<div class="flex items-start space-x-3">
+						<DocumentIcon />
+						<div class="min-w-0">
+							<div class="truncate">{doc.name}</div>
+							<div class="truncate text-xs text-gray-500">{doc.group_label ?? 'root'}</div>
+						</div>
 					</div>
 				</button>
 			</li>

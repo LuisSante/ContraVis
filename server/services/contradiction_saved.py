@@ -12,6 +12,7 @@ from utils.config import Config
 def load_saved_contradictions_for_document(
     document_id: str,
     mode: str | None = None,
+    aliases: list[str] | None = None,
 ) -> tuple[list[ContradictionParagraphResult], str]:
     base_dir = Config.SAVED_CONTRADICTIONS_DIR
     if not base_dir.exists() or not base_dir.is_dir():
@@ -25,6 +26,8 @@ def load_saved_contradictions_for_document(
         reverse=True,
     )
 
+    candidate_ids = _build_candidate_ids(document_id, aliases)
+
     for json_path in json_files:
         with json_path.open("r", encoding="utf-8") as f:
             payload = json.load(f)
@@ -32,7 +35,7 @@ def load_saved_contradictions_for_document(
         if not _payload_matches_mode(payload, json_path, mode):
             continue
 
-        raw_rows = _extract_rows_for_document(payload, document_id)
+        raw_rows = _extract_rows_for_document(payload, candidate_ids)
         if not raw_rows:
             continue
 
@@ -45,7 +48,12 @@ def load_saved_contradictions_for_document(
     )
 
 
-def save_analyzed_contradictions(response: ContradictionAnalysisResponse) -> str:
+def save_analyzed_contradictions(
+    response: ContradictionAnalysisResponse,
+    *,
+    document_relative_path: str | None = None,
+    document_group: str | None = None,
+) -> str:
     base_dir = Config.SAVED_CONTRADICTIONS_DIR
     base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -56,6 +64,8 @@ def save_analyzed_contradictions(response: ContradictionAnalysisResponse) -> str
 
     payload = {
         "documentId": response.documentId,
+        "documentRelativePath": document_relative_path or "",
+        "documentGroup": document_group or "",
         "provider": response.provider,
         "temperature": response.temperature,
         "mode": _normalize_mode(response.mode),
@@ -73,9 +83,9 @@ def save_analyzed_contradictions(response: ContradictionAnalysisResponse) -> str
     return str(output_path)
 
 
-def _extract_rows_for_document(payload: Any, document_id: str) -> list[dict[str, Any]]:
+def _extract_rows_for_document(payload: Any, candidate_ids: set[str]) -> list[dict[str, Any]]:
     if isinstance(payload, dict):
-        if not _payload_matches_document(payload, document_id):
+        if not _payload_matches_document(payload, candidate_ids):
             return []
 
         if isinstance(payload.get("paragraph_results"), list):
@@ -84,17 +94,18 @@ def _extract_rows_for_document(payload: Any, document_id: str) -> list[dict[str,
         if isinstance(payload.get("paragraphResults"), list):
             return payload["paragraphResults"]
 
-        if document_id in payload and isinstance(payload[document_id], list):
-            return payload[document_id]
+        for candidate_id in candidate_ids:
+            if candidate_id in payload and isinstance(payload[candidate_id], list):
+                return payload[candidate_id]
 
         if isinstance(payload.get("results"), list):
-            return _filter_rows_by_document_id(payload["results"], document_id)
+            return _filter_rows_by_document_id(payload["results"], candidate_ids)
 
         if isinstance(payload.get("data"), list):
-            return _filter_rows_by_document_id(payload["data"], document_id)
+            return _filter_rows_by_document_id(payload["data"], candidate_ids)
 
     if isinstance(payload, list):
-        return _filter_rows_by_document_id(payload, document_id)
+        return _filter_rows_by_document_id(payload, candidate_ids)
 
     return []
 
@@ -130,23 +141,24 @@ def _payload_matches_mode(payload: Any, path: Any, mode: str | None) -> bool:
     return inferred == expected
 
 
-def _payload_matches_document(payload: dict[str, Any], document_id: str) -> bool:
-    target = str(document_id).strip().lower()
+def _payload_matches_document(payload: dict[str, Any], candidate_ids: set[str]) -> bool:
+    normalized_candidates = {str(value).strip().lower() for value in candidate_ids if str(value).strip()}
 
     explicit_doc_id = payload.get("documentId") or payload.get("document_id") or payload.get("doc_id")
     if explicit_doc_id is not None:
-        return str(explicit_doc_id).strip().lower() == target
+        return str(explicit_doc_id).strip().lower() in normalized_candidates
 
     # Legacy shape: {"<documentId>": [...]}.
-    if document_id in payload:
-        return True
+    for candidate in candidate_ids:
+        if candidate in payload:
+            return True
 
     # No explicit doc identifier -> require row-level filtering keys.
     has_rows = isinstance(payload.get("results"), list) or isinstance(payload.get("data"), list)
     return has_rows
 
 
-def _filter_rows_by_document_id(rows: list[Any], document_id: str) -> list[dict[str, Any]]:
+def _filter_rows_by_document_id(rows: list[Any], candidate_ids: set[str]) -> list[dict[str, Any]]:
     dict_rows = [row for row in rows if isinstance(row, dict)]
     if not dict_rows:
         return []
@@ -160,7 +172,7 @@ def _filter_rows_by_document_id(rows: list[Any], document_id: str) -> list[dict[
         has_paragraph = any(("paragraph_id" in row) or ("paragraphId" in row) for row in dict_rows)
         return dict_rows if has_paragraph else []
 
-    normalized_target = str(document_id).strip().lower()
+    normalized_targets = {str(value).strip().lower() for value in candidate_ids if str(value).strip()}
     filtered: list[dict[str, Any]] = []
     for row in dict_rows:
         candidate = (
@@ -169,7 +181,7 @@ def _filter_rows_by_document_id(rows: list[Any], document_id: str) -> list[dict[
             or row.get("document_id")
             or ""
         )
-        if str(candidate).strip().lower() == normalized_target:
+        if str(candidate).strip().lower() in normalized_targets:
             filtered.append(row)
 
     return filtered
@@ -251,3 +263,12 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
 def _sanitize_filename(value: str) -> str:
     normalized = re.sub(r'[<>:"/\\|?*\x00-\x1F]+', "_", value or "").strip()
     return normalized or "document"
+
+
+def _build_candidate_ids(document_id: str, aliases: list[str] | None) -> set[str]:
+    candidates = {str(document_id or "").strip()}
+    for alias in aliases or []:
+        alias_text = str(alias or "").strip()
+        if alias_text:
+            candidates.add(alias_text)
+    return {value for value in candidates if value}

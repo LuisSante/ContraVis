@@ -1006,6 +1006,7 @@
 
 		const hostRect = documentScrollHost.getBoundingClientRect();
 		const hostScrollHeight = documentScrollHost.scrollHeight;
+		const hostScrollTop = documentScrollHost.scrollTop;
 		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
 			contradictionScrollMarkers = [];
 			selectedContradictionEvidenceLink = null;
@@ -1020,7 +1021,9 @@
 			if (!element) continue;
 
 			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
-			const centerOffset = element.offsetTop + element.offsetHeight / 2;
+			const elementRect = element.getBoundingClientRect();
+			const centerOffset =
+				elementRect.top - hostRect.top + hostScrollTop + elementRect.height / 2;
 			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
 			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
 
@@ -2784,7 +2787,7 @@
 			const metadata = await resolveDocumentMeta(docId);
 			if (token !== renderToken) return;
 			activeDocumentId = docId;
-			activeDocumentName = metadata?.name ?? `${docId}.docx`;
+			activeDocumentName = metadata?.display_name || metadata?.name || `${docId}.docx`;
 
 			const response = await api.get<ArrayBuffer>(`/document_file/${encodeURIComponent(docId)}`, {
 				responseType: 'arraybuffer'
@@ -3586,7 +3589,7 @@
 							disabled={!Boolean(activeDocumentId) || contradictionLoading || $loading}
 							onclick={() => void loadSavedContradictions()}
 						>
-							Saved contradictions
+							Saved
 						</Button>
 						<Button
 							variant="outline"
@@ -3598,7 +3601,7 @@
 								(contradictionGraphMode === 'with_kg' && backendGraphLoading)}
 							onclick={() => void searchContradictionsWithLlm()}
 						>
-							Search contradictions
+							Search
 						</Button>
 					</div>
 				{:else if activeRightPanelTab === 'paragraph_explanation'}
