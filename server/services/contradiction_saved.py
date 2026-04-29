@@ -11,6 +11,7 @@ from utils.config import Config
 
 def load_saved_contradictions_for_document(
     document_id: str,
+    mode: str | None = None,
 ) -> tuple[list[ContradictionParagraphResult], str]:
     base_dir = Config.SAVED_CONTRADICTIONS_DIR
     if not base_dir.exists() or not base_dir.is_dir():
@@ -27,6 +28,9 @@ def load_saved_contradictions_for_document(
     for json_path in json_files:
         with json_path.open("r", encoding="utf-8") as f:
             payload = json.load(f)
+
+        if not _payload_matches_mode(payload, json_path, mode):
+            continue
 
         raw_rows = _extract_rows_for_document(payload, document_id)
         if not raw_rows:
@@ -47,12 +51,14 @@ def save_analyzed_contradictions(response: ContradictionAnalysisResponse) -> str
 
     safe_document_id = _sanitize_filename(response.documentId)
     safe_provider = _sanitize_filename(response.provider)
-    output_path = base_dir / f"{safe_document_id}__{safe_provider}_latest.json"
+    safe_mode = _sanitize_filename(_normalize_mode(response.mode))
+    output_path = base_dir / f"{safe_document_id}__{safe_provider}__{safe_mode}_latest.json"
 
     payload = {
         "documentId": response.documentId,
         "provider": response.provider,
         "temperature": response.temperature,
+        "mode": _normalize_mode(response.mode),
         "savedAt": datetime.now(timezone.utc).isoformat(),
         "paragraphResults": [
             item.model_dump()
@@ -91,6 +97,37 @@ def _extract_rows_for_document(payload: Any, document_id: str) -> list[dict[str,
         return _filter_rows_by_document_id(payload, document_id)
 
     return []
+
+
+def _normalize_mode(value: Any) -> str:
+    normalized = str(value or "").strip().lower()
+    if normalized == "without_kg":
+        return "without_kg"
+    return "with_kg"
+
+
+def _payload_matches_mode(payload: Any, path: Any, mode: str | None) -> bool:
+    if mode is None:
+        return True
+
+    expected = _normalize_mode(mode)
+    payload_mode = None
+    if isinstance(payload, dict):
+        payload_mode = payload.get("mode")
+
+    if payload_mode is not None:
+        return _normalize_mode(payload_mode) == expected
+
+    file_name = str(getattr(path, "name", path)).lower()
+    if "__without_kg_" in file_name:
+        inferred = "without_kg"
+    elif "__with_kg_" in file_name:
+        inferred = "with_kg"
+    else:
+        # Legacy files pre-mode are considered KG-enabled runs.
+        inferred = "with_kg"
+
+    return inferred == expected
 
 
 def _payload_matches_document(payload: dict[str, Any], document_id: str) -> bool:

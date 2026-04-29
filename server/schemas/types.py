@@ -69,6 +69,7 @@ AssistantMode = Literal["explain", "suggest_questions"]
 AssistantScope = Literal["selected", "full_contract"]
 AssistantProvider = Literal["openai", "gemini"]
 AssistantMessageRole = Literal["user", "assistant"]
+ContradictionGraphMode = Literal["with_kg", "without_kg"]
 
 
 class AssistantParagraphNode(BaseModel):
@@ -184,6 +185,7 @@ class ContradictionAnalysisRequest(BaseModel):
     provider: AssistantProvider = "openai"
     temperature: float = 0.3
     model: Optional[str] = None
+    mode: ContradictionGraphMode = "with_kg"
 
 
 class ContradictionAnalysisResponse(BaseModel):
@@ -191,10 +193,12 @@ class ContradictionAnalysisResponse(BaseModel):
     provider: AssistantProvider
     temperature: float
     model: Optional[str] = None
+    mode: ContradictionGraphMode = "with_kg"
     paragraphResults: List[ContradictionParagraphResult]
     rawResponse: str
 
 class SavedContradictionsResponse(BaseModel):
     documentId: str
     sourceFile: str
+    mode: ContradictionGraphMode
     paragraphResults: List[ContradictionParagraphResult]

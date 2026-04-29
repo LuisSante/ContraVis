@@ -3,7 +3,7 @@ import json
 import logging
 import re
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse
 
 from schemas.types import (
@@ -11,6 +11,7 @@ from schemas.types import (
     AssistantChatResponse,
     ContradictionAnalysisRequest,
     ContradictionAnalysisResponse,
+    ContradictionGraphMode,
     DatasetDocument,
     SavedContradictionsResponse,
     SimplifySelectionRequest,
@@ -266,12 +267,16 @@ def analyze_document_contradictions_endpoint(payload: ContradictionAnalysisReque
 
 
 @router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)
-def get_saved_contradictions(document_id: str):
+def get_saved_contradictions(
+    document_id: str,
+    mode: ContradictionGraphMode = Query(default="with_kg"),
+):
     try:
-        rows, source_file = load_saved_contradictions_for_document(document_id)
+        rows, source_file = load_saved_contradictions_for_document(document_id, mode=mode)
         return SavedContradictionsResponse(
             documentId=document_id,
             sourceFile=source_file,
+            mode=mode,
             paragraphResults=rows,
         )
     except RuntimeError as exc:

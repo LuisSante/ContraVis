@@ -24,6 +24,7 @@
 		FreeContradictionExplanation,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
+		ContradictionGraphMode,
 		ContradictionParagraphResult,
 		Edge as GraphEdge,
 		Node as ParagraphNode,
@@ -251,6 +252,7 @@
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
+	let contradictionGraphMode: ContradictionGraphMode = 'with_kg';
 	let globalAnalysisModel = 'gpt-4.1';
 	let globalModelSelectWidthPx = GLOBAL_MODEL_MIN_WIDTH_PX;
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
@@ -1403,7 +1405,13 @@
 		if (message) contradictionSummaryVisible = true;
 	}
 
-	function buildContradictionAnalysisPayload(): ContradictionAnalysisRequest | null {
+	function contradictionModeLabel(mode: ContradictionGraphMode): string {
+		return mode === 'with_kg' ? 'KG' : 'No KG';
+	}
+
+	function buildContradictionAnalysisPayload(
+		mode: ContradictionGraphMode
+	): ContradictionAnalysisRequest | null {
 		if (!activeDocumentId) return null;
 		const selectedModel = globalAnalysisModel.trim();
 
@@ -1420,9 +1428,10 @@
 			provider: 'openai',
 			temperature: 0.3,
 			model: selectedModel || undefined,
+			mode,
 			graph: {
 				nodes,
-				edges: backendEdges
+				edges: mode === 'with_kg' ? backendEdges : []
 			}
 		};
 	}
@@ -1439,8 +1448,11 @@
 		contradictionLoading = true;
 		setContradictionErrorMessage(null);
 		try {
-			const response = await fetchSavedContradictions(activeDocumentId);
-			setContradictionResults(response.paragraphResults ?? [], response.sourceFile);
+			const response = await fetchSavedContradictions(activeDocumentId, contradictionGraphMode);
+			setContradictionResults(
+				response.paragraphResults ?? [],
+				`${response.sourceFile} (${contradictionModeLabel(response.mode)})`
+			);
 		} catch (savedError) {
 			setContradictionErrorMessage(
 				getAxiosErrorMessage(savedError, 'Failed to load saved contradictions.')
@@ -1454,14 +1466,14 @@
 		activeRightPanelTab = 'analysis';
 		isRightDrawerOpen = true;
 
-		if (backendGraphLoading) {
+		if (contradictionGraphMode === 'with_kg' && backendGraphLoading) {
 			setContradictionErrorMessage(
 				'Wait until graph generation finishes before searching contradictions.'
 			);
 			return;
 		}
 
-		const payload = buildContradictionAnalysisPayload();
+		const payload = buildContradictionAnalysisPayload(contradictionGraphMode);
 		if (!payload) {
 			setContradictionErrorMessage('No paragraph context is available yet.');
 			return;
@@ -1472,7 +1484,10 @@
 		try {
 			const response = await fetchContradictionAnalysis(payload);
 			const resolvedModel = response.model?.trim() || payload.model || 'default';
-			setContradictionResults(response.paragraphResults ?? [], `llm:openai:${resolvedModel}`);
+			setContradictionResults(
+				response.paragraphResults ?? [],
+				`llm:openai:${resolvedModel} (${contradictionModeLabel(response.mode)})`
+			);
 		} catch (analysisError) {
 			setContradictionErrorMessage(
 				getAxiosErrorMessage(analysisError, 'Failed to search contradictions with LLM.')
@@ -3540,6 +3555,30 @@
 
 				{#if activeRightPanelTab === 'analysis'}
 					<div class="flex shrink-0 items-center gap-1.5">
+						<div
+							class="flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2"
+							title="Switch contradiction analysis mode"
+						>
+							<label
+								for="analysis-mode-kg-switch"
+								class={`text-[10px] font-semibold ${contradictionGraphMode === 'without_kg' ? 'text-blue-700' : 'text-gray-500'}`}
+							>
+								No KG
+							</label>
+							<Switch
+								id="analysis-mode-kg-switch"
+								class="data-checked:bg-blue-600 dark:data-checked:bg-blue-500"
+								checked={contradictionGraphMode === 'with_kg'}
+								onCheckedChange={(checked) =>
+									(contradictionGraphMode = checked ? 'with_kg' : 'without_kg')}
+							/>
+							<label
+								for="analysis-mode-kg-switch"
+								class={`text-[10px] font-semibold ${contradictionGraphMode === 'with_kg' ? 'text-blue-700' : 'text-gray-500'}`}
+							>
+								KG
+							</label>
+						</div>
 						<Button
 							variant="outline"
 							size="sm"
@@ -3556,7 +3595,7 @@
 							disabled={!Boolean(activeDocumentId) ||
 								contradictionLoading ||
 								$loading ||
-								backendGraphLoading}
+								(contradictionGraphMode === 'with_kg' && backendGraphLoading)}
 							onclick={() => void searchContradictionsWithLlm()}
 						>
 							Search contradictions

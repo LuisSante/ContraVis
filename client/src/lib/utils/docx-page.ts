@@ -5,6 +5,7 @@ import type {
 	AssistantChatRequest,
 	AssistantChatResponse,
 	ContradictionAnalysisRequest,
+	ContradictionGraphMode,
 	ContradictionAnalysisResponse,
 	DocumentMeta,
 	Docx4jsBrowserModule,
@@ -256,10 +257,14 @@ export async function fetchFixContradictionSelection(
 }
 
 export async function fetchSavedContradictions(
-	documentId: string
+	documentId: string,
+	mode: ContradictionGraphMode
 ): Promise<SavedContradictionsResponse> {
 	const response = await api.get<SavedContradictionsResponse>(
-		`/contradictions/saved/${encodeURIComponent(documentId)}`
+		`/contradictions/saved/${encodeURIComponent(documentId)}`,
+		{
+			params: { mode }
+		}
 	);
 	return response.data;
 }

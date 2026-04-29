@@ -317,11 +317,14 @@ export type ContradictionEvidence = {
 	evidence_note?: string;
 };
 
+export type ContradictionGraphMode = 'with_kg' | 'without_kg';
+
 export type ContradictionAnalysisRequest = {
 	documentId: string;
 	provider: AssistantProvider;
 	temperature: number;
 	model?: string;
+	mode: ContradictionGraphMode;
 	graph: Graph;
 };
 
@@ -330,6 +333,7 @@ export type ContradictionAnalysisResponse = {
 	provider: AssistantProvider;
 	temperature: number;
 	model?: string;
+	mode: ContradictionGraphMode;
 	paragraphResults: ContradictionParagraphResult[];
 	rawResponse: string;
 };
@@ -337,6 +341,7 @@ export type ContradictionAnalysisResponse = {
 export type SavedContradictionsResponse = {
 	documentId: string;
 	sourceFile: string;
+	mode: ContradictionGraphMode;
 	paragraphResults: ContradictionParagraphResult[];
 };
 
