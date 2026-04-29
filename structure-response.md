@@ -450,6 +450,110 @@ Expected LLM JSON:
 }
 ```
 
+`document_json` injected into prompt (`Document data (JSON): {document_json}`):
+
+Without KG mode (`mode = "without_kg"`):
+
+```json
+{
+  "mode": "without_kg",
+  "paragraphs": [
+    {
+      "paragraph_id": "BELLICUM...-p-19",
+      "text": "Clause text...",
+      "related_paragraphs": [
+        {
+          "paragraph_id": "BELLICUM...-p-166",
+          "text": "Related clause text..."
+        }
+      ]
+    },
+    {
+      "paragraph_id": "BELLICUM...-p-166",
+      "text": "Another clause text...",
+      "related_paragraphs": []
+    }
+  ]
+}
+```
+
+With KG mode (`mode = "with_kg"`):
+
+```json
+{
+  "mode": "with_kg",
+  "paragraphs": [
+    {
+      "paragraph_id": "BELLICUM...-p-19",
+      "text": "Clause text...",
+      "related_paragraphs": [
+        {
+          "paragraph_id": "BELLICUM...-p-166",
+          "text": "Related clause text..."
+        }
+      ]
+    }
+  ],
+  "kg_context": {
+    "by_paragraph_id": {
+      "BELLICUM...-p-19": {
+        "clause": {
+          "id": "BELLICUM...-p-19"
+        },
+        "entities": [
+          {
+            "type": "Party",
+            "label": "Bellicum Pharmaceuticals, Inc.",
+            "source_paragraph_id": "BELLICUM...-p-19"
+          },
+          {
+            "type": "Obligation",
+            "label": "Bellicum shall ...",
+            "source_paragraph_id": "BELLICUM...-p-19",
+            "action": "Bellicum shall ..."
+          },
+          {
+            "type": "Reference",
+            "label": "Section 2.3",
+            "source_paragraph_id": "BELLICUM...-p-19",
+            "citation": "2.3"
+          }
+        ],
+        "relations": [
+          {
+            "rel_type": "REFERENCES",
+            "from": {
+              "id": "BELLICUM...-p-19",
+              "label": "2.1",
+              "type": "Clause"
+            },
+            "to": {
+              "id": "BELLICUM...-p-166",
+              "label": "2.3",
+              "type": "Clause"
+            },
+            "evidence": "base_reference:section 2.3"
+          },
+          {
+            "rel_type": "ASSIGNS_OBLIGATION_TO",
+            "from": {
+              "id": "obligation-node-id",
+              "label": "Bellicum shall ...",
+              "type": "Obligation"
+            },
+            "to": {
+              "id": "party-node-id",
+              "label": "Bellicum Pharmaceuticals, Inc.",
+              "type": "Party"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
 ---
 
 ## 6) Structured JSON used by UI in `Why is it a contradiction? (AI cost)`
@@ -513,4 +617,3 @@ Functions in `client/src/lib/utils/docx-page.ts`:
 - `fetchFixContradictionSelection` -> `POST /api/v1/assistant/fix_contradiction`
 - `fetchSavedContradictions` -> `GET /api/v1/contradictions/saved/{documentId}`
 - `fetchContradictionAnalysis` -> `POST /api/v1/contradictions/analyze`
-
