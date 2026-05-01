@@ -23,9 +23,6 @@ def _env_float(name: str, default: float) -> float:
 
 
 class Config:
-  # CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf")
-  # CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx")
-  CUAD_PDF_DIR = Path("../infra/CUAD_v1/full_contract_pdf_contradictions")
   CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx_contradictions")
 
   EDITED_PDF_DIR = Path("../infra/edited_pdfs")
@@ -57,12 +54,3 @@ class Config:
     ("annex",    re.compile(r'\b[Aa]nnex\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
     ("appendix", re.compile(r'\b[Aa]ppendix\s+([A-Za-z]|\d+(?:\.\d+)*)\b')),
   ]
-    
-  TYPE_PRIORITY = {
-    "precedence": 5,
-    "scope": 4,
-    "deontic": 3,
-    "numeric": 2,
-    "definition": 2,
-    "other": 1
-  }

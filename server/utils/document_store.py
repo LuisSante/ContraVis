@@ -24,11 +24,6 @@ class DocumentStore:
             cls._instance._initialized = False
         return cls._instance
 
-    def iter_pdfs(self, base_dir: Path):
-        return (
-            p for p in base_dir.rglob("*") if p.is_file() and p.suffix.lower() == ".pdf"
-        )
-
     def iter_docxs(self, base_dir: Path):
         return (
             p for p in base_dir.rglob("*") if p.is_file() and p.suffix.lower() == ".docx"
