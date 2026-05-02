@@ -263,9 +263,15 @@
 			0 0 0 2px rgba(37, 99, 235, 0.35);
 	}
 
-	.docx-contradiction-highlight {
+	/* .docx-contradiction-highlight {
 		background: transparent;
 		box-shadow: inset 3px 0 0 #dc2626;
+	} */
+	
+	.docx-contradiction-highlight {
+		background: transparent;
+		border-left: 3px solid #dc2626 !important;
+		padding-left: 10px !important;
 	}
 
 	.docx-contradiction-highlight[data-contradiction-confidence-band='medium'] {

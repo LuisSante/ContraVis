@@ -251,7 +251,7 @@
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
-	let contradictionSource: string | null = null;
+	let hasTriggeredContradictionCheck = false;
 	let contradictionGraphMode: ContradictionGraphMode = 'with_kg';
 	let globalAnalysisModel = 'gpt-4.1';
 	let globalModelSelectWidthPx = GLOBAL_MODEL_MIN_WIDTH_PX;
@@ -270,7 +270,10 @@
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
-	let contradictionSummaryVisible = true;
+	let contradictionSummaryItems: Array<{
+		paragraphId: string;
+		label: string;
+	}> = [];
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
 	let paragraphExplanationAnswer = '';
@@ -323,6 +326,21 @@
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
 		(row) => row.contradiction
 	).length;
+	$: {
+		const items: Array<{ paragraphId: string; label: string; paragraphEnum: number }> = [];
+		for (const [paragraphId, row] of contradictionResultsByParagraphId.entries()) {
+			if (!row.contradiction) continue;
+			const paragraphEnumMatch = paragraphId.match(/-p-(\d+)$/);
+			const paragraphEnum = paragraphEnumMatch ? Number(paragraphEnumMatch[1]) : Number.POSITIVE_INFINITY;
+			const label = paragraphEnumMatch ? `p-${paragraphEnumMatch[1]}` : paragraphId;
+			items.push({ paragraphId, label, paragraphEnum });
+		}
+		items.sort(
+			(left, right) =>
+				left.paragraphEnum - right.paragraphEnum || left.paragraphId.localeCompare(right.paragraphId)
+		);
+		contradictionSummaryItems = items.map(({ paragraphId, label }) => ({ paragraphId, label }));
+	}
 	$: selectedContradictionResult = $selectedParagraph
 		? (contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null)
 		: null;
@@ -779,6 +797,12 @@
 	}
 
 	function focusNodeFromPanel(nodeId: string, emphasize = false) {
+		const targetNode = get(paragraphs).find((node) => node.id === nodeId) ?? null;
+		if (targetNode) {
+			// Ensure panel state updates even when the element can be focused without fallback.
+			setSelectedParagraphNode(targetNode);
+		}
+
 		focusNodeFromInspectorPanel({
 			nodeId,
 			paragraphNodes: get(paragraphs),
@@ -981,6 +1005,10 @@
 		selectedContradictionEvidenceLink = null;
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+			element.style.removeProperty('--tw-ring-color');
+			element.style.removeProperty('--tw-ring-offset-shadow');
+			element.style.removeProperty('--tw-ring-shadow');
+			element.style.removeProperty('outline');
 			clearSnippetMarks(element);
 			delete element.dataset.contradictionConfidenceBand;
 			delete element.dataset.contradictionConfidence;
@@ -1149,6 +1177,10 @@
 			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
 
 			element.classList.add('docx-contradiction-highlight');
+			element.style.setProperty('--tw-ring-color', 'transparent');
+			element.style.setProperty('--tw-ring-offset-shadow', '0 0 #0000');
+			element.style.setProperty('--tw-ring-shadow', '0 0 #0000');
+			element.style.setProperty('outline', 'none');
 			element.dataset.contradictionConfidenceBand = confidenceBand;
 			element.dataset.contradictionConfidence = String(result.confidence);
 			element.dataset.contradictionReason = result.brief_reason ?? '';
@@ -1392,20 +1424,17 @@
 		window.addEventListener('mouseup', stopManualScrollDrag);
 	}
 
-	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
+	function setContradictionResults(results: ContradictionParagraphResult[], _source: string | null) {
 		const next = new Map<string, ContradictionParagraphResult>();
 		for (const row of results) {
 			next.set(String(row.paragraph_id), row);
 		}
 		contradictionResultsByParagraphId = next;
-		contradictionSource = source;
-		contradictionSummaryVisible = true;
 		applyContradictionHighlights();
 	}
 
 	function setContradictionErrorMessage(message: string | null) {
 		contradictionError = message;
-		if (message) contradictionSummaryVisible = true;
 	}
 
 	function contradictionModeLabel(mode: ContradictionGraphMode): string {
@@ -1442,6 +1471,7 @@
 	async function loadSavedContradictions() {
 		activeRightPanelTab = 'analysis';
 		isRightDrawerOpen = true;
+		hasTriggeredContradictionCheck = true;
 
 		if (!activeDocumentId) {
 			setContradictionErrorMessage('No document is loaded.');
@@ -1468,6 +1498,7 @@
 	async function searchContradictionsWithLlm() {
 		activeRightPanelTab = 'analysis';
 		isRightDrawerOpen = true;
+		hasTriggeredContradictionCheck = true;
 
 		if (contradictionGraphMode === 'with_kg' && backendGraphLoading) {
 			setContradictionErrorMessage(
@@ -2336,8 +2367,8 @@
 		}
 		if (viewer) viewer.replaceChildren();
 		contradictionResultsByParagraphId = new Map();
-		contradictionSource = null;
 		contradictionError = null;
+		hasTriggeredContradictionCheck = false;
 		contradictionScrollMarkers = [];
 		selectedContradictionEvidenceLink = null;
 		relatedScrollMarkers = [];
@@ -3283,36 +3314,6 @@
 			</div>
 		</header>
 
-		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
-			<Card.Root
-				size="sm"
-				class="absolute top-16 right-4 left-4 z-[70] border-gray-200 py-0 text-[10px] shadow-lg"
-			>
-				<Card.Content class="px-2.5 text-gray-600">
-					<div class="flex items-start justify-between gap-2">
-						{#if contradictionError}
-							<p class="min-w-0 leading-snug text-red-700">{contradictionError}</p>
-						{:else}
-							<p class="min-w-0 leading-snug">
-								{contradictionCount} paragraph(s) with highlighted contradiction(s).
-								{#if contradictionSource}
-									<span class="text-gray-500"> Source: {contradictionSource}</span>
-								{/if}
-							</p>
-						{/if}
-						<button
-							type="button"
-							class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
-							aria-label="Close contradiction summary"
-							on:click={() => (contradictionSummaryVisible = false)}
-						>
-							<CloseIcon className="h-3 w-3" />
-						</button>
-					</div>
-				</Card.Content>
-			</Card.Root>
-		{/if}
-
 		{#if localError || $error}
 			<div class="mx-4 mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
 				{localError ?? $error}
@@ -3688,6 +3689,10 @@
 			<RightPanelAnalysis
 				selectedParagraph={$selectedParagraph}
 				{contradictionLoading}
+				{hasTriggeredContradictionCheck}
+				{contradictionError}
+				{contradictionCount}
+				{contradictionSummaryItems}
 				{revisionProcessingSteps}
 				{selectedContradictionResult}
 				{selectedContradictionEvidence}
