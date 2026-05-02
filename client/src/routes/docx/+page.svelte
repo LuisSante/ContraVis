@@ -276,7 +276,16 @@
 	}> = [];
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
-	let paragraphExplanationAnswer = '';
+	let paragraphExplanationShort = '';
+	let paragraphExplanationDetailed = '';
+	type ParagraphExplanationEntityHighlight = {
+		label: string;
+		key: string;
+		color: string;
+		softColor: string;
+	};
+	let paragraphExplanationEntities: ParagraphExplanationEntityHighlight[] = [];
+	let hoveredParagraphExplanationEntityKey: string | null = null;
 	let paragraphExplanationConnectors: Array<{
 		topPx: number;
 		bottomPx: number;
@@ -395,21 +404,17 @@
 		})
 		.slice(0, 5);
 	$: {
-		if (shouldShowContradictionDecorations) {
-			applyContradictionHighlights();
-		} else {
-			clearContradictionHighlights();
-			contradictionScrollMarkers = [];
-			selectedContradictionEvidenceLink = null;
-		}
+		syncContradictionDecorations();
 	}
 	$: {
 		const selectedId = $selectedParagraph?.id ?? '';
 		const relatedIds = paragraphExplanationRelatedParagraphs
 			.map((related) => related.node.id)
 			.join('|');
+		const entitiesSignature = paragraphExplanationEntities.map((entity) => entity.key).join('|');
 		void selectedId;
 		void relatedIds;
+		void entitiesSignature;
 		if (shouldShowParagraphExplanationDecorations) {
 			applyParagraphExplanationHighlights();
 			scheduleParagraphExplanationConnectorRefresh();
@@ -638,7 +643,7 @@
 				if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
 			}
 			refreshSimplifyTarget();
-			applyContradictionHighlights();
+			syncContradictionDecorations();
 		});
 	}
 
@@ -850,10 +855,213 @@
 
 	function resetParagraphExplanationState() {
 		paragraphExplanationError = null;
-		paragraphExplanationAnswer = '';
+		paragraphExplanationShort = '';
+		paragraphExplanationDetailed = '';
+		paragraphExplanationEntities = [];
 		paragraphExplanationLoading = false;
 		paragraphExplanationConnectors = [];
 		paragraphExplanationScrollMarkers = [];
+	}
+
+	function parseParagraphExplanationVariants(answer: string): {
+		shortText: string;
+		detailedText: string;
+		entities: string[];
+	} {
+		const normalized = answer.trim();
+		if (!normalized) {
+			return { shortText: '', detailedText: '', entities: [] };
+		}
+
+		const normalizeEntities = (values: string[]): string[] => {
+			const unique = new Set<string>();
+			for (const value of values) {
+				const cleaned = value.replace(/^[-*•]\s*/, '').trim();
+				if (!cleaned) continue;
+				if (cleaned.length < 2) continue;
+				unique.add(cleaned);
+			}
+			return Array.from(unique).slice(0, 12);
+		};
+
+		const readExplanationField = (record: Record<string, unknown>, keys: string[]): string => {
+			for (const key of keys) {
+				const value = record[key];
+				if (typeof value === 'string' && value.trim()) return value.trim();
+			}
+			return '';
+		};
+
+		const tryParseJsonExplanation = (
+			raw: string
+		): { shortText: string; detailedText: string; entities: string[] } | null => {
+			const tryCandidates: string[] = [raw];
+			const jsonBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+			if (jsonBlockMatch?.[1]) tryCandidates.unshift(jsonBlockMatch[1].trim());
+
+			for (const candidate of tryCandidates) {
+				try {
+					const parsed = JSON.parse(candidate) as unknown;
+					if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue;
+					const record = parsed as Record<string, unknown>;
+					const shortText = readExplanationField(record, [
+						'SHORT_EXPLANATION',
+						'short_explanation',
+						'shortExplanation',
+						'summary',
+						'short'
+					]);
+					const detailedText = readExplanationField(record, [
+						'DETAILED_EXPLANATION',
+						'detailed_explanation',
+						'detailedExplanation',
+						'detail',
+						'detailed'
+					]);
+					const entitiesRaw = record.ENTITIES ?? record.entities ?? record.entity_list;
+					const entities = Array.isArray(entitiesRaw)
+						? normalizeEntities(
+								entitiesRaw.filter((entry): entry is string => typeof entry === 'string')
+							)
+						: typeof entitiesRaw === 'string'
+							? normalizeEntities(
+									entitiesRaw
+										.split('\n')
+										.map((line) => line.trim())
+										.filter(Boolean)
+								)
+							: [];
+					if (shortText || detailedText) {
+						return {
+							shortText: shortText || detailedText,
+							detailedText: detailedText || shortText,
+							entities
+						};
+					}
+				} catch {
+					// Keep trying other formats.
+				}
+			}
+			return null;
+		};
+
+		const jsonParsed = tryParseJsonExplanation(normalized);
+		if (jsonParsed) return jsonParsed;
+
+		const structuredMatch = normalized.match(
+			/SHORT_EXPLANATION:\s*([\s\S]*?)\s*DETAILED_EXPLANATION:\s*([\s\S]*)/i
+		);
+		if (structuredMatch) {
+			const shortText = structuredMatch[1]?.trim() ?? '';
+			const detailedRaw = structuredMatch[2]?.trim() ?? '';
+			const entitiesMatch = detailedRaw.match(/ENTITIES:\s*([\s\S]*)/i);
+			const detailedText = entitiesMatch
+				? detailedRaw.slice(0, entitiesMatch.index ?? detailedRaw.length).trim()
+				: detailedRaw;
+			const entities = entitiesMatch
+				? normalizeEntities(
+						entitiesMatch[1]
+							.split('\n')
+							.map((line) => line.trim())
+							.filter(Boolean)
+					)
+				: [];
+			return { shortText, detailedText, entities };
+		}
+
+		const labeledMatch = normalized.match(
+			/SHORT[\s_-]*EXPLANATION\s*:\s*([\s\S]*?)\s*DETAILED[\s_-]*EXPLANATION\s*:\s*([\s\S]*)/i
+		);
+		if (labeledMatch) {
+			const shortText = labeledMatch[1]?.trim() ?? '';
+			const detailedRaw = labeledMatch[2]?.trim() ?? '';
+			const entitiesMatch = detailedRaw.match(/ENTITIES:\s*([\s\S]*)/i);
+			const detailedText = entitiesMatch
+				? detailedRaw.slice(0, entitiesMatch.index ?? detailedRaw.length).trim()
+				: detailedRaw;
+			const entities = entitiesMatch
+				? normalizeEntities(
+						entitiesMatch[1]
+							.split('\n')
+							.map((line) => line.trim())
+							.filter(Boolean)
+					)
+				: [];
+			return { shortText, detailedText, entities };
+		}
+
+		const paragraphChunks = normalized
+			.split(/\n\s*\n/g)
+			.map((chunk) => chunk.trim())
+			.filter(Boolean);
+		if (paragraphChunks.length >= 2) {
+			return {
+				shortText: paragraphChunks[0],
+				detailedText: paragraphChunks.slice(1).join('\n\n'),
+				entities: []
+			};
+		}
+
+		return {
+			shortText: normalized,
+			detailedText: normalized,
+			entities: []
+		};
+	}
+
+	const PARAGRAPH_EXPLANATION_ENTITY_COLOR_PALETTE: Array<{ color: string; softColor: string }> = [
+		{ color: '#2563eb', softColor: 'rgba(37,99,235,0.16)' },
+		{ color: '#0d9488', softColor: 'rgba(13,148,136,0.16)' },
+		{ color: '#7c3aed', softColor: 'rgba(124,58,237,0.16)' },
+		{ color: '#ea580c', softColor: 'rgba(234,88,12,0.16)' },
+		{ color: '#0284c7', softColor: 'rgba(2,132,199,0.16)' },
+		{ color: '#be185d', softColor: 'rgba(190,24,93,0.16)' },
+		{ color: '#15803d', softColor: 'rgba(21,128,61,0.16)' },
+		{ color: '#b45309', softColor: 'rgba(180,83,9,0.16)' }
+	];
+
+	function normalizeParagraphExplanationEntityKey(value: string): string {
+		return value
+			.toLocaleLowerCase()
+			.normalize('NFKD')
+			.replace(/[^\w\s-]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function buildParagraphExplanationEntityHighlights(
+		entities: string[]
+	): ParagraphExplanationEntityHighlight[] {
+		const uniqueByKey = new Map<string, string>();
+		for (const rawEntity of entities) {
+			const cleaned = rawEntity.trim();
+			if (!cleaned) continue;
+			const key = normalizeParagraphExplanationEntityKey(cleaned);
+			if (!key) continue;
+			if (!uniqueByKey.has(key)) uniqueByKey.set(key, cleaned);
+		}
+		return Array.from(uniqueByKey.entries()).map(([key, label], index) => {
+			const palette =
+				PARAGRAPH_EXPLANATION_ENTITY_COLOR_PALETTE[
+					index % PARAGRAPH_EXPLANATION_ENTITY_COLOR_PALETTE.length
+				];
+			return {
+				label,
+				key,
+				color: palette.color,
+				softColor: palette.softColor
+			};
+		});
+	}
+
+	function setHoveredParagraphExplanationEntityKey(nextKey: string | null) {
+		if (hoveredParagraphExplanationEntityKey === nextKey) return;
+
+		for (const element of document.querySelectorAll<HTMLElement>('[data-entity-key]')) {
+			const isActive = Boolean(nextKey) && element.dataset.entityKey === nextKey;
+			element.classList.toggle('is-entity-hovered', isActive);
+		}
+		hoveredParagraphExplanationEntityKey = nextKey;
 	}
 
 	function clearSnippetMarks(element: HTMLElement) {
@@ -865,6 +1073,92 @@
 				parent.insertBefore(mark.firstChild, mark);
 			}
 			parent.removeChild(mark);
+		}
+	}
+
+	function escapeRegex(value: string): string {
+		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function clearParagraphExplanationEntityMarks(element: HTMLElement) {
+		const marks = element.querySelectorAll<HTMLElement>('span.docx-paragraph-explanation-entity-link');
+		for (const mark of marks) {
+			const parent = mark.parentNode;
+			if (!parent) continue;
+			while (mark.firstChild) {
+				parent.insertBefore(mark.firstChild, mark);
+			}
+			parent.removeChild(mark);
+		}
+	}
+
+	function highlightParagraphExplanationEntitiesInElement(
+		element: HTMLElement,
+		entities: ParagraphExplanationEntityHighlight[]
+	) {
+		const normalizedEntities = entities
+			.map((entity) => entity.label.trim())
+			.filter((entity) => entity.length >= 2)
+			.sort((left, right) => right.length - left.length);
+		if (normalizedEntities.length === 0) return;
+		const entityByNormalizedLabel = new Map(
+			entities.map((entity) => [normalizeParagraphExplanationEntityKey(entity.label), entity])
+		);
+
+		const entityPattern = new RegExp(
+			normalizedEntities.map((entity) => escapeRegex(entity)).join('|'),
+			'gi'
+		);
+		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+		const nodes: Text[] = [];
+		let current = walker.nextNode();
+		while (current) {
+			const textNode = current as Text;
+			const parentElement = textNode.parentElement;
+			const rawText = textNode.nodeValue ?? '';
+			if (
+				parentElement &&
+				!parentElement.closest('.docx-paragraph-explanation-entity-link') &&
+				!parentElement.closest('mark.docx-contradiction-snippet') &&
+				rawText.trim()
+			) {
+				nodes.push(textNode);
+			}
+			current = walker.nextNode();
+		}
+
+		for (const textNode of nodes) {
+			const originalText = textNode.nodeValue ?? '';
+			entityPattern.lastIndex = 0;
+			if (!entityPattern.test(originalText)) continue;
+
+			entityPattern.lastIndex = 0;
+			const fragment = document.createDocumentFragment();
+			let cursor = 0;
+			for (const match of originalText.matchAll(entityPattern)) {
+				const value = match[0] ?? '';
+				if (!value) continue;
+				const start = match.index ?? 0;
+				if (start > cursor) {
+					fragment.appendChild(document.createTextNode(originalText.slice(cursor, start)));
+				}
+				const marker = document.createElement('span');
+				marker.className = 'docx-paragraph-explanation-entity-link';
+				const matchKey = normalizeParagraphExplanationEntityKey(value);
+				const entityMeta = entityByNormalizedLabel.get(matchKey);
+				if (entityMeta) {
+					marker.dataset.entityKey = entityMeta.key;
+					marker.style.setProperty('--entity-color', entityMeta.color);
+					marker.style.setProperty('--entity-color-soft', entityMeta.softColor);
+				}
+				marker.textContent = value;
+				fragment.appendChild(marker);
+				cursor = start + value.length;
+			}
+			if (cursor < originalText.length) {
+				fragment.appendChild(document.createTextNode(originalText.slice(cursor)));
+			}
+			textNode.parentNode?.replaceChild(fragment, textNode);
 		}
 	}
 
@@ -1014,6 +1308,40 @@
 			delete element.dataset.contradictionConfidence;
 			delete element.dataset.contradictionReason;
 		}
+
+		if (typeof document !== 'undefined') {
+			// Hard cleanup for any stale contradiction decorations outside tracked paragraph map
+			for (const element of document.querySelectorAll<HTMLElement>(
+				'.docx-contradiction-highlight, .docx-contradiction-selected'
+			)) {
+				element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+				element.style.removeProperty('--tw-ring-color');
+				element.style.removeProperty('--tw-ring-offset-shadow');
+				element.style.removeProperty('--tw-ring-shadow');
+				element.style.removeProperty('outline');
+				delete element.dataset.contradictionConfidenceBand;
+				delete element.dataset.contradictionConfidence;
+				delete element.dataset.contradictionReason;
+			}
+			for (const mark of document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet')) {
+				const parent = mark.parentNode;
+				if (!parent) continue;
+				while (mark.firstChild) {
+					parent.insertBefore(mark.firstChild, mark);
+				}
+				parent.removeChild(mark);
+			}
+		}
+	}
+
+	function syncContradictionDecorations() {
+		if (shouldShowContradictionDecorations) {
+			applyContradictionHighlights();
+			return;
+		}
+		clearContradictionHighlights();
+		contradictionScrollMarkers = [];
+		selectedContradictionEvidenceLink = null;
 	}
 
 	function resolveContradictionConfidenceBand(
@@ -1234,11 +1562,13 @@
 	function clearParagraphExplanationHighlights() {
 		paragraphExplanationConnectors = [];
 		paragraphExplanationScrollMarkers = [];
+		setHoveredParagraphExplanationEntityKey(null);
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove(
 				'docx-paragraph-explanation-selected',
 				'docx-paragraph-explanation-related'
 			);
+			clearParagraphExplanationEntityMarks(element);
 		}
 	}
 
@@ -1251,10 +1581,18 @@
 		const selectedElement = paragraphElementById.get(selected.id);
 		if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
 		selectedElement?.classList.add('docx-paragraph-explanation-selected');
+		if (selectedElement) {
+			highlightParagraphExplanationEntitiesInElement(selectedElement, paragraphExplanationEntities);
+		}
 		for (const related of paragraphExplanationRelatedParagraphs) {
-			paragraphElementById
-				.get(related.node.id)
-				?.classList.add('docx-paragraph-explanation-related');
+			const relatedElement = paragraphElementById.get(related.node.id);
+			relatedElement?.classList.add('docx-paragraph-explanation-related');
+			if (relatedElement) {
+				highlightParagraphExplanationEntitiesInElement(
+					relatedElement,
+					paragraphExplanationEntities
+				);
+			}
 		}
 	}
 
@@ -1430,7 +1768,7 @@
 			next.set(String(row.paragraph_id), row);
 		}
 		contradictionResultsByParagraphId = next;
-		applyContradictionHighlights();
+		syncContradictionDecorations();
 	}
 
 	function setContradictionErrorMessage(message: string | null) {
@@ -1706,13 +2044,26 @@
 
 		const question = [
 			'Explain the selected contract paragraph in clear and accessible language.',
-			'Use the related paragraphs as supporting context.',
-			'Return a detailed explanation with:',
-			'1) plain-language summary,',
-			'2) practical meaning and obligations,',
-			'3) potential risks/ambiguities,',
-			'4) examples of real-world impact.',
-			'Keep legal accuracy while avoiding jargon.'
+			'Use related paragraphs only as supporting context; do not invent facts.',
+			'CRITICAL OUTPUT RULES:',
+			'- Do NOT return JSON.',
+			'- Do NOT use code fences.',
+			'- Do NOT include citations, arrays, or metadata.',
+			'- Return ONLY these three text blocks, in this exact order and labels:',
+			'SHORT_EXPLANATION:',
+			'<2-4 sentences, concise, plain language, max ~90 words>',
+			'DETAILED_EXPLANATION:',
+			'<in-depth explanation, 4-8 sentences, ~180-320 words>',
+			'QUALITY REQUIREMENTS FOR DETAILED_EXPLANATION:',
+			'1) precise legal meaning of the clause;',
+			'2) obligations/duties by party and practical consequences;',
+			'3) conditions, exceptions, dependencies, and timeline cues;',
+			'4) legal/commercial risks and ambiguities;',
+			'5) one concrete real-world scenario showing impact.',
+			'Keep legal accuracy while reducing jargon.',
+			'ENTITIES:',
+			'- list 3 to 8 key legal/business entities or terms copied exactly from the clause/context when possible.',
+			'- one entity per line, prefixed with "- ".'
 		].join('\n');
 
 		const payload: AssistantChatRequest = {
@@ -1730,7 +2081,11 @@
 
 		try {
 			const response = await fetchAssistantResponse(payload);
-			paragraphExplanationAnswer = response.answer;
+			const parsed = parseParagraphExplanationVariants(response.answer);
+			paragraphExplanationShort = parsed.shortText;
+			paragraphExplanationDetailed = parsed.detailedText;
+			paragraphExplanationEntities = buildParagraphExplanationEntityHighlights(parsed.entities);
+			applyParagraphExplanationHighlights();
 		} catch (requestError) {
 			const message = getAxiosErrorMessage(
 				requestError,
@@ -3004,7 +3359,7 @@
 			applyDocxTabStops(viewer);
 			paginateRenderedSections(viewer);
 			pruneBlankSections();
-			applyContradictionHighlights();
+			syncContradictionDecorations();
 			scheduleRelatedScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
 
@@ -3071,8 +3426,13 @@
 		return Math.min(Math.max(nextWidth, RIGHT_DRAWER_MIN_WIDTH), maxWidth);
 	}
 
-	function setRightDrawerWidth(nextWidth: number) {
+function setRightDrawerWidth(nextWidth: number) {
 		rightDrawerWidth = clampRightDrawerWidth(nextWidth);
+	}
+
+	$: if (!shouldShowContradictionDecorations) {
+		// Defensive: keep contradiction visuals fully off outside analysis tab.
+		clearContradictionHighlights();
 	}
 
 	function stopRightDrawerResize() {
@@ -3184,11 +3544,35 @@
 			scheduleRelatedScrollMarkerRefresh();
 			setRightDrawerWidth(rightDrawerWidth);
 		};
+		const isEntityTokenElement = (value: EventTarget | null): HTMLElement | null => {
+			if (!(value instanceof Element)) return null;
+			const target = value.closest(
+				'.docx-paragraph-explanation-entity-link, .docx-paragraph-explanation-entity-token'
+			);
+			return target instanceof HTMLElement ? target : null;
+		};
+		const handleEntityPointerOver = (event: PointerEvent) => {
+			const token = isEntityTokenElement(event.target);
+			if (!token) return;
+			setHoveredParagraphExplanationEntityKey(token.dataset.entityKey ?? null);
+		};
+		const handleEntityPointerOut = (event: PointerEvent) => {
+			const token = isEntityTokenElement(event.target);
+			if (!token) return;
+			const entityKey = token.dataset.entityKey ?? null;
+			const relatedToken = isEntityTokenElement(event.relatedTarget);
+			if (entityKey && relatedToken?.dataset.entityKey === entityKey) return;
+			if (hoveredParagraphExplanationEntityKey === entityKey) {
+				setHoveredParagraphExplanationEntityKey(null);
+			}
+		};
 
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
 		document.addEventListener('mouseup', handleDocumentSelectionChange);
 		document.addEventListener('keyup', handleDocumentSelectionChange);
 		document.addEventListener('mousedown', handleGlobalPointerDown, true);
+		document.addEventListener('pointerover', handleEntityPointerOver, true);
+		document.addEventListener('pointerout', handleEntityPointerOut, true);
 		window.addEventListener('resize', handleViewportResize);
 		documentScrollHost?.addEventListener('scroll', handleDocumentScroll, {
 			passive: true
@@ -3230,6 +3614,8 @@
 			document.removeEventListener('mouseup', handleDocumentSelectionChange);
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
 			document.removeEventListener('mousedown', handleGlobalPointerDown, true);
+			document.removeEventListener('pointerover', handleEntityPointerOver, true);
+			document.removeEventListener('pointerout', handleEntityPointerOut, true);
 			window.removeEventListener('resize', handleViewportResize);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentScroll);
 			stopRightDrawerResize();
@@ -3752,7 +4138,9 @@
 				selectedParagraph={$selectedParagraph}
 				loading={paragraphExplanationLoading}
 				error={paragraphExplanationError}
-				explanation={paragraphExplanationAnswer}
+				explanationShort={paragraphExplanationShort}
+				explanationDetailed={paragraphExplanationDetailed}
+				explanationEntities={paragraphExplanationEntities}
 				simplifyResult={latestRewriteSource === 'simplify' ? simplifyResult : null}
 				simplifyError={latestRewriteSource === 'simplify' ? simplifyError : null}
 				rewriteSource={latestRewriteSource === 'simplify' ? 'simplify' : null}

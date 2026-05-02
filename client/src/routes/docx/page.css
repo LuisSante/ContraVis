@@ -133,36 +133,69 @@
 
 	.docx-paragraph-explanation-selected {
 		outline: 2.5px solid rgba(37, 99, 235, 0.82) !important;
-		/* outline-offset: 1px !important; */
-		background: rgba(59, 130, 246, 0.1) !important;
-		/* border-left: 1px solid rgba(37, 99, 235, 0.9) !important; */
-		box-shadow:
-			inset 0 0 0 9999px rgba(59, 130, 246, 0.08),
-			inset 0 0 0 1px rgba(37, 99, 235, 0.4) !important;
+		box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.48) !important;
 	}
 
 	.docx-paragraph-explanation-selected:focus,
 	.docx-paragraph-explanation-selected:focus-visible {
-		outline: 2px solid rgba(37, 99, 235, 0.9) !important;
+		outline: 2px solid rgba(48, 84, 229, 0.76) !important;
 		outline-offset: 1px !important;
-		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.22) !important;
+		box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.3) !important;
 	}
 
 	.docx-paragraph-explanation-related {
-		outline: 2px solid #2563eb !important;
+		outline: 2px solid rgba(96, 165, 250, 0.6) !important;
 		outline-offset: 1px !important;
-		border-left: 1px solid #2563eb !important;
+		border-left: 1px solid rgba(96, 165, 250, 0.5) !important;
 		background: transparent !important;
-		/* box-shadow: inset 0 0 0 1px #2563eb !important; */
+		box-shadow: inset 0 0 0 1px rgba(147, 197, 253, 0.3) !important;
+	}
+
+	.docx-paragraph-explanation-entity-link {
+		color: var(--entity-color, #2563eb);
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 2px;
+		text-decoration-color: var(--entity-color, #2563eb);
+		font-weight: 600;
+		cursor: pointer;
+		padding: 0 1px;
+		border-radius: 3px;
+		transition:
+			background-color 140ms ease,
+			color 140ms ease,
+			text-decoration-color 140ms ease;
+	}
+
+	.docx-paragraph-explanation-entity-token {
+		color: var(--entity-color, #2563eb);
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 2px;
+		text-decoration-color: var(--entity-color, #2563eb);
+		font-weight: 600;
+		padding: 0 1px;
+		border-radius: 3px;
+		cursor: pointer;
+		transition:
+			background-color 140ms ease,
+			color 140ms ease,
+			text-decoration-color 140ms ease;
+	}
+
+	.docx-paragraph-explanation-entity-link.is-entity-hovered,
+	.docx-paragraph-explanation-entity-token.is-entity-hovered {
+		background: var(--entity-color-soft, rgba(37, 99, 235, 0.16));
+		text-decoration-thickness: 2px;
 	}
 
 	.docx-paragraph-explanation-bracket {
 		position: absolute;
 		width: 2px;
 		border-radius: 0;
-		background: #2563eb;
+		background: rgba(96, 165, 250, 0.72);
 		transform: translateX(-50%);
-		opacity: 1;
+		opacity: 0.92;
 		pointer-events: none;
 		transition:
 			opacity 120ms ease,
@@ -179,7 +212,7 @@
 	.docx-paragraph-explanation-bracket--interactive:focus-visible {
 		outline: none;
 		width: 3px;
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.24);
+		box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.34);
 	}
 
 	.docx-paragraph-explanation-cap {
@@ -187,9 +220,9 @@
 		width: 12px;
 		height: 2px;
 		border-radius: 0;
-		background: #2563eb;
+		background: rgba(96, 165, 250, 0.72);
 		transform: translate(0, -50%);
-		opacity: 1;
+		opacity: 0.92;
 		transition:
 			opacity 120ms ease,
 			background-color 120ms ease,
@@ -210,22 +243,22 @@
 		height: 6px;
 		border-radius: 9999px;
 		transform: translate(50%, -50%);
-		background: #2563eb;
+		background: rgba(96, 165, 250, 0.82);
 		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.85);
 	}
 
 	.docx-paragraph-explanation-cap--interactive:hover,
 	.docx-paragraph-explanation-cap--interactive:focus-visible {
 		outline: none;
-		background: rgba(37, 99, 235, 0.9);
+		background: rgba(96, 165, 250, 0.88);
 		opacity: 1;
-		box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.18);
+		box-shadow: 0 0 0 2px rgba(147, 197, 253, 0.32);
 	}
 
 	.docx-paragraph-explanation-cap--interactive:hover::after,
 	.docx-paragraph-explanation-cap--interactive:focus-visible::after {
-		background: #1d4ed8;
-		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(37, 99, 235, 0.24);
+		background: rgba(59, 130, 246, 0.9);
+		box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.95), 0 0 0 2px rgba(147, 197, 253, 0.36);
 	}
 
 	.docx-related-scroll-marker {
