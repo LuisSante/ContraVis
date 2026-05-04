@@ -36,6 +36,8 @@ SECTION_HEADING_WITH_KEYWORD_PATTERN = re.compile(
     re.IGNORECASE,
 )
 SECTION_HEADING_NUMERIC_PATTERN = re.compile(r"^(\d+(?:\.\d+)*)\b")
+REFERENCE_SUBCLAUSE_PATTERN = re.compile(r"^\s*\(\s*([a-z])\s*\)", re.IGNORECASE)
+SUBCLAUSE_HEADING_PATTERN = re.compile(r"^\(\s*([a-z])\s*\)\b", re.IGNORECASE)
 
 def create_folder(folder):
     if not os.path.exists(folder):
@@ -229,6 +231,58 @@ def heading_ref_contains_reference(heading_ref_id: str, ref_id: str) -> bool:
     if heading_ref_id == ref_id:
         return True
     return heading_ref_id.startswith(f"{ref_id}.")
+
+
+def parse_reference_id_with_subclause(
+    *,
+    source_text: str,
+    match: re.Match,
+) -> tuple[str, str | None, str]:
+    base_ref_id = normalize_for_match(match.group(1))
+    if not base_ref_id:
+        return "", None, ""
+
+    tail = source_text[match.end():]
+    subclause_match = REFERENCE_SUBCLAUSE_PATTERN.match(tail)
+    if subclause_match is None:
+        return base_ref_id, None, base_ref_id
+
+    subclause = subclause_match.group(1).lower()
+    return base_ref_id, subclause, f"{base_ref_id}({subclause})"
+
+
+def narrow_scope_to_subclause(
+    *,
+    nodes: list[Node],
+    scope_indices: set[int],
+    subclause: str,
+) -> set[int]:
+    if not scope_indices:
+        return set()
+
+    ordered_indices = sorted(scope_indices)
+    marker_by_index: dict[int, str] = {}
+    for idx in ordered_indices:
+        normalized = normalize_for_match(nodes[idx].text)
+        marker_match = SUBCLAUSE_HEADING_PATTERN.match(normalized)
+        if marker_match is None:
+            continue
+        marker_by_index[idx] = marker_match.group(1).lower()
+
+    start_index = next((idx for idx in ordered_indices if marker_by_index.get(idx) == subclause), None)
+    if start_index is None:
+        return set()
+
+    narrowed: set[int] = set()
+    for idx in ordered_indices:
+        if idx < start_index:
+            continue
+        marker = marker_by_index.get(idx)
+        if marker is not None and marker != subclause:
+            break
+        narrowed.add(idx)
+
+    return narrowed
 
 
 def looks_like_unnumbered_heading(text: str) -> bool:
@@ -430,25 +484,30 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
         for ref_type, pattern in Config.REFERENCE_PATTERNS:
             matches = pattern.finditer(current_text)
             for match in matches:
-                ref_id = match.group(1)
+                base_ref_id, ref_subclause, ref_value = parse_reference_id_with_subclause(
+                    source_text=current_text,
+                    match=match,
+                )
+                if not base_ref_id:
+                    continue
                 if is_self_heading_reference(
                     heading_meta=current_heading_meta,
                     ref_type=ref_type,
-                    ref_id=ref_id,
+                    ref_id=base_ref_id,
                     match_start=match.start(),
                 ):
                     continue
                 if is_contextual_self_reference(
                     context_by_type=current_context,
                     ref_type=ref_type,
-                    ref_id=ref_id,
+                    ref_id=base_ref_id,
                 ):
                     continue
                 direct_target_indices: set[int] = set()
                 for target_idx, target_node in enumerate(nodes):
                     if target_node.id == nodes[i].id:
                         continue
-                    if not target_starts_with_reference(target_node.text, ref_type, ref_id):
+                    if not target_starts_with_reference(target_node.text, ref_type, base_ref_id):
                         continue
                     direct_target_indices.add(target_idx)
 
@@ -462,17 +521,28 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                                 nodes=nodes,
                                 heading_by_index=heading_by_index,
                                 ref_type=ref_type,
-                                ref_id=ref_id,
+                                ref_id=base_ref_id,
                                 heading_index=target_idx,
                             )
                         )
+
+                if ref_type == "section" and ref_subclause is not None:
+                    narrowed_indices = narrow_scope_to_subclause(
+                        nodes=nodes,
+                        scope_indices=expanded_target_indices,
+                        subclause=ref_subclause,
+                    )
+                    if narrowed_indices:
+                        expanded_target_indices = narrowed_indices
+                    else:
+                        expanded_target_indices = set(direct_target_indices)
 
                 for target_idx in sorted(expanded_target_indices):
                     target_node = nodes[target_idx]
                     if target_node.id == nodes[i].id:
                         continue
 
-                    edge_key = (nodes[i].id, target_node.id, ref_type, ref_id)
+                    edge_key = (nodes[i].id, target_node.id, ref_type, ref_value)
                     if edge_key in seen_reference_edges:
                         continue
                     seen_reference_edges.add(edge_key)
@@ -482,7 +552,7 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                         target=target_node.id,
                         type="reference",
                         ref_label=ref_type,
-                        ref_value=ref_id
+                        ref_value=ref_value
                     ))
 
     semantic_candidate_indices = []

@@ -417,7 +417,10 @@
 	function getRenderedPdfTitle(): string {
 		const rawName = activeDocumentName || activeDocumentId || 'rendered-document';
 		const stem = rawName.replace(/\.[^.]+$/i, '').trim() || 'rendered-document';
-		const safeStem = stem.replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, ' ').trim();
+		const safeStem = stem
+			.replace(/[\\/:*?"<>|]+/g, '_')
+			.replace(/\s+/g, ' ')
+			.trim();
 		return `${safeStem || 'rendered-document'}__system-render.pdf`;
 	}
 
@@ -1022,8 +1025,7 @@
 
 			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
 			const elementRect = element.getBoundingClientRect();
-			const centerOffset =
-				elementRect.top - hostRect.top + hostScrollTop + elementRect.height / 2;
+			const centerOffset = elementRect.top - hostRect.top + hostScrollTop + elementRect.height / 2;
 			const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
 			const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
 
@@ -2355,6 +2357,23 @@
 	const PAGE_HEIGHT_CALIBRATION_PX = 28;
 	const PAGE_SOFT_OVERFLOW_ALLOWANCE_PX = 24;
 	const DOCX_DEFAULT_TAB_INTERVAL_PX = 48;
+	type DocxTabStop = {
+		positionPx: number;
+		style: string;
+		leader: string;
+	};
+
+	function normalizeDocxTabStyle(rawStyle: string | undefined): string {
+		const style = (rawStyle ?? 'left').toLowerCase();
+		switch (style) {
+			case 'start':
+				return 'left';
+			case 'end':
+				return 'right';
+			default:
+				return style;
+		}
+	}
 
 	function parsePxValue(rawValue?: string | null): number | null {
 		if (!rawValue) return null;
@@ -2413,13 +2432,24 @@
 		return null;
 	}
 
-	function parseDocxTabStops(rawStops: string | undefined): number[] {
+	function parseDocxTabStops(rawStops: string | undefined): DocxTabStop[] {
 		if (!rawStops) return [];
 		return rawStops
-			.split(',')
-			.map((value) => Number.parseFloat(value))
-			.filter((value) => Number.isFinite(value) && value >= 0)
-			.sort((left, right) => left - right);
+			.split(/[;,]/)
+			.map((entry) => entry.trim())
+			.filter(Boolean)
+			.map((entry) => {
+				const [rawPos, rawStyle, rawLeader] = entry.split('|');
+				const positionPx = Number.parseFloat(rawPos);
+				if (!Number.isFinite(positionPx) || positionPx < 0) return null;
+				return {
+					positionPx,
+					style: normalizeDocxTabStyle(rawStyle),
+					leader: (rawLeader ?? 'none').toLowerCase()
+				} as DocxTabStop;
+			})
+			.filter((stop): stop is DocxTabStop => stop !== null)
+			.sort((left, right) => left.positionPx - right.positionPx);
 	}
 
 	function splitNodesByDocxTabs(container: HTMLElement): Node[][] {
@@ -2438,14 +2468,14 @@
 		return normalizeEditableText(nodes.map((node) => node.textContent ?? '').join('')).trim();
 	}
 
-	function buildDocxTabGridTemplate(stops: number[], segmentsCount: number): string {
+	function buildDocxTabGridTemplate(stops: DocxTabStop[], segmentsCount: number): string {
 		const requiredFixedCols = Math.max(segmentsCount - 1, 1);
 		const fixedCols: number[] = [];
 		let previousStop = 0;
 		for (const stop of stops) {
-			const width = Math.max(stop - previousStop, 2);
+			const width = Math.max(stop.positionPx - previousStop, 2);
 			fixedCols.push(width);
-			previousStop = stop;
+			previousStop = stop.positionPx;
 			if (fixedCols.length >= requiredFixedCols) break;
 		}
 		while (fixedCols.length < requiredFixedCols) {
@@ -2457,12 +2487,13 @@
 
 	function shouldUseDocxTabGridLayout(
 		container: HTMLElement,
-		stops: number[],
+		stops: DocxTabStop[],
 		segments: Node[][]
 	): boolean {
 		if (container.dataset.docxListItem === 'true') return false;
 		if (stops.length === 0 || segments.length < 2) return false;
-		if (stops[0] < 120) return false;
+		if (stops[0].positionPx < 120) return false;
+		if (stops.some((stop) => stop.style === 'right' || stop.style === 'center')) return false;
 
 		const leadingText = segmentText(segments[0]);
 		const rightText = segmentText(segments[1]);
@@ -2473,7 +2504,11 @@
 		return true;
 	}
 
-	function applyDocxTabGridLayout(container: HTMLElement, stops: number[], segments: Node[][]) {
+	function applyDocxTabGridLayout(
+		container: HTMLElement,
+		stops: DocxTabStop[],
+		segments: Node[][]
+	) {
 		const totalColumns = Math.max(segments.length, 2);
 		const fragment = document.createDocumentFragment();
 		for (let index = 0; index < totalColumns; index += 1) {
@@ -2497,6 +2532,23 @@
 		container.style.gridTemplateColumns = buildDocxTabGridTemplate(stops, segments.length);
 		container.style.columnGap = '0px';
 		container.style.alignItems = 'start';
+	}
+
+	function applyDocxTabLeaderStyle(tab: HTMLElement, leader: string) {
+		tab.style.textDecoration = 'inherit';
+		tab.style.textDecorationStyle = '';
+		switch (leader) {
+			case 'dot':
+			case 'middledot':
+				tab.style.textDecoration = 'underline';
+				tab.style.textDecorationStyle = 'dotted';
+				break;
+			case 'hyphen':
+			case 'heavy':
+			case 'underscore':
+				tab.style.textDecoration = 'underline';
+				break;
+		}
 	}
 
 	function collectDocxTabContainers(targetViewer: HTMLElement): HTMLElement[] {
@@ -2526,6 +2578,10 @@
 			}
 
 			const containerRect = container.getBoundingClientRect();
+			const containerStyle = window.getComputedStyle(container);
+			const marginLeftPx = parsePxValue(containerStyle.marginLeft) ?? 0;
+			const textFrameStart = containerRect.left + marginLeftPx;
+			const tabSequence = Array.from(tabs);
 			for (const tab of tabs) {
 				tab.style.display = 'inline-block';
 				tab.style.minWidth = '0';
@@ -2533,18 +2589,38 @@
 				tab.style.verticalAlign = 'baseline';
 
 				const tabRect = tab.getBoundingClientRect();
-				const currentX = Math.max(0, tabRect.left - containerRect.left);
-				let targetStop = stops.find((stop) => stop > currentX + 0.5);
-				if (targetStop == null) {
-					targetStop =
-						(Math.floor(currentX / DOCX_DEFAULT_TAB_INTERVAL_PX) + 1) *
-						DOCX_DEFAULT_TAB_INTERVAL_PX;
+				const currentX = Math.max(0, tabRect.left - textFrameStart);
+				const targetStop = stops.find(
+					(stop) => stop.style !== 'clear' && stop.positionPx > currentX + 0.5
+				);
+				let targetX =
+					targetStop?.positionPx ??
+					(Math.floor(currentX / DOCX_DEFAULT_TAB_INTERVAL_PX) + 1) * DOCX_DEFAULT_TAB_INTERVAL_PX;
+
+				if (targetStop && (targetStop.style === 'right' || targetStop.style === 'center')) {
+					const tabIndex = tabSequence.indexOf(tab);
+					const nextTab = tabIndex >= 0 ? tabSequence[tabIndex + 1] : null;
+					const measureRange = document.createRange();
+					measureRange.setStartAfter(tab);
+					if (nextTab && nextTab.parentNode === container) {
+						measureRange.setEndBefore(nextTab);
+					} else {
+						measureRange.setEnd(container, container.childNodes.length);
+					}
+					const measured = measureRange.getBoundingClientRect();
+					const textWidth = Math.max(0, measured.width);
+					if (targetStop.style === 'center') {
+						targetX = targetStop.positionPx - textWidth / 2;
+					} else {
+						targetX = targetStop.positionPx - textWidth;
+					}
 				}
 
-				const width = Math.max(2, targetStop - currentX);
+				const width = Math.max(1, targetX - currentX);
 				tab.style.width = `${width}px`;
 				tab.style.minWidth = `${width}px`;
 				tab.textContent = '\u00a0';
+				applyDocxTabLeaderStyle(tab, targetStop?.leader ?? 'none');
 			}
 		}
 	}

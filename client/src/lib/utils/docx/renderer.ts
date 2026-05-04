@@ -9,6 +9,7 @@ import { getRelationsCount, updateRelationBadge } from '$lib/utils/docx-page';
 import { appendChildren, normalizeEditableText, setStyles, toNodeList } from '$lib/utils/docx/dom';
 import { getAttr, findChild, localName, toTwipsPx, toNumber } from '$lib/utils/docx/xml';
 import {
+	getParagraphTabStops,
 	getParagraphStyleId,
 	getParagraphStyles,
 	getRunStyles,
@@ -60,6 +61,11 @@ export function createRenderer(
 		basedOn: string | null;
 		pPr: XmlNode | null;
 		runPr: XmlNode | null;
+		linked: string | null;
+	};
+	type CharacterStyleDefinition = {
+		basedOn: string | null;
+		runPr: XmlNode | null;
 	};
 	type TextSegmentRange = {
 		start: number;
@@ -79,10 +85,13 @@ export function createRenderer(
 	const listState = new Map<string, number[]>();
 	const listDefinitionsByNumId = new Map<string, Map<number, ListLevelDefinition>>();
 	const paragraphStyleDefinitionsById = new Map<string, ParagraphStyleDefinition>();
+	const characterStyleDefinitionsById = new Map<string, CharacterStyleDefinition>();
 	const paragraphStyleCache = new Map<string, Record<string, string>>();
 	const paragraphRunStyleCache = new Map<string, Record<string, string>>();
+	const characterRunStyleCache = new Map<string, Record<string, string>>();
 	let defaultRunPr: XmlNode | null = null;
 	let defaultParagraphStyleId: string | null = null;
+	let defaultCharacterStyleId: string | null = null;
 	let paragraphCounter = 0;
 	let readOnlyDepth = 0;
 	let inheritedHeaders: Map<string, unknown> | null = null;
@@ -278,9 +287,12 @@ export function createRenderer(
 	const parseStylesNode = (stylesNode?: XmlNode | null) => {
 		defaultRunPr = null;
 		defaultParagraphStyleId = null;
+		defaultCharacterStyleId = null;
 		paragraphStyleDefinitionsById.clear();
+		characterStyleDefinitionsById.clear();
 		paragraphStyleCache.clear();
 		paragraphRunStyleCache.clear();
+		characterRunStyleCache.clear();
 		if (!stylesNode?.children) return;
 
 		const docDefaults = stylesNode.children.find(
@@ -294,16 +306,25 @@ export function createRenderer(
 
 		for (const child of stylesNode.children) {
 			if (localName(child.name) !== 'style') continue;
-			if ((getAttr(child, 'type') ?? '').toLowerCase() !== 'paragraph') continue;
+			const styleType = (getAttr(child, 'type') ?? '').toLowerCase();
 			const styleId = getAttr(child, 'styleId');
-			if (!styleId) continue;
-			if ((getAttr(child, 'default') ?? '').toLowerCase() === '1') {
+			if (!styleId || (styleType !== 'paragraph' && styleType !== 'character')) continue;
+			const isDefault = (getAttr(child, 'default') ?? '').toLowerCase() === '1';
+			if (styleType === 'paragraph' && isDefault) {
 				defaultParagraphStyleId = styleId;
+			}
+			if (styleType === 'character' && isDefault) {
+				defaultCharacterStyleId = styleId;
 			}
 			const basedOn = getAttr(findChild(child, 'basedon'), 'val') ?? null;
 			const pPr = findChild(child, 'ppr') ?? null;
 			const runPr = findChild(child, 'rpr') ?? null;
-			paragraphStyleDefinitionsById.set(styleId, { basedOn, pPr, runPr });
+			const linked = getAttr(findChild(child, 'link'), 'val') ?? null;
+			if (styleType === 'paragraph') {
+				paragraphStyleDefinitionsById.set(styleId, { basedOn, pPr, runPr, linked });
+				continue;
+			}
+			characterStyleDefinitionsById.set(styleId, { basedOn, runPr });
 		}
 	};
 
@@ -409,11 +430,46 @@ export function createRenderer(
 			if (styleDef.runPr) {
 				Object.assign(inherited, getRunStyles(styleDef.runPr));
 			}
+			if (styleDef.linked) {
+				Object.assign(inherited, getCharacterStyleRunStyles(styleDef.linked));
+			}
 		};
 		applyStyleChain(styleId === '__default__' ? null : styleId);
+		if (defaultCharacterStyleId) {
+			Object.assign(inherited, getCharacterStyleRunStyles(defaultCharacterStyleId));
+		}
 
 		paragraphRunStyleCache.set(styleId, inherited);
 		return inherited;
+	};
+
+	const getCharacterStyleRunStyles = (styleId: string | null): Record<string, string> => {
+		if (!styleId) return {};
+		const cached = characterRunStyleCache.get(styleId);
+		if (cached) return cached;
+
+		const inherited: Record<string, string> = {};
+		const visited = new Set<string>();
+		const applyStyleChain = (id: string | null) => {
+			if (!id || visited.has(id)) return;
+			visited.add(id);
+			const styleDef = characterStyleDefinitionsById.get(id);
+			if (!styleDef) return;
+			applyStyleChain(styleDef.basedOn);
+			if (styleDef.runPr) {
+				Object.assign(inherited, getRunStyles(styleDef.runPr));
+			}
+		};
+		applyStyleChain(styleId);
+
+		characterRunStyleCache.set(styleId, inherited);
+		return inherited;
+	};
+
+	const getRunInheritedCharacterStyles = (pr?: XmlNode | null): Record<string, string> => {
+		const runStyleId = getAttr(findChild(pr, 'rstyle'), 'val') ?? null;
+		if (!runStyleId) return {};
+		return getCharacterStyleRunStyles(runStyleId);
 	};
 
 	const getParagraphInheritedParagraphStyles = (pr?: XmlNode | null): Record<string, string> => {
@@ -444,39 +500,23 @@ export function createRenderer(
 	const getParagraphDirectRunStyles = (pr?: XmlNode | null): Record<string, string> =>
 		getRunStyles(findChild(pr, 'rpr'));
 
-	const getParagraphTabStopsPx = (pr?: XmlNode | null): number[] => {
-		const tabsNode = findChild(pr, 'tabs');
-		if (!tabsNode?.children) return [];
-		const stops: number[] = [];
-		for (const child of tabsNode.children) {
-			if (localName(child.name) !== 'tab') continue;
-			const posPx = toTwipsPx(getAttr(child, 'pos'));
-			if (posPx == null || posPx < 0) continue;
-			stops.push(posPx);
-		}
-		stops.sort((left, right) => left - right);
-		return stops;
-	};
-
 	const getParagraphIndentPx = (pr?: XmlNode | null): ParagraphIndent => {
 		const indent = findChild(pr, 'ind');
 		return {
-			left: toTwipsPx(getAttr(indent, 'left')),
-			right: toTwipsPx(getAttr(indent, 'right')),
+			left: toTwipsPx(getAttr(indent, 'left') ?? getAttr(indent, 'start')),
+			right: toTwipsPx(getAttr(indent, 'right') ?? getAttr(indent, 'end')),
 			firstLine: toTwipsPx(getAttr(indent, 'firstLine')),
 			hanging: toTwipsPx(getAttr(indent, 'hanging'))
 		};
 	};
 
-	const getHangingListLayout = (
-		pr?: XmlNode | null
-	): { left: number; hanging: number } | null => {
+	const getHangingListLayout = (pr?: XmlNode | null): { left: number; hanging: number } | null => {
 		const indent = getParagraphIndentPx(pr);
 		const left = indent.left ?? 0;
 		const hanging = indent.hanging ?? 0;
 		if (left <= 0 || hanging <= 0 || left < hanging) return null;
 
-		const tabStop = getParagraphTabStopsPx(pr)[0];
+		const tabStop = getParagraphTabStops(pr)[0]?.positionPx;
 		if (tabStop == null || Math.abs(tabStop - left) > 3) return null;
 		if (left < 24 || hanging < 12) return null;
 
@@ -485,9 +525,12 @@ export function createRenderer(
 
 	const shouldShrinkParagraphBox = (element: HTMLElement, pr?: XmlNode | null): boolean => {
 		if (element.querySelector('table,img,svg,canvas,video,audio,object,iframe')) return false;
+		if (getParagraphTabStops(pr).length > 0) return false;
 
-		const alignment = getAttr(findChild(pr, 'jc'), 'val')?.toLowerCase();
-		if (alignment === 'both' || alignment === 'justify') return false;
+		const directAlignment = getAttr(findChild(pr, 'jc'), 'val')?.toLowerCase();
+		const inheritedAlignment = element.style.textAlign?.toLowerCase();
+		const alignment = inheritedAlignment || directAlignment;
+		if (alignment && alignment !== 'left' && alignment !== 'start') return false;
 
 		const text = normalizeEditableText(element.textContent ?? '').trim();
 		if (!text || text.length > 140) return false;
@@ -511,12 +554,17 @@ export function createRenderer(
 	};
 
 	const applyParagraphTabStopMetadata = (element: HTMLElement, pr?: XmlNode | null) => {
-		const stops = getParagraphTabStopsPx(pr);
+		const stops = getParagraphTabStops(pr);
 		if (stops.length === 0) {
 			delete element.dataset.docxTabStops;
 			return;
 		}
-		element.dataset.docxTabStops = stops.map((stop) => `${Math.round(stop * 100) / 100}`).join(',');
+		element.dataset.docxTabStops = stops
+			.map(
+				(stop) =>
+					`${Math.round(stop.positionPx * 100) / 100}|${stop.style.toLowerCase()}|${stop.leader.toLowerCase()}`
+			)
+			.join(';');
 	};
 
 	const nextListMarker = (numId: string | undefined, level: number): string => {
@@ -972,7 +1020,9 @@ export function createRenderer(
 				case 'r': {
 					const run = document.createElement('span');
 					run.className = 'whitespace-pre-wrap';
-					setStyles(run, getRunStyles((safeProps.pr as XmlNode) ?? null));
+					const pr = (safeProps.pr as XmlNode) ?? null;
+					setStyles(run, getRunInheritedCharacterStyles(pr));
+					setStyles(run, getRunStyles(pr));
 					appendChildren(run, children);
 					return run;
 				}
