@@ -142,6 +142,11 @@
 	const GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX = 34;
 	const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 	const PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX = 10;
+	const PARAGRAPH_EXPLANATION_COMPRESS_DURATION_MS = 560;
+	const PARAGRAPH_EXPLANATION_COMPRESS_SNAP_EPSILON = 0.001;
+	const PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE = 2;
+	const PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX = 72;
+	const PARAGRAPH_EXPLANATION_STACK_OFFSET_PX = 18;
 	const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
 		(action) =>
 			action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
@@ -295,6 +300,24 @@
 		relatedCapTopPx: number;
 		relatedCapWidthPx: number;
 		paragraphId: string;
+		paragraphEnumLabel: string;
+		labelLeftPx: number;
+	}> = [];
+	let paragraphExplanationFolds: Array<{
+		topPx: number;
+		leftPx: number;
+	}> = [];
+	let paragraphExplanationCompression = 0;
+	let paragraphExplanationCompressionTarget = 0;
+	let paragraphExplanationCompressionTweenFrame: number | null = null;
+	let paragraphExplanationCompressionStart = 0;
+	let paragraphExplanationCompressionStartTime = 0;
+	let paragraphExplanationCollapsedCards: Array<{
+		paragraphId: string;
+		topPx: number;
+		leftPx: number;
+		widthPx: number;
+		html: string;
 	}> = [];
 	let paragraphExplanationPrimaryConnector: {
 		topPx: number;
@@ -1561,19 +1584,26 @@
 
 	function clearParagraphExplanationHighlights() {
 		paragraphExplanationConnectors = [];
+		paragraphExplanationFolds = [];
 		paragraphExplanationScrollMarkers = [];
+		paragraphExplanationCollapsedCards = [];
 		setHoveredParagraphExplanationEntityKey(null);
+		clearParagraphExplanationElementHighlights();
+	}
+
+	function clearParagraphExplanationElementHighlights() {
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove(
 				'docx-paragraph-explanation-selected',
-				'docx-paragraph-explanation-related'
+				'docx-paragraph-explanation-related',
+				'docx-paragraph-explanation-source-hidden'
 			);
 			clearParagraphExplanationEntityMarks(element);
 		}
 	}
 
 	function applyParagraphExplanationHighlights() {
-		clearParagraphExplanationHighlights();
+		clearParagraphExplanationElementHighlights();
 		if (!shouldShowParagraphExplanationDecorations) return;
 
 		const selected = get(selectedParagraph);
@@ -1587,6 +1617,9 @@
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			relatedElement?.classList.add('docx-paragraph-explanation-related');
+			if (paragraphExplanationCompression > 0.02) {
+				relatedElement?.classList.add('docx-paragraph-explanation-source-hidden');
+			}
 			if (relatedElement) {
 				highlightParagraphExplanationEntitiesInElement(
 					relatedElement,
@@ -1599,21 +1632,27 @@
 	function refreshParagraphExplanationConnectorPaths() {
 		if (!documentScrollHost || !shouldShowParagraphExplanationDecorations) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
 		const selected = get(selectedParagraph);
 		if (!selected?.id) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
 		const selectedElement = paragraphElementById.get(selected.id);
 		if (!selectedElement) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
@@ -1622,22 +1661,55 @@
 		const selectedY = selectedRect.top - hostRect.top + selectedRect.height / 2;
 		const selectedEdgeX = selectedRect.left - hostRect.left;
 
-		const anchors: Array<{ y: number; edgeX: number; paragraphId: string }> = [];
+		const anchors: Array<{
+			y: number;
+			height: number;
+			edgeX: number;
+			paragraphId: string;
+			paragraphEnum: number;
+			paragraphEnumLabel: string;
+			top: number;
+			width: number;
+			html: string;
+		}> = [];
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
 			const relatedRect = relatedElement.getBoundingClientRect();
 			const relatedY = relatedRect.top - hostRect.top + relatedRect.height / 2;
+			const relatedClone = relatedElement.cloneNode(true) as HTMLElement;
+			relatedClone.removeAttribute('contenteditable');
+			relatedClone.removeAttribute('spellcheck');
+			delete relatedClone.dataset.nodeId;
+			delete relatedClone.dataset.paragraphKind;
+			delete relatedClone.dataset.docxEditableRoot;
+			relatedClone.classList.remove(
+				'docx-paragraph-explanation-related',
+				'docx-paragraph-explanation-source-hidden',
+				'docx-related-context',
+				'docx-related-linked',
+				'docx-related-selected'
+			);
+			relatedClone.classList.add('docx-paragraph-explanation-cloned-node');
+			const paragraphEnumLabel = `P-${related.node.paragraph_enum}`;
 			anchors.push({
 				y: relatedY,
+				height: relatedRect.height,
 				edgeX: relatedRect.left - hostRect.left,
-				paragraphId: related.node.id
+				paragraphId: related.node.id,
+				paragraphEnum: related.node.paragraph_enum,
+				paragraphEnumLabel,
+				top: relatedRect.top - hostRect.top,
+				width: relatedRect.width,
+				html: relatedClone.outerHTML
 			});
 		}
 
 		if (anchors.length === 0) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
@@ -1645,10 +1717,66 @@
 			(left, right) =>
 				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) || left.y - right.y
 		);
+		const selectedParagraphEnum =
+			typeof selected.paragraph_enum === 'number'
+				? selected.paragraph_enum
+				: Number((selected.id.match(/-p-(\d+)$/)?.[1] ?? '0'));
+		const beforeAnchors = anchors
+			.filter((anchor) => anchor.paragraphEnum < selectedParagraphEnum)
+			.sort((left, right) => left.paragraphEnum - right.paragraphEnum);
+		const afterAnchors = anchors
+			.filter((anchor) => anchor.paragraphEnum > selectedParagraphEnum)
+			.sort((left, right) => left.paragraphEnum - right.paragraphEnum);
+		const equalAnchors = anchors
+			.filter((anchor) => anchor.paragraphEnum === selectedParagraphEnum)
+			.sort((left, right) => left.paragraphId.localeCompare(right.paragraphId));
+		const compressedYByParagraphId = new Map<string, number>();
+		const compressedTopByParagraphId = new Map<string, number>();
+		const selectedTop = selectedRect.top - hostRect.top;
+		const selectedBottom = selectedTop + selectedRect.height;
+		for (const [index, anchor] of beforeAnchors.entries()) {
+			const distanceFromSelected = beforeAnchors.length - index;
+			const stackedTop =
+				selectedTop -
+				PARAGRAPH_EXPLANATION_STACK_OFFSET_PX -
+				distanceFromSelected * PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX;
+			const stackedY = stackedTop + anchor.height / 2;
+			const compressedY =
+				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
+			const compressedTop =
+				anchor.top * (1 - paragraphExplanationCompression) +
+				stackedTop * paragraphExplanationCompression;
+			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
+			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+		}
+		for (const [index, anchor] of [...equalAnchors, ...afterAnchors].entries()) {
+			const stackedTop =
+				selectedBottom +
+				PARAGRAPH_EXPLANATION_STACK_OFFSET_PX +
+				index * PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX;
+			const stackedY = stackedTop + anchor.height / 2;
+			const compressedY =
+				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
+			const compressedTop =
+				anchor.top * (1 - paragraphExplanationCompression) +
+				stackedTop * paragraphExplanationCompression;
+			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
+			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+		}
 		const edgeBaseX = Math.min(selectedEdgeX, ...sortedAnchors.map((anchor) => anchor.edgeX));
 		const baseLeft = Math.max(4, edgeBaseX - 20);
-		const trunkTop = Math.min(selectedY, ...sortedAnchors.map((anchor) => anchor.y));
-		const trunkBottom = Math.max(selectedY, ...sortedAnchors.map((anchor) => anchor.y));
+		const trunkTop = Math.min(
+			selectedY,
+			...sortedAnchors.map(
+				(anchor) => compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y
+			)
+		);
+		const trunkBottom = Math.max(
+			selectedY,
+			...sortedAnchors.map(
+				(anchor) => compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y
+			)
+		);
 		const selectedCapWidthPx = Math.max(
 			8,
 			selectedEdgeX - baseLeft - PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX
@@ -1662,6 +1790,8 @@
 			relatedCapTopPx: number;
 			relatedCapWidthPx: number;
 			paragraphId: string;
+			paragraphEnumLabel: string;
+			labelLeftPx: number;
 		}> = [];
 		for (const anchor of sortedAnchors) {
 			// Keep connector anchors tied to real paragraph positions.
@@ -1677,13 +1807,51 @@
 				leftPx: baseLeft,
 				selectedCapTopPx: selectedY,
 				selectedCapWidthPx,
-				relatedCapTopPx: anchor.y,
+				relatedCapTopPx: compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y,
 				relatedCapWidthPx,
-				paragraphId: anchor.paragraphId
+				paragraphId: anchor.paragraphId,
+				paragraphEnumLabel: anchor.paragraphEnumLabel,
+				labelLeftPx: baseLeft - 50
 			});
 		}
 
 		paragraphExplanationConnectors = nextConnectors;
+		if (paragraphExplanationCompression > 0.03) {
+			const foldSourceY = [
+				selectedY,
+				...sortedAnchors.map(
+					(anchor) => compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y
+				)
+			]
+				.sort((left, right) => left - right)
+				.filter((value, index, list) => index === 0 || Math.abs(value - list[index - 1]) > 2);
+			const nextFolds: Array<{ topPx: number; leftPx: number }> = [];
+			for (let index = 0; index < foldSourceY.length - 1; index += 1) {
+				const upper = foldSourceY[index];
+				const lower = foldSourceY[index + 1];
+				if (lower - upper < 26) continue;
+				nextFolds.push({
+					topPx: upper + (lower - upper) / 2,
+					leftPx: baseLeft
+				});
+			}
+			paragraphExplanationFolds = nextFolds;
+		} else {
+			paragraphExplanationFolds = [];
+		}
+		const cardsLeft = Math.max(14, selectedRect.left - hostRect.left);
+		paragraphExplanationCollapsedCards =
+			paragraphExplanationCompression > 0.02
+				? anchors
+						.map((anchor) => ({
+						paragraphId: anchor.paragraphId,
+						topPx: compressedTopByParagraphId.get(anchor.paragraphId) ?? anchor.top,
+						leftPx: cardsLeft,
+						widthPx: Math.min(anchor.width, hostRect.width - cardsLeft - 20),
+						html: anchor.html
+					}))
+						.sort((left, right) => left.topPx - right.topPx)
+				: [];
 
 		const hostScrollHeight = documentScrollHost.scrollHeight;
 		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
@@ -1716,6 +1884,64 @@
 			paragraphExplanationFrame = null;
 			refreshParagraphExplanationConnectorPaths();
 		});
+	}
+
+	function handleParagraphExplanationShiftWheel(event: WheelEvent) {
+		if (!shouldShowParagraphExplanationDecorations) return;
+		if (!event.shiftKey) return;
+		event.preventDefault();
+		if (Math.abs(event.deltaY) < PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE) return;
+		const nextTarget = event.deltaY > 0 ? 1 : 0;
+		if (
+			nextTarget === paragraphExplanationCompressionTarget &&
+			paragraphExplanationCompressionTweenFrame != null
+		) {
+			return;
+		}
+
+		paragraphExplanationCompressionTarget = nextTarget;
+		paragraphExplanationCompressionStart = paragraphExplanationCompression;
+		paragraphExplanationCompressionStartTime =
+			typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+		if (paragraphExplanationCompressionTweenFrame != null) {
+			window.cancelAnimationFrame(paragraphExplanationCompressionTweenFrame);
+			paragraphExplanationCompressionTweenFrame = null;
+		}
+
+		const animateCompression = (timestamp: number) => {
+			const elapsed = timestamp - paragraphExplanationCompressionStartTime;
+			const linearProgress = Math.max(
+				0,
+				Math.min(1, elapsed / PARAGRAPH_EXPLANATION_COMPRESS_DURATION_MS)
+			);
+			const easedProgress =
+				linearProgress < 0.5
+					? 4 * linearProgress * linearProgress * linearProgress
+					: 1 - Math.pow(-2 * linearProgress + 2, 3) / 2;
+			paragraphExplanationCompression =
+				paragraphExplanationCompressionStart +
+				(paragraphExplanationCompressionTarget - paragraphExplanationCompressionStart) *
+					easedProgress;
+
+			applyParagraphExplanationHighlights();
+			refreshParagraphExplanationConnectorPaths();
+
+			const delta = Math.abs(
+				paragraphExplanationCompressionTarget - paragraphExplanationCompression
+			);
+			if (linearProgress >= 1 || delta <= PARAGRAPH_EXPLANATION_COMPRESS_SNAP_EPSILON) {
+				paragraphExplanationCompression = paragraphExplanationCompressionTarget;
+				paragraphExplanationCompressionTweenFrame = null;
+				applyParagraphExplanationHighlights();
+				refreshParagraphExplanationConnectorPaths();
+				return;
+			}
+			paragraphExplanationCompressionTweenFrame =
+				window.requestAnimationFrame(animateCompression);
+		};
+		animateCompression(paragraphExplanationCompressionStartTime);
+		paragraphExplanationCompressionTweenFrame = window.requestAnimationFrame(animateCompression);
 	}
 
 	function jumpToRelatedParagraphMarker(paragraphId: string) {
@@ -3577,6 +3803,9 @@ function setRightDrawerWidth(nextWidth: number) {
 		documentScrollHost?.addEventListener('scroll', handleDocumentScroll, {
 			passive: true
 		});
+		documentScrollHost?.addEventListener('wheel', handleParagraphExplanationShiftWheel, {
+			passive: false
+		});
 		refreshViewportMode();
 		setRightDrawerWidth(rightDrawerWidth);
 		globalModelSelectWidthPx = measureGlobalModelSelectWidthPx();
@@ -3618,6 +3847,7 @@ function setRightDrawerWidth(nextWidth: number) {
 			document.removeEventListener('pointerout', handleEntityPointerOut, true);
 			window.removeEventListener('resize', handleViewportResize);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentScroll);
+			documentScrollHost?.removeEventListener('wheel', handleParagraphExplanationShiftWheel);
 			stopRightDrawerResize();
 			stopManualScrollDrag();
 			contradictionMarkerResizeObserver?.disconnect();
@@ -3629,6 +3859,10 @@ function setRightDrawerWidth(nextWidth: number) {
 			if (paragraphExplanationFrame != null) {
 				window.cancelAnimationFrame(paragraphExplanationFrame);
 				paragraphExplanationFrame = null;
+			}
+			if (paragraphExplanationCompressionTweenFrame != null) {
+				window.cancelAnimationFrame(paragraphExplanationCompressionTweenFrame);
+				paragraphExplanationCompressionTweenFrame = null;
 			}
 			clearRenderedDocument();
 		};
@@ -3836,7 +4070,7 @@ function setRightDrawerWidth(nextWidth: number) {
 							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 							role="button"
 							tabindex="0"
-							aria-label={`Go to related paragraph ${connector.paragraphId}`}
+							aria-label={`Go to related paragraph ${connector.paragraphEnumLabel}`}
 							on:click={() => jumpToRelatedParagraphMarker(connector.paragraphId)}
 							on:keydown={(event) => {
 								if (event.key === 'Enter' || event.key === ' ') {
@@ -3845,7 +4079,33 @@ function setRightDrawerWidth(nextWidth: number) {
 								}
 							}}
 						></span>
+						<span
+							class="docx-paragraph-explanation-cap-label"
+							style={`left: ${connector.labelLeftPx}px; top: ${connector.relatedCapTopPx}px;`}
+						>
+							{connector.paragraphEnumLabel}
+						</span>
 					{/each}
+					{#each paragraphExplanationFolds as fold, index (`fold-${index}`)}
+						<svg
+							class="docx-paragraph-explanation-line-fold"
+							style={`left: ${fold.leftPx}px; top: ${fold.topPx}px;`}
+							viewBox="0 0 12 20"
+							aria-hidden="true"
+						>
+							<path d="M6 1 L3 5 L9 9 L3 13 L6 19"></path>
+						</svg>
+					{/each}
+					{#if paragraphExplanationCollapsedCards.length > 0}
+						{#each paragraphExplanationCollapsedCards as card (`compressed-card-${card.paragraphId}`)}
+							<div
+								class="docx-paragraph-explanation-collapsed-card"
+								style={`left: ${card.leftPx}px; top: ${card.topPx}px; width: ${card.widthPx}px;`}
+							>
+								{@html card.html}
+							</div>
+						{/each}
+					{/if}
 				</div>
 			{/if}
 
