@@ -15,14 +15,11 @@ from schemas.types import (
 from services.graph.neo4j_client import get_neo4j_driver, is_neo4j_configured
 from services.llm.cost_estimator import estimate_model_cost_usd, estimate_tokens, format_cost
 from services.llm.factory import LLMProviderFactory
-from utils.config import Config
 
 logger = logging.getLogger(__name__)
 
 TARGET_BATCH_INPUT_TOKENS = 75_000
 ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH = 42
-MAX_KG_ENTITIES_PER_PARAGRAPH = max(1, int(os.getenv("CONTRADICTION_KG_MAX_ENTITIES_PER_PARAGRAPH", "16")))
-MAX_KG_RELATIONS_PER_PARAGRAPH = max(1, int(os.getenv("CONTRADICTION_KG_MAX_RELATIONS_PER_PARAGRAPH", "24")))
 HIGH_RECALL_MODE = os.getenv("CONTRADICTION_HIGH_RECALL", "1").strip().lower() not in {
     "0",
     "false",
@@ -88,7 +85,6 @@ A contradiction means two or more statements in the paragraph/context are mutual
 
 Use context:
 Each paragraph includes related paragraphs from the contract graph. Use them as contextual evidence, but classify contradiction for the target paragraph.
-When present, kg_context provides structured legal entities and relations linked to each paragraph. Use it to disambiguate parties, obligations, rights, prohibitions, conditions, references, values, and defined terms.
 
 
 Return ONLY valid JSON (no markdown, no extra text) with this shape:
@@ -127,22 +123,35 @@ SYSTEM_PROMPT = (
 
 _TIKTOKEN_ENCODER: Any | None = None
 _TIKTOKEN_READY = False
-KG_ENTITY_TYPES = {
-    "Condition",
-    "DefinedTerm",
-    "Obligation",
-    "Right",
-    "Prohibition",
-    "Party",
-    "Reference",
-    "Value",
-}
 
+def _write_debug_mode_payload(
+    *,
+    mode: str,
+    all_paragraph_rows: list[dict[str, Any]],
+    batches: list[list[dict[str, Any]]],
+) -> None:
+    debug_payload: dict[str, Any] = {
+        "mode": mode,
+        # "num_paragraphs": len(all_paragraph_rows),
+        # "num_batches": len(batches),
+        # "paragraphs": all_paragraph_rows,
+        "batches": [
+            {
+                "batch_index": index,
+                "paragraphs": batch_rows,
+            }
+            for index, batch_rows in enumerate(batches, start=1)
+        ],
+    }
+
+    output_path = f"/home/luis/Documents/FGV/Laboratory/document-graph/infra/json/contradictions/{mode}.json"
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 
 def analyze_document_contradictions(
     payload: ContradictionAnalysisRequest,
 ) -> ContradictionAnalysisResponse:
-    paragraph_rows, ordered_paragraph_ids, kg_context_by_paragraph = _build_document_rows(payload)
+    paragraph_rows, ordered_paragraph_ids = _build_document_rows(payload)
     if not paragraph_rows:
         return ContradictionAnalysisResponse(
             documentId=payload.documentId,
@@ -160,17 +169,22 @@ def analyze_document_contradictions(
     batches = _chunk_paragraph_rows(
         paragraph_rows=paragraph_rows,
         mode=payload.mode,
-        kg_context_by_paragraph=kg_context_by_paragraph,
         model_name=resolved_model,
         target_input_tokens=TARGET_BATCH_INPUT_TOKENS,
     )
+
+    # ACTIVE THIS TO CHECK BODY FROM JSON
+    # _write_debug_mode_payload(
+    #     mode=payload.mode,
+    #     all_paragraph_rows=paragraph_rows,
+    #     batches=batches,
+    # )
 
     estimated_input_total = 0
     for batch in batches:
         estimated_input_total += _estimate_prompt_tokens(
             paragraph_rows=batch,
             mode=payload.mode,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             model_name=resolved_model,
         )
     estimated_output_total = len(ordered_paragraph_ids) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
@@ -203,7 +217,6 @@ def analyze_document_contradictions(
         batch_prompt_tokens = _estimate_prompt_tokens(
             paragraph_rows=batch,
             mode=payload.mode,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             model_name=resolved_model,
         )
         batch_output_tokens = len(batch) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
@@ -233,7 +246,6 @@ def analyze_document_contradictions(
             payload=payload,
             model_name=resolved_model,
             batch_rows=batch,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             batch_label=f"{index}/{len(batches)}",
         )
         prediction_by_id.update(batch_prediction)
@@ -331,7 +343,7 @@ def estimate_contradiction_analysis_request(payload: ContradictionAnalysisReques
 
 def _build_document_rows(
     payload: ContradictionAnalysisRequest,
-) -> tuple[list[dict[str, Any]], list[str], dict[str, dict[str, Any]]]:
+) -> tuple[list[dict[str, Any]], list[str]]:
     nodes = sorted(
         payload.graph.nodes,
         key=lambda node: (node.page, node.paragraph_enum),
@@ -362,61 +374,45 @@ def _build_document_rows(
             key=lambda rid: (node_by_id[rid].page, node_by_id[rid].paragraph_enum),
         )
 
-        paragraph_rows.append(
-            {
-                "paragraph_id": paragraph_id,
-                "text": (node.text or "").strip(),
-                "related_paragraphs": [
-                    {
-                        "paragraph_id": rid,
-                        "text": (node_by_id[rid].text or "").strip(),
-                    }
-                    for rid in related_ids
-                ],
-            }
-        )
+        related_paragraphs = []
+        for rid in related_ids:
+            related_paragraphs.append(
+                {
+                    "paragraph_id": rid,
+                    "text": (node_by_id[rid].text or "").strip(),
+                }
+            )
 
-    kg_context_by_paragraph: dict[str, dict[str, Any]] = {}
-    if payload.mode == "with_kg":
-        kg_context_by_paragraph = _build_kg_context_by_paragraph(
-            document_id=payload.documentId,
-            paragraph_ids=ordered_ids,
-        )
+        if len(related_paragraphs) != 0:
+            paragraph_rows.append(
+                {
+                    "paragraph_id": paragraph_id,
+                    "text": (node.text or "").strip(),
+                    "related_paragraphs": related_paragraphs,
+                }
+            )
 
-    return paragraph_rows, ordered_ids, kg_context_by_paragraph
+    return paragraph_rows, ordered_ids
 
 
 def _build_user_prompt(
     *,
     paragraph_rows: list[dict[str, Any]],
     mode: str,
-    kg_context_by_paragraph: dict[str, dict[str, Any]] | None,
 ) -> str:
     document_payload: dict[str, Any] = {
         "mode": mode,
         "paragraphs": paragraph_rows,
     }
-    if mode == "with_kg":
-        paragraph_ids = [str(row.get("paragraph_id", "")).strip() for row in paragraph_rows]
-        paragraph_ids = [pid for pid in paragraph_ids if pid]
-        subset = _subset_kg_context_by_paragraph(
-            kg_context_by_paragraph=kg_context_by_paragraph or {},
-            paragraph_ids=paragraph_ids,
-        )
-        if subset:
-            document_payload["kg_context"] = {
-                "by_paragraph_id": subset,
-            }
+
     return PROMPT_TEMPLATE.format(
         document_json=json.dumps(document_payload, ensure_ascii=False, indent=2)
     )
-
 
 def _chunk_paragraph_rows(
     *,
     paragraph_rows: list[dict[str, Any]],
     mode: str,
-    kg_context_by_paragraph: dict[str, dict[str, Any]],
     model_name: str,
     target_input_tokens: int,
 ) -> list[list[dict[str, Any]]]:
@@ -431,7 +427,6 @@ def _chunk_paragraph_rows(
         trial_tokens = _estimate_prompt_tokens(
             paragraph_rows=trial_chunk,
             mode=mode,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             model_name=model_name,
         )
 
@@ -454,13 +449,11 @@ def _run_batch_with_fallback(
     payload: ContradictionAnalysisRequest,
     model_name: str,
     batch_rows: list[dict[str, Any]],
-    kg_context_by_paragraph: dict[str, dict[str, Any]],
     batch_label: str,
 ) -> tuple[dict[str, dict[str, Any]], str]:
     user_prompt = _build_user_prompt(
         paragraph_rows=batch_rows,
         mode=payload.mode,
-        kg_context_by_paragraph=kg_context_by_paragraph,
     )
 
     try:
@@ -485,7 +478,6 @@ def _run_batch_with_fallback(
                     payload=payload,
                     model_name=model_name,
                     batch_rows=batch_rows[:midpoint],
-                    kg_context_by_paragraph=kg_context_by_paragraph,
                     batch_label=f"{batch_label}.L",
                 )
                 right_prediction, right_raw = _run_batch_with_fallback(
@@ -493,7 +485,6 @@ def _run_batch_with_fallback(
                     payload=payload,
                     model_name=model_name,
                     batch_rows=batch_rows[midpoint:],
-                    kg_context_by_paragraph=kg_context_by_paragraph,
                     batch_label=f"{batch_label}.R",
                 )
                 merged = dict(left_prediction)
@@ -503,7 +494,6 @@ def _run_batch_with_fallback(
             shrunk_row = _shrink_single_row_context(
                 row=batch_rows[0],
                 mode=payload.mode,
-                kg_context_by_paragraph=kg_context_by_paragraph,
                 model_name=model_name,
                 target_input_tokens=max(8_000, TARGET_BATCH_INPUT_TOKENS // 2),
             )
@@ -518,7 +508,6 @@ def _run_batch_with_fallback(
                     payload=payload,
                     model_name=model_name,
                     batch_rows=[shrunk_row],
-                    kg_context_by_paragraph=kg_context_by_paragraph,
                     batch_label=f"{batch_label}.S",
                 )
         raise
@@ -531,7 +520,6 @@ def _shrink_single_row_context(
     *,
     row: dict[str, Any],
     mode: str,
-    kg_context_by_paragraph: dict[str, dict[str, Any]],
     model_name: str,
     target_input_tokens: int,
 ) -> dict[str, Any]:
@@ -550,7 +538,6 @@ def _shrink_single_row_context(
         tokens = _estimate_prompt_tokens(
             paragraph_rows=[shrunk_row],
             mode=mode,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             model_name=model_name,
         )
         if tokens <= target_input_tokens:
@@ -572,198 +559,13 @@ def _estimate_prompt_tokens(
     *,
     paragraph_rows: list[dict[str, Any]],
     mode: str,
-    kg_context_by_paragraph: dict[str, dict[str, Any]] | None,
     model_name: str,
 ) -> int:
     prompt = _build_user_prompt(
         paragraph_rows=paragraph_rows,
         mode=mode,
-        kg_context_by_paragraph=kg_context_by_paragraph,
     )
     return _estimate_tokens(prompt, model_name)
-
-
-def _build_kg_context_by_paragraph(
-    *,
-    document_id: str,
-    paragraph_ids: list[str],
-) -> dict[str, dict[str, Any]]:
-    if not paragraph_ids:
-        return {}
-    if not is_neo4j_configured():
-        logger.info("KG context skipped: Neo4j is not configured.")
-        return {}
-
-    query = """
-    MATCH (:Contract {document_id: $document_id})-[:CONTAINS]->(cl:Clause)
-    WHERE cl.id IN $paragraph_ids
-    OPTIONAL MATCH (cl)-[rel]-(other:KGNode)
-    RETURN
-      cl.id AS paragraph_id,
-      type(rel) AS rel_type,
-      CASE WHEN rel IS NULL THEN '' ELSE coalesce(rel.evidence, '') END AS rel_evidence,
-      CASE WHEN other IS NULL THEN [] ELSE labels(other) END AS other_labels,
-      other.label AS other_label,
-      other.source_paragraph_id AS other_source_paragraph_id,
-      other.action AS other_action,
-      other.definition AS other_definition,
-      other.citation AS other_citation,
-      other.amount AS other_amount,
-      other.unit AS other_unit,
-      CASE WHEN rel IS NULL THEN [] ELSE labels(startNode(rel)) END AS from_labels,
-      CASE WHEN rel IS NULL THEN '' ELSE coalesce(startNode(rel).id, startNode(rel).node_id, startNode(rel).label, '') END AS from_id,
-      CASE WHEN rel IS NULL THEN '' ELSE coalesce(startNode(rel).label, startNode(rel).id, startNode(rel).node_id, '') END AS from_label,
-      CASE WHEN rel IS NULL THEN [] ELSE labels(endNode(rel)) END AS to_labels,
-      CASE WHEN rel IS NULL THEN '' ELSE coalesce(endNode(rel).id, endNode(rel).node_id, endNode(rel).label, '') END AS to_id,
-      CASE WHEN rel IS NULL THEN '' ELSE coalesce(endNode(rel).label, endNode(rel).id, endNode(rel).node_id, '') END AS to_label
-    """
-
-    try:
-        driver = get_neo4j_driver()
-        with driver.session(database=Config.NEO4J_DATABASE) as session:
-            records = session.run(
-                query,
-                document_id=document_id,
-                paragraph_ids=paragraph_ids,
-            )
-            return _build_kg_context_from_records(records)
-    except Exception as exc:
-        logger.warning("KG context query failed for document_id=%s: %s", document_id, exc)
-        return {}
-
-
-def _build_kg_context_from_records(records: Any) -> dict[str, dict[str, Any]]:
-    context_by_paragraph: dict[str, dict[str, Any]] = {}
-
-    entity_seen: dict[str, set[str]] = defaultdict(set)
-    relation_seen: dict[str, set[tuple[str, str, str, str]]] = defaultdict(set)
-
-    for record in records:
-        paragraph_id = str(record.get("paragraph_id") or "").strip()
-        if not paragraph_id:
-            continue
-
-        context = context_by_paragraph.setdefault(
-            paragraph_id,
-            {
-                "clause": {"id": paragraph_id},
-                "entities": [],
-                "relations": [],
-            },
-        )
-
-        rel_type = str(record.get("rel_type") or "").strip()
-        rel_evidence = str(record.get("rel_evidence") or "").strip()
-
-        other_labels = record.get("other_labels") or []
-        other_type = _resolve_kg_entity_type(other_labels)
-        other_label = str(record.get("other_label") or "").strip()
-        if other_type and other_label:
-            entity_key = f"{other_type}|{other_label}"
-            if entity_key not in entity_seen[paragraph_id]:
-                entity_payload: dict[str, Any] = {
-                    "type": other_type,
-                    "label": other_label,
-                }
-                source_pid = str(record.get("other_source_paragraph_id") or "").strip()
-                if source_pid:
-                    entity_payload["source_paragraph_id"] = source_pid
-                action = str(record.get("other_action") or "").strip()
-                definition = str(record.get("other_definition") or "").strip()
-                citation = str(record.get("other_citation") or "").strip()
-                amount = str(record.get("other_amount") or "").strip()
-                unit = str(record.get("other_unit") or "").strip()
-                if action:
-                    entity_payload["action"] = action
-                if definition:
-                    entity_payload["definition"] = definition
-                if citation:
-                    entity_payload["citation"] = citation
-                if amount:
-                    entity_payload["amount"] = amount
-                if unit:
-                    entity_payload["unit"] = unit
-
-                context["entities"].append(entity_payload)
-                entity_seen[paragraph_id].add(entity_key)
-
-        if not rel_type:
-            continue
-
-        from_id = str(record.get("from_id") or "").strip()
-        from_label = str(record.get("from_label") or "").strip()
-        to_id = str(record.get("to_id") or "").strip()
-        to_label = str(record.get("to_label") or "").strip()
-        from_type = _resolve_kg_relation_endpoint_type(record.get("from_labels") or [])
-        to_type = _resolve_kg_relation_endpoint_type(record.get("to_labels") or [])
-
-        rel_key = (rel_type, from_id, to_id, rel_evidence)
-        if rel_key in relation_seen[paragraph_id]:
-            continue
-
-        relation_payload: dict[str, Any] = {
-            "rel_type": rel_type,
-            "from": {
-                "id": from_id,
-                "label": from_label,
-                "type": from_type,
-            },
-            "to": {
-                "id": to_id,
-                "label": to_label,
-                "type": to_type,
-            },
-        }
-        if rel_evidence:
-            relation_payload["evidence"] = rel_evidence
-
-        context["relations"].append(relation_payload)
-        relation_seen[paragraph_id].add(rel_key)
-
-    for paragraph_id, context in context_by_paragraph.items():
-        entities = context.get("entities", [])
-        relations = context.get("relations", [])
-        if isinstance(entities, list) and len(entities) > MAX_KG_ENTITIES_PER_PARAGRAPH:
-            context["entities"] = entities[:MAX_KG_ENTITIES_PER_PARAGRAPH]
-        if isinstance(relations, list) and len(relations) > MAX_KG_RELATIONS_PER_PARAGRAPH:
-            context["relations"] = relations[:MAX_KG_RELATIONS_PER_PARAGRAPH]
-
-    return context_by_paragraph
-
-
-def _resolve_kg_entity_type(labels: list[Any]) -> str | None:
-    if not isinstance(labels, list):
-        return None
-    for label in labels:
-        normalized = str(label).strip()
-        if normalized in KG_ENTITY_TYPES:
-            return normalized
-    return None
-
-
-def _resolve_kg_relation_endpoint_type(labels: list[Any]) -> str:
-    if not isinstance(labels, list):
-        return "Unknown"
-    for label in labels:
-        normalized = str(label).strip()
-        if normalized == "KGNode":
-            continue
-        if normalized:
-            return normalized
-    return "Unknown"
-
-
-def _subset_kg_context_by_paragraph(
-    *,
-    kg_context_by_paragraph: dict[str, dict[str, Any]],
-    paragraph_ids: list[str],
-) -> dict[str, dict[str, Any]]:
-    subset: dict[str, dict[str, Any]] = {}
-    for paragraph_id in paragraph_ids:
-        entry = kg_context_by_paragraph.get(paragraph_id)
-        if entry is not None:
-            subset[paragraph_id] = entry
-    return subset
 
 
 def _estimate_tokens(text: str, model_name: str) -> int:

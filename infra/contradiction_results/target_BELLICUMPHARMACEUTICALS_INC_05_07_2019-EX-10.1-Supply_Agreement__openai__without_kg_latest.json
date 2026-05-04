@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-04-29T12:14:44.125776+00:00",
+  "savedAt": "2026-05-04T03:45:37.028254+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-1",
@@ -598,8 +598,8 @@
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-155",
       "contradiction": true,
-      "confidence": 100,
-      "brief_reason": "The paragraph both restricts and allows use of Miltenyi Products by Licensees and Subcontractors even if not in compliance with the agreement or laws.",
+      "confidence": 95,
+      "brief_reason": "The paragraph simultaneously states that Licensees and Subcontractors may only use Miltenyi Products in compliance with the Agreement and Applicable Laws, and also that they may use them even if not in compliance.",
       "evidence": {
         "snippet_a": "Bellicum may offer and permit its Licensees and Subcontractors (if any) to use the Miltenyi Products supplied hereunder only if and so long as such use is in compliance with the terms and conditions of this Agreement and Applicable Laws.",
         "snippet_b": "Bellicum may offer and permit its Licensees and Subcontractors to use the Miltenyi Products supplied hereunder even if such use is not in compliance with the terms and conditions of this Agreement or Applicable Laws.",
@@ -905,79 +905,149 @@
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-221",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "The paragraph states both that Miltenyi must implement changes at its own cost and that all costs are borne exclusively by Bellicum.",
+      "evidence": {
+        "snippet_a": "Miltenyi shall implement such Miltenyi-Requested Change at its own cost and expense.",
+        "snippet_b": "Notwithstanding the foregoing, all costs and expenses associated with implementing any Miltenyi-Requested Change shall be borne exclusively by Bellicum.",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-222",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 90,
+      "brief_reason": "The paragraph only requires cooperation and good faith between the parties and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-223",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 90,
+      "brief_reason": "The paragraph describes a conditional obligation for continued supply, with exceptions, but does not contain mutually exclusive requirements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-224",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 90,
+      "brief_reason": "This is a fragment referencing a 6-month period and agreement on costs, and does not contain conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 90,
+      "brief_reason": "The paragraph outlines a process for continued supply and what happens if agreement is not reached, but does not contain incompatible obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-229",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 90,
+      "brief_reason": "The paragraph describes the process if Bellicum rejects a change and the resulting obligations, but does not contain mutually exclusive requirements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-230",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph clearly states that certain requirements do not apply to Research Grade Products, with no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-231",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph assigns responsibility for filing fees and costs to Bellicum without conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-232",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is just an article heading and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-233",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a section heading and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-234",
       "contradiction": true,
       "confidence": 100,
-      "brief_reason": "The paragraph assigns sole regulatory responsibility for Bellicum Products to both Bellicum and Miltenyi, which cannot both be true.",
+      "brief_reason": "The paragraph states both that Bellicum and Miltenyi will each be solely responsible for all regulatory activities with respect to any Bellicum Product, which is mutually exclusive.",
       "evidence": {
         "snippet_a": "Bellicum will be solely responsible for all regulatory activities with respect to any Bellicum Product, including the manufacture and quality control thereof.",
         "snippet_b": "Miltenyi shall be solely responsible for all regulatory activities with respect to any Bellicum Product, including the manufacture and quality control thereof.",
@@ -991,7 +1061,7 @@
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-235",
       "contradiction": true,
       "confidence": 100,
-      "brief_reason": "The paragraph assigns sole regulatory responsibility for Miltenyi Products to both Miltenyi and Bellicum, which is mutually exclusive.",
+      "brief_reason": "The paragraph states both that Miltenyi and Bellicum will each be solely responsible for all regulatory activities with respect to any Miltenyi Product, which is mutually exclusive.",
       "evidence": {
         "snippet_a": "Miltenyi will be solely responsible for all regulatory activities with respect to any Miltenyi Product, including the manufacture and quality control thereof.",
         "snippet_b": "Bellicum shall be solely responsible for all regulatory activities with respect to any Miltenyi Product, including the manufacture and quality control thereof.",
@@ -1004,191 +1074,380 @@
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-236",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph is a disclaimer and does not contain conflicting obligations or statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-240",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph assigns responsibility for compliance and validation to Bellicum and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-241",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph assigns responsibility for regulatory approvals and compliance to Bellicum and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-242",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes Miltenyi's obligations under regulatory authority requirements and does not contain conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-243",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for requesting additional regulatory work and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes requirements for amending the agreement for additional regulatory work and does not contain conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-248",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for amending the agreement for additional regulatory work and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-249",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for cross-referencing Master Files and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-250",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes Miltenyi's rights to Master Files and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-251",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a section heading and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-252",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes notification obligations for regulatory communications and does not contain conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-253",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes responsibilities for regulatory communications and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-257",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a sentence fragment and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-258",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for regulatory communications and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-259",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes Miltenyi's assistance obligations and cost allocation, with no conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-260",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for additional filings and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-261",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph is a disclaimer of warranty and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-274",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an article heading and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes forecasting obligations and exceptions for Research Grade Products, with no conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-276",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for monthly forecasts and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-277",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the binding nature of the Firm Zone in forecasts and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-278",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for quarterly forecasts and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-287",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for long-term forecasts and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-288",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes the process for updating forecasts and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-289",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes acceptable forecast variances and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a section heading and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-291",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph describes volume limitations and Miltenyi's obligations, with no conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-292",
@@ -1634,9 +1893,16 @@
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-390",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "The paragraph consistently describes the process for rejection and acceptance of non-conforming products without conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-391",
@@ -2124,9 +2390,16 @@
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-494",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph carves out exceptions to the limitation of liability, which is consistent with standard contract practice and not internally contradictory.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-495",
@@ -2369,149 +2642,296 @@
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-545",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 95,
+      "brief_reason": "The paragraph provides a general rule and then lists exceptions, which is standard and not a contradiction.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-546",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a section heading only and contains no substantive statements to contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-547",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "The paragraph describes notice procedures and does not contain conflicting obligations or statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-556",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This paragraph simply provides an address and contains no obligations or statements that could contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-557",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and does not contain any substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-558",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a contact information line and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-559",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a fax number and does not contain any obligations or statements that could contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-561",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a heading for legal matters contact and contains no conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-562",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and contains no substantive statements or obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-563",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and does not contain any obligations or statements that could contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-564",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a contact information line and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-565",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a heading for Bellicum's contact information and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-566",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and contains no obligations or statements that could contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-567",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and contains no substantive statements or obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-568",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a contact information line and contains no obligations or conflicting statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-570",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a heading for legal matters contact and contains no substantive statements.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-572",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is a company name and contains no obligations or statements that could contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-573",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and contains no substantive statements or obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-574",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address line and contains no obligations or statements that could contradict.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-575",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This is an address and contact information line and contains no substantive statements or obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-577",
       "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "evidence": null
+      "confidence": 100,
+      "brief_reason": "This paragraph describes the timing and method for receipt of notices and does not contain conflicting obligations.",
+      "evidence": {
+        "snippet_a": "",
+        "snippet_b": "",
+        "source_a": "unknown",
+        "source_b": "unknown",
+        "evidence_status": "missing",
+        "evidence_note": ""
+      }
     },
     {
       "paragraph_id": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-578",
@@ -2850,5 +3270,5 @@
       "evidence": null
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 60833, \"estimated_output_tokens_total\": 16926, \"estimated_cost_usd\": \"0.257074\", \"batches\": [{\"batch\": 1, \"rows\": 403, \"estimated_input_tokens\": 60833, \"estimated_output_tokens\": 16926, \"estimated_cost_usd\": \"0.257074\", \"response_chars\": 2551, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-155\\\",\\n      \\\"contradiction\\\": true,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"The paragraph both restricts and allows use of Miltenyi Products by Licensees and Subcontractors even if not in compliance with the agreement or laws.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"Bellicum may offer and permit its Licensees and Subcontractors (if any) to use the Miltenyi \"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 335670, \"estimated_output_tokens_total\": 16926, \"estimated_cost_usd\": \"0.806748\", \"batches\": [{\"batch\": 1, \"rows\": 127, \"estimated_input_tokens\": 73022, \"estimated_output_tokens\": 5334, \"estimated_cost_usd\": \"0.188716\", \"response_chars\": 1035, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-155\\\",\\n      \\\"contradiction\\\": true,\\n      \\\"confidence\\\": 95,\\n      \\\"brief_reason\\\": \\\"The paragraph simultaneously states that Licensees and Subcontractors may only use Miltenyi Products in compliance with the Agreement and Applicable Laws, and also that they may use them even if not in compliance.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"Bellicum may offer and permit \"}, {\"batch\": 2, \"rows\": 39, \"estimated_input_tokens\": 72590, \"estimated_output_tokens\": 1638, \"estimated_cost_usd\": \"0.158284\", \"response_chars\": 17895, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-221\\\",\\n      \\\"contradiction\\\": true,\\n      \\\"confidence\\\": 95,\\n      \\\"brief_reason\\\": \\\"The paragraph states both that Miltenyi must implement changes at its own cost and that all costs are borne exclusively by Bellicum.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"Miltenyi shall implement such Miltenyi-Requested Change at its own cost and expense.\\\",\\n        \\\"snippet_b\\\": \\\"No\"}, {\"batch\": 3, \"rows\": 77, \"estimated_input_tokens\": 74812, \"estimated_output_tokens\": 3234, \"estimated_cost_usd\": \"0.175496\", \"response_chars\": 490, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-390\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 100,\\n      \\\"brief_reason\\\": \\\"The paragraph consistently describes the process for rejection and acceptance of non-conforming products without conflicting obligations.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"\\\",\\n        \\\"source_b\\\": \\\"\\\"\\n      }\\n    }\\n  ]\\n}\"}, {\"batch\": 4, \"rows\": 91, \"estimated_input_tokens\": 72412, \"estimated_output_tokens\": 3822, \"estimated_cost_usd\": \"0.175400\", \"response_chars\": 505, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-494\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 95,\\n      \\\"brief_reason\\\": \\\"The paragraph carves out exceptions to the limitation of liability, which is consistent with standard contract practice and not internally contradictory.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"\\\",\\n        \\\"source_b\\\": \\\"\\\"\\n      }\\n    }\\n\"}, {\"batch\": 5, \"rows\": 69, \"estimated_input_tokens\": 42834, \"estimated_output_tokens\": 2898, \"estimated_cost_usd\": \"0.108852\", \"response_chars\": 8692, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-545\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 95,\\n      \\\"brief_reason\\\": \\\"The paragraph provides a general rule and then lists exceptions, which is standard and not a contradiction.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"\\\",\\n        \\\"source_b\\\": \\\"\\\"\\n      }\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::BELLICUM\"}]}"
 }

@@ -452,7 +452,7 @@ Expected LLM JSON:
 
 `document_json` injected into prompt (`Document data (JSON): {document_json}`):
 
-Without KG mode (`mode = "without_kg"`):
+Current mode payload (`mode = "without_kg"` or `mode = "with_kg"`):
 
 ```json
 {
@@ -474,83 +474,6 @@ Without KG mode (`mode = "without_kg"`):
       "related_paragraphs": []
     }
   ]
-}
-```
-
-With KG mode (`mode = "with_kg"`):
-
-```json
-{
-  "mode": "with_kg",
-  "paragraphs": [
-    {
-      "paragraph_id": "BELLICUM...-p-19",
-      "text": "Clause text...",
-      "related_paragraphs": [
-        {
-          "paragraph_id": "BELLICUM...-p-166",
-          "text": "Related clause text..."
-        }
-      ]
-    }
-  ],
-  "kg_context": {
-    "by_paragraph_id": {
-      "BELLICUM...-p-19": {
-        "clause": {
-          "id": "BELLICUM...-p-19"
-        },
-        "entities": [
-          {
-            "type": "Party",
-            "label": "Bellicum Pharmaceuticals, Inc.",
-            "source_paragraph_id": "BELLICUM...-p-19"
-          },
-          {
-            "type": "Obligation",
-            "label": "Bellicum shall ...",
-            "source_paragraph_id": "BELLICUM...-p-19",
-            "action": "Bellicum shall ..."
-          },
-          {
-            "type": "Reference",
-            "label": "Section 2.3",
-            "source_paragraph_id": "BELLICUM...-p-19",
-            "citation": "2.3"
-          }
-        ],
-        "relations": [
-          {
-            "rel_type": "REFERENCES",
-            "from": {
-              "id": "BELLICUM...-p-19",
-              "label": "2.1",
-              "type": "Clause"
-            },
-            "to": {
-              "id": "BELLICUM...-p-166",
-              "label": "2.3",
-              "type": "Clause"
-            },
-            "evidence": "base_reference:section 2.3"
-          },
-          {
-            "rel_type": "ASSIGNS_OBLIGATION_TO",
-            "from": {
-              "id": "obligation-node-id",
-              "label": "Bellicum shall ...",
-              "type": "Obligation"
-            },
-            "to": {
-              "id": "party-node-id",
-              "label": "Bellicum Pharmaceuticals, Inc.",
-              "type": "Party"
-            }
-          }
-        ]
-      }
-    }
-  }
 }
 ```
 

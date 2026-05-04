@@ -112,9 +112,9 @@ def _extract_rows_for_document(payload: Any, candidate_ids: set[str]) -> list[di
 
 def _normalize_mode(value: Any) -> str:
     normalized = str(value or "").strip().lower()
-    if normalized == "without_kg":
-        return "without_kg"
-    return "with_kg"
+    if normalized == "with_kg":
+        return "with_kg"
+    return "without_kg"
 
 
 def _payload_matches_mode(payload: Any, path: Any, mode: str | None) -> bool:
@@ -135,8 +135,7 @@ def _payload_matches_mode(payload: Any, path: Any, mode: str | None) -> bool:
     elif "__with_kg_" in file_name:
         inferred = "with_kg"
     else:
-        # Legacy files pre-mode are considered KG-enabled runs.
-        inferred = "with_kg"
+        inferred = "without_kg"
 
     return inferred == expected
 

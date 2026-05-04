@@ -198,9 +198,6 @@ async def process_document(data: dict):
                     "text": text_content,
                     "page": page.get("pageNumber"),
                     "paragraph_enum": idx,
-                    "x": el.get("x", 0.0),
-                    "y": el.get("y", 0.0),
-                    "fontSize": el.get("fontSize", 0.0),
                 }
             )
 
@@ -326,7 +323,7 @@ def estimate_llm_request(payload: LlmEstimateRequest):
 @router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)
 def get_saved_contradictions(
     document_id: str,
-    mode: ContradictionGraphMode = Query(default="with_kg"),
+    mode: ContradictionGraphMode = Query(default="without_kg"),
 ):
     try:
         aliases = document_store.get_document_aliases(document_id)
