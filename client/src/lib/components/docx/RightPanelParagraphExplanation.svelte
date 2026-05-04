@@ -16,12 +16,24 @@
 	type ReferenceTextSegment = {
 		text: string;
 		isReference: boolean;
+		isEntity?: boolean;
+		entityKey?: string;
+		entityColor?: string;
+		entitySoftColor?: string;
+	};
+	type ExplanationEntity = {
+		label: string;
+		key: string;
+		color: string;
+		softColor: string;
 	};
 
 	export let selectedParagraph: ParagraphNode | null = null;
 	export let loading = false;
 	export let error: string | null = null;
-	export let explanation = '';
+	export let explanationShort = '';
+	export let explanationDetailed = '';
+	export let explanationEntities: ExplanationEntity[] = [];
 	export let simplifyResult: SimplifyResultState | null = null;
 	export let simplifyError: string | null = null;
 	export let rewriteSource: 'simplify' | 'fix' | null = null;
@@ -40,11 +52,17 @@
 
 	let processingTick = 0;
 	let processingTimer: ReturnType<typeof setInterval> | null = null;
+	let isDetailedExpanded = false;
 	$: activeProcessingStepIndex =
 		explanationProcessingSteps.length > 0
 			? Math.floor(processingTick / 3) % explanationProcessingSteps.length
 			: 0;
 	$: activeDotCount = (processingTick % 3) + 1;
+	$: hasDetailedExplanation =
+		Boolean(explanationDetailed.trim()) && explanationDetailed.trim() !== explanationShort.trim();
+	$: if (!explanationDetailed.trim()) {
+		isDetailedExpanded = false;
+	}
 
 	function splitReferenceText(value: string): ReferenceTextSegment[] {
 		if (!value) return [];
@@ -67,6 +85,93 @@
 			segments.push({ text: value, isReference: false });
 		}
 		return segments;
+	}
+
+	function escapeRegex(value: string): string {
+		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function normalizeEntityKey(value: string): string {
+		return value
+			.toLocaleLowerCase()
+			.normalize('NFKD')
+			.replace(/[^\w\s-]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function splitEntityText(
+		value: string,
+		entities: ExplanationEntity[]
+	): Array<{
+		text: string;
+		isEntity: boolean;
+		entityKey?: string;
+		entityColor?: string;
+		entitySoftColor?: string;
+	}> {
+		const normalizedEntities = entities
+			.map((entity) => entity.label.trim())
+			.filter((entity) => entity.length >= 2)
+			.sort((left, right) => right.length - left.length);
+		if (!value || normalizedEntities.length === 0) {
+			return [{ text: value, isEntity: false }];
+		}
+
+		const entitiesByKey = new Map(entities.map((entity) => [normalizeEntityKey(entity.label), entity]));
+		const pattern = new RegExp(normalizedEntities.map((entity) => escapeRegex(entity)).join('|'), 'gi');
+		const segments: Array<{
+			text: string;
+			isEntity: boolean;
+			entityKey?: string;
+			entityColor?: string;
+			entitySoftColor?: string;
+		}> = [];
+		let cursor = 0;
+		for (const match of value.matchAll(pattern)) {
+			const matched = match[0] ?? '';
+			const index = match.index ?? 0;
+			if (!matched) continue;
+			if (index > cursor) {
+				segments.push({ text: value.slice(cursor, index), isEntity: false });
+			}
+			const normalizedMatch = normalizeEntityKey(matched);
+			const entity = entitiesByKey.get(normalizedMatch);
+			segments.push({
+				text: matched,
+				isEntity: true,
+				entityKey: entity?.key ?? normalizedMatch,
+				entityColor: entity?.color,
+				entitySoftColor: entity?.softColor
+			});
+			cursor = index + matched.length;
+		}
+		if (cursor < value.length) {
+			segments.push({ text: value.slice(cursor), isEntity: false });
+		}
+		return segments.length > 0 ? segments : [{ text: value, isEntity: false }];
+	}
+
+	function splitReferenceAndEntityText(value: string, entities: ExplanationEntity[]): ReferenceTextSegment[] {
+		const baseSegments = splitReferenceText(value);
+		const merged: ReferenceTextSegment[] = [];
+		for (const segment of baseSegments) {
+			if (segment.isReference) {
+				merged.push({ ...segment, isEntity: false });
+				continue;
+			}
+			for (const piece of splitEntityText(segment.text, entities)) {
+				merged.push({
+					text: piece.text,
+					isReference: false,
+					isEntity: piece.isEntity,
+					entityKey: piece.entityKey,
+					entityColor: piece.entityColor,
+					entitySoftColor: piece.entitySoftColor
+				});
+			}
+		}
+		return merged;
 	}
 
 	$: {
@@ -159,25 +264,71 @@
 						onFocusParagraph={onFocusParagraph}
 					/>
 				{/if}
-				{#if explanation}
+				{#if explanationShort}
 					<div class="rounded border border-gray-200 bg-white px-3 py-2">
 						<div class="mb-1">
 							<Badge
 								variant="outline"
 								class="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
 							>
-								Explain
+								Short explain
 							</Badge>
 						</div>
 						<p class="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">
-							{#each splitReferenceText(explanation) as segment, segmentIndex (`explanation-ref-${segmentIndex}`)}
+							{#each splitReferenceAndEntityText(explanationShort, explanationEntities) as segment, segmentIndex (`explanation-short-ref-${segmentIndex}`)}
 								{#if segment.isReference}
 									<span class="docx-reference-chip align-middle">{segment.text}</span>
+								{:else if segment.isEntity}
+									<span
+										class="docx-paragraph-explanation-entity-token"
+										data-entity-key={segment.entityKey}
+										style={`--entity-color:${segment.entityColor ?? '#2563eb'}; --entity-color-soft:${segment.entitySoftColor ?? 'rgba(37,99,235,0.16)'};`}
+									>
+										{segment.text}
+									</span>
 								{:else}
 									<span>{segment.text}</span>
 								{/if}
 							{/each}
 						</p>
+						{#if hasDetailedExplanation}
+							<button
+								type="button"
+								class="mt-2 text-[10px] font-semibold text-blue-700 transition hover:text-blue-800"
+								on:click={() => (isDetailedExpanded = !isDetailedExpanded)}
+							>
+								{isDetailedExpanded ? 'Ver menos detalhes' : 'Ver explicacao aprofundada'}
+							</button>
+						{/if}
+						{#if hasDetailedExplanation && isDetailedExpanded}
+							<div class="mt-2 border-t border-gray-100 pt-2">
+								<div class="mb-1">
+									<Badge
+										variant="outline"
+										class="h-4 border-indigo-100 bg-indigo-50 px-1.5 text-[9px] font-semibold text-blue-600"
+									>
+										Detailed explain
+									</Badge>
+								</div>
+								<p class="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">
+									{#each splitReferenceAndEntityText(explanationDetailed, explanationEntities) as segment, segmentIndex (`explanation-detailed-ref-${segmentIndex}`)}
+										{#if segment.isReference}
+											<span class="docx-reference-chip align-middle">{segment.text}</span>
+										{:else if segment.isEntity}
+											<span
+												class="docx-paragraph-explanation-entity-token"
+												data-entity-key={segment.entityKey}
+												style={`--entity-color:${segment.entityColor ?? '#2563eb'}; --entity-color-soft:${segment.entitySoftColor ?? 'rgba(37,99,235,0.16)'};`}
+											>
+												{segment.text}
+											</span>
+										{:else}
+											<span>{segment.text}</span>
+										{/if}
+									{/each}
+								</p>
+							</div>
+						{/if}
 					</div>
 				{/if}
 			{/if}

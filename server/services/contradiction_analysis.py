@@ -12,6 +12,8 @@ from schemas.types import (
     ContradictionAnalysisResponse,
     ContradictionParagraphResult,
 )
+from services.graph.neo4j_client import get_neo4j_driver, is_neo4j_configured
+from services.llm.cost_estimator import estimate_model_cost_usd, estimate_tokens, format_cost
 from services.llm.factory import LLMProviderFactory
 
 logger = logging.getLogger(__name__)
@@ -26,13 +28,6 @@ HIGH_RECALL_MODE = os.getenv("CONTRADICTION_HIGH_RECALL", "1").strip().lower() n
 HIGH_RECALL_NEGATIVE_FLIP_THRESHOLD = int(
     os.getenv("CONTRADICTION_NEGATIVE_FLIP_THRESHOLD", "45")
 )
-
-MODEL_PRICING_USD_PER_1M: dict[str, dict[str, float]] = {
-    "gpt-4.1-nano": {"input": 0.10, "output": 0.40},
-    "gpt-4.1": {"input": 2.0, "output": 8.0},
-    "gpt-4.1-2025-04-14": {"input": 2.0, "output": 8.0},
-    "gpt-4_1-2025-04-14": {"input": 2.0, "output": 8.0},
-}
 
 # PROMPT_TEMPLATE = """
 # You are a legal expert analyzing contracts.
@@ -193,7 +188,7 @@ def analyze_document_contradictions(
             model_name=resolved_model,
         )
     estimated_output_total = len(ordered_paragraph_ids) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
-    estimated_cost_total = _estimate_model_cost_usd(
+    estimated_cost_total = estimate_model_cost_usd(
         model_name=resolved_model,
         input_tokens=estimated_input_total,
         output_tokens=estimated_output_total,
@@ -225,7 +220,7 @@ def analyze_document_contradictions(
             model_name=resolved_model,
         )
         batch_output_tokens = len(batch) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
-        batch_cost = _estimate_model_cost_usd(
+        batch_cost = estimate_model_cost_usd(
             model_name=resolved_model,
             input_tokens=batch_prompt_tokens,
             output_tokens=batch_output_tokens,
@@ -309,6 +304,41 @@ def analyze_document_contradictions(
         paragraphResults=paragraph_results,
         rawResponse=json.dumps(raw_response_payload, ensure_ascii=False),
     )
+
+
+def estimate_contradiction_analysis_request(payload: ContradictionAnalysisRequest) -> dict[str, Any]:
+    paragraph_rows, ordered_paragraph_ids, kg_context_by_paragraph = _build_document_rows(payload)
+    resolved_model = (payload.model or "").strip() or "gpt-4.1"
+    batches = _chunk_paragraph_rows(
+        paragraph_rows=paragraph_rows,
+        mode=payload.mode,
+        kg_context_by_paragraph=kg_context_by_paragraph,
+        model_name=resolved_model,
+        target_input_tokens=TARGET_BATCH_INPUT_TOKENS,
+    )
+    estimated_input_total = 0
+    for batch in batches:
+        estimated_input_total += _estimate_prompt_tokens(
+            paragraph_rows=batch,
+            mode=payload.mode,
+            kg_context_by_paragraph=kg_context_by_paragraph,
+            model_name=resolved_model,
+        )
+    estimated_output_total = len(ordered_paragraph_ids) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
+    estimated_cost_total = estimate_model_cost_usd(
+        model_name=resolved_model,
+        input_tokens=estimated_input_total,
+        output_tokens=estimated_output_total,
+    )
+    return {
+        "provider": payload.provider,
+        "model": resolved_model,
+        "estimated_input_tokens": estimated_input_total,
+        "estimated_output_tokens": estimated_output_total,
+        "estimated_total_tokens": estimated_input_total + estimated_output_total,
+        "estimated_cost_usd": estimated_cost_total,
+        "estimated_cost_usd_formatted": format_cost(estimated_cost_total),
+    }
 
 
 def _build_document_rows(
@@ -539,18 +569,7 @@ def _estimate_prompt_tokens(
 
 
 def _estimate_tokens(text: str, model_name: str) -> int:
-    if not text:
-        return 0
-
-    encoder = _get_tiktoken_encoder(model_name)
-    if encoder is not None:
-        try:
-            return len(encoder.encode(text))
-        except Exception:
-            pass
-
-    # Safe fallback when tiktoken is unavailable.
-    return max(1, len(text) // 4)
+    return estimate_tokens(text, model_name)
 
 
 def _get_tiktoken_encoder(model_name: str) -> Any | None:
@@ -576,42 +595,8 @@ def _get_tiktoken_encoder(model_name: str) -> Any | None:
     return _TIKTOKEN_ENCODER
 
 
-def _estimate_model_cost_usd(*, model_name: str, input_tokens: int, output_tokens: int) -> float | None:
-    rates = _resolve_model_rates(model_name)
-    if rates is None:
-        return None
-
-    return (
-        (input_tokens / 1_000_000.0) * rates["input"]
-        + (output_tokens / 1_000_000.0) * rates["output"]
-    )
-
-
-def _resolve_model_rates(model_name: str) -> dict[str, float] | None:
-    normalized = (model_name or "").strip().lower()
-    if not normalized:
-        return None
-
-    if normalized in MODEL_PRICING_USD_PER_1M:
-        return MODEL_PRICING_USD_PER_1M[normalized]
-
-    normalized_alt = normalized.replace(".", "_")
-    if normalized_alt in MODEL_PRICING_USD_PER_1M:
-        return MODEL_PRICING_USD_PER_1M[normalized_alt]
-
-    if normalized.startswith("gpt-4.1-"):
-        return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
-
-    if normalized.startswith("gpt-4_1-"):
-        return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
-
-    return None
-
-
 def _format_cost(cost: float | None) -> str:
-    if cost is None:
-        return "unknown"
-    return f"{cost:.6f}"
+    return format_cost(cost)
 
 
 def _safe_json_loads(text: str) -> dict[str, Any] | list[Any]:

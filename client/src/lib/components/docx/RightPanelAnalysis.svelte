@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { browser } from '$app/environment';
+	import { cubicOut } from 'svelte/easing';
+	import { slide } from 'svelte/transition';
 	import type {
 		AssistantChatMessage,
 		ContradictionTaxonomyType,
@@ -22,6 +24,10 @@ type ProcessingStep = {
 		label: string;
 		active: boolean;
 	};
+	type ContradictionSummaryItem = {
+		paragraphId: string;
+		label: string;
+	};
 	type ReferenceTextSegment = {
 		text: string;
 		isReference: boolean;
@@ -29,6 +35,10 @@ type ProcessingStep = {
 
 	export let selectedParagraph: ParagraphNode | null = null;
 	export let contradictionLoading = false;
+	export let hasTriggeredContradictionCheck = false;
+	export let contradictionError: string | null = null;
+	export let contradictionCount = 0;
+	export let contradictionSummaryItems: ContradictionSummaryItem[] = [];
 	export let revisionProcessingSteps: ProcessingStep[] = [];
 	export let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	export let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
@@ -258,94 +268,110 @@ type ProcessingStep = {
 				</div>
 			{/if}
 
-			{#if !selectedParagraph}
-				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
-					<p class="text-[10px] italic">Select a paragraph to analyze contradictions</p>
-				</div>
-			{:else if !selectedContradictionResult}
-				<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-					<Card.Content class="px-3 py-2 text-gray-600">
-						No contradiction result is available for this paragraph yet. Run "Search contradictions"
-						first.
-					</Card.Content>
-				</Card.Root>
-			{:else if !selectedContradictionResult.contradiction}
-				<div class="flex flex-col items-center justify-center py-3 text-center text-gray-400">
-					<p class="text-[10px] italic">No contradiction found in this paragraph.</p>
-				</div>
-			{:else if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-				<div class="overflow-hidden rounded border text-[11px]">
-					<div class="border-b  px-3 py-1.5">
-						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
-					</div>
-					<div class="space-y-1 p-1.5">
-						<div class="px-0.5">
-							<p class="text-[9px] font-semibold">Assessment</p>
-							<p class="text-[10px] leading-relaxed">
-								{selectedContradictionResult.brief_reason}
-							</p>
-						</div>
-						<div class="rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-							<div class="mb-1 flex items-center justify-between">
-								<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
-								<Badge
-									variant="outline"
-									class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
-								>
-									{selectedContradictionEvidence.source_a}
-								</Badge>
-							</div>
-							<Button
-								variant="ghost"
-								class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-red-800 hover:bg-transparent hover:text-red-900"
-								onclick={() =>
-									selectedContradictionResult &&
-									onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
-							>
-								{selectedContradictionEvidence.snippet_a}
-							</Button>
-						</div>
+			{#if hasTriggeredContradictionCheck}
+				{#if contradictionError}
+					<p class="text-[11px] text-red-700">{contradictionError}</p>
+				{:else}
+					<p class="text-[11px] text-red-700">
+						{contradictionCount} paragraph(s) with highlighted contradiction(s)
+					</p>
+				{/if}
+			{/if}
 
-						<div class="rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
-							<div class="mb-1 flex items-center justify-between">
-								<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
-								<Badge
-									variant="outline"
-									class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
-								>
-									{selectedContradictionEvidence.source_b}
-								</Badge>
-							</div>
-							<Button
-								variant="ghost"
-								class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-yellow-900 hover:bg-transparent hover:text-yellow-950"
-								onclick={() =>
-									selectedContradictionResult &&
-									onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+			{#if contradictionSummaryItems.length > 0}
+				<div class="mt-1 mb-2 flex flex-col gap-1.5">
+					{#each contradictionSummaryItems as item, index (item.paragraphId)}
+						<div
+							class={`overflow-hidden rounded-md border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
+								selectedParagraph?.id === item.paragraphId
+									? 'border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.15)]'
+									: 'border-gray-300 hover:border-gray-400 hover:bg-gray-50/40 hover:shadow-[0_1px_6px_rgba(15,23,42,0.08)]'
+							}`}
+						>
+							<button
+								type="button"
+								class={`w-full px-3 py-1.5 text-left text-[11px] transition ${
+									selectedParagraph?.id === item.paragraphId
+										? 'bg-red-100/60 text-red-800 font-semibold'
+										: 'cursor-pointer text-gray-600 hover:bg-gray-100 hover:text-gray-700'
+								}`}
+								onclick={() => onFocusNodeFromPanel(item.paragraphId, true)}
 							>
-								{selectedContradictionEvidence.snippet_b}
-							</Button>
+								Contradiction {index + 1}: {item.label}
+							</button>
+
+							{#if selectedParagraph?.id === item.paragraphId && selectedContradictionResult?.contradiction}
+								<div
+									class="border-t border-gray-200 p-1.5 text-[11px]"
+									transition:slide={{ duration: 200, easing: cubicOut }}
+								>
+									<p class="mb-1 px-0.5 text-[9px] font-semibold text-red-700">
+										Contradiction evidence
+									</p>
+									<div class="px-0.5">
+										<p class="text-[9px] font-semibold text-gray-700">Assessment</p>
+										<p class="text-[10px] leading-relaxed">
+											{selectedContradictionResult.brief_reason}
+										</p>
+									</div>
+
+									{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+										<div class="mt-1 rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+											<div class="mb-1 flex items-center justify-between">
+												<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
+												<Badge
+													variant="outline"
+													class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
+												>
+													{selectedContradictionEvidence.source_a}
+												</Badge>
+											</div>
+											<Button
+												variant="ghost"
+												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-red-800 hover:bg-transparent hover:text-red-900"
+												onclick={() =>
+													selectedContradictionResult &&
+													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+											>
+												{selectedContradictionEvidence.snippet_a}
+											</Button>
+										</div>
+
+										<div class="mt-1 rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
+											<div class="mb-1 flex items-center justify-between">
+												<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
+												<Badge
+													variant="outline"
+													class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
+												>
+													{selectedContradictionEvidence.source_b}
+												</Badge>
+											</div>
+											<Button
+												variant="ghost"
+												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-yellow-900 hover:bg-transparent hover:text-yellow-950"
+												onclick={() =>
+													selectedContradictionResult &&
+													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+											>
+												{selectedContradictionEvidence.snippet_b}
+											</Button>
+										</div>
+									{:else}
+										<Card.Root size="sm" class="mt-1 border-gray-200 bg-gray-50 py-0 text-[11px]">
+											<Card.Content class="px-3 py-2 text-gray-600">
+												Evidence snippets are unavailable for this contradiction.
+											</Card.Content>
+										</Card.Root>
+									{/if}
+								</div>
+							{/if}
 						</div>
-					</div>
+					{/each}
 				</div>
-			{:else}
-				<div class="overflow-hidden rounded border border-red-200 bg-red-50/70 text-[11px]">
-					<div class="border-b border-red-200 bg-red-100/70 px-3 py-1.5">
-						<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
-					</div>
-					<div class="space-y-1 p-1.5">
-						<div class="px-0.5">
-							<p class="text-[9px] font-semibold text-red-800">Assessment</p>
-							<p class="text-[10px] leading-relaxed text-red-800">
-								{selectedContradictionResult.brief_reason}
-							</p>
-						</div>
-						<Card.Root size="sm" class="border-gray-200 bg-gray-50 py-0 text-[11px]">
-							<Card.Content class="px-3 py-2 text-gray-600">
-								Evidence snippets are unavailable for this contradiction.
-							</Card.Content>
-						</Card.Root>
-					</div>
+			{:else if hasTriggeredContradictionCheck && !contradictionLoading && !contradictionError}
+				<div class="flex flex-col items-center justify-center py-2 text-gray-400">
+					<p class="text-[10px] italic">No contradictions found.</p>
 				</div>
 			{/if}
 		</div>

@@ -4,6 +4,7 @@ import type {
 	ParagraphEditState,
 	RelatedParagraph,
 	SimplifyAuditRecord,
+	SimplifySelectionRequest,
 	SimplifyResultState
 } from '$lib/types/document';
 import {
@@ -49,12 +50,20 @@ type ExecuteFixParams = ResolveTargetParams & {
 	nodeEditStateById: Map<string, ParagraphEditState>;
 	fixRelatedLimit: number;
 	resolveErrorMessage: ErrorResolver;
+	confirmLlmEstimate?: (
+		callType: 'assistant_fix_contradiction',
+		payload: SimplifySelectionRequest
+	) => Promise<boolean>;
 };
 
 type ExecuteSimplifyParams = ResolveTargetParams & {
 	activeDocumentId: string | null;
 	assistantProvider: AssistantProvider;
 	resolveErrorMessage: ErrorResolver;
+	confirmLlmEstimate?: (
+		callType: 'assistant_simplify',
+		payload: SimplifySelectionRequest
+	) => Promise<boolean>;
 };
 
 type ApplyRewriteParams = {
@@ -150,7 +159,7 @@ export async function executeFixContradictionRewrite(
 	const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
 
 	try {
-		const response = await fetchFixContradictionSelection({
+		const requestPayload: SimplifySelectionRequest = {
 			documentId: params.activeDocumentId,
 			provider: params.assistantProvider,
 			paragraphId: target.paragraphId,
@@ -163,7 +172,12 @@ export async function executeFixContradictionRewrite(
 				params.nodeEditStateById,
 				params.fixRelatedLimit
 			)
-		});
+		};
+		if (params.confirmLlmEstimate) {
+			const approved = await params.confirmLlmEstimate('assistant_fix_contradiction', requestPayload);
+			if (!approved) return { ok: false, error: 'Request canceled by user.' };
+		}
+		const response = await fetchFixContradictionSelection(requestPayload);
 
 		const createdAt = new Date().toISOString();
 		const result: SimplifyResultState = {
@@ -211,14 +225,19 @@ export async function executeSimplifyRewrite(
 	const selectionEnd = bounds.end === bounds.start ? target.paragraphText.length : bounds.end;
 
 	try {
-		const response = await fetchSimplifySelection({
+		const requestPayload: SimplifySelectionRequest = {
 			documentId: params.activeDocumentId,
 			provider: params.assistantProvider,
 			paragraphId: target.paragraphId,
 			paragraphText: target.paragraphText,
 			selectionStart,
 			selectionEnd
-		});
+		};
+		if (params.confirmLlmEstimate) {
+			const approved = await params.confirmLlmEstimate('assistant_simplify', requestPayload);
+			if (!approved) return { ok: false, error: 'Request canceled by user.' };
+		}
+		const response = await fetchSimplifySelection(requestPayload);
 
 		const createdAt = new Date().toISOString();
 		const result: SimplifyResultState = {

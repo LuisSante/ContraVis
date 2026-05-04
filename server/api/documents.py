@@ -13,6 +13,8 @@ from schemas.types import (
     ContradictionAnalysisResponse,
     ContradictionGraphMode,
     DatasetDocument,
+    LlmEstimateRequest,
+    LlmEstimateResponse,
     SavedContradictionsResponse,
     SimplifySelectionRequest,
     SimplifySelectionResponse,
@@ -23,10 +25,13 @@ from services.contradiction_saved import (
     save_analyzed_contradictions,
 )
 from services.contract_assistant import (
+    estimate_assistant_chat_request,
+    estimate_simplify_request,
     fix_contradiction_selection,
     generate_assistant_response,
     simplify_paragraph_selection,
 )
+from services.contradiction_analysis import estimate_contradiction_analysis_request
 from services.graph.relations import generate_graph_data
 from utils.config import Config
 from utils.document_store import DocumentStore
@@ -274,6 +279,45 @@ def analyze_document_contradictions_endpoint(payload: ContradictionAnalysisReque
     except Exception as exc:
         logger.exception("Unexpected contradiction-analysis error")
         raise HTTPException(status_code=500, detail="Failed to analyze contradictions") from exc
+
+
+@router.post("/llm/estimate", response_model=LlmEstimateResponse)
+def estimate_llm_request(payload: LlmEstimateRequest):
+    try:
+        if payload.callType == "assistant_chat":
+            if payload.assistantChat is None:
+                raise RuntimeError("assistantChat payload is required")
+            estimate = estimate_assistant_chat_request(payload.assistantChat)
+        elif payload.callType == "assistant_simplify":
+            if payload.simplifySelection is None:
+                raise RuntimeError("simplifySelection payload is required")
+            estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=False)
+        elif payload.callType == "assistant_fix_contradiction":
+            if payload.simplifySelection is None:
+                raise RuntimeError("simplifySelection payload is required")
+            estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=True)
+        elif payload.callType == "contradictions_analyze":
+            if payload.contradictionAnalysis is None:
+                raise RuntimeError("contradictionAnalysis payload is required")
+            estimate = estimate_contradiction_analysis_request(payload.contradictionAnalysis)
+        else:
+            raise RuntimeError("Unsupported callType")
+
+        return LlmEstimateResponse(
+            callType=payload.callType,
+            provider=estimate["provider"],
+            model=estimate["model"],
+            estimatedInputTokens=estimate["estimated_input_tokens"],
+            estimatedOutputTokens=estimate["estimated_output_tokens"],
+            estimatedTotalTokens=estimate["estimated_total_tokens"],
+            estimatedCostUsd=estimate["estimated_cost_usd"],
+            estimatedCostUsdFormatted=estimate["estimated_cost_usd_formatted"],
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Unexpected llm-estimate error")
+        raise HTTPException(status_code=500, detail="Failed to estimate LLM request") from exc
 
 
 @router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)

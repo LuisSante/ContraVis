@@ -34,7 +34,9 @@
 		SimplifyResultState,
 		SimplifyAuditRecord,
 		RightPanelTab,
-		ContradictionScrollMarker
+		ContradictionScrollMarker,
+		LlmEstimateResponse,
+		SimplifySelectionRequest
 	} from '$lib/types/document';
 	import {
 		buildInspectorState,
@@ -46,6 +48,7 @@
 		fetchAssistantResponse,
 		fetchBackendGraph,
 		fetchContradictionAnalysis,
+		fetchLlmEstimate,
 		fetchSavedContradictions,
 		loadBrowserDocx4js,
 		resolveDocumentMeta,
@@ -142,6 +145,13 @@
 	const GLOBAL_MODEL_ITEM_CHECK_EXTRA_PX = 34;
 	const GLOBAL_MODEL_MIN_WIDTH_PX = 92;
 	const PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX = 10;
+	const PARAGRAPH_EXPLANATION_COMPRESS_DURATION_MS = 560;
+	const PARAGRAPH_EXPLANATION_COMPRESS_SNAP_EPSILON = 0.001;
+	const PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE = 2;
+	const PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX = 72;
+	const PARAGRAPH_EXPLANATION_STACK_OFFSET_PX = 18;
+	const PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX = 12;
+	const PARAGRAPH_EXPLANATION_CONSECUTIVE_GAP_PX = 24;
 	const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
 		(action) =>
 			action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
@@ -251,6 +261,7 @@
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
+	let hasTriggeredContradictionCheck = false;
 	let contradictionSource: string | null = null;
 	let contradictionGraphMode: ContradictionGraphMode = 'without_kg';
 	let globalAnalysisModel = 'gpt-4.1';
@@ -270,10 +281,22 @@
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
-	let contradictionSummaryVisible = true;
+	let contradictionSummaryItems: Array<{
+		paragraphId: string;
+		label: string;
+	}> = [];
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
-	let paragraphExplanationAnswer = '';
+	let paragraphExplanationShort = '';
+	let paragraphExplanationDetailed = '';
+	type ParagraphExplanationEntityHighlight = {
+		label: string;
+		key: string;
+		color: string;
+		softColor: string;
+	};
+	let paragraphExplanationEntities: ParagraphExplanationEntityHighlight[] = [];
+	let hoveredParagraphExplanationEntityKey: string | null = null;
 	let paragraphExplanationConnectors: Array<{
 		topPx: number;
 		bottomPx: number;
@@ -283,7 +306,26 @@
 		relatedCapTopPx: number;
 		relatedCapWidthPx: number;
 		paragraphId: string;
+		paragraphEnumLabel: string;
+		labelLeftPx: number;
 	}> = [];
+	let paragraphExplanationFolds: Array<{
+		topPx: number;
+		leftPx: number;
+	}> = [];
+	let paragraphExplanationCompression = 0;
+	let paragraphExplanationCompressionTarget = 0;
+	let paragraphExplanationCompressionTweenFrame: number | null = null;
+	let paragraphExplanationCompressionStart = 0;
+	let paragraphExplanationCompressionStartTime = 0;
+	let paragraphExplanationCollapsedCards: Array<{
+		paragraphId: string;
+		topPx: number;
+		leftPx: number;
+		widthPx: number;
+		html: string;
+	}> = [];
+	let paragraphExplanationMovedNodeIds = new Set<string>();
 	let paragraphExplanationPrimaryConnector: {
 		topPx: number;
 		bottomPx: number;
@@ -323,6 +365,21 @@
 	$: contradictionCount = Array.from(contradictionResultsByParagraphId.values()).filter(
 		(row) => row.contradiction
 	).length;
+	$: {
+		const items: Array<{ paragraphId: string; label: string; paragraphEnum: number }> = [];
+		for (const [paragraphId, row] of contradictionResultsByParagraphId.entries()) {
+			if (!row.contradiction) continue;
+			const paragraphEnumMatch = paragraphId.match(/-p-(\d+)$/);
+			const paragraphEnum = paragraphEnumMatch ? Number(paragraphEnumMatch[1]) : Number.POSITIVE_INFINITY;
+			const label = paragraphEnumMatch ? `p-${paragraphEnumMatch[1]}` : paragraphId;
+			items.push({ paragraphId, label, paragraphEnum });
+		}
+		items.sort(
+			(left, right) =>
+				left.paragraphEnum - right.paragraphEnum || left.paragraphId.localeCompare(right.paragraphId)
+		);
+		contradictionSummaryItems = items.map(({ paragraphId, label }) => ({ paragraphId, label }));
+	}
 	$: selectedContradictionResult = $selectedParagraph
 		? (contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null)
 		: null;
@@ -377,21 +434,17 @@
 		})
 		.slice(0, 5);
 	$: {
-		if (shouldShowContradictionDecorations) {
-			applyContradictionHighlights();
-		} else {
-			clearContradictionHighlights();
-			contradictionScrollMarkers = [];
-			selectedContradictionEvidenceLink = null;
-		}
+		syncContradictionDecorations();
 	}
 	$: {
 		const selectedId = $selectedParagraph?.id ?? '';
 		const relatedIds = paragraphExplanationRelatedParagraphs
 			.map((related) => related.node.id)
 			.join('|');
+		const entitiesSignature = paragraphExplanationEntities.map((entity) => entity.key).join('|');
 		void selectedId;
 		void relatedIds;
+		void entitiesSignature;
 		if (shouldShowParagraphExplanationDecorations) {
 			applyParagraphExplanationHighlights();
 			scheduleParagraphExplanationConnectorRefresh();
@@ -623,7 +676,7 @@
 				if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
 			}
 			refreshSimplifyTarget();
-			applyContradictionHighlights();
+			syncContradictionDecorations();
 		});
 	}
 
@@ -782,6 +835,12 @@
 	}
 
 	function focusNodeFromPanel(nodeId: string, emphasize = false) {
+		const targetNode = get(paragraphs).find((node) => node.id === nodeId) ?? null;
+		if (targetNode) {
+			// Ensure panel state updates even when the element can be focused without fallback.
+			setSelectedParagraphNode(targetNode);
+		}
+
 		focusNodeFromInspectorPanel({
 			nodeId,
 			paragraphNodes: get(paragraphs),
@@ -829,10 +888,213 @@
 
 	function resetParagraphExplanationState() {
 		paragraphExplanationError = null;
-		paragraphExplanationAnswer = '';
+		paragraphExplanationShort = '';
+		paragraphExplanationDetailed = '';
+		paragraphExplanationEntities = [];
 		paragraphExplanationLoading = false;
 		paragraphExplanationConnectors = [];
 		paragraphExplanationScrollMarkers = [];
+	}
+
+	function parseParagraphExplanationVariants(answer: string): {
+		shortText: string;
+		detailedText: string;
+		entities: string[];
+	} {
+		const normalized = answer.trim();
+		if (!normalized) {
+			return { shortText: '', detailedText: '', entities: [] };
+		}
+
+		const normalizeEntities = (values: string[]): string[] => {
+			const unique = new Set<string>();
+			for (const value of values) {
+				const cleaned = value.replace(/^[-*•]\s*/, '').trim();
+				if (!cleaned) continue;
+				if (cleaned.length < 2) continue;
+				unique.add(cleaned);
+			}
+			return Array.from(unique).slice(0, 12);
+		};
+
+		const readExplanationField = (record: Record<string, unknown>, keys: string[]): string => {
+			for (const key of keys) {
+				const value = record[key];
+				if (typeof value === 'string' && value.trim()) return value.trim();
+			}
+			return '';
+		};
+
+		const tryParseJsonExplanation = (
+			raw: string
+		): { shortText: string; detailedText: string; entities: string[] } | null => {
+			const tryCandidates: string[] = [raw];
+			const jsonBlockMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/i);
+			if (jsonBlockMatch?.[1]) tryCandidates.unshift(jsonBlockMatch[1].trim());
+
+			for (const candidate of tryCandidates) {
+				try {
+					const parsed = JSON.parse(candidate) as unknown;
+					if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue;
+					const record = parsed as Record<string, unknown>;
+					const shortText = readExplanationField(record, [
+						'SHORT_EXPLANATION',
+						'short_explanation',
+						'shortExplanation',
+						'summary',
+						'short'
+					]);
+					const detailedText = readExplanationField(record, [
+						'DETAILED_EXPLANATION',
+						'detailed_explanation',
+						'detailedExplanation',
+						'detail',
+						'detailed'
+					]);
+					const entitiesRaw = record.ENTITIES ?? record.entities ?? record.entity_list;
+					const entities = Array.isArray(entitiesRaw)
+						? normalizeEntities(
+								entitiesRaw.filter((entry): entry is string => typeof entry === 'string')
+							)
+						: typeof entitiesRaw === 'string'
+							? normalizeEntities(
+									entitiesRaw
+										.split('\n')
+										.map((line) => line.trim())
+										.filter(Boolean)
+								)
+							: [];
+					if (shortText || detailedText) {
+						return {
+							shortText: shortText || detailedText,
+							detailedText: detailedText || shortText,
+							entities
+						};
+					}
+				} catch {
+					// Keep trying other formats.
+				}
+			}
+			return null;
+		};
+
+		const jsonParsed = tryParseJsonExplanation(normalized);
+		if (jsonParsed) return jsonParsed;
+
+		const structuredMatch = normalized.match(
+			/SHORT_EXPLANATION:\s*([\s\S]*?)\s*DETAILED_EXPLANATION:\s*([\s\S]*)/i
+		);
+		if (structuredMatch) {
+			const shortText = structuredMatch[1]?.trim() ?? '';
+			const detailedRaw = structuredMatch[2]?.trim() ?? '';
+			const entitiesMatch = detailedRaw.match(/ENTITIES:\s*([\s\S]*)/i);
+			const detailedText = entitiesMatch
+				? detailedRaw.slice(0, entitiesMatch.index ?? detailedRaw.length).trim()
+				: detailedRaw;
+			const entities = entitiesMatch
+				? normalizeEntities(
+						entitiesMatch[1]
+							.split('\n')
+							.map((line) => line.trim())
+							.filter(Boolean)
+					)
+				: [];
+			return { shortText, detailedText, entities };
+		}
+
+		const labeledMatch = normalized.match(
+			/SHORT[\s_-]*EXPLANATION\s*:\s*([\s\S]*?)\s*DETAILED[\s_-]*EXPLANATION\s*:\s*([\s\S]*)/i
+		);
+		if (labeledMatch) {
+			const shortText = labeledMatch[1]?.trim() ?? '';
+			const detailedRaw = labeledMatch[2]?.trim() ?? '';
+			const entitiesMatch = detailedRaw.match(/ENTITIES:\s*([\s\S]*)/i);
+			const detailedText = entitiesMatch
+				? detailedRaw.slice(0, entitiesMatch.index ?? detailedRaw.length).trim()
+				: detailedRaw;
+			const entities = entitiesMatch
+				? normalizeEntities(
+						entitiesMatch[1]
+							.split('\n')
+							.map((line) => line.trim())
+							.filter(Boolean)
+					)
+				: [];
+			return { shortText, detailedText, entities };
+		}
+
+		const paragraphChunks = normalized
+			.split(/\n\s*\n/g)
+			.map((chunk) => chunk.trim())
+			.filter(Boolean);
+		if (paragraphChunks.length >= 2) {
+			return {
+				shortText: paragraphChunks[0],
+				detailedText: paragraphChunks.slice(1).join('\n\n'),
+				entities: []
+			};
+		}
+
+		return {
+			shortText: normalized,
+			detailedText: normalized,
+			entities: []
+		};
+	}
+
+	const PARAGRAPH_EXPLANATION_ENTITY_COLOR_PALETTE: Array<{ color: string; softColor: string }> = [
+		{ color: '#2563eb', softColor: 'rgba(37,99,235,0.16)' },
+		{ color: '#0d9488', softColor: 'rgba(13,148,136,0.16)' },
+		{ color: '#7c3aed', softColor: 'rgba(124,58,237,0.16)' },
+		{ color: '#ea580c', softColor: 'rgba(234,88,12,0.16)' },
+		{ color: '#0284c7', softColor: 'rgba(2,132,199,0.16)' },
+		{ color: '#be185d', softColor: 'rgba(190,24,93,0.16)' },
+		{ color: '#15803d', softColor: 'rgba(21,128,61,0.16)' },
+		{ color: '#b45309', softColor: 'rgba(180,83,9,0.16)' }
+	];
+
+	function normalizeParagraphExplanationEntityKey(value: string): string {
+		return value
+			.toLocaleLowerCase()
+			.normalize('NFKD')
+			.replace(/[^\w\s-]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function buildParagraphExplanationEntityHighlights(
+		entities: string[]
+	): ParagraphExplanationEntityHighlight[] {
+		const uniqueByKey = new Map<string, string>();
+		for (const rawEntity of entities) {
+			const cleaned = rawEntity.trim();
+			if (!cleaned) continue;
+			const key = normalizeParagraphExplanationEntityKey(cleaned);
+			if (!key) continue;
+			if (!uniqueByKey.has(key)) uniqueByKey.set(key, cleaned);
+		}
+		return Array.from(uniqueByKey.entries()).map(([key, label], index) => {
+			const palette =
+				PARAGRAPH_EXPLANATION_ENTITY_COLOR_PALETTE[
+					index % PARAGRAPH_EXPLANATION_ENTITY_COLOR_PALETTE.length
+				];
+			return {
+				label,
+				key,
+				color: palette.color,
+				softColor: palette.softColor
+			};
+		});
+	}
+
+	function setHoveredParagraphExplanationEntityKey(nextKey: string | null) {
+		if (hoveredParagraphExplanationEntityKey === nextKey) return;
+
+		for (const element of document.querySelectorAll<HTMLElement>('[data-entity-key]')) {
+			const isActive = Boolean(nextKey) && element.dataset.entityKey === nextKey;
+			element.classList.toggle('is-entity-hovered', isActive);
+		}
+		hoveredParagraphExplanationEntityKey = nextKey;
 	}
 
 	function clearSnippetMarks(element: HTMLElement) {
@@ -844,6 +1106,92 @@
 				parent.insertBefore(mark.firstChild, mark);
 			}
 			parent.removeChild(mark);
+		}
+	}
+
+	function escapeRegex(value: string): string {
+		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function clearParagraphExplanationEntityMarks(element: HTMLElement) {
+		const marks = element.querySelectorAll<HTMLElement>('span.docx-paragraph-explanation-entity-link');
+		for (const mark of marks) {
+			const parent = mark.parentNode;
+			if (!parent) continue;
+			while (mark.firstChild) {
+				parent.insertBefore(mark.firstChild, mark);
+			}
+			parent.removeChild(mark);
+		}
+	}
+
+	function highlightParagraphExplanationEntitiesInElement(
+		element: HTMLElement,
+		entities: ParagraphExplanationEntityHighlight[]
+	) {
+		const normalizedEntities = entities
+			.map((entity) => entity.label.trim())
+			.filter((entity) => entity.length >= 2)
+			.sort((left, right) => right.length - left.length);
+		if (normalizedEntities.length === 0) return;
+		const entityByNormalizedLabel = new Map(
+			entities.map((entity) => [normalizeParagraphExplanationEntityKey(entity.label), entity])
+		);
+
+		const entityPattern = new RegExp(
+			normalizedEntities.map((entity) => escapeRegex(entity)).join('|'),
+			'gi'
+		);
+		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+		const nodes: Text[] = [];
+		let current = walker.nextNode();
+		while (current) {
+			const textNode = current as Text;
+			const parentElement = textNode.parentElement;
+			const rawText = textNode.nodeValue ?? '';
+			if (
+				parentElement &&
+				!parentElement.closest('.docx-paragraph-explanation-entity-link') &&
+				!parentElement.closest('mark.docx-contradiction-snippet') &&
+				rawText.trim()
+			) {
+				nodes.push(textNode);
+			}
+			current = walker.nextNode();
+		}
+
+		for (const textNode of nodes) {
+			const originalText = textNode.nodeValue ?? '';
+			entityPattern.lastIndex = 0;
+			if (!entityPattern.test(originalText)) continue;
+
+			entityPattern.lastIndex = 0;
+			const fragment = document.createDocumentFragment();
+			let cursor = 0;
+			for (const match of originalText.matchAll(entityPattern)) {
+				const value = match[0] ?? '';
+				if (!value) continue;
+				const start = match.index ?? 0;
+				if (start > cursor) {
+					fragment.appendChild(document.createTextNode(originalText.slice(cursor, start)));
+				}
+				const marker = document.createElement('span');
+				marker.className = 'docx-paragraph-explanation-entity-link';
+				const matchKey = normalizeParagraphExplanationEntityKey(value);
+				const entityMeta = entityByNormalizedLabel.get(matchKey);
+				if (entityMeta) {
+					marker.dataset.entityKey = entityMeta.key;
+					marker.style.setProperty('--entity-color', entityMeta.color);
+					marker.style.setProperty('--entity-color-soft', entityMeta.softColor);
+				}
+				marker.textContent = value;
+				fragment.appendChild(marker);
+				cursor = start + value.length;
+			}
+			if (cursor < originalText.length) {
+				fragment.appendChild(document.createTextNode(originalText.slice(cursor)));
+			}
+			textNode.parentNode?.replaceChild(fragment, textNode);
 		}
 	}
 
@@ -984,11 +1332,49 @@
 		selectedContradictionEvidenceLink = null;
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+			element.style.removeProperty('--tw-ring-color');
+			element.style.removeProperty('--tw-ring-offset-shadow');
+			element.style.removeProperty('--tw-ring-shadow');
+			element.style.removeProperty('outline');
 			clearSnippetMarks(element);
 			delete element.dataset.contradictionConfidenceBand;
 			delete element.dataset.contradictionConfidence;
 			delete element.dataset.contradictionReason;
 		}
+
+		if (typeof document !== 'undefined') {
+			// Hard cleanup for any stale contradiction decorations outside tracked paragraph map
+			for (const element of document.querySelectorAll<HTMLElement>(
+				'.docx-contradiction-highlight, .docx-contradiction-selected'
+			)) {
+				element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
+				element.style.removeProperty('--tw-ring-color');
+				element.style.removeProperty('--tw-ring-offset-shadow');
+				element.style.removeProperty('--tw-ring-shadow');
+				element.style.removeProperty('outline');
+				delete element.dataset.contradictionConfidenceBand;
+				delete element.dataset.contradictionConfidence;
+				delete element.dataset.contradictionReason;
+			}
+			for (const mark of document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet')) {
+				const parent = mark.parentNode;
+				if (!parent) continue;
+				while (mark.firstChild) {
+					parent.insertBefore(mark.firstChild, mark);
+				}
+				parent.removeChild(mark);
+			}
+		}
+	}
+
+	function syncContradictionDecorations() {
+		if (shouldShowContradictionDecorations) {
+			applyContradictionHighlights();
+			return;
+		}
+		clearContradictionHighlights();
+		contradictionScrollMarkers = [];
+		selectedContradictionEvidenceLink = null;
 	}
 
 	function resolveContradictionConfidenceBand(
@@ -1151,6 +1537,10 @@
 			const confidenceBand = resolveContradictionConfidenceBand(result.confidence);
 
 			element.classList.add('docx-contradiction-highlight');
+			element.style.setProperty('--tw-ring-color', 'transparent');
+			element.style.setProperty('--tw-ring-offset-shadow', '0 0 #0000');
+			element.style.setProperty('--tw-ring-shadow', '0 0 #0000');
+			element.style.setProperty('outline', 'none');
 			element.dataset.contradictionConfidenceBand = confidenceBand;
 			element.dataset.contradictionConfidence = String(result.confidence);
 			element.dataset.contradictionReason = result.brief_reason ?? '';
@@ -1203,49 +1593,89 @@
 
 	function clearParagraphExplanationHighlights() {
 		paragraphExplanationConnectors = [];
+		paragraphExplanationFolds = [];
 		paragraphExplanationScrollMarkers = [];
+		paragraphExplanationCollapsedCards = [];
+		paragraphExplanationMovedNodeIds = new Set<string>();
+		setHoveredParagraphExplanationEntityKey(null);
+		clearParagraphExplanationElementHighlights();
+	}
+
+	function clearParagraphExplanationElementHighlights() {
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove(
 				'docx-paragraph-explanation-selected',
-				'docx-paragraph-explanation-related'
+				'docx-paragraph-explanation-related',
+				'docx-paragraph-explanation-source-hidden',
+				'docx-paragraph-explanation-muted'
 			);
+			clearParagraphExplanationEntityMarks(element);
 		}
 	}
 
 	function applyParagraphExplanationHighlights() {
-		clearParagraphExplanationHighlights();
+		clearParagraphExplanationElementHighlights();
 		if (!shouldShowParagraphExplanationDecorations) return;
+		const shouldMuteOutOfContext =
+			paragraphExplanationCompression > 0.02 && paragraphExplanationMovedNodeIds.size > 0;
+		if (shouldMuteOutOfContext) {
+			for (const element of paragraphElementById.values()) {
+				element.classList.add('docx-paragraph-explanation-muted');
+			}
+		}
 
 		const selected = get(selectedParagraph);
 		if (!selected?.id) return;
 		const selectedElement = paragraphElementById.get(selected.id);
 		if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
+		selectedElement?.classList.remove('docx-paragraph-explanation-muted');
 		selectedElement?.classList.add('docx-paragraph-explanation-selected');
+		if (selectedElement) {
+			highlightParagraphExplanationEntitiesInElement(selectedElement, paragraphExplanationEntities);
+		}
 		for (const related of paragraphExplanationRelatedParagraphs) {
-			paragraphElementById
-				.get(related.node.id)
-				?.classList.add('docx-paragraph-explanation-related');
+			const relatedElement = paragraphElementById.get(related.node.id);
+			relatedElement?.classList.remove('docx-paragraph-explanation-muted');
+			relatedElement?.classList.add('docx-paragraph-explanation-related');
+			if (
+				paragraphExplanationCompression > 0.02 &&
+				paragraphExplanationMovedNodeIds.has(related.node.id)
+			) {
+				relatedElement?.classList.add('docx-paragraph-explanation-source-hidden');
+			}
+			if (relatedElement) {
+				highlightParagraphExplanationEntitiesInElement(
+					relatedElement,
+					paragraphExplanationEntities
+				);
+			}
 		}
 	}
 
 	function refreshParagraphExplanationConnectorPaths() {
 		if (!documentScrollHost || !shouldShowParagraphExplanationDecorations) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
 		const selected = get(selectedParagraph);
 		if (!selected?.id) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
 		const selectedElement = paragraphElementById.get(selected.id);
 		if (!selectedElement) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
@@ -1254,22 +1684,55 @@
 		const selectedY = selectedRect.top - hostRect.top + selectedRect.height / 2;
 		const selectedEdgeX = selectedRect.left - hostRect.left;
 
-		const anchors: Array<{ y: number; edgeX: number; paragraphId: string }> = [];
+		const anchors: Array<{
+			y: number;
+			height: number;
+			edgeX: number;
+			paragraphId: string;
+			paragraphEnum: number;
+			paragraphEnumLabel: string;
+			top: number;
+			width: number;
+			html: string;
+		}> = [];
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
 			const relatedRect = relatedElement.getBoundingClientRect();
 			const relatedY = relatedRect.top - hostRect.top + relatedRect.height / 2;
+			const relatedClone = relatedElement.cloneNode(true) as HTMLElement;
+			relatedClone.removeAttribute('contenteditable');
+			relatedClone.removeAttribute('spellcheck');
+			delete relatedClone.dataset.nodeId;
+			delete relatedClone.dataset.paragraphKind;
+			delete relatedClone.dataset.docxEditableRoot;
+			relatedClone.classList.remove(
+				'docx-paragraph-explanation-related',
+				'docx-paragraph-explanation-source-hidden',
+				'docx-related-context',
+				'docx-related-linked',
+				'docx-related-selected'
+			);
+			relatedClone.classList.add('docx-paragraph-explanation-cloned-node');
+			const paragraphEnumLabel = `P-${related.node.paragraph_enum}`;
 			anchors.push({
 				y: relatedY,
+				height: relatedRect.height,
 				edgeX: relatedRect.left - hostRect.left,
-				paragraphId: related.node.id
+				paragraphId: related.node.id,
+				paragraphEnum: related.node.paragraph_enum,
+				paragraphEnumLabel,
+				top: relatedRect.top - hostRect.top,
+				width: relatedRect.width,
+				html: relatedClone.outerHTML
 			});
 		}
 
 		if (anchors.length === 0) {
 			paragraphExplanationConnectors = [];
+			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
+			paragraphExplanationCollapsedCards = [];
 			return;
 		}
 
@@ -1277,10 +1740,103 @@
 			(left, right) =>
 				Math.abs(left.y - selectedY) - Math.abs(right.y - selectedY) || left.y - right.y
 		);
+		const selectedParagraphEnum =
+			typeof selected.paragraph_enum === 'number'
+				? selected.paragraph_enum
+				: Number((selected.id.match(/-p-(\d+)$/)?.[1] ?? '0'));
+		const selectedTop = selectedRect.top - hostRect.top;
+		const selectedBottom = selectedTop + selectedRect.height;
+		const stationaryByParagraphId = new Map<string, boolean>();
+		for (const anchor of anchors) {
+			const isConsecutive = Math.abs(anchor.paragraphEnum - selectedParagraphEnum) === 1;
+			const anchorBottom = anchor.top + anchor.height;
+			const verticalGap =
+				anchor.top >= selectedBottom ? anchor.top - selectedBottom : selectedTop - anchorBottom;
+			const isSideBySide = verticalGap <= PARAGRAPH_EXPLANATION_CONSECUTIVE_GAP_PX;
+			stationaryByParagraphId.set(anchor.paragraphId, isConsecutive && isSideBySide);
+		}
+
+		const stationaryAnchors = anchors.filter(
+			(anchor) => stationaryByParagraphId.get(anchor.paragraphId) === true
+		);
+		const movableAnchors = anchors.filter(
+			(anchor) => stationaryByParagraphId.get(anchor.paragraphId) !== true
+		);
+		const beforeAnchors = movableAnchors
+			.filter((anchor) => anchor.paragraphEnum < selectedParagraphEnum)
+			.sort((left, right) => left.paragraphEnum - right.paragraphEnum);
+		const afterAnchors = movableAnchors
+			.filter((anchor) => anchor.paragraphEnum > selectedParagraphEnum)
+			.sort((left, right) => left.paragraphEnum - right.paragraphEnum);
+		const equalAnchors = movableAnchors
+			.filter((anchor) => anchor.paragraphEnum === selectedParagraphEnum)
+			.sort((left, right) => left.paragraphId.localeCompare(right.paragraphId));
+		const compressedYByParagraphId = new Map<string, number>();
+		const compressedTopByParagraphId = new Map<string, number>();
+		for (const anchor of stationaryAnchors) {
+			compressedYByParagraphId.set(anchor.paragraphId, anchor.y);
+			compressedTopByParagraphId.set(anchor.paragraphId, anchor.top);
+		}
+
+		const stationaryAbove = stationaryAnchors.filter((anchor) => anchor.top < selectedTop);
+		const stationaryBelow = stationaryAnchors.filter((anchor) => anchor.top >= selectedTop);
+		let beforeCursor = selectedTop - PARAGRAPH_EXPLANATION_STACK_OFFSET_PX;
+		if (stationaryAbove.length > 0) {
+			const nearestStationaryAboveTop = Math.max(...stationaryAbove.map((anchor) => anchor.top));
+			beforeCursor = Math.min(
+				beforeCursor,
+				nearestStationaryAboveTop - PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX
+			);
+		}
+		for (const anchor of [...beforeAnchors].sort((left, right) => right.paragraphEnum - left.paragraphEnum)) {
+			const stackedTop = beforeCursor - anchor.height;
+			const stackedY = stackedTop + anchor.height / 2;
+			const compressedY =
+				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
+			const compressedTop =
+				anchor.top * (1 - paragraphExplanationCompression) +
+				stackedTop * paragraphExplanationCompression;
+			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
+			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+			beforeCursor = stackedTop - PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX;
+		}
+
+		let afterCursor = selectedBottom + PARAGRAPH_EXPLANATION_STACK_OFFSET_PX;
+		if (stationaryBelow.length > 0) {
+			const nearestStationaryBelowBottom = Math.min(
+				...stationaryBelow.map((anchor) => anchor.top + anchor.height)
+			);
+			afterCursor = Math.max(
+				afterCursor,
+				nearestStationaryBelowBottom + PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX
+			);
+		}
+		for (const anchor of [...equalAnchors, ...afterAnchors]) {
+			const stackedTop = afterCursor;
+			const stackedY = stackedTop + anchor.height / 2;
+			const compressedY =
+				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
+			const compressedTop =
+				anchor.top * (1 - paragraphExplanationCompression) +
+				stackedTop * paragraphExplanationCompression;
+			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
+			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+			afterCursor = stackedTop + anchor.height + PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX;
+		}
 		const edgeBaseX = Math.min(selectedEdgeX, ...sortedAnchors.map((anchor) => anchor.edgeX));
 		const baseLeft = Math.max(4, edgeBaseX - 20);
-		const trunkTop = Math.min(selectedY, ...sortedAnchors.map((anchor) => anchor.y));
-		const trunkBottom = Math.max(selectedY, ...sortedAnchors.map((anchor) => anchor.y));
+		const trunkTop = Math.min(
+			selectedY,
+			...sortedAnchors.map(
+				(anchor) => compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y
+			)
+		);
+		const trunkBottom = Math.max(
+			selectedY,
+			...sortedAnchors.map(
+				(anchor) => compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y
+			)
+		);
 		const selectedCapWidthPx = Math.max(
 			8,
 			selectedEdgeX - baseLeft - PARAGRAPH_EXPLANATION_PARAGRAPH_GAP_PX
@@ -1294,6 +1850,8 @@
 			relatedCapTopPx: number;
 			relatedCapWidthPx: number;
 			paragraphId: string;
+			paragraphEnumLabel: string;
+			labelLeftPx: number;
 		}> = [];
 		for (const anchor of sortedAnchors) {
 			// Keep connector anchors tied to real paragraph positions.
@@ -1309,13 +1867,60 @@
 				leftPx: baseLeft,
 				selectedCapTopPx: selectedY,
 				selectedCapWidthPx,
-				relatedCapTopPx: anchor.y,
+				relatedCapTopPx: compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y,
 				relatedCapWidthPx,
-				paragraphId: anchor.paragraphId
+				paragraphId: anchor.paragraphId,
+				paragraphEnumLabel: anchor.paragraphEnumLabel,
+				labelLeftPx: baseLeft - 50
 			});
 		}
 
 		paragraphExplanationConnectors = nextConnectors;
+		const movedNodeIds = new Set<string>();
+		for (const anchor of anchors) {
+			const movedTop = compressedTopByParagraphId.get(anchor.paragraphId) ?? anchor.top;
+			if (Math.abs(movedTop - anchor.top) > 1.5) {
+				movedNodeIds.add(anchor.paragraphId);
+			}
+		}
+		paragraphExplanationMovedNodeIds = movedNodeIds;
+		if (paragraphExplanationCompression > 0.03 && movedNodeIds.size > 0) {
+			const foldSourceY = [
+				selectedY,
+				...sortedAnchors.map(
+					(anchor) => compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y
+				)
+			]
+				.sort((left, right) => left - right)
+				.filter((value, index, list) => index === 0 || Math.abs(value - list[index - 1]) > 2);
+			const nextFolds: Array<{ topPx: number; leftPx: number }> = [];
+			for (let index = 0; index < foldSourceY.length - 1; index += 1) {
+				const upper = foldSourceY[index];
+				const lower = foldSourceY[index + 1];
+				if (lower - upper < 26) continue;
+				nextFolds.push({
+					topPx: upper + (lower - upper) / 2,
+					leftPx: baseLeft
+				});
+			}
+			paragraphExplanationFolds = nextFolds;
+		} else {
+			paragraphExplanationFolds = [];
+		}
+		const cardsLeft = Math.max(14, selectedRect.left - hostRect.left);
+		paragraphExplanationCollapsedCards =
+			paragraphExplanationCompression > 0.02 && movedNodeIds.size > 0
+				? anchors
+						.filter((anchor) => movedNodeIds.has(anchor.paragraphId))
+						.map((anchor) => ({
+						paragraphId: anchor.paragraphId,
+						topPx: compressedTopByParagraphId.get(anchor.paragraphId) ?? anchor.top,
+						leftPx: cardsLeft,
+						widthPx: Math.min(anchor.width, hostRect.width - cardsLeft - 20),
+						html: anchor.html
+					}))
+						.sort((left, right) => left.topPx - right.topPx)
+				: [];
 
 		const hostScrollHeight = documentScrollHost.scrollHeight;
 		if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
@@ -1348,6 +1953,64 @@
 			paragraphExplanationFrame = null;
 			refreshParagraphExplanationConnectorPaths();
 		});
+	}
+
+	function handleParagraphExplanationShiftWheel(event: WheelEvent) {
+		if (!shouldShowParagraphExplanationDecorations) return;
+		if (!event.shiftKey) return;
+		event.preventDefault();
+		if (Math.abs(event.deltaY) < PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE) return;
+		const nextTarget = event.deltaY > 0 ? 1 : 0;
+		if (
+			nextTarget === paragraphExplanationCompressionTarget &&
+			paragraphExplanationCompressionTweenFrame != null
+		) {
+			return;
+		}
+
+		paragraphExplanationCompressionTarget = nextTarget;
+		paragraphExplanationCompressionStart = paragraphExplanationCompression;
+		paragraphExplanationCompressionStartTime =
+			typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+		if (paragraphExplanationCompressionTweenFrame != null) {
+			window.cancelAnimationFrame(paragraphExplanationCompressionTweenFrame);
+			paragraphExplanationCompressionTweenFrame = null;
+		}
+
+		const animateCompression = (timestamp: number) => {
+			const elapsed = timestamp - paragraphExplanationCompressionStartTime;
+			const linearProgress = Math.max(
+				0,
+				Math.min(1, elapsed / PARAGRAPH_EXPLANATION_COMPRESS_DURATION_MS)
+			);
+			const easedProgress =
+				linearProgress < 0.5
+					? 4 * linearProgress * linearProgress * linearProgress
+					: 1 - Math.pow(-2 * linearProgress + 2, 3) / 2;
+			paragraphExplanationCompression =
+				paragraphExplanationCompressionStart +
+				(paragraphExplanationCompressionTarget - paragraphExplanationCompressionStart) *
+					easedProgress;
+
+			applyParagraphExplanationHighlights();
+			refreshParagraphExplanationConnectorPaths();
+
+			const delta = Math.abs(
+				paragraphExplanationCompressionTarget - paragraphExplanationCompression
+			);
+			if (linearProgress >= 1 || delta <= PARAGRAPH_EXPLANATION_COMPRESS_SNAP_EPSILON) {
+				paragraphExplanationCompression = paragraphExplanationCompressionTarget;
+				paragraphExplanationCompressionTweenFrame = null;
+				applyParagraphExplanationHighlights();
+				refreshParagraphExplanationConnectorPaths();
+				return;
+			}
+			paragraphExplanationCompressionTweenFrame =
+				window.requestAnimationFrame(animateCompression);
+		};
+		animateCompression(paragraphExplanationCompressionStartTime);
+		paragraphExplanationCompressionTweenFrame = window.requestAnimationFrame(animateCompression);
 	}
 
 	function jumpToRelatedParagraphMarker(paragraphId: string) {
@@ -1394,20 +2057,17 @@
 		window.addEventListener('mouseup', stopManualScrollDrag);
 	}
 
-	function setContradictionResults(results: ContradictionParagraphResult[], source: string | null) {
+	function setContradictionResults(results: ContradictionParagraphResult[], _source: string | null) {
 		const next = new Map<string, ContradictionParagraphResult>();
 		for (const row of results) {
 			next.set(String(row.paragraph_id), row);
 		}
 		contradictionResultsByParagraphId = next;
-		contradictionSource = source;
-		contradictionSummaryVisible = true;
-		applyContradictionHighlights();
+		syncContradictionDecorations();
 	}
 
 	function setContradictionErrorMessage(message: string | null) {
 		contradictionError = message;
-		if (message) contradictionSummaryVisible = true;
 	}
 
 	function contradictionModeLabel(mode: ContradictionGraphMode): string {
@@ -1444,6 +2104,7 @@
 	async function loadSavedContradictions() {
 		activeRightPanelTab = 'analysis';
 		isRightDrawerOpen = true;
+		hasTriggeredContradictionCheck = true;
 
 		if (!activeDocumentId) {
 			setContradictionErrorMessage('No document is loaded.');
@@ -1470,6 +2131,7 @@
 	async function searchContradictionsWithLlm() {
 		activeRightPanelTab = 'analysis';
 		isRightDrawerOpen = true;
+		hasTriggeredContradictionCheck = true;
 
 		if (backendGraphLoading) {
 			setContradictionErrorMessage(
@@ -1487,6 +2149,8 @@
 		contradictionLoading = true;
 		setContradictionErrorMessage(null);
 		try {
+			const approved = await confirmLlmEstimate('contradictions_analyze', payload);
+			if (!approved) return;
 			const response = await fetchContradictionAnalysis(payload);
 			const resolvedModel = response.model?.trim() || payload.model || 'default';
 			setContradictionResults(
@@ -1530,6 +2194,37 @@
 	function nextAssistantMessageId() {
 		assistantMessageCounter += 1;
 		return `assistant-${assistantMessageCounter}`;
+	}
+
+	function buildEstimateConfirmMessage(estimate: LlmEstimateResponse): string {
+		return [
+			`Model: ${estimate.model}`,
+			`Provider: ${estimate.provider}`,
+			`Input tokens (est): ${estimate.estimatedInputTokens}`,
+			`Output tokens (est): ${estimate.estimatedOutputTokens}`,
+			`Total tokens (est): ${estimate.estimatedTotalTokens}`,
+			`Estimated cost (USD): ${estimate.estimatedCostUsdFormatted}`,
+			'',
+			'Do you want to send this request now?'
+		].join('\n');
+	}
+
+	async function confirmLlmEstimate(
+		callType:
+			| 'assistant_chat'
+			| 'assistant_simplify'
+			| 'assistant_fix_contradiction'
+			| 'contradictions_analyze',
+		payload: AssistantChatRequest | SimplifySelectionRequest | ContradictionAnalysisRequest
+	): Promise<boolean> {
+		const estimatePayload =
+			callType === 'assistant_chat'
+				? { callType, assistantChat: payload as AssistantChatRequest }
+				: callType === 'contradictions_analyze'
+					? { callType, contradictionAnalysis: payload as ContradictionAnalysisRequest }
+					: { callType, simplifySelection: payload as SimplifySelectionRequest };
+		const estimate = await fetchLlmEstimate(estimatePayload);
+		return window.confirm(buildEstimateConfirmMessage(estimate));
 	}
 
 	async function scrollAssistantToBottom() {
@@ -1616,6 +2311,11 @@
 		};
 
 		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) {
+				assistantLoading = false;
+				return;
+			}
 			const response = await fetchAssistantResponse(payload);
 			assistantMessages = [
 				...assistantMessages,
@@ -1677,13 +2377,26 @@
 
 		const question = [
 			'Explain the selected contract paragraph in clear and accessible language.',
-			'Use the related paragraphs as supporting context.',
-			'Return a detailed explanation with:',
-			'1) plain-language summary,',
-			'2) practical meaning and obligations,',
-			'3) potential risks/ambiguities,',
-			'4) examples of real-world impact.',
-			'Keep legal accuracy while avoiding jargon.'
+			'Use related paragraphs only as supporting context; do not invent facts.',
+			'CRITICAL OUTPUT RULES:',
+			'- Do NOT return JSON.',
+			'- Do NOT use code fences.',
+			'- Do NOT include citations, arrays, or metadata.',
+			'- Return ONLY these three text blocks, in this exact order and labels:',
+			'SHORT_EXPLANATION:',
+			'<2-4 sentences, concise, plain language, max ~90 words>',
+			'DETAILED_EXPLANATION:',
+			'<in-depth explanation, 4-8 sentences, ~180-320 words>',
+			'QUALITY REQUIREMENTS FOR DETAILED_EXPLANATION:',
+			'1) precise legal meaning of the clause;',
+			'2) obligations/duties by party and practical consequences;',
+			'3) conditions, exceptions, dependencies, and timeline cues;',
+			'4) legal/commercial risks and ambiguities;',
+			'5) one concrete real-world scenario showing impact.',
+			'Keep legal accuracy while reducing jargon.',
+			'ENTITIES:',
+			'- list 3 to 8 key legal/business entities or terms copied exactly from the clause/context when possible.',
+			'- one entity per line, prefixed with "- ".'
 		].join('\n');
 
 		const payload: AssistantChatRequest = {
@@ -1700,8 +2413,14 @@
 		};
 
 		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) return;
 			const response = await fetchAssistantResponse(payload);
-			paragraphExplanationAnswer = response.answer;
+			const parsed = parseParagraphExplanationVariants(response.answer);
+			paragraphExplanationShort = parsed.shortText;
+			paragraphExplanationDetailed = parsed.detailedText;
+			paragraphExplanationEntities = buildParagraphExplanationEntityHighlights(parsed.entities);
+			applyParagraphExplanationHighlights();
 		} catch (requestError) {
 			const message = getAxiosErrorMessage(
 				requestError,
@@ -1750,6 +2469,11 @@
 		};
 
 		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) {
+				assistantLoading = false;
+				return;
+			}
 			const response = await fetchAssistantResponse(payload);
 			const structured = parseStructuredContradictionFromAnswer(
 				response.answer,
@@ -2034,7 +2758,9 @@
 				selectedParagraphId: get(selectedParagraph)?.id ?? null,
 				paragraphElementById,
 				fallbackTarget: target ?? simplifyTarget,
-				resolveErrorMessage: getAxiosErrorMessage
+				resolveErrorMessage: getAxiosErrorMessage,
+				confirmLlmEstimate: (callType, requestPayload) =>
+					confirmLlmEstimate(callType, requestPayload)
 			});
 			if (!execution.ok) {
 				appendAssistantQuickActionMessage(
@@ -2185,7 +2911,9 @@
 				selectedParagraphId: get(selectedParagraph)?.id ?? null,
 				paragraphElementById,
 				fallbackTarget: target ?? simplifyTarget,
-				resolveErrorMessage: getAxiosErrorMessage
+				resolveErrorMessage: getAxiosErrorMessage,
+				confirmLlmEstimate: (callType, requestPayload) =>
+					confirmLlmEstimate(callType, requestPayload)
 			});
 			if (!execution.ok) {
 				simplifyError = execution.error;
@@ -2227,7 +2955,9 @@
 				selectedParagraphId: get(selectedParagraph)?.id ?? null,
 				paragraphElementById,
 				fallbackTarget: target ?? simplifyTarget,
-				resolveErrorMessage: getAxiosErrorMessage
+				resolveErrorMessage: getAxiosErrorMessage,
+				confirmLlmEstimate: (callType, requestPayload) =>
+					confirmLlmEstimate(callType, requestPayload)
 			});
 			if (!execution.ok) {
 				simplifyError = execution.error;
@@ -2338,8 +3068,8 @@
 		}
 		if (viewer) viewer.replaceChildren();
 		contradictionResultsByParagraphId = new Map();
-		contradictionSource = null;
 		contradictionError = null;
+		hasTriggeredContradictionCheck = false;
 		contradictionScrollMarkers = [];
 		selectedContradictionEvidenceLink = null;
 		relatedScrollMarkers = [];
@@ -3049,7 +3779,7 @@
 			applyDocxTabStops(viewer);
 			paginateRenderedSections(viewer);
 			pruneBlankSections();
-			applyContradictionHighlights();
+			syncContradictionDecorations();
 			scheduleRelatedScrollMarkerRefresh();
 			scheduleParagraphExplanationConnectorRefresh();
 
@@ -3116,8 +3846,13 @@
 		return Math.min(Math.max(nextWidth, RIGHT_DRAWER_MIN_WIDTH), maxWidth);
 	}
 
-	function setRightDrawerWidth(nextWidth: number) {
+function setRightDrawerWidth(nextWidth: number) {
 		rightDrawerWidth = clampRightDrawerWidth(nextWidth);
+	}
+
+	$: if (!shouldShowContradictionDecorations) {
+		// Defensive: keep contradiction visuals fully off outside analysis tab.
+		clearContradictionHighlights();
 	}
 
 	function stopRightDrawerResize() {
@@ -3229,14 +3964,41 @@
 			scheduleRelatedScrollMarkerRefresh();
 			setRightDrawerWidth(rightDrawerWidth);
 		};
+		const isEntityTokenElement = (value: EventTarget | null): HTMLElement | null => {
+			if (!(value instanceof Element)) return null;
+			const target = value.closest(
+				'.docx-paragraph-explanation-entity-link, .docx-paragraph-explanation-entity-token'
+			);
+			return target instanceof HTMLElement ? target : null;
+		};
+		const handleEntityPointerOver = (event: PointerEvent) => {
+			const token = isEntityTokenElement(event.target);
+			if (!token) return;
+			setHoveredParagraphExplanationEntityKey(token.dataset.entityKey ?? null);
+		};
+		const handleEntityPointerOut = (event: PointerEvent) => {
+			const token = isEntityTokenElement(event.target);
+			if (!token) return;
+			const entityKey = token.dataset.entityKey ?? null;
+			const relatedToken = isEntityTokenElement(event.relatedTarget);
+			if (entityKey && relatedToken?.dataset.entityKey === entityKey) return;
+			if (hoveredParagraphExplanationEntityKey === entityKey) {
+				setHoveredParagraphExplanationEntityKey(null);
+			}
+		};
 
 		document.addEventListener('selectionchange', handleDocumentSelectionChange);
 		document.addEventListener('mouseup', handleDocumentSelectionChange);
 		document.addEventListener('keyup', handleDocumentSelectionChange);
 		document.addEventListener('mousedown', handleGlobalPointerDown, true);
+		document.addEventListener('pointerover', handleEntityPointerOver, true);
+		document.addEventListener('pointerout', handleEntityPointerOut, true);
 		window.addEventListener('resize', handleViewportResize);
 		documentScrollHost?.addEventListener('scroll', handleDocumentScroll, {
 			passive: true
+		});
+		documentScrollHost?.addEventListener('wheel', handleParagraphExplanationShiftWheel, {
+			passive: false
 		});
 		refreshViewportMode();
 		setRightDrawerWidth(rightDrawerWidth);
@@ -3275,8 +4037,11 @@
 			document.removeEventListener('mouseup', handleDocumentSelectionChange);
 			document.removeEventListener('keyup', handleDocumentSelectionChange);
 			document.removeEventListener('mousedown', handleGlobalPointerDown, true);
+			document.removeEventListener('pointerover', handleEntityPointerOver, true);
+			document.removeEventListener('pointerout', handleEntityPointerOut, true);
 			window.removeEventListener('resize', handleViewportResize);
 			documentScrollHost?.removeEventListener('scroll', handleDocumentScroll);
+			documentScrollHost?.removeEventListener('wheel', handleParagraphExplanationShiftWheel);
 			stopRightDrawerResize();
 			stopManualScrollDrag();
 			contradictionMarkerResizeObserver?.disconnect();
@@ -3288,6 +4053,10 @@
 			if (paragraphExplanationFrame != null) {
 				window.cancelAnimationFrame(paragraphExplanationFrame);
 				paragraphExplanationFrame = null;
+			}
+			if (paragraphExplanationCompressionTweenFrame != null) {
+				window.cancelAnimationFrame(paragraphExplanationCompressionTweenFrame);
+				paragraphExplanationCompressionTweenFrame = null;
 			}
 			clearRenderedDocument();
 		};
@@ -3358,36 +4127,6 @@
 				</Select.Root>
 			</div>
 		</header>
-
-		{#if contradictionSummaryVisible && (contradictionError || contradictionResultsByParagraphId.size > 0)}
-			<Card.Root
-				size="sm"
-				class="absolute top-16 right-4 left-4 z-[70] border-gray-200 py-0 text-[10px] shadow-lg"
-			>
-				<Card.Content class="px-2.5 text-gray-600">
-					<div class="flex items-start justify-between gap-2">
-						{#if contradictionError}
-							<p class="min-w-0 leading-snug text-red-700">{contradictionError}</p>
-						{:else}
-							<p class="min-w-0 leading-snug">
-								{contradictionCount} paragraph(s) with highlighted contradiction(s).
-								{#if contradictionSource}
-									<span class="text-gray-500"> Source: {contradictionSource}</span>
-								{/if}
-							</p>
-						{/if}
-						<button
-							type="button"
-							class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-gray-500 transition hover:border-gray-300 hover:text-gray-700"
-							aria-label="Close contradiction summary"
-							on:click={() => (contradictionSummaryVisible = false)}
-						>
-							<CloseIcon className="h-3 w-3" />
-						</button>
-					</div>
-				</Card.Content>
-			</Card.Root>
-		{/if}
 
 		{#if localError || $error}
 			<div class="mx-4 mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
@@ -3525,7 +4264,7 @@
 							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 							role="button"
 							tabindex="0"
-							aria-label={`Go to related paragraph ${connector.paragraphId}`}
+							aria-label={`Go to related paragraph ${connector.paragraphEnumLabel}`}
 							on:click={() => jumpToRelatedParagraphMarker(connector.paragraphId)}
 							on:keydown={(event) => {
 								if (event.key === 'Enter' || event.key === ' ') {
@@ -3534,7 +4273,33 @@
 								}
 							}}
 						></span>
+						<span
+							class="docx-paragraph-explanation-cap-label"
+							style={`left: ${connector.labelLeftPx}px; top: ${connector.relatedCapTopPx}px;`}
+						>
+							{connector.paragraphEnumLabel}
+						</span>
 					{/each}
+					{#each paragraphExplanationFolds as fold, index (`fold-${index}`)}
+						<svg
+							class="docx-paragraph-explanation-line-fold"
+							style={`left: ${fold.leftPx}px; top: ${fold.topPx}px;`}
+							viewBox="0 0 12 20"
+							aria-hidden="true"
+						>
+							<path d="M6 1 L3 5 L9 9 L3 13 L6 19"></path>
+						</svg>
+					{/each}
+					{#if paragraphExplanationCollapsedCards.length > 0}
+						{#each paragraphExplanationCollapsedCards as card (`compressed-card-${card.paragraphId}`)}
+							<div
+								class="docx-paragraph-explanation-collapsed-card"
+								style={`left: ${card.leftPx}px; top: ${card.topPx}px; width: ${card.widthPx}px;`}
+							>
+								{@html card.html}
+							</div>
+						{/each}
+					{/if}
 				</div>
 			{/if}
 
@@ -3764,6 +4529,10 @@
 			<RightPanelAnalysis
 				selectedParagraph={$selectedParagraph}
 				{contradictionLoading}
+				{hasTriggeredContradictionCheck}
+				{contradictionError}
+				{contradictionCount}
+				{contradictionSummaryItems}
 				{revisionProcessingSteps}
 				{selectedContradictionResult}
 				{selectedContradictionEvidence}
@@ -3823,7 +4592,9 @@
 				selectedParagraph={$selectedParagraph}
 				loading={paragraphExplanationLoading}
 				error={paragraphExplanationError}
-				explanation={paragraphExplanationAnswer}
+				explanationShort={paragraphExplanationShort}
+				explanationDetailed={paragraphExplanationDetailed}
+				explanationEntities={paragraphExplanationEntities}
 				simplifyResult={latestRewriteSource === 'simplify' ? simplifyResult : null}
 				simplifyError={latestRewriteSource === 'simplify' ? simplifyError : null}
 				rewriteSource={latestRewriteSource === 'simplify' ? 'simplify' : null}
