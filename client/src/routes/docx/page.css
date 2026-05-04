@@ -156,6 +156,11 @@
 		filter: saturate(0.7);
 	}
 
+	.docx-paragraph-explanation-muted {
+		opacity: 0.34;
+		transition: opacity 160ms ease;
+	}
+
 	.docx-paragraph-explanation-entity-link {
 		color: var(--entity-color, #2563eb);
 		text-decoration: underline;

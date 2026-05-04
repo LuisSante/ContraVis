@@ -147,6 +147,8 @@
 	const PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE = 2;
 	const PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX = 72;
 	const PARAGRAPH_EXPLANATION_STACK_OFFSET_PX = 18;
+	const PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX = 12;
+	const PARAGRAPH_EXPLANATION_CONSECUTIVE_GAP_PX = 24;
 	const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
 		(action) =>
 			action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
@@ -319,6 +321,7 @@
 		widthPx: number;
 		html: string;
 	}> = [];
+	let paragraphExplanationMovedNodeIds = new Set<string>();
 	let paragraphExplanationPrimaryConnector: {
 		topPx: number;
 		bottomPx: number;
@@ -1587,6 +1590,7 @@
 		paragraphExplanationFolds = [];
 		paragraphExplanationScrollMarkers = [];
 		paragraphExplanationCollapsedCards = [];
+		paragraphExplanationMovedNodeIds = new Set<string>();
 		setHoveredParagraphExplanationEntityKey(null);
 		clearParagraphExplanationElementHighlights();
 	}
@@ -1596,7 +1600,8 @@
 			element.classList.remove(
 				'docx-paragraph-explanation-selected',
 				'docx-paragraph-explanation-related',
-				'docx-paragraph-explanation-source-hidden'
+				'docx-paragraph-explanation-source-hidden',
+				'docx-paragraph-explanation-muted'
 			);
 			clearParagraphExplanationEntityMarks(element);
 		}
@@ -1605,19 +1610,31 @@
 	function applyParagraphExplanationHighlights() {
 		clearParagraphExplanationElementHighlights();
 		if (!shouldShowParagraphExplanationDecorations) return;
+		const shouldMuteOutOfContext =
+			paragraphExplanationCompression > 0.02 && paragraphExplanationMovedNodeIds.size > 0;
+		if (shouldMuteOutOfContext) {
+			for (const element of paragraphElementById.values()) {
+				element.classList.add('docx-paragraph-explanation-muted');
+			}
+		}
 
 		const selected = get(selectedParagraph);
 		if (!selected?.id) return;
 		const selectedElement = paragraphElementById.get(selected.id);
 		if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
+		selectedElement?.classList.remove('docx-paragraph-explanation-muted');
 		selectedElement?.classList.add('docx-paragraph-explanation-selected');
 		if (selectedElement) {
 			highlightParagraphExplanationEntitiesInElement(selectedElement, paragraphExplanationEntities);
 		}
 		for (const related of paragraphExplanationRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
+			relatedElement?.classList.remove('docx-paragraph-explanation-muted');
 			relatedElement?.classList.add('docx-paragraph-explanation-related');
-			if (paragraphExplanationCompression > 0.02) {
+			if (
+				paragraphExplanationCompression > 0.02 &&
+				paragraphExplanationMovedNodeIds.has(related.node.id)
+			) {
 				relatedElement?.classList.add('docx-paragraph-explanation-source-hidden');
 			}
 			if (relatedElement) {
@@ -1721,39 +1738,52 @@
 			typeof selected.paragraph_enum === 'number'
 				? selected.paragraph_enum
 				: Number((selected.id.match(/-p-(\d+)$/)?.[1] ?? '0'));
-		const beforeAnchors = anchors
+		const selectedTop = selectedRect.top - hostRect.top;
+		const selectedBottom = selectedTop + selectedRect.height;
+		const stationaryByParagraphId = new Map<string, boolean>();
+		for (const anchor of anchors) {
+			const isConsecutive = Math.abs(anchor.paragraphEnum - selectedParagraphEnum) === 1;
+			const anchorBottom = anchor.top + anchor.height;
+			const verticalGap =
+				anchor.top >= selectedBottom ? anchor.top - selectedBottom : selectedTop - anchorBottom;
+			const isSideBySide = verticalGap <= PARAGRAPH_EXPLANATION_CONSECUTIVE_GAP_PX;
+			stationaryByParagraphId.set(anchor.paragraphId, isConsecutive && isSideBySide);
+		}
+
+		const stationaryAnchors = anchors.filter(
+			(anchor) => stationaryByParagraphId.get(anchor.paragraphId) === true
+		);
+		const movableAnchors = anchors.filter(
+			(anchor) => stationaryByParagraphId.get(anchor.paragraphId) !== true
+		);
+		const beforeAnchors = movableAnchors
 			.filter((anchor) => anchor.paragraphEnum < selectedParagraphEnum)
 			.sort((left, right) => left.paragraphEnum - right.paragraphEnum);
-		const afterAnchors = anchors
+		const afterAnchors = movableAnchors
 			.filter((anchor) => anchor.paragraphEnum > selectedParagraphEnum)
 			.sort((left, right) => left.paragraphEnum - right.paragraphEnum);
-		const equalAnchors = anchors
+		const equalAnchors = movableAnchors
 			.filter((anchor) => anchor.paragraphEnum === selectedParagraphEnum)
 			.sort((left, right) => left.paragraphId.localeCompare(right.paragraphId));
 		const compressedYByParagraphId = new Map<string, number>();
 		const compressedTopByParagraphId = new Map<string, number>();
-		const selectedTop = selectedRect.top - hostRect.top;
-		const selectedBottom = selectedTop + selectedRect.height;
-		for (const [index, anchor] of beforeAnchors.entries()) {
-			const distanceFromSelected = beforeAnchors.length - index;
-			const stackedTop =
-				selectedTop -
-				PARAGRAPH_EXPLANATION_STACK_OFFSET_PX -
-				distanceFromSelected * PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX;
-			const stackedY = stackedTop + anchor.height / 2;
-			const compressedY =
-				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
-			const compressedTop =
-				anchor.top * (1 - paragraphExplanationCompression) +
-				stackedTop * paragraphExplanationCompression;
-			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
-			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+		for (const anchor of stationaryAnchors) {
+			compressedYByParagraphId.set(anchor.paragraphId, anchor.y);
+			compressedTopByParagraphId.set(anchor.paragraphId, anchor.top);
 		}
-		for (const [index, anchor] of [...equalAnchors, ...afterAnchors].entries()) {
-			const stackedTop =
-				selectedBottom +
-				PARAGRAPH_EXPLANATION_STACK_OFFSET_PX +
-				index * PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX;
+
+		const stationaryAbove = stationaryAnchors.filter((anchor) => anchor.top < selectedTop);
+		const stationaryBelow = stationaryAnchors.filter((anchor) => anchor.top >= selectedTop);
+		let beforeCursor = selectedTop - PARAGRAPH_EXPLANATION_STACK_OFFSET_PX;
+		if (stationaryAbove.length > 0) {
+			const nearestStationaryAboveTop = Math.max(...stationaryAbove.map((anchor) => anchor.top));
+			beforeCursor = Math.min(
+				beforeCursor,
+				nearestStationaryAboveTop - PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX
+			);
+		}
+		for (const anchor of [...beforeAnchors].sort((left, right) => right.paragraphEnum - left.paragraphEnum)) {
+			const stackedTop = beforeCursor - anchor.height;
 			const stackedY = stackedTop + anchor.height / 2;
 			const compressedY =
 				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
@@ -1762,6 +1792,30 @@
 				stackedTop * paragraphExplanationCompression;
 			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
 			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+			beforeCursor = stackedTop - PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX;
+		}
+
+		let afterCursor = selectedBottom + PARAGRAPH_EXPLANATION_STACK_OFFSET_PX;
+		if (stationaryBelow.length > 0) {
+			const nearestStationaryBelowBottom = Math.min(
+				...stationaryBelow.map((anchor) => anchor.top + anchor.height)
+			);
+			afterCursor = Math.max(
+				afterCursor,
+				nearestStationaryBelowBottom + PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX
+			);
+		}
+		for (const anchor of [...equalAnchors, ...afterAnchors]) {
+			const stackedTop = afterCursor;
+			const stackedY = stackedTop + anchor.height / 2;
+			const compressedY =
+				anchor.y * (1 - paragraphExplanationCompression) + stackedY * paragraphExplanationCompression;
+			const compressedTop =
+				anchor.top * (1 - paragraphExplanationCompression) +
+				stackedTop * paragraphExplanationCompression;
+			compressedYByParagraphId.set(anchor.paragraphId, compressedY);
+			compressedTopByParagraphId.set(anchor.paragraphId, compressedTop);
+			afterCursor = stackedTop + anchor.height + PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX;
 		}
 		const edgeBaseX = Math.min(selectedEdgeX, ...sortedAnchors.map((anchor) => anchor.edgeX));
 		const baseLeft = Math.max(4, edgeBaseX - 20);
@@ -1816,7 +1870,15 @@
 		}
 
 		paragraphExplanationConnectors = nextConnectors;
-		if (paragraphExplanationCompression > 0.03) {
+		const movedNodeIds = new Set<string>();
+		for (const anchor of anchors) {
+			const movedTop = compressedTopByParagraphId.get(anchor.paragraphId) ?? anchor.top;
+			if (Math.abs(movedTop - anchor.top) > 1.5) {
+				movedNodeIds.add(anchor.paragraphId);
+			}
+		}
+		paragraphExplanationMovedNodeIds = movedNodeIds;
+		if (paragraphExplanationCompression > 0.03 && movedNodeIds.size > 0) {
 			const foldSourceY = [
 				selectedY,
 				...sortedAnchors.map(
@@ -1841,8 +1903,9 @@
 		}
 		const cardsLeft = Math.max(14, selectedRect.left - hostRect.left);
 		paragraphExplanationCollapsedCards =
-			paragraphExplanationCompression > 0.02
+			paragraphExplanationCompression > 0.02 && movedNodeIds.size > 0
 				? anchors
+						.filter((anchor) => movedNodeIds.has(anchor.paragraphId))
 						.map((anchor) => ({
 						paragraphId: anchor.paragraphId,
 						topPx: compressedTopByParagraphId.get(anchor.paragraphId) ?? anchor.top,
