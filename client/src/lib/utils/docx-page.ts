@@ -163,20 +163,14 @@ function buildProcessPages(
 	nodes: ParagraphNode[],
 	nodeEditStateById: Map<string, ParagraphEditState>
 ) {
-	const pagesByNumber = new Map<
-		number,
-		Array<{ id: string; text: string; x: number; y: number; fontSize: number }>
-	>();
+	const pagesByNumber = new Map<number, Array<{ id: string; text: string }>>();
 
 	for (const node of [...nodes].sort((a, b) => a.paragraph_enum - b.paragraph_enum)) {
 		const pageNumber = Number.isFinite(node.page) && node.page > 0 ? node.page : 1;
 		const pageElements = pagesByNumber.get(pageNumber) ?? [];
 		pageElements.push({
 			id: node.id,
-			text: getNodeCurrentText(nodeEditStateById, node),
-			x: node.x ?? 0,
-			y: node.y ?? 0,
-			fontSize: node.fontSize ?? 0
+			text: getNodeCurrentText(nodeEditStateById, node)
 		});
 		pagesByNumber.set(pageNumber, pageElements);
 	}

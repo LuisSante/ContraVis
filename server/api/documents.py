@@ -193,9 +193,6 @@ async def process_document(data: dict):
                     "text": text_content,
                     "page": page.get("pageNumber"),
                     "paragraph_enum": idx,
-                    "x": el.get("x", 0.0),
-                    "y": el.get("y", 0.0),
-                    "fontSize": el.get("fontSize", 0.0),
                 }
             )
 

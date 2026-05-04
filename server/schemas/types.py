@@ -15,13 +15,9 @@ class Node(BaseModel):
     id: str
     documentId: str
     text: str
-    paragraph_uid: Optional[str] = None
     paragraph_enum: int
     page: int
     relationsCount: int = 0
-    x: Optional[float] = None
-    y: Optional[float] = None
-    fontSize: Optional[float] = None
 
 class Edge(BaseModel):
     source: str

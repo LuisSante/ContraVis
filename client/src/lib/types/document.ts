@@ -16,9 +16,6 @@ export interface Node {
 	paragraph_enum: number;
 	page: number;
 	relationsCount: number;
-	x?: number;
-	y?: number;
-	fontSize?: number;
 }
 
 export interface Edge {
