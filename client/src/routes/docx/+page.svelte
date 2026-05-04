@@ -252,7 +252,7 @@
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
 	let contradictionSource: string | null = null;
-	let contradictionGraphMode: ContradictionGraphMode = 'with_kg';
+	let contradictionGraphMode: ContradictionGraphMode = 'without_kg';
 	let globalAnalysisModel = 'gpt-4.1';
 	let globalModelSelectWidthPx = GLOBAL_MODEL_MIN_WIDTH_PX;
 	let contradictionResultsByParagraphId = new Map<string, ContradictionParagraphResult>();
@@ -1436,7 +1436,7 @@
 			mode,
 			graph: {
 				nodes,
-				edges: mode === 'with_kg' ? backendEdges : []
+				edges: backendEdges
 			}
 		};
 	}
@@ -1471,7 +1471,7 @@
 		activeRightPanelTab = 'analysis';
 		isRightDrawerOpen = true;
 
-		if (contradictionGraphMode === 'with_kg' && backendGraphLoading) {
+		if (backendGraphLoading) {
 			setContradictionErrorMessage(
 				'Wait until graph generation finishes before searching contradictions.'
 			);
@@ -3674,7 +3674,7 @@
 							disabled={!Boolean(activeDocumentId) ||
 								contradictionLoading ||
 								$loading ||
-								(contradictionGraphMode === 'with_kg' && backendGraphLoading)}
+								backendGraphLoading}
 							onclick={() => void searchContradictionsWithLlm()}
 						>
 							Search

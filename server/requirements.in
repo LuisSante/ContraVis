@@ -25,5 +25,4 @@ pdfplumber
 
 # pip install --upgrade pyarrow datasets
 llama-cloud>=2.1
-neo4j
 llama-parse

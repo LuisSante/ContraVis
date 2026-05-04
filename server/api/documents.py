@@ -282,7 +282,7 @@ def analyze_document_contradictions_endpoint(payload: ContradictionAnalysisReque
 @router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)
 def get_saved_contradictions(
     document_id: str,
-    mode: ContradictionGraphMode = Query(default="with_kg"),
+    mode: ContradictionGraphMode = Query(default="without_kg"),
 ):
     try:
         aliases = document_store.get_document_aliases(document_id)

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Any, Literal, List, Optional
+from typing import Literal, List, Optional
 
 class DatasetDocument(BaseModel):
     id: str
@@ -34,38 +34,6 @@ class Edge(BaseModel):
 class Graph(BaseModel):
     nodes: List[Node]
     edges: List[Edge]
-
-
-class KGNode(BaseModel):
-    id: str
-    contract_id: str
-    type: str
-    label: str
-    source_paragraph_id: Optional[str] = None
-    properties: dict[str, Any] = Field(default_factory=dict)
-
-
-class KGEdge(BaseModel):
-    source: str
-    target: str
-    type: str
-    confidence: Optional[float] = None
-    evidence_paragraph_id: Optional[str] = None
-    evidence: dict[str, Any] = Field(default_factory=dict)
-
-
-class KGTriple(BaseModel):
-    head: str
-    relation: str
-    tail: str
-
-
-class KnowledgeGraph(BaseModel):
-    schema_version: str
-    contract_id: str
-    nodes: List[KGNode]
-    edges: List[KGEdge]
-    triples: List[KGTriple] = Field(default_factory=list)
 
 
 AssistantMode = Literal["explain", "suggest_questions"]
@@ -188,7 +156,7 @@ class ContradictionAnalysisRequest(BaseModel):
     provider: AssistantProvider = "openai"
     temperature: float = 0.3
     model: Optional[str] = None
-    mode: ContradictionGraphMode = "with_kg"
+    mode: ContradictionGraphMode = "without_kg"
 
 
 class ContradictionAnalysisResponse(BaseModel):
@@ -196,7 +164,7 @@ class ContradictionAnalysisResponse(BaseModel):
     provider: AssistantProvider
     temperature: float
     model: Optional[str] = None
-    mode: ContradictionGraphMode = "with_kg"
+    mode: ContradictionGraphMode = "without_kg"
     paragraphResults: List[ContradictionParagraphResult]
     rawResponse: str
 
