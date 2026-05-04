@@ -34,7 +34,9 @@
 		SimplifyResultState,
 		SimplifyAuditRecord,
 		RightPanelTab,
-		ContradictionScrollMarker
+		ContradictionScrollMarker,
+		LlmEstimateResponse,
+		SimplifySelectionRequest
 	} from '$lib/types/document';
 	import {
 		buildInspectorState,
@@ -46,6 +48,7 @@
 		fetchAssistantResponse,
 		fetchBackendGraph,
 		fetchContradictionAnalysis,
+		fetchLlmEstimate,
 		fetchSavedContradictions,
 		loadBrowserDocx4js,
 		resolveDocumentMeta,
@@ -2143,6 +2146,8 @@
 		contradictionLoading = true;
 		setContradictionErrorMessage(null);
 		try {
+			const approved = await confirmLlmEstimate('contradictions_analyze', payload);
+			if (!approved) return;
 			const response = await fetchContradictionAnalysis(payload);
 			const resolvedModel = response.model?.trim() || payload.model || 'default';
 			setContradictionResults(
@@ -2186,6 +2191,37 @@
 	function nextAssistantMessageId() {
 		assistantMessageCounter += 1;
 		return `assistant-${assistantMessageCounter}`;
+	}
+
+	function buildEstimateConfirmMessage(estimate: LlmEstimateResponse): string {
+		return [
+			`Model: ${estimate.model}`,
+			`Provider: ${estimate.provider}`,
+			`Input tokens (est): ${estimate.estimatedInputTokens}`,
+			`Output tokens (est): ${estimate.estimatedOutputTokens}`,
+			`Total tokens (est): ${estimate.estimatedTotalTokens}`,
+			`Estimated cost (USD): ${estimate.estimatedCostUsdFormatted}`,
+			'',
+			'Do you want to send this request now?'
+		].join('\n');
+	}
+
+	async function confirmLlmEstimate(
+		callType:
+			| 'assistant_chat'
+			| 'assistant_simplify'
+			| 'assistant_fix_contradiction'
+			| 'contradictions_analyze',
+		payload: AssistantChatRequest | SimplifySelectionRequest | ContradictionAnalysisRequest
+	): Promise<boolean> {
+		const estimatePayload =
+			callType === 'assistant_chat'
+				? { callType, assistantChat: payload as AssistantChatRequest }
+				: callType === 'contradictions_analyze'
+					? { callType, contradictionAnalysis: payload as ContradictionAnalysisRequest }
+					: { callType, simplifySelection: payload as SimplifySelectionRequest };
+		const estimate = await fetchLlmEstimate(estimatePayload);
+		return window.confirm(buildEstimateConfirmMessage(estimate));
 	}
 
 	async function scrollAssistantToBottom() {
@@ -2272,6 +2308,11 @@
 		};
 
 		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) {
+				assistantLoading = false;
+				return;
+			}
 			const response = await fetchAssistantResponse(payload);
 			assistantMessages = [
 				...assistantMessages,
@@ -2369,6 +2410,8 @@
 		};
 
 		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) return;
 			const response = await fetchAssistantResponse(payload);
 			const parsed = parseParagraphExplanationVariants(response.answer);
 			paragraphExplanationShort = parsed.shortText;
@@ -2423,6 +2466,11 @@
 		};
 
 		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) {
+				assistantLoading = false;
+				return;
+			}
 			const response = await fetchAssistantResponse(payload);
 			const structured = parseStructuredContradictionFromAnswer(
 				response.answer,
@@ -2707,7 +2755,9 @@
 				selectedParagraphId: get(selectedParagraph)?.id ?? null,
 				paragraphElementById,
 				fallbackTarget: target ?? simplifyTarget,
-				resolveErrorMessage: getAxiosErrorMessage
+				resolveErrorMessage: getAxiosErrorMessage,
+				confirmLlmEstimate: (callType, requestPayload) =>
+					confirmLlmEstimate(callType, requestPayload)
 			});
 			if (!execution.ok) {
 				appendAssistantQuickActionMessage(
@@ -2858,7 +2908,9 @@
 				selectedParagraphId: get(selectedParagraph)?.id ?? null,
 				paragraphElementById,
 				fallbackTarget: target ?? simplifyTarget,
-				resolveErrorMessage: getAxiosErrorMessage
+				resolveErrorMessage: getAxiosErrorMessage,
+				confirmLlmEstimate: (callType, requestPayload) =>
+					confirmLlmEstimate(callType, requestPayload)
 			});
 			if (!execution.ok) {
 				simplifyError = execution.error;
@@ -2900,7 +2952,9 @@
 				selectedParagraphId: get(selectedParagraph)?.id ?? null,
 				paragraphElementById,
 				fallbackTarget: target ?? simplifyTarget,
-				resolveErrorMessage: getAxiosErrorMessage
+				resolveErrorMessage: getAxiosErrorMessage,
+				confirmLlmEstimate: (callType, requestPayload) =>
+					confirmLlmEstimate(callType, requestPayload)
 			});
 			if (!execution.ok) {
 				simplifyError = execution.error;

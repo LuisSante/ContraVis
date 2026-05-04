@@ -205,3 +205,29 @@ class SavedContradictionsResponse(BaseModel):
     sourceFile: str
     mode: ContradictionGraphMode
     paragraphResults: List[ContradictionParagraphResult]
+
+
+LlmEstimateCallType = Literal[
+    "assistant_chat",
+    "assistant_simplify",
+    "assistant_fix_contradiction",
+    "contradictions_analyze",
+]
+
+
+class LlmEstimateRequest(BaseModel):
+    callType: LlmEstimateCallType
+    assistantChat: Optional[AssistantChatRequest] = None
+    simplifySelection: Optional[SimplifySelectionRequest] = None
+    contradictionAnalysis: Optional[ContradictionAnalysisRequest] = None
+
+
+class LlmEstimateResponse(BaseModel):
+    callType: LlmEstimateCallType
+    provider: AssistantProvider
+    model: str
+    estimatedInputTokens: int
+    estimatedOutputTokens: int
+    estimatedTotalTokens: int
+    estimatedCostUsd: Optional[float] = None
+    estimatedCostUsdFormatted: str
