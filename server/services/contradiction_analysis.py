@@ -129,6 +129,29 @@ SYSTEM_PROMPT = (
 _TIKTOKEN_ENCODER: Any | None = None
 _TIKTOKEN_READY = False
 
+def _write_debug_mode_payload(
+    *,
+    mode: str,
+    all_paragraph_rows: list[dict[str, Any]],
+    batches: list[list[dict[str, Any]]],
+) -> None:
+    debug_payload: dict[str, Any] = {
+        "mode": mode,
+        # "num_paragraphs": len(all_paragraph_rows),
+        # "num_batches": len(batches),
+        # "paragraphs": all_paragraph_rows,
+        "batches": [
+            {
+                "batch_index": index,
+                "paragraphs": batch_rows,
+            }
+            for index, batch_rows in enumerate(batches, start=1)
+        ],
+    }
+
+    output_path = f"/home/luis/Documents/FGV/Laboratory/document-graph/infra/json/contradictions/{mode}.json"
+    with open(output_path, "w", encoding="utf-8") as f:
+        json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 
 def analyze_document_contradictions(
     payload: ContradictionAnalysisRequest,
@@ -154,6 +177,13 @@ def analyze_document_contradictions(
         model_name=resolved_model,
         target_input_tokens=TARGET_BATCH_INPUT_TOKENS,
     )
+
+    # ACTIVE THIS TO CHECK BODY FROM JSON
+    # _write_debug_mode_payload(
+    #     mode=payload.mode,
+    #     all_paragraph_rows=paragraph_rows,
+    #     batches=batches,
+    # )
 
     estimated_input_total = 0
     for batch in batches:
@@ -314,19 +344,23 @@ def _build_document_rows(
             key=lambda rid: (node_by_id[rid].page, node_by_id[rid].paragraph_enum),
         )
 
-        paragraph_rows.append(
-            {
-                "paragraph_id": paragraph_id,
-                "text": (node.text or "").strip(),
-                "related_paragraphs": [
-                    {
-                        "paragraph_id": rid,
-                        "text": (node_by_id[rid].text or "").strip(),
-                    }
-                    for rid in related_ids
-                ],
-            }
-        )
+        related_paragraphs = []
+        for rid in related_ids:
+            related_paragraphs.append(
+                {
+                    "paragraph_id": rid,
+                    "text": (node_by_id[rid].text or "").strip(),
+                }
+            )
+
+        if len(related_paragraphs) != 0:
+            paragraph_rows.append(
+                {
+                    "paragraph_id": paragraph_id,
+                    "text": (node.text or "").strip(),
+                    "related_paragraphs": related_paragraphs,
+                }
+            )
 
     return paragraph_rows, ordered_ids
 
@@ -340,12 +374,10 @@ def _build_user_prompt(
         "mode": mode,
         "paragraphs": paragraph_rows,
     }
-    # with open(f"test_{mode}.json", "w", encoding="utf-8") as handle:
-    #     json.dump(document_payload, handle, ensure_ascii=False, indent=2)
+
     return PROMPT_TEMPLATE.format(
         document_json=json.dumps(document_payload, ensure_ascii=False, indent=2)
     )
-
 
 def _chunk_paragraph_rows(
     *,
