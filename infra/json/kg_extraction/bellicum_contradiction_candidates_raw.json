@@ -1,0 +1,218 @@
+[
+  {
+    "candidate_type": "CONDITION_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_e",
+    "clause_label": "Clause (e)",
+    "evidence": [
+      "(e) Bellicum may offer and permit its Licensees and Subcontractors (if any) to use the Miltenyi Products supplied hereunder only if and so long as such use is in compliance with the terms and conditions of this Agreement and Applicable Laws.",
+      "Bellicum may offer and permit its Licensees and Subcontractors to use the Miltenyi Products supplied hereunder even if such use is not in compliance with the terms and conditions of this Agreement or Applicable Laws."
+    ],
+    "reason": "The same permission is conditioned on compliance, but also allowed even when not in compliance."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_e",
+    "clause_label": "Clause (e)",
+    "evidence": [
+      "(e) Bellicum may offer and permit its Licensees and Subcontractors (if any) to use the Miltenyi Products supplied hereunder only if and so long as such use is in compliance with the terms and conditions of this Agreement and Applicable Laws.",
+      "Bellicum may offer and permit its Licensees and Subcontractors to use the Miltenyi Products supplied hereunder even if such use is not in compliance with the terms and conditions of this Agreement or Applicable Laws."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::subsection_h_of_section_32",
+    "clause_label": "Subsection (h) of Section 3.2",
+    "evidence": [
+      "(h) Notwithstanding the provisions of subsections (e) and (g), in the event that Bellicum reasonably determines to reject a proposed Material Change (including a Miltenyi-Requested Change), Miltenyi will continue to supply the applicable Miltenyi Product without such change after expiry of the said 6-month period and during the Term of this Agreement, or until Bellicum has secured an alternate source of supply from a Third Party manufacturer; provided, however, that the Parties will discuss in good faith, reflecting the change in circumstances contemplated by this Section 3.2(h), and agree in writing upon commercially reasonable terms to be set forth in an amendment to this Agreement to reflect any demonstrable increased cost and effort (if any) resulting from the manufacture of unchanged Miltenyi Product solely for Bellicum, including (as an example) any applicable adjustments to Forecasts, Lead Times, production cycles, batch sizes, Delivery Dates, Product Prices, or other relevant issues.",
+      "If the Parties cannot reach agreement regarding such amendment, any obligations of Bellicum in relation to a Forecast for the affected Miltentyi Product in months 7-12 of the applicable Monthly Forecast, and any limitations regarding forecast variances, as each of these are set forth in Article 5, will not apply to a Miltenyi Product produced after implementation of such Material Change (i.e., one that replaces such affected (unchanged) Miltenyi Product), and Miltenyi shall be relieved from any obligations to supply such affected (unchanged) Miltenyi Product under this Agreement after the period described in the first sentence of this subsection (h) ends."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::subsection_h_of_section_32",
+    "clause_label": "Subsection (h) of Section 3.2",
+    "evidence": [
+      "If the Parties cannot reach agreement regarding such amendment, any obligations of Bellicum in relation to a Forecast for the affected Miltentyi Product in months 7-12 of the applicable Monthly Forecast, and any limitations regarding forecast variances, as each of these are set forth in Article 5, will not apply to a Miltenyi Product produced after implementation of such Material Change (i.e., one that replaces such affected (unchanged) Miltenyi Product), and Miltenyi shall be relieved from any obligations to supply such affected (unchanged) Miltenyi Product under this Agreement after the period described in the first sentence of this subsection (h) ends.",
+      "For clarity, in no event shall Miltenyi be required to manufacture, supply or sell an existing Miltenyi Product to which a Required Change must be applied."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::section_56_minimum_purchases",
+    "clause_label": "Section 5.6 Minimum Purchases",
+    "evidence": [
+      "Notwithstanding anything to the contrary in the foregoing, and for Calendar Year 2019 only, the €[...***...] amount recited as an element used to determine the Minimum Purchase in a Calendar Year is hereby reduced to €[...***...].",
+      "If Bellicum fails to tender such firm Purchase Order and has not otherwise met the Minimum Purchase requirements within said [...***...]-day period, then Miltenyi, in its sole discretion, effective immediately upon Bellicum's receipt of written notice of Miltenyi's election to do so, shall have no obligation to Bellicum under this Agreement:"
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::section_56_minimum_purchases",
+    "clause_label": "Section 5.6 Minimum Purchases",
+    "evidence": [
+      "Bellicum shall have [...***...] days to tender a firm Purchase Order for the purchase of such shortfall to satisfy the Minimum Purchase requirements set forth above.",
+      "If Bellicum fails to tender such firm Purchase Order and has not otherwise met the Minimum Purchase requirements within said [...***...]-day period, then Miltenyi, in its sole discretion, effective immediately upon Bellicum's receipt of written notice of Miltenyi's election to do so, shall have no obligation to Bellicum under this Agreement:"
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_e_on_delivery_quantities_and_variance_consent",
+    "clause_label": "Clause (e) on Delivery Quantities and Variance Consent",
+    "evidence": [
+      "(e) Quantities actually Delivered to Bellicum or Bellicum’s designee pursuant to an accepted Purchase Order may not vary from the quantities reflected in such Purchase Order without Bellicums’ prior written consent; provided, however, that if Bellicum so consents to a variance in quantities actually Delivered (as compared to quantities set forth in an accepted Purchase Order), Bellicum shall only be invoiced and required to pay for the quantities of Miltenyi Product that Miltenyi actually Delivered to Bellicum or Bellicum’s designee.",
+      "In the event that Bellicum consents to accept Delivery of less than the quantities of Miltenyi Product in an accepted Purchase Order, Miltenyi shall include, in the next shipment of Miltenyi Product to Bellicum, any quantities ordered pursuant to an accepted Purchase Order but not actually delivered on the designated Delivery date."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::section_67a",
+    "clause_label": "Section 6.7(a)",
+    "evidence": [
+      "(a) Contingent upon Bellicum’s continued adherence to its obligations in accordance with this Agreement, including the Forecast obligations and Firm Zone Requirements pursuant to Sections 5.1 and 5.3 above, Miltenyi shall use [...***...] have and devote adequate manufacturing capacity to ensure continuous supply of Miltenyi Products to Belicum in accordance with the Forecasts during the Term, in accordance with the provisions of this Section 6.7.",
+      "However, Miltenyi’s compliance with this Section 6.7(a) shall not require Miltenyi to incur any significant expenses to purchase new equipment, to install equipment purchased or requested by Bellicum, or to add (or, for clarity, allocate or dedicate) additional manufacturing or storage capacity for the manufacturing and supply of Miltenyi Products to Bellicum hereunder."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_199",
+    "clause_label": "Clause 199",
+    "evidence": [
+      "(b) In the event that Miltenyi becomes aware that it will not be able, or is likely not to be able, to produce all of Bellicum’s forecast requirements of Miltenyi Products from its primary facility located in Bergisch Gladbach, Germany, Miltenyi shall determine, at its option and expense, to establish additional or alternative manufacturing and supply capability for the Miltenyi Products by qualifying and maintaining one or more back-up manufacturing facilities at the premises of Miltenyi and/or any of its Affiliates (each, a “Secondary Location”).",
+      "In the event that Miltenyi decides to qualify a Secondary Location for the supply of Miltenyi Products hereunder, it shall provide reasonable prior written notice thereof (not less than"
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_73_latent_defects",
+    "clause_label": "Clause 7.3 Latent Defects",
+    "evidence": [
+      "Bellicum shall have the further right to reject such quantities of Miltenyi Product accepted or deemed accepted pursuant to Section 7.2 above by providing a Rejection Notice on the grounds that all or part of the shipment fails to comply with the Miltenyi Product Warranty to the extent such non-conformance could not have reasonably been determined by visual inspection or incoming quality assurance testing in accordance with Section 7.1, provided that the applicable shelf-life of the Miltenyi Product has not expired and such non-conformance is unrelated to the shipping or storage of the Miltenyi Product after Delivery.",
+      "Notification to Miltenyi by Bellicum must occur within [...***...] days after Bellicum or Bellicum’s designated recipient of the shipment becomes aware or reasonably should have become aware that the Miltenyi Product fails to comply with the Miltenyi Product Warranty."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_217",
+    "clause_label": "Clause 217",
+    "evidence": [
+      "(4) In the event of a Supply Failure, Miltenyi shall grant Bellicum’s Second-Source Supplier a limited, non-exclusive, non-transferable, one-site production license, without the right to sublicense, under Miltenyi’s Intellectual Property Rights solely to the extent reasonably necessary to manufacture the Affected Miltenyi Product for the Permitted Use by Bellicum at Bellicum’s cost.",
+      "For the avoidance of doubt, a Second-Source Supplier’s license under this subsection shall not permit the manufacture of any Miltenyi Product that is not subject to Supply Failure."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_217",
+    "clause_label": "Clause 217",
+    "evidence": [
+      "For the avoidance of doubt, a Second-Source Supplier’s license under this subsection shall not permit the manufacture of any Miltenyi Product that is not subject to Supply Failure.",
+      "A Second-Source Supplier’s license hereunder shall subsist until such time as Miltenyi and Bellicum reach agreement on alternative license and/or supply arrangements which shall, inter alia, take into consideration: (i) Miltenyi’s interest in regaining control over the manufacture of Miltenyi Products, (ii) Bellicum’s interest in securing continuity of supply of the Affected Miltenyi Product(s), (iii) the costs incurred by Bellicum in establishing the Second-Source Supplier to rectify the applicable Supply Failure, (iv) the avoidance of potential adverse effects (supply disruption) that may result from the transfer of manufacturing back to Miltenyi, and (v) the appropriate sharing of costs resulting from the Supply Failure."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "REFUNDABILITY_CONFLICT",
+    "clause_id": "clause::clause_81_upfront_payment",
+    "clause_label": "Clause 8.1 Upfront Payment",
+    "evidence": "8.1 Upfront Payment. Following execution of this Agreement and within [...***...] days of Bellicum’s receipt of an invoice therefor, and as consideration for (i) the right to use certain Miltenyi Products for human use, including the right to cross-reference to the Master File(s) and Miltenyi’s additional filings in connection with such Master File(s) as described in Article 4; (ii) Miltenyi’s obligation to supply certain Miltenyi Products for human clinical trials and commercialized human use; and (iii) Miltenyi’s support of Bellicum’s development and commercialization efforts regarding Bellicum Products, Bellicum will pay to Miltenyi a non-refundable upfront fee in the aggregate amount of two million Euro (€2,000,000) (the “Upfront Fee”).Notwithstanding the foregoing, the upfront fee payable by Bellicum to Miltenyi shall be fully refundable and shall not exceed one million Euro (€1,000,000) in the aggregate. The Upfront Fee will be paid in installments, as follows: (a) a first installment of [...***...] Euro (€[...***...]), to be invoiced by Miltenyi following execution of this Agreement; (b) a second installment of [...***...] Euro (€[...***...]), to be invoiced by Miltenyi following the first anniversary of the Effective Date.",
+    "reason": "The clause states that an amount is non-refundable and also refundable."
+  },
+  {
+    "candidate_type": "VALUE_CONFLICT_CANDIDATE",
+    "clause_id": "clause::clause_81_upfront_payment",
+    "clause_label": "Clause 8.1 Upfront Payment",
+    "values": [
+      "€2,000,000",
+      "€1,000,000"
+    ],
+    "evidence": "8.1 Upfront Payment. Following execution of this Agreement and within [...***...] days of Bellicum’s receipt of an invoice therefor, and as consideration for (i) the right to use certain Miltenyi Products for human use, including the right to cross-reference to the Master File(s) and Miltenyi’s additional filings in connection with such Master File(s) as described in Article 4; (ii) Miltenyi’s obligation to supply certain Miltenyi Products for human clinical trials and commercialized human use; and (iii) Miltenyi’s support of Bellicum’s development and commercialization efforts regarding Bellicum Products, Bellicum will pay to Miltenyi a non-refundable upfront fee in the aggregate amount of two million Euro (€2,000,000) (the “Upfront Fee”).Notwithstanding the foregoing, the upfront fee payable by Bellicum to Miltenyi shall be fully refundable and shall not exceed one million Euro (€1,000,000) in the aggregate. The Upfront Fee will be paid in installments, as follows: (a) a first installment of [...***...] Euro (€[...***...]), to be invoiced by Miltenyi following execution of this Agreement; (b) a second installment of [...***...] Euro (€[...***...]), to be invoiced by Miltenyi following the first anniversary of the Effective Date.",
+    "reason": "The clause contains multiple values with override/conflict markers."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::clause_76_replacement_or_refund",
+    "clause_label": "Clause 7.6 Replacement or Refund",
+    "evidence": [
+      "Bellicum shall not be required to pay any invoice with respect to any shipment of Miltenyi Products properly rejected pursuant to this Section 7.2.",
+      "Notwithstanding the foregoing, Bellicum shall be obligated to pay in full for any rejected shipment of Miltenyi Products that is not returned or destroyed in accordance with Section 7.5 above, and that is subsequently determined to conform to the applicable Miltenyi Product Warranty, irrespective of whether Bellicum has already paid Miltenyi for a replacement shipment (but in such event, the replacement shipment will be Delivered to Bellicum and will be included in Bellicum’s Minimum Purchases)."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::purchase_price_adjustments",
+    "clause_label": "Purchase Price Adjustments",
+    "evidence": [
+      "(c) Purchase Price Adjustments.",
+      "Miltenyi shall be entitled to modify the Purchase Price for any Miltenyi Product as set forth in Section 8.3(a) above and Exhibit E on or after the commencement of each Calendar Year during the Term after Contract Year 1 in accordance with this Section 8.4(c), provided that there shall not be more than one (1) Purchase Price increase with respect to the same Miltenyi Product in any given Contract Year during the Term."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::purchase_price_adjustments",
+    "clause_label": "Purchase Price Adjustments",
+    "evidence": [
+      "Miltenyi shall be entitled to modify the Purchase Price for any Miltenyi Product as set forth in Section 8.3(a) above and Exhibit E on or after the commencement of each Calendar Year during the Term after Contract Year 1 in accordance with this Section 8.4(c), provided that there shall not be more than one (1) Purchase Price increase with respect to the same Miltenyi Product in any given Contract Year during the Term.",
+      "In case, after application of the applicable Discount, any Purchase Price increases [...***...] percent ([...***...]%) annually, then the Parties shall consult each other, negotiate in good faith and agree in writing upon an adaptation of the applicable Discount to stay within the capping of a [...***...] percent ([...***...]%) increase, except for cases when such Purchase Price increase is the result of a documented increase of more than [...***...] ([...***...]%) in the cost of any raw materials, packaging and/or other components used in the manufacture of Miltenyi Product and Miltenyi, at Bellicum’s request, has provided reasonable documentation evidencing such changes in production costs."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::purchase_price_adjustments",
+    "clause_label": "Purchase Price Adjustments",
+    "evidence": [
+      "Miltenyi shall be entitled to modify the Purchase Price for any Miltenyi Product as set forth in Section 8.3(a) above and Exhibit E on or after the commencement of each Calendar Year during the Term after Contract Year 1 in accordance with this Section 8.4(c), provided that there shall not be more than one (1) Purchase Price increase with respect to the same Miltenyi Product in any given Contract Year during the Term.",
+      "It is however expressly agreed between the Parties that the adjusted Purchase Price charged to Bellicum for Miltenyi Product supplied hereunder shall in no event exceed Miltenyi’s then-current list prices for such Miltenyi Product as in effect in the country of destination or use of the applicable Miltenyi Product, as published from time to time in Miltenyi’s applicable product catalogue."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::142_nondisclosure_and_nonuse",
+    "clause_label": "14.2 Non-Disclosure and Non-Use",
+    "evidence": [
+      "During the Term and for five (5) years thereafter, each of Miltenyi and Bellicum shall keep Confidential Information of the other Party in strict confidence and shall not (i) use the other Party’s Confidential Information for any use or purpose except as expressly permitted under this Agreement, the Quality Agreement or as otherwise authorized in writing in advance by the other Party, or (ii) disclose the other Party’s Confidential Information to anyone other than those of its Affiliates, Subcontractors, directors, officers, employees, agents, contractors, collaborators and consultants, and in the case of Bellicum, its Licensees (collectively, “Authorized Representatives”) who need to know such Confidential Information for a use or purpose expressly permitted under this Agreement.",
+      "Each Receiving Party shall take reasonable measures to protect the secrecy of and avoid disclosure and unauthorized use of the Confidential Information of the Disclosing Party."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "VALUE_CONFLICT_CANDIDATE",
+    "clause_id": "clause::clause_151_term",
+    "clause_label": "Clause 15.1 Term",
+    "values": [
+      "ten (10) years",
+      "five (5) years"
+    ],
+    "evidence": "15.1 Term. This Agreement shall enter into force on the Effective Date. The Agreement shall have an initial term of ten (10) years commencing from the Effective Date and ending on the tenth (10th) anniversary thereof (the “Initial Term”), unless earlier terminated by either Party in accordance with the provisions of Section 15.2 or Section 15.3. Thereafter, Bellicum shall have consecutive separate options to extend the Term for successive renewal terms of five (5) years each (each, a “Renewal Term”, and",
+    "reason": "The clause contains multiple values with override/conflict markers."
+  },
+  {
+    "candidate_type": "MODAL_POLARITY_CONFLICT",
+    "clause_id": "clause::153_discontinuance_or_suspension_of_bellicum_product_program_or_without_cause_termination",
+    "clause_label": "15.3 Discontinuance or Suspension of Bellicum Product Program or Without Cause Termination",
+    "evidence": [
+      "Upon the termination of this Agreement or such Module pursuant to this Section 15.3, Bellicum’s sole obligation shall be for it to make payment of all undisputed and properly due amounts payable for Miltenyi Product ordered prior to the effective date of such termination of each terminated Module, including any Purchase Order to be made by Bellicum in connection with Bellicum’s then- outstanding obligation to purchase quantities of Miltenyi Product forecasted with respect to an applicable Firm Zone.",
+      "For clarity, termination of this Agreement or any Module pursuant to this Section 15.3 shall not release Bellicum from its payment obligations with respect to the quantities set forth in any Purchase Orders or quantities forecasted for any Firm Zone."
+    ],
+    "reason": "The clause appears to both allow/require and prohibit a similar action."
+  },
+  {
+    "candidate_type": "REFUNDABILITY_CONFLICT",
+    "clause_id": "clause::termination_payment_obligations_and_conditions",
+    "clause_label": "Termination Payment Obligations and Conditions",
+    "evidence": "quantities of Miltenyi Products (i) delivered in accordance with this Agreement, such Module(s) and the applicable Quality Agreement up to the effective date of termination and (ii) to be delivered under outstanding Purchase Orders accepted by Miltenyi prior to the date of notice of termination (including the Ordered Quantities) or (iii) forecasted for any Firm Zone in the most recent applicable Monthly Forecast; (b) any Upfront Fee payable under Section 8.1 and any earned Milestone Fee payable under Section 8.2 hereof; and (c) all other undisputed and properly due fees and/or expenses owed to Miltenyi in accordance with this Agreement, such Module(s) and the applicable Quality Agreement prior to the date of notice of termination; provided, however, that in the event of termination of this Agreement or such Module(s) by Bellicum pursuant to Section 15.2 (Termination for Cause), Bellicum shall not be responsible for payments relating to any portion of the Forecast applicable to any period after the effective date of termination. All amounts paid under Sections 8.1 through 8.3 shall be non-refundable once paid.",
+    "reason": "The clause states that an amount is non-refundable and also refundable."
+  }
+]
