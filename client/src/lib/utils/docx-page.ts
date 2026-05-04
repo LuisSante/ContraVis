@@ -10,6 +10,8 @@ import type {
 	DocumentMeta,
 	Docx4jsBrowserModule,
 	Edge as GraphEdge,
+	LlmEstimateRequest,
+	LlmEstimateResponse,
 	Node as ParagraphNode,
 	ParagraphEditState,
 	ProcessDocumentResponse,
@@ -267,5 +269,10 @@ export async function fetchContradictionAnalysis(
 	payload: ContradictionAnalysisRequest
 ): Promise<ContradictionAnalysisResponse> {
 	const response = await api.post<ContradictionAnalysisResponse>('/contradictions/analyze', payload);
+	return response.data;
+}
+
+export async function fetchLlmEstimate(payload: LlmEstimateRequest): Promise<LlmEstimateResponse> {
+	const response = await api.post<LlmEstimateResponse>('/llm/estimate', payload);
 	return response.data;
 }

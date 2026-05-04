@@ -18,6 +18,7 @@ from schemas.types import (
     SimplifySelectionResponse,
 )
 from services.llm.factory import LLMProviderFactory
+from services.llm.cost_estimator import estimate_model_cost_usd, estimate_tokens, format_cost
 import logging
 
 logger = logging.getLogger(__name__)
@@ -31,6 +32,8 @@ MAX_SIMPLIFY_AUDIT_ENTRIES = 600
 MAX_FIX_RELATED_PARAGRAPHS = 3
 MAX_FIX_RELATED_TEXT_CHARS = 1800
 SIMPLIFY_AUDIT_LOG: list[dict[str, Any]] = []
+ASSISTANT_ESTIMATED_OUTPUT_TOKENS = 900
+SIMPLIFY_ESTIMATED_OUTPUT_TOKENS = 450
 
 
 @dataclass
@@ -38,6 +41,93 @@ class ContextEntry:
     node: AssistantParagraphNode
     tag: str
     relation_summary: str
+
+
+def estimate_assistant_chat_request(payload: AssistantChatRequest) -> dict[str, Any]:
+    node_map = {node.id: node for node in payload.paragraphNodes}
+    context_entries = _build_context_entries(payload, node_map)
+    allowed_ids = [entry.node.id for entry in context_entries]
+    system_prompt = _build_system_prompt(payload.mode)
+    user_prompt = _build_user_prompt(payload, context_entries, allowed_ids)
+    resolved_model = (payload.model or "").strip() or _default_model_for_provider(payload.provider)
+    input_tokens = estimate_tokens(system_prompt, resolved_model) + estimate_tokens(user_prompt, resolved_model)
+    output_tokens = ASSISTANT_ESTIMATED_OUTPUT_TOKENS
+    cost = estimate_model_cost_usd(
+        model_name=resolved_model,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+    )
+    return {
+        "provider": payload.provider,
+        "model": resolved_model,
+        "estimated_input_tokens": input_tokens,
+        "estimated_output_tokens": output_tokens,
+        "estimated_total_tokens": input_tokens + output_tokens,
+        "estimated_cost_usd": cost,
+        "estimated_cost_usd_formatted": format_cost(cost),
+    }
+
+
+def estimate_simplify_request(
+    payload: SimplifySelectionRequest,
+    *,
+    fix_contradiction: bool,
+) -> dict[str, Any]:
+    paragraph_text = payload.paragraphText or ""
+    start, end = _normalize_selection_bounds(
+        payload.selectionStart,
+        payload.selectionEnd,
+        total_length=len(paragraph_text),
+    )
+    if start == end:
+        start = 0
+        end = len(paragraph_text)
+    original_snippet = paragraph_text[start:end]
+
+    if fix_contradiction:
+        system_prompt = _build_fix_contradiction_system_prompt()
+        user_prompt = _build_fix_contradiction_user_prompt(
+            document_id=payload.documentId,
+            paragraph_id=payload.paragraphId,
+            paragraph_text=paragraph_text,
+            selected_snippet=original_snippet,
+            selection_start=start,
+            selection_end=end,
+            contradiction_reason=(payload.contradictionReason or "").strip(),
+            related_paragraphs=payload.relatedParagraphs[:MAX_FIX_RELATED_PARAGRAPHS],
+        )
+    else:
+        system_prompt = _build_simplify_system_prompt()
+        user_prompt = _build_simplify_user_prompt(
+            document_id=payload.documentId,
+            paragraph_id=payload.paragraphId,
+            paragraph_text=paragraph_text,
+            selected_snippet=original_snippet,
+            selection_start=start,
+            selection_end=end,
+        )
+
+    resolved_model = _default_model_for_provider(payload.provider)
+    input_tokens = estimate_tokens(system_prompt, resolved_model) + estimate_tokens(user_prompt, resolved_model)
+    output_tokens = SIMPLIFY_ESTIMATED_OUTPUT_TOKENS
+    cost = estimate_model_cost_usd(
+        model_name=resolved_model,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+    )
+    return {
+        "provider": payload.provider,
+        "model": resolved_model,
+        "estimated_input_tokens": input_tokens,
+        "estimated_output_tokens": output_tokens,
+        "estimated_total_tokens": input_tokens + output_tokens,
+        "estimated_cost_usd": cost,
+        "estimated_cost_usd_formatted": format_cost(cost),
+    }
+
+
+def _default_model_for_provider(provider: str) -> str:
+    return "gpt-4.1" if provider == "openai" else "gemini-2.5-flash"
 
 
 def generate_assistant_response(payload: AssistantChatRequest) -> AssistantChatResponse:
