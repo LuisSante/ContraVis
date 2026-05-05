@@ -210,10 +210,10 @@ async def process_document(data: dict):
         "cache": cache_meta,
     }
 
-    # try:
-    #     save_graph_output_snapshot(document_id=doc_id, graph_payload=response["graph"])
-    # except Exception:
-    #     logger.exception("Failed to save graph output snapshot for document_id=%s", doc_id)
+    try:
+        save_graph_output_snapshot(document_id=doc_id, graph_payload=response["graph"])
+    except Exception:
+        logger.exception("Failed to save graph output snapshot for document_id=%s", doc_id)
 
     return response
 
