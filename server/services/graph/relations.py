@@ -611,13 +611,16 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                 score=score
             ))
 
-    relations_map: dict[str, set[str]] = {}
+    relations_map: dict[str, set[str]] = {node.id: set() for node in nodes}
     for edge in edges:
         source_neighbors = relations_map.setdefault(edge.source, set())
         source_neighbors.add(edge.target)
 
-        target_neighbors = relations_map.setdefault(edge.target, set())
-        target_neighbors.add(edge.source)
+        # Keep references directional (source -> target),
+        # while semantic similarity remains symmetric.
+        if edge.type == "semantic_similarity":
+            target_neighbors = relations_map.setdefault(edge.target, set())
+            target_neighbors.add(edge.source)
     
     for node in nodes:
         node.relationsCount = len(relations_map.get(node.id, set()))
