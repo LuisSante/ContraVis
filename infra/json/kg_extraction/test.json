@@ -1,0 +1,87 @@
+{
+  "entities": [
+    {
+      "id": "clause::related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+      "type": "Clause",
+      "label": "Clause on Continued Supply of Unchanged Miltenyi Product and Material Change",
+      "properties": {},
+      "evidence_text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation."
+    },
+    {
+      "id": "entity::Material_Change",
+      "type": "DefinedTerm",
+      "label": "Material Change",
+      "properties": {},
+      "evidence_text": "\"Material Change\" means any change to Agreed Standards, Product Specifications, critical raw materials, sources of critical raw materials and/or primary packaging of a Miltenyi Product that, to the extent reasonably foreseeable, could have potential adverse impact on the safety, quality, and/or performance or could otherwise materially alter the properties of a Miltenyi Product."
+    },
+    {
+      "id": "entity::Bellicum",
+      "type": "Party",
+      "label": "Bellicum Pharmaceuticals, Inc.",
+      "properties": {},
+      "evidence_text": "Bellicum Pharmaceuticals, Inc., a US corporation, having a registered office at 2130 West Holcombe Boulevard, Suite 800, Houston, TX 77030 (on behalf of itself and its Affiliates, individually and collectively referred to as \"Bellicum\")."
+    },
+    {
+      "id": "entity::Miltenyi_Product",
+      "type": "DefinedTerm",
+      "label": "Miltenyi Product",
+      "properties": {},
+      "evidence_text": "\"Miltenyi Product\" means any one of the products listed from time to time on Exhibit B attached hereto, including Clinical Grade Products and Research Grade Products."
+    },
+    {
+      "id": "entity::Forecast_Variances_Obligation",
+      "type": "Obligation",
+      "label": "Obligation of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering",
+      "properties": {},
+      "evidence_text": "any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply"
+    },
+    {
+      "id": "entity::No_Obligation_to_Purchase",
+      "type": "Obligation",
+      "label": "Bellicum has no obligation to purchase Miltenyi Products produced after Material Change implementation",
+      "properties": {},
+      "evidence_text": "Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change."
+    },
+    {
+      "id": "entity::Meeting_Condition",
+      "type": "Condition",
+      "label": "Condition to meet and discuss remedy if supply exceeds six months",
+      "properties": {},
+      "evidence_text": "If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation."
+    },
+    {
+      "id": "clause::related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+      "type": "Clause",
+      "label": "Clause on Changes to Purchase Orders and Supply Duration",
+      "properties": {},
+      "evidence_text": "5.5 Changes to Purchase Orders. Subject to Section 5.2 and applicable Lead Times, Miltenyi shall use [...***...] to comply with unplanned changes in Purchase Orders requested by Bellicum either in terms of quantities or Delivery dates. All requests for changes to Purchase Orders shall be submitted in writing. Bellicum shall be responsible for all supplementary costs that result from the implementation of any unplanned change to an accepted Purchase Order requested by Bellicum. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of three (3) months from the implementation date of the Material Change, the Parties are not required to meet or discuss any remedy."
+    },
+    {
+      "id": "entity::No_Meeting_Condition",
+      "type": "Condition",
+      "label": "Condition that no meeting or discussion is required if supply exceeds three months",
+      "properties": {},
+      "evidence_text": "If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of three (3) months from the implementation date of the Material Change, the Parties are not required to meet or discuss any remedy."
+    }
+  ],
+  "relations": [
+    {
+      "source": "entity::No_Meeting_Condition",
+      "target": "entity::Meeting_Condition",
+      "type": "CONTRADICTS",
+      "confidence": 1.0,
+      "evidence_text": "Clause p-216 requires Parties to meet if supply exceeds six months; Clause p-290 states no meeting required if supply exceeds three months.",
+      "source_field": "text",
+      "target_field": "text"
+    },
+    {
+      "source": "entity::No_Obligation_to_Purchase",
+      "target": "entity::Forecast_Variances_Obligation",
+      "type": "CONTRADICTS",
+      "confidence": 1.0,
+      "evidence_text": "Clause p-216 states obligations under Article 5 pertaining to forecast variances and Firm Zone ordering shall not apply and Bellicum has no obligation to purchase Miltenyi Products produced after Material Change; this negates forecast variance obligations.",
+      "source_field": "text",
+      "target_field": "text"
+    }
+  ]
+}
