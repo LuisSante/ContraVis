@@ -1,0 +1,108 @@
+{
+  "stats": {
+    "clauses_input": 1,
+    "seed_nodes": 2,
+    "seed_edges": 1,
+    "final_nodes": 5,
+    "final_edges": 5,
+    "input_tokens": 827,
+    "output_tokens": 781
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "Clause",
+        "label": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation.",
+        "properties": {},
+        "evidence_text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation."
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "Clause",
+        "label": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "text": "5.5 Changes to Purchase Orders. Subject to Section 5.2 and applicable Lead Times, Miltenyi shall use [...***...] to comply with unplanned changes in Purchase Orders requested by Bellicum either in terms of quantities or Delivery dates. All requests for changes to Purchase Orders shall be submitted in writing. Bellicum shall be responsible for all supplementary costs that result from the implementation of any unplanned change to an accepted Purchase Order requested by Bellicum. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of three (3) months from the implementation date of the Material Change, the Parties are not required to meet or discuss any remedy.",
+        "properties": {},
+        "evidence_text": "5.5 Changes to Purchase Orders. Subject to Section 5.2 and applicable Lead Times, Miltenyi shall use [...***...] to comply with unplanned changes in Purchase Orders requested by Bellicum either in terms of quantities or Delivery dates. All requests for changes to Purchase Orders shall be submitted in writing. Bellicum shall be responsible for all supplementary costs that result from the implementation of any unplanned change to an accepted Purchase Order requested by Bellicum. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of three (3) months from the implementation date of the Material Change, the Parties are not required to meet or discuss any remedy."
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Obligation_Bellicum_no_purchase_after_Material_Change",
+        "type": "Obligation",
+        "label": "Bellicum has no obligation to purchase Miltenyi Products produced after implementation of Material Change",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {
+          "condition": "Until agreement is reached",
+          "subject": "Bellicum",
+          "object": "purchase Miltenyi Products produced after Material Change"
+        },
+        "evidence_text": "Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change."
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Condition_supply_exceeds_6_months",
+        "type": "Condition",
+        "label": "Continued supply of unchanged Miltenyi Product exceeds six (6) months from implementation date of Material Change",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {
+          "duration": "6 months",
+          "event": "continued supply of unchanged Miltenyi Product",
+          "reference_point": "implementation date of Material Change"
+        },
+        "evidence_text": "If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b)"
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Obligation_Parties_meet_remedy",
+        "type": "Obligation",
+        "label": "Parties shall promptly meet to discuss remedy if supply exceeds six months",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {
+          "trigger_condition": "continued supply exceeds six (6) months",
+          "action": "meet to discuss remedy"
+        },
+        "evidence_text": "then the Parties shall promptly meet to discuss in good faith how to remedy the situation."
+      }
+    ],
+    "edges": [
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "REFERENCES",
+        "evidence_text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation.",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Condition_supply_exceeds_6_months",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Obligation_Parties_meet_remedy",
+        "type": "CONTRADICTS",
+        "evidence_text": "Clause states meeting is required if supply exceeds six months, related clause states no meeting required if supply exceeds three months.",
+        "source_field": "Condition",
+        "target_field": "Obligation"
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Obligation_Bellicum_no_purchase_after_Material_Change",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change.",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Condition_supply_exceeds_6_months",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b)",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::Obligation_Parties_meet_remedy",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "then the Parties shall promptly meet to discuss in good faith how to remedy the situation.",
+        "source_field": null,
+        "target_field": null
+      }
+    ]
+  }
+}

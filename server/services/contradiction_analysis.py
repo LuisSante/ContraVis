@@ -306,12 +306,11 @@ def analyze_document_contradictions(
 
 
 def estimate_contradiction_analysis_request(payload: ContradictionAnalysisRequest) -> dict[str, Any]:
-    paragraph_rows, ordered_paragraph_ids, kg_context_by_paragraph = _build_document_rows(payload)
+    paragraph_rows, ordered_paragraph_ids = _build_document_rows(payload)
     resolved_model = (payload.model or "").strip() or "gpt-4.1"
     batches = _chunk_paragraph_rows(
         paragraph_rows=paragraph_rows,
         mode=payload.mode,
-        kg_context_by_paragraph=kg_context_by_paragraph,
         model_name=resolved_model,
         target_input_tokens=TARGET_BATCH_INPUT_TOKENS,
     )
@@ -320,7 +319,6 @@ def estimate_contradiction_analysis_request(payload: ContradictionAnalysisReques
         estimated_input_total += _estimate_prompt_tokens(
             paragraph_rows=batch,
             mode=payload.mode,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             model_name=resolved_model,
         )
     estimated_output_total = len(ordered_paragraph_ids) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
@@ -454,6 +452,8 @@ def _run_batch_with_fallback(
         paragraph_rows=batch_rows,
         mode=payload.mode,
     )
+
+    # return {}, user_prompt # Activate when you want to check the prompt without calling the provider
 
     try:
         raw_response = provider.generate(

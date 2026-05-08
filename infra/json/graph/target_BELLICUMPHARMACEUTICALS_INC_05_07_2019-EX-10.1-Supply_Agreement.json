@@ -7062,7 +7062,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-146",
       "type": "semantic_similarity",
-      "score": 0.8558019995689392,
+      "score": 0.8558024764060974,
       "ref_label": null,
       "ref_value": null
     },
@@ -7070,7 +7070,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-147",
       "type": "semantic_similarity",
-      "score": 0.8772923946380615,
+      "score": 0.8772926926612854,
       "ref_label": null,
       "ref_value": null
     },
@@ -7078,7 +7078,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "type": "semantic_similarity",
-      "score": 0.8751510381698608,
+      "score": 0.875151515007019,
       "ref_label": null,
       "ref_value": null
     },
@@ -7086,7 +7086,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-151",
       "type": "semantic_similarity",
-      "score": 0.8213152885437012,
+      "score": 0.8213158845901489,
       "ref_label": null,
       "ref_value": null
     },
@@ -7094,7 +7094,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8345557451248169,
+      "score": 0.8345558643341064,
       "ref_label": null,
       "ref_value": null
     },
@@ -7102,7 +7102,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-441",
       "type": "semantic_similarity",
-      "score": 0.8125942349433899,
+      "score": 0.8125945925712585,
       "ref_label": null,
       "ref_value": null
     },
@@ -7110,7 +7110,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-444",
       "type": "semantic_similarity",
-      "score": 0.8081910610198975,
+      "score": 0.8081912398338318,
       "ref_label": null,
       "ref_value": null
     },
@@ -7118,7 +7118,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-14",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.8869420886039734,
+      "score": 0.8869421482086182,
       "ref_label": null,
       "ref_value": null
     },
@@ -7126,7 +7126,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-28",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-196",
       "type": "semantic_similarity",
-      "score": 0.8073757886886597,
+      "score": 0.8073754906654358,
       "ref_label": null,
       "ref_value": null
     },
@@ -7134,7 +7134,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-44",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-111",
       "type": "semantic_similarity",
-      "score": 0.8557473421096802,
+      "score": 0.8557475805282593,
       "ref_label": null,
       "ref_value": null
     },
@@ -7142,7 +7142,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-88",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-451",
       "type": "semantic_similarity",
-      "score": 0.8054553270339966,
+      "score": 0.8054556250572205,
       "ref_label": null,
       "ref_value": null
     },
@@ -7150,7 +7150,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-99",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-195",
       "type": "semantic_similarity",
-      "score": 0.8707931637763977,
+      "score": 0.8707932829856873,
       "ref_label": null,
       "ref_value": null
     },
@@ -7166,7 +7166,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-107",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-294",
       "type": "semantic_similarity",
-      "score": 0.8647661805152893,
+      "score": 0.8647659420967102,
       "ref_label": null,
       "ref_value": null
     },
@@ -7174,7 +7174,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-113",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-162",
       "type": "semantic_similarity",
-      "score": 0.8092379570007324,
+      "score": 0.8092380166053772,
       "ref_label": null,
       "ref_value": null
     },
@@ -7182,7 +7182,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-132",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "type": "semantic_similarity",
-      "score": 0.8043919205665588,
+      "score": 0.804391622543335,
       "ref_label": null,
       "ref_value": null
     },
@@ -7190,7 +7190,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-132",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8108630180358887,
+      "score": 0.810863196849823,
       "ref_label": null,
       "ref_value": null
     },
@@ -7198,7 +7198,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-132",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "type": "semantic_similarity",
-      "score": 0.8626508116722107,
+      "score": 0.862650454044342,
       "ref_label": null,
       "ref_value": null
     },
@@ -7214,7 +7214,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-146",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-147",
       "type": "semantic_similarity",
-      "score": 0.8707937002182007,
+      "score": 0.8707935214042664,
       "ref_label": null,
       "ref_value": null
     },
@@ -7230,7 +7230,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-146",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-227",
       "type": "semantic_similarity",
-      "score": 0.8716481328010559,
+      "score": 0.871648371219635,
       "ref_label": null,
       "ref_value": null
     },
@@ -7238,7 +7238,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-146",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "type": "semantic_similarity",
-      "score": 0.8434199690818787,
+      "score": 0.8434197902679443,
       "ref_label": null,
       "ref_value": null
     },
@@ -7246,7 +7246,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-146",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-660",
       "type": "semantic_similarity",
-      "score": 0.8269520401954651,
+      "score": 0.8269522786140442,
       "ref_label": null,
       "ref_value": null
     },
@@ -7254,7 +7254,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-147",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-151",
       "type": "semantic_similarity",
-      "score": 0.8295869827270508,
+      "score": 0.8295866847038269,
       "ref_label": null,
       "ref_value": null
     },
@@ -7262,7 +7262,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-147",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-227",
       "type": "semantic_similarity",
-      "score": 0.8175802826881409,
+      "score": 0.8175798058509827,
       "ref_label": null,
       "ref_value": null
     },
@@ -7270,7 +7270,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-147",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "type": "semantic_similarity",
-      "score": 0.8293138742446899,
+      "score": 0.8293139934539795,
       "ref_label": null,
       "ref_value": null
     },
@@ -7286,7 +7286,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-148",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "type": "semantic_similarity",
-      "score": 0.8092091679573059,
+      "score": 0.8092090487480164,
       "ref_label": null,
       "ref_value": null
     },
@@ -7294,7 +7294,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-148",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-180",
       "type": "semantic_similarity",
-      "score": 0.9114065170288086,
+      "score": 0.9114065766334534,
       "ref_label": null,
       "ref_value": null
     },
@@ -7302,7 +7302,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-148",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-212",
       "type": "semantic_similarity",
-      "score": 0.816154420375824,
+      "score": 0.8161541223526001,
       "ref_label": null,
       "ref_value": null
     },
@@ -7310,7 +7310,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-151",
       "type": "semantic_similarity",
-      "score": 0.8206191062927246,
+      "score": 0.820618748664856,
       "ref_label": null,
       "ref_value": null
     },
@@ -7318,7 +7318,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-157",
       "type": "semantic_similarity",
-      "score": 0.8449523448944092,
+      "score": 0.8449520468711853,
       "ref_label": null,
       "ref_value": null
     },
@@ -7326,7 +7326,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-158",
       "type": "semantic_similarity",
-      "score": 0.813676655292511,
+      "score": 0.8136765956878662,
       "ref_label": null,
       "ref_value": null
     },
@@ -7334,7 +7334,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8623337745666504,
+      "score": 0.8623338341712952,
       "ref_label": null,
       "ref_value": null
     },
@@ -7342,7 +7342,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-418",
       "type": "semantic_similarity",
-      "score": 0.8367336392402649,
+      "score": 0.8367334604263306,
       "ref_label": null,
       "ref_value": null
     },
@@ -7350,7 +7350,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.9051618576049805,
+      "score": 0.9051622152328491,
       "ref_label": null,
       "ref_value": null
     },
@@ -7358,7 +7358,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-150",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-661",
       "type": "semantic_similarity",
-      "score": 0.8122019171714783,
+      "score": 0.8122020363807678,
       "ref_label": null,
       "ref_value": null
     },
@@ -7366,7 +7366,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-151",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "type": "semantic_similarity",
-      "score": 0.8040957450866699,
+      "score": 0.8040955662727356,
       "ref_label": null,
       "ref_value": null
     },
@@ -7374,7 +7374,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-151",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.87835693359375,
+      "score": 0.8783568143844604,
       "ref_label": null,
       "ref_value": null
     },
@@ -7382,7 +7382,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-157",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-158",
       "type": "semantic_similarity",
-      "score": 0.8454304933547974,
+      "score": 0.8454306125640869,
       "ref_label": null,
       "ref_value": null
     },
@@ -7390,7 +7390,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-157",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-159",
       "type": "semantic_similarity",
-      "score": 0.8259052634239197,
+      "score": 0.8259048461914062,
       "ref_label": null,
       "ref_value": null
     },
@@ -7406,7 +7406,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-157",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.8141167163848877,
+      "score": 0.8141167759895325,
       "ref_label": null,
       "ref_value": null
     },
@@ -7422,7 +7422,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-160",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-245",
       "type": "semantic_similarity",
-      "score": 0.9073183536529541,
+      "score": 0.9073182344436646,
       "ref_label": null,
       "ref_value": null
     },
@@ -7430,7 +7430,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-160",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-320",
       "type": "semantic_similarity",
-      "score": 0.8057124614715576,
+      "score": 0.8057127594947815,
       "ref_label": null,
       "ref_value": null
     },
@@ -7438,7 +7438,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-161",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8224998712539673,
+      "score": 0.8225001096725464,
       "ref_label": null,
       "ref_value": null
     },
@@ -7446,7 +7446,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-162",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-164",
       "type": "semantic_similarity",
-      "score": 0.8411148190498352,
+      "score": 0.8411149978637695,
       "ref_label": null,
       "ref_value": null
     },
@@ -7454,7 +7454,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-162",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-321",
       "type": "semantic_similarity",
-      "score": 0.8716626167297363,
+      "score": 0.8716623783111572,
       "ref_label": null,
       "ref_value": null
     },
@@ -7462,7 +7462,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-164",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-167",
       "type": "semantic_similarity",
-      "score": 0.8282216191291809,
+      "score": 0.8282214999198914,
       "ref_label": null,
       "ref_value": null
     },
@@ -7470,7 +7470,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-164",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-223",
       "type": "semantic_similarity",
-      "score": 0.8418987989425659,
+      "score": 0.8418992161750793,
       "ref_label": null,
       "ref_value": null
     },
@@ -7486,7 +7486,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-164",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-374",
       "type": "semantic_similarity",
-      "score": 0.8105003833770752,
+      "score": 0.8105001449584961,
       "ref_label": null,
       "ref_value": null
     },
@@ -7494,7 +7494,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-164",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-436",
       "type": "semantic_similarity",
-      "score": 0.8364341855049133,
+      "score": 0.8364338278770447,
       "ref_label": null,
       "ref_value": null
     },
@@ -7502,7 +7502,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-164",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-450",
       "type": "semantic_similarity",
-      "score": 0.8050277233123779,
+      "score": 0.8050273656845093,
       "ref_label": null,
       "ref_value": null
     },
@@ -7510,7 +7510,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-167",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-321",
       "type": "semantic_similarity",
-      "score": 0.8065209984779358,
+      "score": 0.8065205812454224,
       "ref_label": null,
       "ref_value": null
     },
@@ -7526,7 +7526,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-178",
       "type": "semantic_similarity",
-      "score": 0.8105211853981018,
+      "score": 0.8105210661888123,
       "ref_label": null,
       "ref_value": null
     },
@@ -7534,7 +7534,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8593553900718689,
+      "score": 0.8593551516532898,
       "ref_label": null,
       "ref_value": null
     },
@@ -7542,7 +7542,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "type": "semantic_similarity",
-      "score": 0.8628185391426086,
+      "score": 0.8628180027008057,
       "ref_label": null,
       "ref_value": null
     },
@@ -7550,7 +7550,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-243",
       "type": "semantic_similarity",
-      "score": 0.8096446990966797,
+      "score": 0.8096445798873901,
       "ref_label": null,
       "ref_value": null
     },
@@ -7558,7 +7558,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "type": "semantic_similarity",
-      "score": 0.8407682180404663,
+      "score": 0.8407682776451111,
       "ref_label": null,
       "ref_value": null
     },
@@ -7566,7 +7566,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-346",
       "type": "semantic_similarity",
-      "score": 0.8016351461410522,
+      "score": 0.8016353249549866,
       "ref_label": null,
       "ref_value": null
     },
@@ -7574,7 +7574,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-418",
       "type": "semantic_similarity",
-      "score": 0.8260366916656494,
+      "score": 0.8260366320610046,
       "ref_label": null,
       "ref_value": null
     },
@@ -7582,7 +7582,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-168",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-443",
       "type": "semantic_similarity",
-      "score": 0.8320204615592957,
+      "score": 0.832020103931427,
       "ref_label": null,
       "ref_value": null
     },
@@ -7590,7 +7590,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-180",
       "type": "semantic_similarity",
-      "score": 0.8535796999931335,
+      "score": 0.8535794615745544,
       "ref_label": null,
       "ref_value": null
     },
@@ -7598,7 +7598,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-198",
       "type": "semantic_similarity",
-      "score": 0.8406908512115479,
+      "score": 0.8406907916069031,
       "ref_label": null,
       "ref_value": null
     },
@@ -7606,7 +7606,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-222",
       "type": "semantic_similarity",
-      "score": 0.8031534552574158,
+      "score": 0.8031533360481262,
       "ref_label": null,
       "ref_value": null
     },
@@ -7614,7 +7614,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-223",
       "type": "semantic_similarity",
-      "score": 0.8179271221160889,
+      "score": 0.8179273009300232,
       "ref_label": null,
       "ref_value": null
     },
@@ -7622,7 +7622,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-227",
       "type": "semantic_similarity",
-      "score": 0.8172744512557983,
+      "score": 0.817274272441864,
       "ref_label": null,
       "ref_value": null
     },
@@ -7638,7 +7638,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-238",
       "type": "semantic_similarity",
-      "score": 0.8216996192932129,
+      "score": 0.8216994404792786,
       "ref_label": null,
       "ref_value": null
     },
@@ -7646,7 +7646,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-243",
       "type": "semantic_similarity",
-      "score": 0.8117968440055847,
+      "score": 0.8117966651916504,
       "ref_label": null,
       "ref_value": null
     },
@@ -7654,7 +7654,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "type": "semantic_similarity",
-      "score": 0.8022891283035278,
+      "score": 0.8022890686988831,
       "ref_label": null,
       "ref_value": null
     },
@@ -7662,7 +7662,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-367",
       "type": "semantic_similarity",
-      "score": 0.8092749118804932,
+      "score": 0.8092750310897827,
       "ref_label": null,
       "ref_value": null
     },
@@ -7670,7 +7670,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-443",
       "type": "semantic_similarity",
-      "score": 0.8085038661956787,
+      "score": 0.8085041642189026,
       "ref_label": null,
       "ref_value": null
     },
@@ -7678,7 +7678,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-169",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-450",
       "type": "semantic_similarity",
-      "score": 0.8318773508071899,
+      "score": 0.8318774104118347,
       "ref_label": null,
       "ref_value": null
     },
@@ -7686,7 +7686,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-172",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-175",
       "type": "semantic_similarity",
-      "score": 0.8152214288711548,
+      "score": 0.8152210712432861,
       "ref_label": null,
       "ref_value": null
     },
@@ -7694,7 +7694,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-172",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8385648131370544,
+      "score": 0.8385646939277649,
       "ref_label": null,
       "ref_value": null
     },
@@ -7702,7 +7702,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-178",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "type": "semantic_similarity",
-      "score": 0.8712157607078552,
+      "score": 0.8712159991264343,
       "ref_label": null,
       "ref_value": null
     },
@@ -7710,7 +7710,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-178",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "type": "semantic_similarity",
-      "score": 0.8091233968734741,
+      "score": 0.8091233372688293,
       "ref_label": null,
       "ref_value": null
     },
@@ -7718,7 +7718,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-178",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-409",
       "type": "semantic_similarity",
-      "score": 0.8056583404541016,
+      "score": 0.8056586980819702,
       "ref_label": null,
       "ref_value": null
     },
@@ -7726,7 +7726,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-178",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-417",
       "type": "semantic_similarity",
-      "score": 0.8573659658432007,
+      "score": 0.8573660850524902,
       "ref_label": null,
       "ref_value": null
     },
@@ -7734,7 +7734,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-178",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-418",
       "type": "semantic_similarity",
-      "score": 0.8182502388954163,
+      "score": 0.8182498812675476,
       "ref_label": null,
       "ref_value": null
     },
@@ -7742,7 +7742,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-180",
       "type": "semantic_similarity",
-      "score": 0.819042980670929,
+      "score": 0.8190428018569946,
       "ref_label": null,
       "ref_value": null
     },
@@ -7750,7 +7750,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "type": "semantic_similarity",
-      "score": 0.8376588821411133,
+      "score": 0.8376590609550476,
       "ref_label": null,
       "ref_value": null
     },
@@ -7758,7 +7758,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-243",
       "type": "semantic_similarity",
-      "score": 0.817190408706665,
+      "score": 0.8171905875205994,
       "ref_label": null,
       "ref_value": null
     },
@@ -7774,7 +7774,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-418",
       "type": "semantic_similarity",
-      "score": 0.8526829481124878,
+      "score": 0.8526826500892639,
       "ref_label": null,
       "ref_value": null
     },
@@ -7782,7 +7782,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-443",
       "type": "semantic_similarity",
-      "score": 0.8125655055046082,
+      "score": 0.8125651478767395,
       "ref_label": null,
       "ref_value": null
     },
@@ -7790,7 +7790,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.8421139717102051,
+      "score": 0.8421140909194946,
       "ref_label": null,
       "ref_value": null
     },
@@ -7798,7 +7798,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-660",
       "type": "semantic_similarity",
-      "score": 0.8134585022926331,
+      "score": 0.813458263874054,
       "ref_label": null,
       "ref_value": null
     },
@@ -7806,7 +7806,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-179",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-661",
       "type": "semantic_similarity",
-      "score": 0.8414931297302246,
+      "score": 0.8414934277534485,
       "ref_label": null,
       "ref_value": null
     },
@@ -7814,7 +7814,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-180",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "type": "semantic_similarity",
-      "score": 0.8329644799232483,
+      "score": 0.832965075969696,
       "ref_label": null,
       "ref_value": null
     },
@@ -7822,7 +7822,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-180",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-223",
       "type": "semantic_similarity",
-      "score": 0.8052309155464172,
+      "score": 0.8052310943603516,
       "ref_label": null,
       "ref_value": null
     },
@@ -7830,7 +7830,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-180",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.8273950815200806,
+      "score": 0.8273948431015015,
       "ref_label": null,
       "ref_value": null
     },
@@ -7838,7 +7838,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-439",
       "type": "semantic_similarity",
-      "score": 0.8060444593429565,
+      "score": 0.8060441613197327,
       "ref_label": null,
       "ref_value": null
     },
@@ -7846,7 +7846,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-660",
       "type": "semantic_similarity",
-      "score": 0.8239544630050659,
+      "score": 0.823954164981842,
       "ref_label": null,
       "ref_value": null
     },
@@ -7854,7 +7854,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-181",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-661",
       "type": "semantic_similarity",
-      "score": 0.8445444703102112,
+      "score": 0.8445443511009216,
       "ref_label": null,
       "ref_value": null
     },
@@ -7862,7 +7862,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-195",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-196",
       "type": "semantic_similarity",
-      "score": 0.8151377439498901,
+      "score": 0.8151381015777588,
       "ref_label": null,
       "ref_value": null
     },
@@ -7870,7 +7870,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-195",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-423",
       "type": "semantic_similarity",
-      "score": 0.8233802914619446,
+      "score": 0.8233804702758789,
       "ref_label": null,
       "ref_value": null
     },
@@ -7878,7 +7878,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-196",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-423",
       "type": "semantic_similarity",
-      "score": 0.8480725884437561,
+      "score": 0.8480721712112427,
       "ref_label": null,
       "ref_value": null
     },
@@ -7886,7 +7886,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-197",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-364",
       "type": "semantic_similarity",
-      "score": 0.8660280704498291,
+      "score": 0.866028368473053,
       "ref_label": null,
       "ref_value": null
     },
@@ -7894,7 +7894,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-204",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-210",
       "type": "semantic_similarity",
-      "score": 0.8234168291091919,
+      "score": 0.8234167695045471,
       "ref_label": null,
       "ref_value": null
     },
@@ -7902,7 +7902,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-205",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-209",
       "type": "semantic_similarity",
-      "score": 0.8714674115180969,
+      "score": 0.8714673519134521,
       "ref_label": null,
       "ref_value": null
     },
@@ -7910,7 +7910,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-205",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-210",
       "type": "semantic_similarity",
-      "score": 0.8607267141342163,
+      "score": 0.8607267737388611,
       "ref_label": null,
       "ref_value": null
     },
@@ -7918,7 +7918,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-209",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-210",
       "type": "semantic_similarity",
-      "score": 0.8741052150726318,
+      "score": 0.8741048574447632,
       "ref_label": null,
       "ref_value": null
     },
@@ -7926,7 +7926,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-210",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-212",
       "type": "semantic_similarity",
-      "score": 0.8227905035018921,
+      "score": 0.8227901458740234,
       "ref_label": null,
       "ref_value": null
     },
@@ -7942,7 +7942,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-212",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
       "type": "semantic_similarity",
-      "score": 0.8252757787704468,
+      "score": 0.8252755403518677,
       "ref_label": null,
       "ref_value": null
     },
@@ -7950,7 +7950,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-212",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-217",
       "type": "semantic_similarity",
-      "score": 0.8134298920631409,
+      "score": 0.8134298324584961,
       "ref_label": null,
       "ref_value": null
     },
@@ -7958,7 +7958,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-212",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-316",
       "type": "semantic_similarity",
-      "score": 0.8113462924957275,
+      "score": 0.8113462328910828,
       "ref_label": null,
       "ref_value": null
     },
@@ -7966,7 +7966,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-217",
       "type": "semantic_similarity",
-      "score": 0.8816661834716797,
+      "score": 0.8816663026809692,
       "ref_label": null,
       "ref_value": null
     },
@@ -7974,7 +7974,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-217",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-259",
       "type": "semantic_similarity",
-      "score": 0.8230633735656738,
+      "score": 0.8230631947517395,
       "ref_label": null,
       "ref_value": null
     },
@@ -7982,7 +7982,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-217",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "type": "semantic_similarity",
-      "score": 0.8097942471504211,
+      "score": 0.8097941875457764,
       "ref_label": null,
       "ref_value": null
     },
@@ -7990,7 +7990,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-217",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-289",
       "type": "semantic_similarity",
-      "score": 0.8500020503997803,
+      "score": 0.8500022292137146,
       "ref_label": null,
       "ref_value": null
     },
@@ -7998,7 +7998,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-217",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-316",
       "type": "semantic_similarity",
-      "score": 0.8213269114494324,
+      "score": 0.8213267922401428,
       "ref_label": null,
       "ref_value": null
     },
@@ -8006,7 +8006,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-222",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-223",
       "type": "semantic_similarity",
-      "score": 0.9378249049186707,
+      "score": 0.937825083732605,
       "ref_label": null,
       "ref_value": null
     },
@@ -8014,7 +8014,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-223",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-321",
       "type": "semantic_similarity",
-      "score": 0.8056084513664246,
+      "score": 0.8056088089942932,
       "ref_label": null,
       "ref_value": null
     },
@@ -8022,7 +8022,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-227",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "type": "semantic_similarity",
-      "score": 0.8828662633895874,
+      "score": 0.8828656077384949,
       "ref_label": null,
       "ref_value": null
     },
@@ -8030,7 +8030,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-243",
       "type": "semantic_similarity",
-      "score": 0.8376305103302002,
+      "score": 0.8376302123069763,
       "ref_label": null,
       "ref_value": null
     },
@@ -8038,7 +8038,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-443",
       "type": "semantic_similarity",
-      "score": 0.8063291311264038,
+      "score": 0.8063287138938904,
       "ref_label": null,
       "ref_value": null
     },
@@ -8046,7 +8046,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-445",
       "type": "semantic_similarity",
-      "score": 0.8479964733123779,
+      "score": 0.8479961156845093,
       "ref_label": null,
       "ref_value": null
     },
@@ -8054,7 +8054,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-452",
       "type": "semantic_similarity",
-      "score": 0.8138420581817627,
+      "score": 0.8138421773910522,
       "ref_label": null,
       "ref_value": null
     },
@@ -8062,7 +8062,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-228",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-660",
       "type": "semantic_similarity",
-      "score": 0.8067112565040588,
+      "score": 0.8067107200622559,
       "ref_label": null,
       "ref_value": null
     },
@@ -8070,7 +8070,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-231",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-245",
       "type": "semantic_similarity",
-      "score": 0.8359266519546509,
+      "score": 0.83592689037323,
       "ref_label": null,
       "ref_value": null
     },
@@ -8078,7 +8078,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-235",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-245",
       "type": "semantic_similarity",
-      "score": 0.815078616142273,
+      "score": 0.8150782585144043,
       "ref_label": null,
       "ref_value": null
     },
@@ -8086,7 +8086,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-238",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-239",
       "type": "semantic_similarity",
-      "score": 0.829282283782959,
+      "score": 0.8292819857597351,
       "ref_label": null,
       "ref_value": null
     },
@@ -8102,7 +8102,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-243",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "type": "semantic_similarity",
-      "score": 0.8043936491012573,
+      "score": 0.8043939471244812,
       "ref_label": null,
       "ref_value": null
     },
@@ -8110,7 +8110,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-459",
       "type": "semantic_similarity",
-      "score": 0.8099647164344788,
+      "score": 0.8099645972251892,
       "ref_label": null,
       "ref_value": null
     },
@@ -8118,7 +8118,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-466",
       "type": "semantic_similarity",
-      "score": 0.8009417653083801,
+      "score": 0.8009415864944458,
       "ref_label": null,
       "ref_value": null
     },
@@ -8126,7 +8126,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-244",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-470",
       "type": "semantic_similarity",
-      "score": 0.8194786310195923,
+      "score": 0.8194787502288818,
       "ref_label": null,
       "ref_value": null
     },
@@ -8134,7 +8134,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-259",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-270",
       "type": "semantic_similarity",
-      "score": 0.8445949554443359,
+      "score": 0.8445948362350464,
       "ref_label": null,
       "ref_value": null
     },
@@ -8142,7 +8142,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-259",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-274",
       "type": "semantic_similarity",
-      "score": 0.8144487142562866,
+      "score": 0.8144489526748657,
       "ref_label": null,
       "ref_value": null
     },
@@ -8150,7 +8150,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-259",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-316",
       "type": "semantic_similarity",
-      "score": 0.8152858018875122,
+      "score": 0.8152860999107361,
       "ref_label": null,
       "ref_value": null
     },
@@ -8158,7 +8158,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-260",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-262",
       "type": "semantic_similarity",
-      "score": 0.8319499492645264,
+      "score": 0.8319502472877502,
       "ref_label": null,
       "ref_value": null
     },
@@ -8166,7 +8166,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-260",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-270",
       "type": "semantic_similarity",
-      "score": 0.8058677911758423,
+      "score": 0.8058676719665527,
       "ref_label": null,
       "ref_value": null
     },
@@ -8174,7 +8174,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-260",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-276",
       "type": "semantic_similarity",
-      "score": 0.810039758682251,
+      "score": 0.8100395798683167,
       "ref_label": null,
       "ref_value": null
     },
@@ -8182,7 +8182,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-262",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-270",
       "type": "semantic_similarity",
-      "score": 0.8559516072273254,
+      "score": 0.8559519052505493,
       "ref_label": null,
       "ref_value": null
     },
@@ -8190,7 +8190,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-274",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-316",
       "type": "semantic_similarity",
-      "score": 0.813706636428833,
+      "score": 0.8137062788009644,
       "ref_label": null,
       "ref_value": null
     },
@@ -8198,7 +8198,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-283",
       "type": "semantic_similarity",
-      "score": 0.8512767553329468,
+      "score": 0.8512771725654602,
       "ref_label": null,
       "ref_value": null
     },
@@ -8206,7 +8206,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-295",
       "type": "semantic_similarity",
-      "score": 0.8020947575569153,
+      "score": 0.8020946979522705,
       "ref_label": null,
       "ref_value": null
     },
@@ -8214,7 +8214,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-306",
       "type": "semantic_similarity",
-      "score": 0.8157564401626587,
+      "score": 0.8157563805580139,
       "ref_label": null,
       "ref_value": null
     },
@@ -8222,7 +8222,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "type": "semantic_similarity",
-      "score": 0.8109093904495239,
+      "score": 0.8109090924263,
       "ref_label": null,
       "ref_value": null
     },
@@ -8230,7 +8230,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-275",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-331",
       "type": "semantic_similarity",
-      "score": 0.8611107468605042,
+      "score": 0.8611111044883728,
       "ref_label": null,
       "ref_value": null
     },
@@ -8238,7 +8238,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-282",
       "type": "semantic_similarity",
-      "score": 0.8195523619651794,
+      "score": 0.819552481174469,
       "ref_label": null,
       "ref_value": null
     },
@@ -8246,7 +8246,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-283",
       "type": "semantic_similarity",
-      "score": 0.8540418148040771,
+      "score": 0.8540416359901428,
       "ref_label": null,
       "ref_value": null
     },
@@ -8254,7 +8254,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-284",
       "type": "semantic_similarity",
-      "score": 0.8346020579338074,
+      "score": 0.8346021771430969,
       "ref_label": null,
       "ref_value": null
     },
@@ -8262,7 +8262,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
       "type": "semantic_similarity",
-      "score": 0.8206871747970581,
+      "score": 0.8206872940063477,
       "ref_label": null,
       "ref_value": null
     },
@@ -8270,7 +8270,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-299",
       "type": "semantic_similarity",
-      "score": 0.8321099877357483,
+      "score": 0.8321101069450378,
       "ref_label": null,
       "ref_value": null
     },
@@ -8278,7 +8278,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-303",
       "type": "semantic_similarity",
-      "score": 0.8026209473609924,
+      "score": 0.8026211857795715,
       "ref_label": null,
       "ref_value": null
     },
@@ -8286,7 +8286,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-281",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-361",
       "type": "semantic_similarity",
-      "score": 0.8112541437149048,
+      "score": 0.8112542629241943,
       "ref_label": null,
       "ref_value": null
     },
@@ -8294,7 +8294,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-283",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-284",
       "type": "semantic_similarity",
-      "score": 0.8022410869598389,
+      "score": 0.8022409677505493,
       "ref_label": null,
       "ref_value": null
     },
@@ -8302,7 +8302,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-293",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-316",
       "type": "semantic_similarity",
-      "score": 0.8207300901412964,
+      "score": 0.820729672908783,
       "ref_label": null,
       "ref_value": null
     },
@@ -8310,7 +8310,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-295",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "type": "semantic_similarity",
-      "score": 0.8179671168327332,
+      "score": 0.8179669380187988,
       "ref_label": null,
       "ref_value": null
     },
@@ -8318,7 +8318,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-303",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-308",
       "type": "semantic_similarity",
-      "score": 0.8025041222572327,
+      "score": 0.8025040030479431,
       "ref_label": null,
       "ref_value": null
     },
@@ -8326,7 +8326,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-304",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-361",
       "type": "semantic_similarity",
-      "score": 0.8090550899505615,
+      "score": 0.8090548515319824,
       "ref_label": null,
       "ref_value": null
     },
@@ -8334,7 +8334,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-306",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "type": "semantic_similarity",
-      "score": 0.8090782165527344,
+      "score": 0.8090779185295105,
       "ref_label": null,
       "ref_value": null
     },
@@ -8342,7 +8342,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-306",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-331",
       "type": "semantic_similarity",
-      "score": 0.8242411017417908,
+      "score": 0.8242412209510803,
       "ref_label": null,
       "ref_value": null
     },
@@ -8350,7 +8350,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-326",
       "type": "semantic_similarity",
-      "score": 0.8108887076377869,
+      "score": 0.8108886480331421,
       "ref_label": null,
       "ref_value": null
     },
@@ -8358,7 +8358,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-331",
       "type": "semantic_similarity",
-      "score": 0.8205510377883911,
+      "score": 0.8205506801605225,
       "ref_label": null,
       "ref_value": null
     },
@@ -8366,7 +8366,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-365",
       "type": "semantic_similarity",
-      "score": 0.8297809362411499,
+      "score": 0.8297814130783081,
       "ref_label": null,
       "ref_value": null
     },
@@ -8374,7 +8374,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-314",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-366",
       "type": "semantic_similarity",
-      "score": 0.8260302543640137,
+      "score": 0.8260300159454346,
       "ref_label": null,
       "ref_value": null
     },
@@ -8382,7 +8382,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-317",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-320",
       "type": "semantic_similarity",
-      "score": 0.8089064359664917,
+      "score": 0.8089061379432678,
       "ref_label": null,
       "ref_value": null
     },
@@ -8390,7 +8390,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-317",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-326",
       "type": "semantic_similarity",
-      "score": 0.8612796664237976,
+      "score": 0.8612798452377319,
       "ref_label": null,
       "ref_value": null
     },
@@ -8398,7 +8398,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-320",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-342",
       "type": "semantic_similarity",
-      "score": 0.8157451152801514,
+      "score": 0.8157452940940857,
       "ref_label": null,
       "ref_value": null
     },
@@ -8406,7 +8406,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-326",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-342",
       "type": "semantic_similarity",
-      "score": 0.8549383878707886,
+      "score": 0.8549385666847229,
       "ref_label": null,
       "ref_value": null
     },
@@ -8414,7 +8414,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-326",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-346",
       "type": "semantic_similarity",
-      "score": 0.8567862510681152,
+      "score": 0.8567860126495361,
       "ref_label": null,
       "ref_value": null
     },
@@ -8422,7 +8422,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-329",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-342",
       "type": "semantic_similarity",
-      "score": 0.8545334339141846,
+      "score": 0.8545331954956055,
       "ref_label": null,
       "ref_value": null
     },
@@ -8430,7 +8430,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-329",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-346",
       "type": "semantic_similarity",
-      "score": 0.8402166366577148,
+      "score": 0.8402164578437805,
       "ref_label": null,
       "ref_value": null
     },
@@ -8438,7 +8438,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-342",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-346",
       "type": "semantic_similarity",
-      "score": 0.8388298749923706,
+      "score": 0.8388300538063049,
       "ref_label": null,
       "ref_value": null
     },
@@ -8446,7 +8446,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-348",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-352",
       "type": "semantic_similarity",
-      "score": 0.8187106847763062,
+      "score": 0.8187103271484375,
       "ref_label": null,
       "ref_value": null
     },
@@ -8454,7 +8454,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-361",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-366",
       "type": "semantic_similarity",
-      "score": 0.8148500919342041,
+      "score": 0.8148502707481384,
       "ref_label": null,
       "ref_value": null
     },
@@ -8462,7 +8462,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-364",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-367",
       "type": "semantic_similarity",
-      "score": 0.8165605068206787,
+      "score": 0.8165605664253235,
       "ref_label": null,
       "ref_value": null
     },
@@ -8470,7 +8470,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-365",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-366",
       "type": "semantic_similarity",
-      "score": 0.9273243546485901,
+      "score": 0.9273241758346558,
       "ref_label": null,
       "ref_value": null
     },
@@ -8478,7 +8478,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-365",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-367",
       "type": "semantic_similarity",
-      "score": 0.8551958799362183,
+      "score": 0.8551955819129944,
       "ref_label": null,
       "ref_value": null
     },
@@ -8486,7 +8486,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-365",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-372",
       "type": "semantic_similarity",
-      "score": 0.805910587310791,
+      "score": 0.8059106469154358,
       "ref_label": null,
       "ref_value": null
     },
@@ -8494,7 +8494,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-365",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-373",
       "type": "semantic_similarity",
-      "score": 0.8251415491104126,
+      "score": 0.8251414895057678,
       "ref_label": null,
       "ref_value": null
     },
@@ -8502,7 +8502,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-366",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-367",
       "type": "semantic_similarity",
-      "score": 0.8401279449462891,
+      "score": 0.8401274681091309,
       "ref_label": null,
       "ref_value": null
     },
@@ -8518,7 +8518,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-368",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-373",
       "type": "semantic_similarity",
-      "score": 0.8146461248397827,
+      "score": 0.8146461844444275,
       "ref_label": null,
       "ref_value": null
     },
@@ -8526,7 +8526,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-372",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-454",
       "type": "semantic_similarity",
-      "score": 0.8548814654350281,
+      "score": 0.8548816442489624,
       "ref_label": null,
       "ref_value": null
     },
@@ -8542,7 +8542,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-381",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-455",
       "type": "semantic_similarity",
-      "score": 0.8366223573684692,
+      "score": 0.8366219401359558,
       "ref_label": null,
       "ref_value": null
     },
@@ -8550,7 +8550,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-395",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-397",
       "type": "semantic_similarity",
-      "score": 0.8035974502563477,
+      "score": 0.8035970330238342,
       "ref_label": null,
       "ref_value": null
     },
@@ -8558,7 +8558,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-397",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-498",
       "type": "semantic_similarity",
-      "score": 0.8121433854103088,
+      "score": 0.812143087387085,
       "ref_label": null,
       "ref_value": null
     },
@@ -8566,7 +8566,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-403",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-405",
       "type": "semantic_similarity",
-      "score": 0.8528103828430176,
+      "score": 0.8528102040290833,
       "ref_label": null,
       "ref_value": null
     },
@@ -8574,7 +8574,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-403",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-406",
       "type": "semantic_similarity",
-      "score": 0.816632091999054,
+      "score": 0.8166322708129883,
       "ref_label": null,
       "ref_value": null
     },
@@ -8582,7 +8582,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-409",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-417",
       "type": "semantic_similarity",
-      "score": 0.8279048204421997,
+      "score": 0.8279048800468445,
       "ref_label": null,
       "ref_value": null
     },
@@ -8590,7 +8590,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-418",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-661",
       "type": "semantic_similarity",
-      "score": 0.8391957879066467,
+      "score": 0.8391959071159363,
       "ref_label": null,
       "ref_value": null
     },
@@ -8598,7 +8598,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-433",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-454",
       "type": "semantic_similarity",
-      "score": 0.8736107349395752,
+      "score": 0.8736108541488647,
       "ref_label": null,
       "ref_value": null
     },
@@ -8606,7 +8606,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-433",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-459",
       "type": "semantic_similarity",
-      "score": 0.861537754535675,
+      "score": 0.8615378737449646,
       "ref_label": null,
       "ref_value": null
     },
@@ -8614,7 +8614,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-435",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-440",
       "type": "semantic_similarity",
-      "score": 0.927261471748352,
+      "score": 0.9272609949111938,
       "ref_label": null,
       "ref_value": null
     },
@@ -8622,7 +8622,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-443",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-444",
       "type": "semantic_similarity",
-      "score": 0.802084743976593,
+      "score": 0.8020845651626587,
       "ref_label": null,
       "ref_value": null
     },
@@ -8646,7 +8646,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-450",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-452",
       "type": "semantic_similarity",
-      "score": 0.8261401653289795,
+      "score": 0.8261398673057556,
       "ref_label": null,
       "ref_value": null
     },
@@ -8654,7 +8654,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-450",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-459",
       "type": "semantic_similarity",
-      "score": 0.839167594909668,
+      "score": 0.8391678929328918,
       "ref_label": null,
       "ref_value": null
     },
@@ -8662,7 +8662,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-451",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-459",
       "type": "semantic_similarity",
-      "score": 0.8208715319633484,
+      "score": 0.8208717703819275,
       "ref_label": null,
       "ref_value": null
     },
@@ -8670,7 +8670,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-452",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-459",
       "type": "semantic_similarity",
-      "score": 0.8135215044021606,
+      "score": 0.8135213851928711,
       "ref_label": null,
       "ref_value": null
     },
@@ -8686,7 +8686,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-466",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-469",
       "type": "semantic_similarity",
-      "score": 0.8054553270339966,
+      "score": 0.8054550290107727,
       "ref_label": null,
       "ref_value": null
     },
@@ -8694,7 +8694,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-466",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-470",
       "type": "semantic_similarity",
-      "score": 0.949608325958252,
+      "score": 0.9496087431907654,
       "ref_label": null,
       "ref_value": null
     },
@@ -8702,7 +8702,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-469",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-470",
       "type": "semantic_similarity",
-      "score": 0.8006311655044556,
+      "score": 0.8006308674812317,
       "ref_label": null,
       "ref_value": null
     },
@@ -8710,7 +8710,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-479",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-485",
       "type": "semantic_similarity",
-      "score": 0.8165616393089294,
+      "score": 0.8165615797042847,
       "ref_label": null,
       "ref_value": null
     },
@@ -8718,7 +8718,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-498",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-503",
       "type": "semantic_similarity",
-      "score": 0.8584535121917725,
+      "score": 0.8584532737731934,
       "ref_label": null,
       "ref_value": null
     },
@@ -8726,7 +8726,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-616",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-657",
       "type": "semantic_similarity",
-      "score": 0.9201828241348267,
+      "score": 0.9201824069023132,
       "ref_label": null,
       "ref_value": null
     },
@@ -8742,7 +8742,7 @@
       "source": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-701",
       "target": "target::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-707",
       "type": "semantic_similarity",
-      "score": 0.9124152064323425,
+      "score": 0.9124146699905396,
       "ref_label": null,
       "ref_value": null
     }

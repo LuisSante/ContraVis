@@ -1,0 +1,322 @@
+{
+  "stats": {
+    "clauses_input": 1,
+    "clauses_processed": 2,
+    "seed_nodes": 2,
+    "seed_edges": 1,
+    "final_nodes": 19,
+    "final_edges": 19,
+    "input_tokens": 3014,
+    "output_tokens": 2180
+  },
+  "graph": {
+    "nodes": [
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "Clause",
+        "label": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation.",
+        "properties": {},
+        "evidence_text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation."
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "Clause",
+        "label": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "text": "5.5 Changes to Purchase Orders. Subject to Section 5.2 and applicable Lead Times, Miltenyi shall use [...***...] to comply with unplanned changes in Purchase Orders requested by Bellicum either in terms of quantities or Delivery dates. All requests for changes to Purchase Orders shall be submitted in writing. Bellicum shall be responsible for all supplementary costs that result from the implementation of any unplanned change to an accepted Purchase Order requested by Bellicum. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of three (3) months from the implementation date of the Material Change, the Parties are not required to meet or discuss any remedy.",
+        "properties": {},
+        "evidence_text": "5.5 Changes to Purchase Orders. Subject to Section 5.2 and applicable Lead Times, Miltenyi shall use [...***...] to comply with unplanned changes in Purchase Orders requested by Bellicum either in terms of quantities or Delivery dates. All requests for changes to Purchase Orders shall be submitted in writing. Bellicum shall be responsible for all supplementary costs that result from the implementation of any unplanned change to an accepted Purchase Order requested by Bellicum. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of three (3) months from the implementation date of the Material Change, the Parties are not required to meet or discuss any remedy."
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::party:Bellicum",
+        "type": "Party",
+        "label": "Bellicum",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::party:Miltenyi",
+        "type": "Party",
+        "label": "Miltenyi",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Material Change",
+        "type": "DefinedTerm",
+        "label": "Material Change",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Miltenyi Product",
+        "type": "DefinedTerm",
+        "label": "Miltenyi Product",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Change Notification",
+        "type": "DefinedTerm",
+        "label": "Change Notification",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Parties",
+        "type": "DefinedTerm",
+        "label": "Parties",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Firm Zone",
+        "type": "DefinedTerm",
+        "label": "Firm Zone",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::value:6 months",
+        "type": "Value",
+        "label": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::value:6 months",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "properties": {},
+        "evidence_text": "six (6) months"
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::party:Miltenyi",
+        "type": "Party",
+        "label": "Miltenyi",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::party:Bellicum",
+        "type": "Party",
+        "label": "Bellicum",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Purchase Orders",
+        "type": "DefinedTerm",
+        "label": "Purchase Orders",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Lead Times",
+        "type": "DefinedTerm",
+        "label": "Lead Times",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Material Change",
+        "type": "DefinedTerm",
+        "label": "Material Change",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Miltenyi Product",
+        "type": "DefinedTerm",
+        "label": "Miltenyi Product",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Parties",
+        "type": "DefinedTerm",
+        "label": "Parties",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Delivery",
+        "type": "DefinedTerm",
+        "label": "Delivery",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": ""
+      },
+      {
+        "id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::value:three (3) months",
+        "type": "Value",
+        "label": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::value:three (3) months",
+        "clause_id": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "properties": {},
+        "evidence_text": "three (3) months"
+      }
+    ],
+    "edges": [
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "REFERENCES",
+        "evidence_text": "Price necessitated by any such continued supply of unchanged Miltenyi Product during such period. Until such agreement is reached, any limitations on or obligations of Bellicum under Article 5 pertaining to forecast variances and Firm Zone ordering in relation to Miltenyi Products described in this subsection (g) shall not apply, and therefore Bellicum has no obligation to purchase any such Miltenyi Products produced after implementation of such Material Change. If the continued supply of unchanged Miltenyi Product under this subsection (g) is reasonably estimated by the Parties to exceed a period of six (6) months from the implementation date of the Material Change notified in a Change Notification pursuant to Section 3.2(b), then the Parties shall promptly meet to discuss in good faith how to remedy the situation.",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "CONTRADICTS",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::party:Bellicum",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::party:Miltenyi",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Material Change",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Miltenyi Product",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Change Notification",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Parties",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::defined_term:Firm Zone",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216::value:6 months",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-216",
+        "type": "IS_PART_OF",
+        "evidence_text": "six (6) months",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::party:Miltenyi",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::party:Bellicum",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Purchase Orders",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Lead Times",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Material Change",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Miltenyi Product",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Parties",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::term:Delivery",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "",
+        "source_field": null,
+        "target_field": null
+      },
+      {
+        "source": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290::value:three (3) months",
+        "target": "related::BELLICUMPHARMACEUTICALS_INC_05_07_2019-EX-10.1-Supply_Agreement-p-290",
+        "type": "IS_PART_OF",
+        "evidence_text": "three (3) months",
+        "source_field": null,
+        "target_field": null
+      }
+    ]
+  }
+}
