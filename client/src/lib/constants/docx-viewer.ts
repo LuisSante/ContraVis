@@ -101,13 +101,13 @@ export const EDITABLE_PARAGRAPH_CLASSES = [
 ] as const;
 
 export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
-	{ id: 'related', label: 'Related Paragraphs' },
 	{ id: 'analysis', label: 'Contradiction Analysis' },
 	// { id: 'redundancy', label: 'Redundancy Analysis' },
-	{ id: 'paragraph_explanation', label: 'Paragraph Explanation' },
+	{ id: 'related', label: 'Related Paragraphs' },
+	// { id: 'paragraph_explanation', label: 'Paragraph Explanation' },
 	// { id: 'summarize', label: 'Summarize & Simplify' },
 	// { id: 'ambiguity', label: 'Ambiguity Analysis' },
-	{ id: 'revisions', label: 'Paragraph Revisions' },
+	// { id: 'revisions', label: 'Paragraph Revisions' },
 	{ id: 'assistant', label: 'Contract Chat Assistant' }
 ];
  

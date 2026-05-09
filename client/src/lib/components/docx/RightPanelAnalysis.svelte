@@ -39,6 +39,8 @@ type ProcessingStep = {
 	export let contradictionError: string | null = null;
 	export let contradictionCount = 0;
 	export let contradictionSummaryItems: ContradictionSummaryItem[] = [];
+	export let backendGraphLoading = false;
+	export let relatedProcessingSteps: ProcessingStep[] = [];
 	export let revisionProcessingSteps: ProcessingStep[] = [];
 	export let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	export let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
@@ -192,12 +194,12 @@ type ProcessingStep = {
 	}
 
 	$: {
-		if (browser && contradictionLoading && processingTimer == null) {
+		if (browser && (contradictionLoading || backendGraphLoading) && processingTimer == null) {
 			processingTimer = setInterval(() => {
 				processingTick += 1;
 			}, 260);
 		}
-		if (!contradictionLoading && processingTimer != null) {
+		if (!contradictionLoading && !backendGraphLoading && processingTimer != null) {
 			clearInterval(processingTimer);
 			processingTimer = null;
 			processingTick = 0;
@@ -241,6 +243,43 @@ type ProcessingStep = {
 								}`}
 							>
 								{#if index < revisionProcessingSteps.length - 1}
+									<span
+										class="absolute top-[13px] left-[3px] h-[18px] w-px bg-gray-300/80"
+										aria-hidden="true"
+									></span>
+								{/if}
+								<span
+									class={`h-1.5 w-1.5 rounded-full bg-gray-500 transition-opacity duration-300 ${
+										index === activeProcessingStepIndex ? 'animate-pulse opacity-95' : 'opacity-30'
+									}`}
+									aria-hidden="true"
+								></span>
+								<span class="text-gray-600">
+									{step.label}
+									<span class="ml-px inline-flex min-w-[14px] text-gray-500" aria-hidden="true">
+										{#if index === activeProcessingStepIndex}
+											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2
+												? '.'
+												: ''}{activeDotCount >= 3 ? '.' : ''}
+										{/if}
+									</span>
+								</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+			{#if backendGraphLoading}
+				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
+					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
+					<ul class="space-y-1.5 text-[12px] text-gray-600">
+						{#each relatedProcessingSteps as step, index}
+							<li
+								class={`relative flex items-center gap-2 transition-opacity duration-300 ${
+									index === activeProcessingStepIndex ? 'opacity-100' : 'opacity-40'
+								}`}
+							>
+								{#if index < relatedProcessingSteps.length - 1}
 									<span
 										class="absolute top-[13px] left-[3px] h-[18px] w-px bg-gray-300/80"
 										aria-hidden="true"

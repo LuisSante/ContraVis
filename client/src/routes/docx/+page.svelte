@@ -130,7 +130,7 @@
 	const simplifyAuditTrail: SimplifyAuditRecord[] = [];
 	const RIGHT_TOOLBAR_COLLAPSED_WIDTH = 42;
 	const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
-	const TOOL_BRAND_SHORT_NAME = 'ContraGraph';
+	const TOOL_BRAND_SHORT_NAME = 'ContractVis';
 	const MANUAL_SCROLL_DRAG_SPEED = 100;
 	const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
 	const GLOBAL_ANALYSIS_MODEL_OPTIONS = Array.from(
@@ -347,7 +347,7 @@
 	let manualScrollMoved = false;
 	let suppressMarkerClickUntil = 0;
 
-	let activeRightPanelTab: RightPanelTab = 'related';
+	let activeRightPanelTab: RightPanelTab = 'analysis';
 	let isRightDrawerOpen = true;
 	let sidebarLabelsPinned = false;
 	let isCompactLayout = false;
@@ -4166,7 +4166,8 @@ function setRightDrawerWidth(nextWidth: number) {
 				</div>
 			{/if}
 
-			{#if activeRightPanelTab === 'related' && relatedScrollMarkers.length > 0}
+			<!-- Temporarily hidden: Knowledge Graph related visual markers -->
+			<!-- {#if activeRightPanelTab === 'related' && relatedScrollMarkers.length > 0}
 				<div class="absolute top-2 right-1 bottom-2 z-20 w-2">
 					{#each relatedScrollMarkers as marker (`related-panel-marker-${marker.paragraphId}`)}
 						<span
@@ -4185,7 +4186,7 @@ function setRightDrawerWidth(nextWidth: number) {
 						></span>
 					{/each}
 				</div>
-			{/if}
+			{/if} -->
 
 			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
 				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
@@ -4399,7 +4400,7 @@ function setRightDrawerWidth(nextWidth: number) {
 
 				{#if activeRightPanelTab === 'analysis'}
 					<div class="flex shrink-0 items-center gap-1.5">
-						<div
+						<!-- <div
 							class="flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2"
 							title="Switch contradiction analysis mode"
 						>
@@ -4422,7 +4423,7 @@ function setRightDrawerWidth(nextWidth: number) {
 							>
 								KG
 							</label>
-						</div>
+						</div> -->
 						<Button
 							variant="outline"
 							size="sm"
@@ -4529,10 +4530,12 @@ function setRightDrawerWidth(nextWidth: number) {
 			<RightPanelAnalysis
 				selectedParagraph={$selectedParagraph}
 				{contradictionLoading}
+				{backendGraphLoading}
 				{hasTriggeredContradictionCheck}
 				{contradictionError}
 				{contradictionCount}
 				{contradictionSummaryItems}
+				{relatedProcessingSteps}
 				{revisionProcessingSteps}
 				{selectedContradictionResult}
 				{selectedContradictionEvidence}
