@@ -1,5 +1,5 @@
 	[contenteditable='true']::selection {
-		background: rgba(250, 204, 21, 0.3);
+		background: rgba(37, 99, 235, 0.28);
 	}
 
 	.docx-relations-badge-host {
@@ -91,16 +91,20 @@
 	}
 
 	.docx-related-selected {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
+		outline: none !important;
 		background: rgba(37, 99, 235, 0.08) !important;
+		box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.95) !important;
+	}
+
+	.docx-related-selected:hover {
+		outline: none !important;
+		box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.95) !important;
 	}
 
 	.docx-related-selected:focus,
 	.docx-related-selected:focus-visible {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+		outline: none !important;
+		box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.85) !important;
 	}
 
 	.docx-related-linked {

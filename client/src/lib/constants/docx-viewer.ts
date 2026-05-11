@@ -97,7 +97,7 @@ export const EDITABLE_PARAGRAPH_CLASSES = [
 	'hover:ring-1',
 	'hover:ring-blue-300',
 	'focus:ring-2',
-	'focus:ring-yellow-400'
+	'focus:ring-blue-700'
 ] as const;
 
 export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [

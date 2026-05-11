@@ -806,7 +806,6 @@
 		}
 		const selectedElement = paragraphElementById.get(selected.id);
 		if (selectedElement) fitShortParagraphSelectionBox(selectedElement);
-		selectedElement?.classList.add('docx-related-selected', 'docx-related-linked');
 		paragraphRelationHostById.get(selected.id)?.classList.add('docx-related-badge-emphasis');
 		for (const related of selectedRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
