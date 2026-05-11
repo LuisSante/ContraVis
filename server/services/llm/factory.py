@@ -32,6 +32,11 @@ class LLMProviderFactory:
                 raise RuntimeError("GEMINI_API_KEY is not configured")
 
             resolved_model = model_override or os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            logger.info(
+                "[COST_DEBUG] LLMProviderFactory selecting provider=gemini model=%s cache_key=%s",
+                resolved_model,
+                cache_key,
+            )
             provider = GeminiProvider(api_key=api_key, model=resolved_model)
             cls._cache[cache_key] = provider
             return provider
@@ -42,6 +47,11 @@ class LLMProviderFactory:
                 raise RuntimeError("OPENAI_API_KEY is not configured")
 
             resolved_model = model_override or os.getenv("OPENAI_MODEL", "gpt-4.1")
+            logger.info(
+                "[COST_DEBUG] LLMProviderFactory selecting provider=openai model=%s cache_key=%s",
+                resolved_model,
+                cache_key,
+            )
             provider = OpenAIProvider(api_key=api_key, model=resolved_model)
             cls._cache[cache_key] = provider
             return provider

@@ -36,6 +36,7 @@
 		RightPanelTab,
 		ContradictionScrollMarker,
 		LlmEstimateResponse,
+		LlmUsageTotalResponse,
 		SimplifySelectionRequest
 	} from '$lib/types/document';
 	import {
@@ -49,6 +50,7 @@
 		fetchBackendGraph,
 		fetchContradictionAnalysis,
 		fetchLlmEstimate,
+		fetchLlmTotalCost,
 		fetchSavedContradictions,
 		loadBrowserDocx4js,
 		resolveDocumentMeta,
@@ -258,6 +260,11 @@
 	let simplifyLoading = false;
 	let fixContradictionLoading = false;
 	let simplifyError: string | null = null;
+	let llmEstimateToastOpen = false;
+	let llmEstimateToast: LlmEstimateResponse | null = null;
+	let llmEstimateToastResolver: ((approved: boolean) => void) | null = null;
+	let llmTotalCost: LlmUsageTotalResponse | null = null;
+	let llmCostLabel = 'Cost: 0.000000 $';
 
 	let contradictionLoading = false;
 	let contradictionError: string | null = null;
@@ -1089,6 +1096,10 @@
 
 	function setHoveredParagraphExplanationEntityKey(nextKey: string | null) {
 		if (hoveredParagraphExplanationEntityKey === nextKey) return;
+		if (typeof document === 'undefined') {
+			hoveredParagraphExplanationEntityKey = nextKey;
+			return;
+		}
 
 		for (const element of document.querySelectorAll<HTMLElement>('[data-entity-key]')) {
 			const isActive = Boolean(nextKey) && element.dataset.entityKey === nextKey;
@@ -1286,6 +1297,7 @@
 	}
 
 	function updateActiveContradictionSnippetMarks() {
+		if (typeof document === 'undefined') return;
 		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
 		for (const mark of allMarks) {
 			mark.classList.remove('docx-contradiction-snippet--active');
@@ -1368,6 +1380,7 @@
 	}
 
 	function syncContradictionDecorations() {
+		if (typeof document === 'undefined') return;
 		if (shouldShowContradictionDecorations) {
 			applyContradictionHighlights();
 			return;
@@ -2196,17 +2209,31 @@
 		return `assistant-${assistantMessageCounter}`;
 	}
 
-	function buildEstimateConfirmMessage(estimate: LlmEstimateResponse): string {
-		return [
-			`Model: ${estimate.model}`,
-			`Provider: ${estimate.provider}`,
-			`Input tokens (est): ${estimate.estimatedInputTokens}`,
-			`Output tokens (est): ${estimate.estimatedOutputTokens}`,
-			`Total tokens (est): ${estimate.estimatedTotalTokens}`,
-			`Estimated cost (USD): ${estimate.estimatedCostUsdFormatted}`,
-			'',
-			'Do you want to send this request now?'
-		].join('\n');
+	function resolveLlmEstimateToast(approved: boolean) {
+		if (!llmEstimateToastResolver) return;
+		llmEstimateToastResolver(approved);
+		llmEstimateToastResolver = null;
+		llmEstimateToast = null;
+		llmEstimateToastOpen = false;
+	}
+
+	function formatAccumulatedCostLabel(): string {
+		const formatted = llmTotalCost?.totalCostUsdFormatted;
+		if (formatted && formatted !== 'unknown') {
+			return `Cost: ${formatted} $`;
+		}
+		const amount = llmTotalCost?.totalCostUsd ?? 0;
+		return `Cost: ${amount.toFixed(8)} $`;
+	}
+
+	async function refreshAccumulatedLlmCost() {
+		try {
+			llmTotalCost = await fetchLlmTotalCost();
+			console.log('[COST_DEBUG][client] /llm/cost/total payload:', llmTotalCost);
+			llmCostLabel = formatAccumulatedCostLabel();
+		} catch (err) {
+			console.error('[COST_DEBUG][client] failed to load /llm/cost/total:', err);
+		}
 	}
 
 	async function confirmLlmEstimate(
@@ -2224,7 +2251,14 @@
 					? { callType, contradictionAnalysis: payload as ContradictionAnalysisRequest }
 					: { callType, simplifySelection: payload as SimplifySelectionRequest };
 		const estimate = await fetchLlmEstimate(estimatePayload);
-		return window.confirm(buildEstimateConfirmMessage(estimate));
+		if (llmEstimateToastResolver) {
+			resolveLlmEstimateToast(false);
+		}
+		llmEstimateToast = estimate;
+		llmEstimateToastOpen = true;
+		return await new Promise<boolean>((resolve) => {
+			llmEstimateToastResolver = resolve;
+		});
 	}
 
 	async function scrollAssistantToBottom() {
@@ -3923,6 +3957,7 @@ function setRightDrawerWidth(nextWidth: number) {
 	}
 
 	onMount(() => {
+		let llmCostTimer: ReturnType<typeof setInterval> | null = null;
 		const handleGlobalPointerDown = (event: MouseEvent) => {
 			if (activeRightPanelTab !== 'related') return;
 			const selected = get(selectedParagraph);
@@ -4003,6 +4038,10 @@ function setRightDrawerWidth(nextWidth: number) {
 		refreshViewportMode();
 		setRightDrawerWidth(rightDrawerWidth);
 		globalModelSelectWidthPx = measureGlobalModelSelectWidthPx();
+		void refreshAccumulatedLlmCost();
+		llmCostTimer = setInterval(() => {
+			void refreshAccumulatedLlmCost();
+		}, 5000);
 		const fontSet = (document as Document & { fonts?: FontFaceSet }).fonts;
 		if (fontSet) {
 			void fontSet.ready.then(() => {
@@ -4058,6 +4097,10 @@ function setRightDrawerWidth(nextWidth: number) {
 				window.cancelAnimationFrame(paragraphExplanationCompressionTweenFrame);
 				paragraphExplanationCompressionTweenFrame = null;
 			}
+			if (llmCostTimer) {
+				clearInterval(llmCostTimer);
+				llmCostTimer = null;
+			}
 			clearRenderedDocument();
 		};
 	});
@@ -4095,7 +4138,13 @@ function setRightDrawerWidth(nextWidth: number) {
 					{renderedPdfExporting ? 'Preparing PDF...' : 'Download rendered PDF'}
 				</Button>
 			</div> -->
-			<div class="shrink-0">
+			<div class="shrink-0 flex items-center gap-3">
+				<div
+					class="text-[12px] font-medium text-gray-500"
+					title="Total accumulated real LLM usage cost"
+				>
+					{llmCostLabel}
+				</div>
 				<Select.Root
 					type="single"
 					bind:value={globalAnalysisModel}
@@ -4771,4 +4820,40 @@ function setRightDrawerWidth(nextWidth: number) {
 			</div>
 		</Tooltip.Provider>
 	</aside>
+
+	{#if llmEstimateToastOpen && llmEstimateToast}
+		<div class="pointer-events-none fixed right-5 bottom-5 z-[120]">
+			<div
+				class="pointer-events-auto w-[min(92vw,420px)] rounded-xl border border-blue-100 bg-white/98 p-4 shadow-[0_14px_34px_rgba(30,64,175,0.2)] backdrop-blur"
+			>
+				<p class="text-sm font-semibold text-slate-900">Confirmar envio para LLM</p>
+				<p class="mt-1 text-xs text-slate-600">
+					Custo estimado: <span class="font-semibold text-blue-700"
+						>{llmEstimateToast.estimatedCostUsdFormatted}</span
+					>
+					({llmEstimateToast.estimatedTotalTokens} tokens)
+				</p>
+				<p class="mt-1 text-[11px] text-slate-500">
+					{llmEstimateToast.provider} · {llmEstimateToast.model}
+				</p>
+				<div class="mt-3 flex items-center justify-end gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						class="border-blue-200 text-blue-700 hover:bg-blue-50"
+						onclick={() => resolveLlmEstimateToast(false)}
+					>
+						Cancelar
+					</Button>
+					<Button
+						size="sm"
+						class="bg-blue-600 text-white hover:bg-blue-700"
+						onclick={() => resolveLlmEstimateToast(true)}
+					>
+						Enviar
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/if}
 </main>

@@ -369,6 +369,11 @@ export type LlmEstimateResponse = {
 	estimatedCostUsdFormatted: string;
 };
 
+export type LlmUsageTotalResponse = {
+	totalCostUsd: number;
+	totalCostUsdFormatted: string;
+};
+
 export type ContradictionScrollMarker = {
 	paragraphId: string;
 	topPercent: number;

@@ -15,6 +15,7 @@ from schemas.types import (
     DatasetDocument,
     LlmEstimateRequest,
     LlmEstimateResponse,
+    LlmUsageTotalResponse,
     SavedContradictionsResponse,
     SimplifySelectionRequest,
     SimplifySelectionResponse,
@@ -33,6 +34,8 @@ from services.contract_assistant import (
 )
 from services.contradiction_analysis import estimate_contradiction_analysis_request
 from services.graph.relations import generate_graph_data
+from services.llm.cost_estimator import format_cost
+from services.llm.usage_tracker import get_total_usage_cost_usd
 from utils.config import Config
 from utils.document_store import DocumentStore
 
@@ -318,6 +321,20 @@ def estimate_llm_request(payload: LlmEstimateRequest):
     except Exception as exc:
         logger.exception("Unexpected llm-estimate error")
         raise HTTPException(status_code=500, detail="Failed to estimate LLM request") from exc
+
+
+@router.get("/llm/cost/total", response_model=LlmUsageTotalResponse)
+def get_llm_total_cost():
+    total_cost_usd = get_total_usage_cost_usd()
+    logger.info(
+        "[COST_DEBUG] /llm/cost/total response: total=%0.9f formatted=%s",
+        total_cost_usd,
+        format_cost(total_cost_usd),
+    )
+    return LlmUsageTotalResponse(
+        totalCostUsd=total_cost_usd,
+        totalCostUsdFormatted=format_cost(total_cost_usd),
+    )
 
 
 @router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)

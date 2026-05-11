@@ -4,14 +4,10 @@ import logging
 from typing import Any
 
 from services.llm.base import LLMProvider
+from services.llm.cost_estimator import estimate_model_cost_usd, format_cost
+from services.llm.usage_tracker import add_usage_cost
 
 logger = logging.getLogger(__name__)
-
-MODEL_PRICING_USD_PER_1M: dict[str, dict[str, float]] = {
-    "gpt-4.1": {"input": 2.0, "output": 8.0},
-    "gpt-4.1-2025-04-14": {"input": 2.0, "output": 8.0},
-    "gpt-4_1-2025-04-14": {"input": 2.0, "output": 8.0},
-}
 
 
 class OpenAIProvider(LLMProvider):
@@ -84,11 +80,20 @@ class OpenAIProvider(LLMProvider):
         )
 
         effective_model = str(getattr(response, "model", self._model) or self._model)
-        estimated_cost = _estimate_model_cost_usd(
+        estimated_cost = estimate_model_cost_usd(
             model_name=effective_model,
             input_tokens=prompt_tokens,
             output_tokens=completion_tokens,
         )
+        logger.info(
+            "[COST_DEBUG] openai usage parsed: model=%s prompt=%d completion=%d total=%d estimated_cost=%s",
+            effective_model,
+            prompt_tokens,
+            completion_tokens,
+            total_tokens,
+            format_cost(estimated_cost),
+        )
+        add_usage_cost(estimated_cost)
 
         logger.info(
             (
@@ -99,43 +104,5 @@ class OpenAIProvider(LLMProvider):
             prompt_tokens,
             completion_tokens,
             total_tokens,
-            _format_cost(estimated_cost),
+            format_cost(estimated_cost),
         )
-
-
-def _estimate_model_cost_usd(*, model_name: str, input_tokens: int, output_tokens: int) -> float | None:
-    rates = _resolve_model_rates(model_name)
-    if rates is None:
-        return None
-
-    return (
-        (input_tokens / 1_000_000.0) * rates["input"]
-        + (output_tokens / 1_000_000.0) * rates["output"]
-    )
-
-
-def _resolve_model_rates(model_name: str) -> dict[str, float] | None:
-    normalized = (model_name or "").strip().lower()
-    if not normalized:
-        return None
-
-    if normalized in MODEL_PRICING_USD_PER_1M:
-        return MODEL_PRICING_USD_PER_1M[normalized]
-
-    normalized_alt = normalized.replace(".", "_")
-    if normalized_alt in MODEL_PRICING_USD_PER_1M:
-        return MODEL_PRICING_USD_PER_1M[normalized_alt]
-
-    if normalized.startswith("gpt-4.1-"):
-        return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
-
-    if normalized.startswith("gpt-4_1-"):
-        return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
-
-    return None
-
-
-def _format_cost(cost: float | None) -> str:
-    if cost is None:
-        return "unknown"
-    return f"{cost:.6f}"

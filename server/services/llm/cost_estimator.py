@@ -56,7 +56,12 @@ def resolve_model_rates(model_name: str) -> dict[str, float] | None:
         return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
     if normalized.startswith("gpt-4_1-"):
         return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
-    if normalized.startswith("gpt-5-"):
+    # Handle OpenAI variant model IDs (e.g., gpt-5.1-2026-..., gpt-5-mini-..., gpt-5-nano-...)
+    if normalized.startswith("gpt-5-mini"):
+        return MODEL_PRICING_USD_PER_1M["gpt-5-mini"]
+    if normalized.startswith("gpt-5-nano"):
+        return MODEL_PRICING_USD_PER_1M["gpt-5-nano"]
+    if normalized.startswith("gpt-5"):
         return MODEL_PRICING_USD_PER_1M["gpt-5"]
 
     return None

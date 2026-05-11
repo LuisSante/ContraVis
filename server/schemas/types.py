@@ -195,3 +195,8 @@ class LlmEstimateResponse(BaseModel):
     estimatedTotalTokens: int
     estimatedCostUsd: Optional[float] = None
     estimatedCostUsdFormatted: str
+
+
+class LlmUsageTotalResponse(BaseModel):
+    totalCostUsd: float
+    totalCostUsdFormatted: str
