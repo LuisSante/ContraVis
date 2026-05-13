@@ -408,10 +408,9 @@
 	}
 
 	mark.docx-contradiction-snippet[data-contradiction-role='b'] {
-		color: #854d0e;
-		background: rgba(254, 240, 138, 0.28);
+		color: var(--contradiction-b-color, #84cc16);
+		background: var(--contradiction-b-bg, rgba(132, 204, 22, 0.22));
 	}
-
 	mark.docx-contradiction-snippet.docx-contradiction-snippet--active {
 		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
 	}
@@ -423,11 +422,9 @@
 		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
 	}
 
-	
-		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']
-	 {
-		background: rgba(254, 240, 138, 0.6);
-		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
+	mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b'] {
+		background: var(--contradiction-b-bg-active, rgba(132, 204, 22, 0.34));
+		box-shadow: 0 0 0 1px var(--contradiction-b-ring, #84cc16);
 	}
 
 	.docx-contradiction-scroll-marker {
@@ -476,7 +473,11 @@
 		position: absolute;
 		width: 2px;
 		border-radius: 0;
-		background: linear-gradient(to bottom, #dc2626 0%, #eab308 100%);
+		background: linear-gradient(
+			to bottom,
+			var(--contradiction-a-color, #dc2626) 0%,
+			var(--contradiction-b-color, #84cc16) 100%
+		);
 		transform: translateX(-50%);
 		opacity: 0.92;
 	}
@@ -486,7 +487,11 @@
 		width: 12px;
 		height: 2px;
 		border-radius: 0;
-		background: linear-gradient(to right, rgba(220, 38, 38, 0.95) 0%, rgba(234, 179, 8, 0.95) 100%);
+		background: linear-gradient(
+			to right,
+			var(--contradiction-a-color, #dc2626) 0%,
+			var(--contradiction-b-color, #84cc16) 100%
+		);
 		transform: translate(-100%, -50%);
 		opacity: 0.92;
 	}
@@ -506,7 +511,7 @@
 	}
 
 	.docx-contradiction-evidence-dot--b {
-		background: #eab308;
+		background: var(--contradiction-b-color, #84cc16);
 	}
 
 	.docx-contradiction-evidence-label {
@@ -522,7 +527,7 @@
 	}
 
 	.docx-contradiction-evidence-label--b {
-		color: #a16207;
+		color: var(--contradiction-b-color, #84cc16);
 	}
 
 	@keyframes bounce {

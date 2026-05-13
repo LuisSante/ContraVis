@@ -59,8 +59,7 @@ export const CONTRADICTION_TAXONOMY_ORDER: ReadonlyArray<ContradictionTaxonomyTy
 	'authority',
 	'process',
 	'policy_reversal',
-	'specificity',
-	'other'
+	'specificity'
 ];
 
 export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonomyType, string>> = {
@@ -69,18 +68,16 @@ export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonom
 	authority: 'Authority',
 	process: 'Process',
 	policy_reversal: 'Policy Reversal',
-	specificity: 'Specificity',
-	other: 'Other'
+	specificity: 'Specificity'
 };
 
 export const CONTRADICTION_TAXONOMY_COLORS: Readonly<Record<ContradictionTaxonomyType, string>> = {
-	temporal: '#8b5cf6',
-	numerical: '#14b8a6',
-	authority: '#f97316',
+	temporal: '#c300ff',
+	numerical: '#019a34',
+	authority: '#e2c800',
 	process: '#0ea5e9',
-	policy_reversal: '#ef4444',
-	specificity: '#84cc16',
-	other: '#9ca3af'
+	policy_reversal: '#ff9901',
+	specificity: '#1653cc'
 };
 
 export const CONTRADICTION_CLAIM_SIDE_COLORS: Readonly<Record<'a' | 'b', string>> = {

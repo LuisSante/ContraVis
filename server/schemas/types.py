@@ -37,6 +37,14 @@ AssistantScope = Literal["selected", "full_contract"]
 AssistantProvider = Literal["openai", "gemini"]
 AssistantMessageRole = Literal["user", "assistant"]
 ContradictionGraphMode = Literal["with_kg", "without_kg"]
+ContradictionTaxonomyType = Literal[
+    "temporal",
+    "numerical",
+    "authority",
+    "process",
+    "policy_reversal",
+    "specificity",
+]
 
 
 class AssistantParagraphNode(BaseModel):
@@ -143,6 +151,7 @@ class ContradictionParagraphResult(BaseModel):
     contradiction: bool
     confidence: int = Field(ge=0, le=100)
     brief_reason: str = ""
+    contradiction_type: Optional[ContradictionTaxonomyType] = None
     evidence: Optional[ContradictionEvidence] = None
 
 

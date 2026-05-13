@@ -122,8 +122,7 @@ export type ContradictionTaxonomyType =
 	| 'authority'
 	| 'process'
 	| 'policy_reversal'
-	| 'specificity'
-	| 'other';
+	| 'specificity';
 
 export type StructuredContradictionClaim = {
 	text: string;
@@ -305,6 +304,7 @@ export type ContradictionParagraphResult = {
 	contradiction: boolean;
 	confidence: number;
 	brief_reason: string;
+	contradiction_type?: ContradictionTaxonomyType | null;
 	evidence?: ContradictionEvidence | null;
 };
 

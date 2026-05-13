@@ -21,11 +21,11 @@
 		AssistantProvider,
 		AssistantScope,
 		FixContradictionSuggestion,
-		FreeContradictionExplanation,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
 		ContradictionGraphMode,
 		ContradictionParagraphResult,
+		ContradictionTaxonomyType,
 		Edge as GraphEdge,
 		Node as ParagraphNode,
 		ParagraphEditState,
@@ -61,7 +61,6 @@
 		buildAssistantNodeSnapshot,
 		buildAssistantRelatedContext,
 		buildContradictionAiCostQuestion,
-		parseStructuredContradictionFromAnswer,
 		resolveAssistantSuggestedQuestions
 	} from '$lib/utils/docx/assistant';
 	import { buildChangeLog } from '$lib/utils/docx/change-log';
@@ -288,6 +287,7 @@
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
+	let selectedContradictionCategoryColor = CONTRADICTION_TAXONOMY_COLORS.specificity;
 	let contradictionSummaryItems: Array<{
 		paragraphId: string;
 		label: string;
@@ -390,6 +390,11 @@
 	$: selectedContradictionResult = $selectedParagraph
 		? (contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null)
 		: null;
+	$: selectedContradictionCategoryColor =
+		selectedContradictionResult?.contradiction_type &&
+		CONTRADICTION_TAXONOMY_COLORS[selectedContradictionResult.contradiction_type]
+			? CONTRADICTION_TAXONOMY_COLORS[selectedContradictionResult.contradiction_type]
+			: CONTRADICTION_TAXONOMY_COLORS.specificity;
 	$: selectedContradictionEvidence =
 		selectedContradictionResult?.contradiction && selectedContradictionResult.evidence
 			? selectedContradictionResult.evidence
@@ -1217,10 +1222,23 @@
 		return null;
 	}
 
+	function hexToRgba(hex: string, alpha: number): string {
+		const normalized = hex.replace('#', '').trim();
+		if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(132, 204, 22, ${alpha})`;
+		const r = Number.parseInt(normalized.slice(0, 2), 16);
+		const g = Number.parseInt(normalized.slice(2, 4), 16);
+		const b = Number.parseInt(normalized.slice(4, 6), 16);
+		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+	}
+
 	function highlightSnippetInElement(
 		element: HTMLElement,
 		rawSnippet: string,
-		meta?: { ownerParagraphId?: string; role?: 'a' | 'b' }
+		meta?: {
+			ownerParagraphId?: string;
+			role?: 'a' | 'b';
+			contradictionType?: ContradictionTaxonomyType | null;
+		}
 	): boolean {
 		const snippet = rawSnippet.trim();
 		if (!snippet) return false;
@@ -1263,6 +1281,19 @@
 		if (meta?.role) {
 			mark.dataset.contradictionRole = meta.role;
 		}
+		if (meta?.contradictionType) {
+			mark.dataset.contradictionType = meta.contradictionType;
+		}
+		if (meta?.role === 'b') {
+			const categoryColor = meta.contradictionType
+				? (CONTRADICTION_TAXONOMY_COLORS[meta.contradictionType] ??
+					CONTRADICTION_TAXONOMY_COLORS.specificity)
+				: CONTRADICTION_TAXONOMY_COLORS.specificity;
+			mark.style.setProperty('--contradiction-b-color', categoryColor);
+			mark.style.setProperty('--contradiction-b-bg', hexToRgba(categoryColor, 0.22));
+			mark.style.setProperty('--contradiction-b-bg-active', hexToRgba(categoryColor, 0.34));
+			mark.style.setProperty('--contradiction-b-ring', categoryColor);
+		}
 		try {
 			range.surroundContents(mark);
 		} catch {
@@ -1277,7 +1308,11 @@
 	function highlightSnippetAcrossDocument(
 		snippet: string,
 		preferredElement?: HTMLElement,
-		meta?: { ownerParagraphId?: string; role?: 'a' | 'b' }
+		meta?: {
+			ownerParagraphId?: string;
+			role?: 'a' | 'b';
+			contradictionType?: ContradictionTaxonomyType | null;
+		}
 	): boolean {
 		if (!snippet.trim()) return false;
 
@@ -1558,20 +1593,24 @@
 			element.dataset.contradictionReason = result.brief_reason ?? '';
 
 			const evidence = result.evidence;
+			const contradictionType = result.contradiction_type ?? 'specificity';
 			if (evidence?.snippet_a?.trim()) {
 				if (evidence.source_a === 'context') {
 					highlightSnippetAcrossDocument(evidence.snippet_a, element, {
 						ownerParagraphId: paragraphId,
-						role: 'a'
+						role: 'a',
+						contradictionType
 					});
 				} else {
 					highlightSnippetInElement(element, evidence.snippet_a, {
 						ownerParagraphId: paragraphId,
-						role: 'a'
+						role: 'a',
+						contradictionType
 					}) ||
 						highlightSnippetAcrossDocument(evidence.snippet_a, element, {
 							ownerParagraphId: paragraphId,
-							role: 'a'
+							role: 'a',
+							contradictionType
 						});
 				}
 			}
@@ -1579,16 +1618,19 @@
 				if (evidence.source_b === 'context') {
 					highlightSnippetAcrossDocument(evidence.snippet_b, element, {
 						ownerParagraphId: paragraphId,
-						role: 'b'
+						role: 'b',
+						contradictionType
 					});
 				} else {
 					highlightSnippetInElement(element, evidence.snippet_b, {
 						ownerParagraphId: paragraphId,
-						role: 'b'
+						role: 'b',
+						contradictionType
 					}) ||
 						highlightSnippetAcrossDocument(evidence.snippet_b, element, {
 							ownerParagraphId: paragraphId,
-							role: 'b'
+							role: 'b',
+							contradictionType
 						});
 				}
 			}
@@ -2278,7 +2320,6 @@
 
 	type QuickActionResponseOptions = {
 		citationId?: string;
-		freeContradictionExplanation?: FreeContradictionExplanation;
 	};
 
 	async function submitAssistantQuestion(
@@ -2508,25 +2549,19 @@
 				return;
 			}
 			const response = await fetchAssistantResponse(payload);
-			const structured = parseStructuredContradictionFromAnswer(
-				response.answer,
-				selected.id,
-				selectedText
-			);
 
 			assistantMessages = [
 				...assistantMessages,
 				{
 					id: nextAssistantMessageId(),
 					role: 'assistant',
-					content: structured?.overall_summary?.trim() || response.answer,
+					content: response.answer,
 					citations: response.citations,
 					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
 						mode: 'explain',
 						scope: 'selected',
 						contradiction: true
-					}),
-					structuredContradiction: structured ?? undefined
+					})
 				}
 			];
 		} catch (assistantRequestError) {
@@ -2562,8 +2597,7 @@
 				content,
 				citations: options.citationId
 					? [{ id: options.citationId, excerpt: '(selected paragraph)' }]
-					: undefined,
-				freeContradictionExplanation: options.freeContradictionExplanation
+					: undefined
 			}
 		];
 	}
@@ -2676,37 +2710,14 @@
 				const evidence = contradiction.evidence;
 				const footerMessage =
 					'Use "Why is it a contradiction? (AI cost)" for deeper evidence with richer legal reasoning.';
-				const freeExplanation: FreeContradictionExplanation = {
-					paragraphId: selected.id,
-					reason,
-					confidence,
-					snippetA: evidence?.snippet_a?.trim()
-						? {
-								source: evidence.source_a?.trim() || 'paragraph',
-								text: evidence.snippet_a.trim()
-							}
-						: undefined,
-					snippetB: evidence?.snippet_b?.trim()
-						? {
-								source: evidence.source_b?.trim() || 'paragraph',
-								text: evidence.snippet_b.trim()
-							}
-						: undefined,
-					fallbackEvidenceMessage:
-						evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
-							? undefined
-							: 'No structured evidence snippets were returned by the classifier.',
-					footerMessage
-				};
 				const evidenceLines =
-					freeExplanation.snippetA && freeExplanation.snippetB
+					evidence?.snippet_a?.trim() && evidence?.snippet_b?.trim()
 						? [
-								`Snippet A (${freeExplanation.snippetA.source}): "${freeExplanation.snippetA.text}"`,
-								`Snippet B (${freeExplanation.snippetB.source}): "${freeExplanation.snippetB.text}"`
+								`Snippet A (${evidence.source_a?.trim() || 'paragraph'}): "${evidence.snippet_a.trim()}"`,
+								`Snippet B (${evidence.source_b?.trim() || 'paragraph'}): "${evidence.snippet_b.trim()}"`
 							]
 						: [
-								freeExplanation.fallbackEvidenceMessage ??
-									'No structured evidence snippets were returned by the classifier.'
+								'No structured evidence snippets were returned by the classifier.'
 							];
 				appendAssistantQuickActionMessage(
 					[
@@ -2717,8 +2728,7 @@
 						footerMessage
 					].join('\n\n'),
 					{
-						citationId: selected.id,
-						freeContradictionExplanation: freeExplanation
+						citationId: selected.id
 					}
 				);
 				await scrollAssistantToBottom();
@@ -4237,7 +4247,10 @@ function setRightDrawerWidth(nextWidth: number) {
 			{/if} -->
 
 			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
-				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
+				<div
+					class="pointer-events-none absolute inset-0 z-20 overflow-hidden"
+					style={`--contradiction-a-color: #dc2626; --contradiction-b-color: ${selectedContradictionCategoryColor};`}
+				>
 					<span
 						class="docx-contradiction-evidence-bracket"
 						style={`left: ${selectedContradictionEvidenceLink.leftPx}px; top: ${selectedContradictionEvidenceLink.topPx}px; height: ${Math.max(
@@ -4825,9 +4838,9 @@ function setRightDrawerWidth(nextWidth: number) {
 			<div
 				class="pointer-events-auto w-[min(92vw,420px)] rounded-xl border border-blue-100 bg-white/98 p-4 shadow-[0_14px_34px_rgba(30,64,175,0.2)] backdrop-blur"
 			>
-				<p class="text-sm font-semibold text-slate-900">Confirmar envio para LLM</p>
+				<p class="text-sm font-semibold text-slate-900">Confirm LLM request</p>
 				<p class="mt-1 text-xs text-slate-600">
-					Custo estimado: <span class="font-semibold text-blue-700"
+					Estimated cost: <span class="font-semibold text-blue-700"
 						>{llmEstimateToast.estimatedCostUsdFormatted}</span
 					>
 					({llmEstimateToast.estimatedTotalTokens} tokens)
@@ -4842,14 +4855,14 @@ function setRightDrawerWidth(nextWidth: number) {
 						class="border-blue-200 text-blue-700 hover:bg-blue-50"
 						onclick={() => resolveLlmEstimateToast(false)}
 					>
-						Cancelar
+						Cancel
 					</Button>
 					<Button
 						size="sm"
 						class="bg-blue-600 text-white hover:bg-blue-700"
 						onclick={() => resolveLlmEstimateToast(true)}
 					>
-						Enviar
+						Send
 					</Button>
 				</div>
 			</div>
