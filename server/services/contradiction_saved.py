@@ -8,6 +8,15 @@ from typing import Any
 from schemas.types import ContradictionAnalysisResponse, ContradictionParagraphResult
 from utils.config import Config
 
+_ALLOWED_CONTRADICTION_TYPES = {
+    "temporal",
+    "numerical",
+    "authority",
+    "process",
+    "policy_reversal",
+    "specificity",
+}
+
 
 def load_saved_contradictions_for_document(
     document_id: str,
@@ -207,6 +216,7 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
         confidence = max(0, min(100, confidence))
 
         brief_reason = str(row.get("brief_reason") or row.get("briefReason") or "").strip()
+        contradiction_type = _normalize_contradiction_type(row, contradiction)
         evidence_obj = row.get("evidence")
         evidence = None
         if isinstance(evidence_obj, dict):
@@ -246,6 +256,7 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
                 contradiction=contradiction,
                 confidence=confidence,
                 brief_reason=brief_reason,
+                contradiction_type=contradiction_type,
                 evidence=evidence,
             )
         )
@@ -257,6 +268,22 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
         )
     )
     return normalized
+
+
+def _normalize_contradiction_type(row: dict[str, Any], contradiction: bool) -> str | None:
+    raw_value = (
+        row.get("contradiction_type")
+        or row.get("contradictionType")
+        or row.get("category")
+        or row.get("taxonomy_type")
+        or ""
+    )
+    value = str(raw_value).strip().lower()
+    if not contradiction:
+        return None
+    if value in _ALLOWED_CONTRADICTION_TYPES:
+        return value
+    return "specificity"
 
 
 def _sanitize_filename(value: str) -> str:

@@ -57,7 +57,7 @@ function normalizeContradictionType(raw: unknown): ContradictionTaxonomyType {
 	const value = toNonEmptyString(raw)
 		.toLowerCase()
 		.replace(/[\s-]+/g, '_');
-	if (!value) return 'other';
+	if (!value) return 'specificity';
 
 	if (value === 'temporal' || value === 'time' || value === 'date') return 'temporal';
 	if (
@@ -90,7 +90,7 @@ function normalizeContradictionType(raw: unknown): ContradictionTaxonomyType {
 	) {
 		return 'specificity';
 	}
-	return 'other';
+	return 'specificity';
 }
 
 function normalizeHighlightCategory(raw: unknown): ContradictionTaxonomyType {
@@ -98,7 +98,7 @@ function normalizeHighlightCategory(raw: unknown): ContradictionTaxonomyType {
 		.toLowerCase()
 		.replace(/[\s-]+/g, '_');
 	const direct = normalizeContradictionType(normalized);
-	if (direct !== 'other') return direct;
+	if (direct !== 'specificity') return direct;
 
 	// Backward compatibility for old highlight categories
 	if (
@@ -143,7 +143,7 @@ function normalizeHighlightCategory(raw: unknown): ContradictionTaxonomyType {
 	) {
 		return 'numerical';
 	}
-	return 'other';
+	return 'specificity';
 }
 
 export function buildAssistantNodeSnapshot(
@@ -360,42 +360,12 @@ export function buildContradictionAiCostQuestion(
 	const sourceB = evidence?.source_b || 'unknown';
 
 	return [
-		`Provide structured contradiction analysis for selected paragraph ${paragraphId}.`,
-		'Return JSON only inside the "answer" field. Do not use markdown.',
-		'JSON schema:',
-		'{',
-		'  "paragraph_id": "string",',
-		'  "overall_summary": "string",',
-		'  "contradiction_count": 0,',
-		'  "contradictions": [',
-		'    {',
-		'      "id": "c1",',
-		'      "contradiction_type": "temporal|numerical|authority|process|policy_reversal|specificity|other",',
-		'      "why": "string",',
-		'      "claim_a": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
-		'      "claim_b": {"text":"string","source":"paragraph|context|unknown","paragraph_id":"string","subject":"string","relation":"string","object":"string","polarity":"affirmed|negated|unknown"},',
-		'      "conflicting_fields": ["polarity","time","quantity","scope"],',
-		'      "confidence": 0',
-		'    }',
-		'  ],',
-		'  "highlights": [',
-		'    {"phrase":"string","category":"temporal|numerical|authority|process|policy_reversal|specificity|other","claim_id":"c1","claim_side":"a|b|both|unknown","source":"paragraph|context|unknown"}',
-		'  ]',
-		'}',
-		'Rules:',
-		'- Use contradiction_type taxonomy from Table 1:',
-		'  temporal: contradicts date/time of event.',
-		'  numerical: conflicting numbers/values/percentages.',
-		'  authority: conflicting issuer/source of statement.',
-		'  process: conflicting procedures/operational routes.',
-		'  policy_reversal: one statement directly negates the other.',
-		'  specificity: one statement is broader/narrower than the other.',
-		'- Ground every contradiction only on provided paragraph/context.',
-		'- Prefer exact claim text.',
-		'- Keep contradiction_count equal to contradictions.length.',
-		'- Include at least 3 highlights when possible.',
-		'- For each highlight, set claim_side as a or b when it belongs to Claim A/B.',
-		'- If uncertain, return fewer contradictions.',
+		`Explain why paragraph ${paragraphId} is classified as a contradiction.`,
+		'Return plain text only.',
+		'Do not return JSON.',
+		'Do not use markdown, bullet lists, code fences, or labels.',
+		'Write a concise explanation in natural language, directly addressing the conflict between evidence A and evidence B.',
+		'If the paragraph is actually not contradictory, state that clearly and explain why.',
 		`Known classifier signal: contradiction=true, confidence=${Math.round(contradiction.confidence || 0)}, reason="${(contradiction.brief_reason || '').trim()}".`,
 		`Evidence A (${sourceA}): "${evidenceA}"`,
 		`Evidence B (${sourceB}): "${evidenceB}"`,

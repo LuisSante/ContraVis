@@ -18,7 +18,6 @@
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 	import UserIcon from '$lib/icons/UserIcon.svelte';
 	import ContradictionActionMessageCard from './ContradictionActionMessageCard.svelte';
-	import StructuredContradictionMessage from './StructuredContradictionMessage.svelte';
 
 type ProcessingStep = {
 		label: string;
@@ -39,6 +38,8 @@ type ProcessingStep = {
 	export let contradictionError: string | null = null;
 	export let contradictionCount = 0;
 	export let contradictionSummaryItems: ContradictionSummaryItem[] = [];
+	export let backendGraphLoading = false;
+	export let relatedProcessingSteps: ProcessingStep[] = [];
 	export let revisionProcessingSteps: ProcessingStep[] = [];
 	export let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	export let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
@@ -63,8 +64,7 @@ type ProcessingStep = {
 		authority: 'Authority',
 		process: 'Process',
 		policy_reversal: 'Policy Reversal',
-		specificity: 'Specificity',
-		other: 'Other'
+		specificity: 'Specificity'
 	};
 	export let contradictionTaxonomyColors: Record<ContradictionTaxonomyType, string> = {
 		temporal: '#8b5cf6',
@@ -72,8 +72,7 @@ type ProcessingStep = {
 		authority: '#f97316',
 		process: '#0ea5e9',
 		policy_reversal: '#ef4444',
-		specificity: '#84cc16',
-		other: '#9ca3af'
+		specificity: '#84cc16'
 	};
 	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [
 		'temporal',
@@ -81,8 +80,7 @@ type ProcessingStep = {
 		'authority',
 		'process',
 		'policy_reversal',
-		'specificity',
-		'other'
+		'specificity'
 	];
 	export let contradictionClaimSideColors: Record<'a' | 'b', string> = {
 		a: '#1d4ed8',
@@ -128,6 +126,37 @@ type ProcessingStep = {
 			segments.push({ text: value, isReference: false });
 		}
 		return segments;
+	}
+
+	function resolveContradictionTypeForSelected(): ContradictionTaxonomyType {
+		const nextType = selectedContradictionResult?.contradiction_type;
+		if (!nextType) return 'specificity';
+		return nextType;
+	}
+
+	function resolveSnippetBStyle() {
+		const contradictionType = resolveContradictionTypeForSelected();
+		const color =
+			contradictionTaxonomyColors[contradictionType] ?? contradictionTaxonomyColors.specificity;
+		return {
+			color,
+			border: `${color}66`,
+			background: `${color}1A`,
+			badgeBorder: `${color}66`,
+			badgeText: color,
+			label: contradictionTaxonomyLabels[contradictionType] ?? contradictionTaxonomyLabels.specificity
+		};
+	}
+
+	function resolveEvidenceScopeLabel(
+		evidence: ContradictionParagraphResult['evidence']
+	): string {
+		const sourceA = (evidence?.source_a || '').trim().toLowerCase();
+		const sourceB = (evidence?.source_b || '').trim().toLowerCase();
+		if (sourceA === 'paragraph' && sourceB === 'paragraph') return 'intra paragraph';
+		if (sourceA === 'context' || sourceB === 'context') return 'inter paragraph';
+		// Fallback to keep the tag always visible when legacy payloads return unknown sources.
+		return sourceA === 'paragraph' || sourceB === 'paragraph' ? 'intra paragraph' : 'inter paragraph';
 	}
 
 	function clampChatPanelHeight(next: number): number {
@@ -192,12 +221,12 @@ type ProcessingStep = {
 	}
 
 	$: {
-		if (browser && contradictionLoading && processingTimer == null) {
+		if (browser && (contradictionLoading || backendGraphLoading) && processingTimer == null) {
 			processingTimer = setInterval(() => {
 				processingTick += 1;
 			}, 260);
 		}
-		if (!contradictionLoading && processingTimer != null) {
+		if (!contradictionLoading && !backendGraphLoading && processingTimer != null) {
 			clearInterval(processingTimer);
 			processingTimer = null;
 			processingTick = 0;
@@ -267,14 +296,67 @@ type ProcessingStep = {
 					</ul>
 				</div>
 			{/if}
+			{#if backendGraphLoading}
+				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
+					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>
+					<ul class="space-y-1.5 text-[12px] text-gray-600">
+						{#each relatedProcessingSteps as step, index}
+							<li
+								class={`relative flex items-center gap-2 transition-opacity duration-300 ${
+									index === activeProcessingStepIndex ? 'opacity-100' : 'opacity-40'
+								}`}
+							>
+								{#if index < relatedProcessingSteps.length - 1}
+									<span
+										class="absolute top-[13px] left-[3px] h-[18px] w-px bg-gray-300/80"
+										aria-hidden="true"
+									></span>
+								{/if}
+								<span
+									class={`h-1.5 w-1.5 rounded-full bg-gray-500 transition-opacity duration-300 ${
+										index === activeProcessingStepIndex ? 'animate-pulse opacity-95' : 'opacity-30'
+									}`}
+									aria-hidden="true"
+								></span>
+								<span class="text-gray-600">
+									{step.label}
+									<span class="ml-px inline-flex min-w-[14px] text-gray-500" aria-hidden="true">
+										{#if index === activeProcessingStepIndex}
+											{activeDotCount >= 1 ? '.' : ''}{activeDotCount >= 2
+												? '.'
+												: ''}{activeDotCount >= 3 ? '.' : ''}
+										{/if}
+									</span>
+								</span>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 
 			{#if hasTriggeredContradictionCheck}
 				{#if contradictionError}
 					<p class="text-[11px] text-red-700">{contradictionError}</p>
 				{:else}
-					<p class="text-[11px] text-red-700">
-						{contradictionCount} paragraph(s) with highlighted contradiction(s)
-					</p>
+					<div class="flex flex-col gap-1">
+						<p class="text-[11px] text-red-700">
+							{contradictionCount} paragraph(s) with highlighted contradiction(s)
+						</p>
+						<div class="flex flex-wrap items-center gap-1.5">
+							{#each contradictionTaxonomyOrder as category}
+								<span
+									class="inline-flex items-center gap-1 rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[9px] text-gray-600"
+									title={contradictionTaxonomyLabels[category]}
+								>
+									<span
+										class="inline-block h-1.5 w-1.5 rounded-full"
+										style={`background: ${contradictionTaxonomyColors[category]};`}
+									></span>
+									{contradictionTaxonomyLabels[category]}
+								</span>
+							{/each}
+						</div>
+					</div>
 				{/if}
 			{/if}
 
@@ -297,7 +379,7 @@ type ProcessingStep = {
 								}`}
 								onclick={() => onFocusNodeFromPanel(item.paragraphId, true)}
 							>
-								Contradiction {index + 1}: {item.label}
+								Contradiction {index + 1} <!-- : {item.label} -->
 							</button>
 
 							{#if selectedParagraph?.id === item.paragraphId && selectedContradictionResult?.contradiction}
@@ -305,9 +387,17 @@ type ProcessingStep = {
 									class="border-t border-gray-200 p-1.5 text-[11px]"
 									transition:slide={{ duration: 200, easing: cubicOut }}
 								>
-									<p class="mb-1 px-0.5 text-[9px] font-semibold text-red-700">
-										Contradiction evidence
-									</p>
+									<div class="mb-1 flex items-center justify-between px-0.5">
+										<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+										{#if selectedContradictionEvidence}
+											<Badge
+												variant="outline"
+												class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-700"
+											>
+												{resolveEvidenceScopeLabel(selectedContradictionEvidence)}
+											</Badge>
+										{/if}
+									</div>
 									<div class="px-0.5">
 										<p class="text-[9px] font-semibold text-gray-700">Assessment</p>
 										<p class="text-[10px] leading-relaxed">
@@ -316,15 +406,10 @@ type ProcessingStep = {
 									</div>
 
 									{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+										{@const snippetBStyle = resolveSnippetBStyle()}
 										<div class="mt-1 rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
 											<div class="mb-1 flex items-center justify-between">
 												<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
-												<Badge
-													variant="outline"
-													class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-800"
-												>
-													{selectedContradictionEvidence.source_a}
-												</Badge>
 											</div>
 											<Button
 												variant="ghost"
@@ -337,19 +422,28 @@ type ProcessingStep = {
 											</Button>
 										</div>
 
-										<div class="mt-1 rounded border border-yellow-300 bg-yellow-100/75 px-2.5 py-2">
+										<div
+											class="mt-1 rounded border px-2.5 py-2"
+											style={`border-color: ${snippetBStyle.border}; background: ${snippetBStyle.background};`}
+										>
 											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-semibold text-yellow-800">Snippet B</span>
-												<Badge
-													variant="outline"
-													class="h-4 border-yellow-300 bg-white px-1.5 text-[8px] font-semibold text-yellow-800"
-												>
-													{selectedContradictionEvidence.source_b}
-												</Badge>
+												<div class="flex items-center gap-1.5">
+													<span class="text-[9px] font-semibold" style={`color: ${snippetBStyle.color};`}
+														>Snippet B</span
+													>
+													<Badge
+														variant="outline"
+														class="h-4 bg-white px-1.5 text-[8px] font-semibold"
+														style={`border-color: ${snippetBStyle.badgeBorder}; color: ${snippetBStyle.badgeText};`}
+													>
+														{snippetBStyle.label}
+													</Badge>
+												</div>
 											</div>
 											<Button
 												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-yellow-900 hover:bg-transparent hover:text-yellow-950"
+												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal hover:bg-transparent"
+												style={`color: ${snippetBStyle.color};`}
 												onclick={() =>
 													selectedContradictionResult &&
 													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
@@ -473,7 +567,7 @@ type ProcessingStep = {
 						</p>
 					{:else}
 						{#each assistantMessages as message (message.id)}
-							{#if message.fixContradictionSuggestion || message.freeContradictionExplanation}
+							{#if message.fixContradictionSuggestion}
 								<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
 									<ContradictionActionMessageCard
 										{message}
@@ -499,26 +593,15 @@ type ProcessingStep = {
 													: 'border-gray-200 bg-white text-gray-700'
 											}`}
 										>
-											{#if message.structuredContradiction}
-												<StructuredContradictionMessage
-													messageContent={message.content}
-													structuredContradiction={message.structuredContradiction}
-													{contradictionTaxonomyOrder}
-													{contradictionTaxonomyLabels}
-													{contradictionTaxonomyColors}
-													contradictionClaimSideColors={contradictionClaimSideColors}
-												/>
-											{:else}
-												<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
-													{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
-														{#if segment.isReference}
-															<span class="docx-reference-chip align-middle">{segment.text}</span>
-														{:else}
-															<span>{segment.text}</span>
-														{/if}
-													{/each}
-												</p>
-											{/if}
+											<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+												{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+													{#if segment.isReference}
+														<span class="docx-reference-chip align-middle">{segment.text}</span>
+													{:else}
+														<span>{segment.text}</span>
+													{/if}
+												{/each}
+											</p>
 											<!-- {#if message.citations && message.citations.length > 0}
 											<div class="mt-1.5 flex flex-wrap gap-1">
 												{#each message.citations as citation}

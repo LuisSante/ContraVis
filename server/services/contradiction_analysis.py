@@ -94,6 +94,7 @@ Return ONLY valid JSON (no markdown, no extra text) with this shape:
       "paragraph_id": "string or integer",
       "contradiction": true or false,
       "confidence": integer from 0 to 100,
+      "contradiction_type": "temporal | numerical | authority | process | policy_reversal | specificity",
       "brief_reason": "one short sentence",
       "evidence": {{
         "snippet_a": "exact short excerpt #1 that conflicts",
@@ -123,6 +124,14 @@ SYSTEM_PROMPT = (
 
 _TIKTOKEN_ENCODER: Any | None = None
 _TIKTOKEN_READY = False
+_ALLOWED_CONTRADICTION_TYPES = {
+    "temporal",
+    "numerical",
+    "authority",
+    "process",
+    "policy_reversal",
+    "specificity",
+}
 
 def _write_debug_mode_payload(
     *,
@@ -271,6 +280,7 @@ def analyze_document_contradictions(
                     contradiction=False,
                     confidence=0,
                     brief_reason="",
+                    contradiction_type=None,
                     evidence=None,
                 )
             )
@@ -282,6 +292,7 @@ def analyze_document_contradictions(
                 contradiction=item["contradiction"],
                 confidence=item["confidence"],
                 brief_reason=item["brief_reason"],
+                contradiction_type=item["contradiction_type"],
                 evidence=item["evidence"],
             )
         )
@@ -307,12 +318,11 @@ def analyze_document_contradictions(
 
 
 def estimate_contradiction_analysis_request(payload: ContradictionAnalysisRequest) -> dict[str, Any]:
-    paragraph_rows, ordered_paragraph_ids, kg_context_by_paragraph = _build_document_rows(payload)
+    paragraph_rows, ordered_paragraph_ids = _build_document_rows(payload)
     resolved_model = (payload.model or "").strip() or "gpt-4.1"
     batches = _chunk_paragraph_rows(
         paragraph_rows=paragraph_rows,
         mode=payload.mode,
-        kg_context_by_paragraph=kg_context_by_paragraph,
         model_name=resolved_model,
         target_input_tokens=TARGET_BATCH_INPUT_TOKENS,
     )
@@ -321,7 +331,6 @@ def estimate_contradiction_analysis_request(payload: ContradictionAnalysisReques
         estimated_input_total += _estimate_prompt_tokens(
             paragraph_rows=batch,
             mode=payload.mode,
-            kg_context_by_paragraph=kg_context_by_paragraph,
             model_name=resolved_model,
         )
     estimated_output_total = len(ordered_paragraph_ids) * ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH
@@ -648,6 +657,14 @@ def _parse_paragraph_results(raw_json: dict[str, Any] | list[Any]) -> dict[str, 
         confidence = max(0, min(100, confidence))
 
         brief_reason = str(row.get("brief_reason", "")).strip()
+        contradiction_type_raw = str(row.get("contradiction_type", "")).strip().lower()
+        contradiction_type: str | None = None
+        if contradiction:
+            contradiction_type = (
+                contradiction_type_raw
+                if contradiction_type_raw in _ALLOWED_CONTRADICTION_TYPES
+                else "specificity"
+            )
 
         # High-recall mode: avoid low-confidence negatives.
         if (
@@ -660,6 +677,8 @@ def _parse_paragraph_results(raw_json: dict[str, Any] | list[Any]) -> dict[str, 
                 brief_reason = (
                     "Converted from low-confidence negative to contradiction in high-recall mode."
                 )
+            if contradiction_type is None:
+                contradiction_type = "specificity"
 
         evidence_obj = row.get("evidence")
         evidence: dict[str, Any] | None = None
@@ -699,6 +718,7 @@ def _parse_paragraph_results(raw_json: dict[str, Any] | list[Any]) -> dict[str, 
             "contradiction": contradiction,
             "confidence": confidence,
             "brief_reason": brief_reason,
+            "contradiction_type": contradiction_type,
             "evidence": evidence,
         }
 

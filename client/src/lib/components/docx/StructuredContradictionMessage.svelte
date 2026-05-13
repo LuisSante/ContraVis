@@ -29,8 +29,7 @@
 		process: 'The claims conflict on operational steps, method, or procedure.',
 		policy_reversal:
 			'One claim allows or affirms something and the other directly prohibits or negates it.',
-		specificity: 'One claim is broader while the other is narrower in scope.',
-		other: 'The claims conflict, but not under the main taxonomy categories.'
+		specificity: 'One claim is broader while the other is narrower in scope.'
 	};
 
 	export let messageContent = '';
@@ -41,8 +40,7 @@
 		'authority',
 		'process',
 		'policy_reversal',
-		'specificity',
-		'other'
+		'specificity'
 	];
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
 		temporal: 'Temporal',
@@ -50,8 +48,7 @@
 		authority: 'Authority',
 		process: 'Process',
 		policy_reversal: 'Policy Reversal',
-		specificity: 'Specificity',
-		other: 'Other'
+		specificity: 'Specificity'
 	};
 	export let contradictionTaxonomyColors: Record<ContradictionTaxonomyType, string> = {
 		temporal: '#8b5cf6',
@@ -59,8 +56,7 @@
 		authority: '#f97316',
 		process: '#0ea5e9',
 		policy_reversal: '#ef4444',
-		specificity: '#84cc16',
-		other: '#9ca3af'
+		specificity: '#84cc16'
 	};
 	export let contradictionClaimSideColors: Record<'a' | 'b', string> = {
 		a: '#1d4ed8',

@@ -33,8 +33,8 @@ export function updateSelectionHighlight(
 	for (const [nodeId, element] of paragraphElementById.entries()) {
 		const isSelected = Boolean(nextNodeId && nodeId === nextNodeId);
 		element.classList.toggle('z-10', isSelected);
-		element.classList.toggle('bg-yellow-50/50', isSelected);
+		element.classList.toggle('bg-blue-50/50', isSelected);
 		element.classList.toggle('ring-2', isSelected);
-		element.classList.toggle('ring-yellow-400', isSelected);
+		element.classList.toggle('ring-blue-700', isSelected);
 	}
 }

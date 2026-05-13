@@ -1,5 +1,5 @@
 	[contenteditable='true']::selection {
-		background: rgba(250, 204, 21, 0.3);
+		background: rgba(37, 99, 235, 0.28);
 	}
 
 	.docx-relations-badge-host {
@@ -91,16 +91,20 @@
 	}
 
 	.docx-related-selected {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
+		outline: none !important;
 		background: rgba(37, 99, 235, 0.08) !important;
+		box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.95) !important;
+	}
+
+	.docx-related-selected:hover {
+		outline: none !important;
+		box-shadow: 0 0 0 1px rgba(147, 197, 253, 0.95) !important;
 	}
 
 	.docx-related-selected:focus,
 	.docx-related-selected:focus-visible {
-		outline: 2px solid #2563eb !important;
-		outline-offset: 1px !important;
-		box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+		outline: none !important;
+		box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.85) !important;
 	}
 
 	.docx-related-linked {
@@ -153,6 +157,11 @@
 
 	.docx-paragraph-explanation-source-hidden {
 		opacity: 0.12 !important;
+		filter: saturate(0.7);
+	}
+
+	.docx-contradiction-source-hidden {
+		opacity: 0.18 !important;
 		filter: saturate(0.7);
 	}
 
@@ -285,9 +294,25 @@
 		background: rgba(219, 234, 254, 0.98);
 		color: #1d4ed8;
 		font-size: 10px;
-		font-weight: 700;
+		font-weight: 500;
 		line-height: 1;
 		pointer-events: none;
+	}
+
+	.docx-paragraph-explanation-cap-label--reference {
+		border-color: #93c5fd;
+		background: rgba(219, 234, 254, 0.98);
+		color: #1d4ed8;
+		font-size: 9px;
+		font-style: normal;
+	}
+
+	.docx-paragraph-explanation-cap-label--similarity {
+		border-color: #86efac;
+		background: rgba(220, 252, 231, 0.98);
+		color: #15803d;
+		font-size: 9px;
+		font-style: normal;
 	}
 
 	.docx-paragraph-explanation-line-fold {
@@ -404,10 +429,9 @@
 	}
 
 	mark.docx-contradiction-snippet[data-contradiction-role='b'] {
-		color: #854d0e;
-		background: rgba(254, 240, 138, 0.28);
+		color: var(--contradiction-b-color, #84cc16);
+		background: var(--contradiction-b-bg, rgba(132, 204, 22, 0.22));
 	}
-
 	mark.docx-contradiction-snippet.docx-contradiction-snippet--active {
 		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
 	}
@@ -419,11 +443,9 @@
 		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
 	}
 
-	
-		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b']
-	 {
-		background: rgba(254, 240, 138, 0.6);
-		box-shadow: 0 0 0 1px rgba(202, 138, 4, 0.72);
+	mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b'] {
+		background: var(--contradiction-b-bg-active, rgba(132, 204, 22, 0.34));
+		box-shadow: 0 0 0 1px var(--contradiction-b-ring, #84cc16);
 	}
 
 	.docx-contradiction-scroll-marker {
@@ -472,7 +494,11 @@
 		position: absolute;
 		width: 2px;
 		border-radius: 0;
-		background: linear-gradient(to bottom, #dc2626 0%, #eab308 100%);
+		background: linear-gradient(
+			to bottom,
+			var(--contradiction-a-color, #dc2626) 0%,
+			var(--contradiction-b-color, #84cc16) 100%
+		);
 		transform: translateX(-50%);
 		opacity: 0.92;
 	}
@@ -482,7 +508,11 @@
 		width: 12px;
 		height: 2px;
 		border-radius: 0;
-		background: linear-gradient(to right, rgba(220, 38, 38, 0.95) 0%, rgba(234, 179, 8, 0.95) 100%);
+		background: linear-gradient(
+			to right,
+			var(--contradiction-a-color, #dc2626) 0%,
+			var(--contradiction-b-color, #84cc16) 100%
+		);
 		transform: translate(-100%, -50%);
 		opacity: 0.92;
 	}
@@ -502,7 +532,7 @@
 	}
 
 	.docx-contradiction-evidence-dot--b {
-		background: #eab308;
+		background: var(--contradiction-b-color, #84cc16);
 	}
 
 	.docx-contradiction-evidence-label {
@@ -518,7 +548,7 @@
 	}
 
 	.docx-contradiction-evidence-label--b {
-		color: #a16207;
+		color: var(--contradiction-b-color, #84cc16);
 	}
 
 	@keyframes bounce {

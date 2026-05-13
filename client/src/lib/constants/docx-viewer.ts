@@ -59,8 +59,7 @@ export const CONTRADICTION_TAXONOMY_ORDER: ReadonlyArray<ContradictionTaxonomyTy
 	'authority',
 	'process',
 	'policy_reversal',
-	'specificity',
-	'other'
+	'specificity'
 ];
 
 export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonomyType, string>> = {
@@ -69,18 +68,16 @@ export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonom
 	authority: 'Authority',
 	process: 'Process',
 	policy_reversal: 'Policy Reversal',
-	specificity: 'Specificity',
-	other: 'Other'
+	specificity: 'Specificity'
 };
 
 export const CONTRADICTION_TAXONOMY_COLORS: Readonly<Record<ContradictionTaxonomyType, string>> = {
-	temporal: '#8b5cf6',
-	numerical: '#14b8a6',
-	authority: '#f97316',
+	temporal: '#c300ff',
+	numerical: '#019a34',
+	authority: '#e2c800',
 	process: '#0ea5e9',
-	policy_reversal: '#ef4444',
-	specificity: '#84cc16',
-	other: '#9ca3af'
+	policy_reversal: '#ff9901',
+	specificity: '#1653cc'
 };
 
 export const CONTRADICTION_CLAIM_SIDE_COLORS: Readonly<Record<'a' | 'b', string>> = {
@@ -97,17 +94,17 @@ export const EDITABLE_PARAGRAPH_CLASSES = [
 	'hover:ring-1',
 	'hover:ring-blue-300',
 	'focus:ring-2',
-	'focus:ring-yellow-400'
+	'focus:ring-blue-700'
 ] as const;
 
 export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
-	{ id: 'related', label: 'Related Paragraphs' },
 	{ id: 'analysis', label: 'Contradiction Analysis' },
 	// { id: 'redundancy', label: 'Redundancy Analysis' },
-	{ id: 'paragraph_explanation', label: 'Paragraph Explanation' },
+	{ id: 'related', label: 'Related Paragraphs' },
+	// { id: 'paragraph_explanation', label: 'Paragraph Explanation' },
 	// { id: 'summarize', label: 'Summarize & Simplify' },
 	// { id: 'ambiguity', label: 'Ambiguity Analysis' },
-	{ id: 'revisions', label: 'Paragraph Revisions' },
+	// { id: 'revisions', label: 'Paragraph Revisions' },
 	{ id: 'assistant', label: 'Contract Chat Assistant' }
 ];
  

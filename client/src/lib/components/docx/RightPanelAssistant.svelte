@@ -16,7 +16,6 @@
 	import ContractChatAssistantIcon from '$lib/icons/ContractChatAssistantIcon.svelte';
 	import UserIcon from '$lib/icons/UserIcon.svelte';
 	import ContradictionActionMessageCard from './ContradictionActionMessageCard.svelte';
-	import StructuredContradictionMessage from './StructuredContradictionMessage.svelte';
 
 	type ChatPreviewTab = 'contradiction' | 'claims';
 	type ReferenceTextSegment = {
@@ -36,8 +35,7 @@
 		authority: '',
 		process: '',
 		policy_reversal: '',
-		specificity: '',
-		other: ''
+		specificity: ''
 	};
 	const CONTRADICTION_TAXONOMY_DESCRIPTIONS: Readonly<Record<ContradictionTaxonomyType, string>> = {
 		temporal: 'The claims conflict on timing, dates, or sequence of events.',
@@ -46,8 +44,7 @@
 		process: 'The claims conflict on operational steps, method, or procedure.',
 		policy_reversal:
 			'One claim allows or affirms something and the other directly prohibits or negates it.',
-		specificity: 'One claim is broader while the other is narrower in scope.',
-		other: 'The claims conflict, but not under the main taxonomy categories.'
+		specificity: 'One claim is broader while the other is narrower in scope.'
 	};
 	const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 
@@ -523,7 +520,7 @@
 			{/if}
 
 			{#each assistantMessages as message (message.id)}
-				{#if message.fixContradictionSuggestion || message.freeContradictionExplanation}
+				{#if message.fixContradictionSuggestion}
 					<div class="flex {message.role === 'user' ? 'justify-end' : 'justify-start'}">
 						<ContradictionActionMessageCard
 							{message}
@@ -548,26 +545,15 @@
 										: 'border-gray-200 bg-white text-gray-700'
 								}`}
 							>
-								{#if message.structuredContradiction}
-									<StructuredContradictionMessage
-										messageContent={message.content}
-										structuredContradiction={message.structuredContradiction}
-										{contradictionTaxonomyOrder}
-										{contradictionTaxonomyLabels}
-										{contradictionTaxonomyColors}
-										contradictionClaimSideColors={contradictionClaimSideColors}
-									/>
-								{:else}
-									<p class="whitespace-pre-wrap">
-										{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
-											{#if segment.isReference}
-												<span class="docx-reference-chip align-middle">{segment.text}</span>
-											{:else}
-												<span>{segment.text}</span>
-											{/if}
-										{/each}
-									</p>
-								{/if}
+								<p class="whitespace-pre-wrap">
+									{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+										{#if segment.isReference}
+											<span class="docx-reference-chip align-middle">{segment.text}</span>
+										{:else}
+											<span>{segment.text}</span>
+										{/if}
+									{/each}
+								</p>
 
 								{#if message.suggestedQuestions?.length}
 									<div class="mt-2">

@@ -143,6 +143,15 @@ def generate_assistant_response(payload: AssistantChatRequest) -> AssistantChatR
     allowed_ids = [entry.node.id for entry in context_entries]
 
     provider = LLMProviderFactory.create(payload.provider, model=payload.model)
+    resolved_model = (payload.model or "").strip() or _default_model_for_provider(payload.provider)
+    logger.info(
+        "[COST_DEBUG] assistant_chat request: provider=%s requested_model=%s resolved_model=%s scope=%s mode=%s",
+        payload.provider,
+        payload.model,
+        resolved_model,
+        payload.scope,
+        payload.mode,
+    )
     system_prompt = _build_system_prompt(payload.mode)
     user_prompt = _build_user_prompt(payload, context_entries, allowed_ids)
 
