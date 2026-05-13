@@ -313,7 +313,8 @@
 		relatedCapTopPx: number;
 		relatedCapWidthPx: number;
 		paragraphId: string;
-		paragraphEnumLabel: string;
+		relationKind: RelatedVisualKind;
+		relationLabel: string;
 		labelLeftPx: number;
 	}> = [];
 	let paragraphExplanationFolds: Array<{
@@ -364,6 +365,9 @@
 	$: shouldShowContradictionDecorations = activeRightPanelTab === 'analysis' && isRightDrawerOpen;
 	$: shouldShowParagraphExplanationDecorations =
 		activeRightPanelTab === 'paragraph_explanation' && isRightDrawerOpen;
+	$: shouldShowRelatedBridgeDecorations =
+		(activeRightPanelTab === 'paragraph_explanation' || activeRightPanelTab === 'related') &&
+		isRightDrawerOpen;
 	$: activeDrawerWidth = !isCompactLayout && isRightDrawerOpen ? rightDrawerWidth : 0;
 	$: activeSidebarWidth = sidebarLabelsPinned
 		? RIGHT_TOOLBAR_EXPANDED_WIDTH
@@ -444,7 +448,7 @@
 
 			return left.node.paragraph_enum - right.node.paragraph_enum;
 		})
-		.slice(0, 5);
+		.slice(activeRightPanelTab === 'related' ? 9999 : 5);
 	$: {
 		syncContradictionDecorations();
 	}
@@ -457,7 +461,7 @@
 		void selectedId;
 		void relatedIds;
 		void entitiesSignature;
-		if (shouldShowParagraphExplanationDecorations) {
+		if (shouldShowRelatedBridgeDecorations) {
 			applyParagraphExplanationHighlights();
 			scheduleParagraphExplanationConnectorRefresh();
 		} else {
@@ -473,6 +477,16 @@
 		void relatedIds;
 		applyRelatedSelectionHighlight();
 		scheduleRelatedScrollMarkerRefresh();
+		if (activeRightPanelTab === 'related' && isRightDrawerOpen) {
+			applyParagraphExplanationHighlights();
+			scheduleParagraphExplanationConnectorRefresh();
+		}
+	}
+
+	function getBridgeRelatedParagraphs(): RelatedParagraph[] {
+		return activeRightPanelTab === 'related'
+			? selectedRelatedParagraphs
+			: paragraphExplanationRelatedParagraphs;
 	}
 
 	function toTitleCaseLabel(label: string): string {
@@ -1669,7 +1683,8 @@
 
 	function applyParagraphExplanationHighlights() {
 		clearParagraphExplanationElementHighlights();
-		if (!shouldShowParagraphExplanationDecorations) return;
+		if (!shouldShowRelatedBridgeDecorations) return;
+		const bridgeRelatedParagraphs = getBridgeRelatedParagraphs();
 		const shouldMuteOutOfContext =
 			paragraphExplanationCompression > 0.02 && paragraphExplanationMovedNodeIds.size > 0;
 		if (shouldMuteOutOfContext) {
@@ -1687,7 +1702,7 @@
 		if (selectedElement) {
 			highlightParagraphExplanationEntitiesInElement(selectedElement, paragraphExplanationEntities);
 		}
-		for (const related of paragraphExplanationRelatedParagraphs) {
+		for (const related of bridgeRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			relatedElement?.classList.remove('docx-paragraph-explanation-muted');
 			relatedElement?.classList.add('docx-paragraph-explanation-related');
@@ -1707,7 +1722,7 @@
 	}
 
 	function refreshParagraphExplanationConnectorPaths() {
-		if (!documentScrollHost || !shouldShowParagraphExplanationDecorations) {
+		if (!documentScrollHost || !shouldShowRelatedBridgeDecorations) {
 			paragraphExplanationConnectors = [];
 			paragraphExplanationFolds = [];
 			paragraphExplanationScrollMarkers = [];
@@ -1737,6 +1752,7 @@
 		const selectedRect = selectedElement.getBoundingClientRect();
 		const selectedY = selectedRect.top - hostRect.top + selectedRect.height / 2;
 		const selectedEdgeX = selectedRect.left - hostRect.left;
+		const bridgeRelatedParagraphs = getBridgeRelatedParagraphs();
 
 		const anchors: Array<{
 			y: number;
@@ -1744,12 +1760,13 @@
 			edgeX: number;
 			paragraphId: string;
 			paragraphEnum: number;
-			paragraphEnumLabel: string;
+			relationKind: RelatedVisualKind;
+			relationLabel: string;
 			top: number;
 			width: number;
 			html: string;
 		}> = [];
-		for (const related of paragraphExplanationRelatedParagraphs) {
+		for (const related of bridgeRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
 			const relatedRect = relatedElement.getBoundingClientRect();
@@ -1768,14 +1785,17 @@
 				'docx-related-selected'
 			);
 			relatedClone.classList.add('docx-paragraph-explanation-cloned-node');
-			const paragraphEnumLabel = `P-${related.node.paragraph_enum}`;
+			const visualMeta = resolveRelatedVisualMeta(related);
+			const relationKind: RelatedVisualKind = visualMeta.kind;
+			const relationLabel = relationKind === 'similarity' ? 'Similarity' : 'Reference';
 			anchors.push({
 				y: relatedY,
 				height: relatedRect.height,
 				edgeX: relatedRect.left - hostRect.left,
 				paragraphId: related.node.id,
 				paragraphEnum: related.node.paragraph_enum,
-				paragraphEnumLabel,
+				relationKind,
+				relationLabel,
 				top: relatedRect.top - hostRect.top,
 				width: relatedRect.width,
 				html: relatedClone.outerHTML
@@ -1904,7 +1924,8 @@
 			relatedCapTopPx: number;
 			relatedCapWidthPx: number;
 			paragraphId: string;
-			paragraphEnumLabel: string;
+			relationKind: RelatedVisualKind;
+			relationLabel: string;
 			labelLeftPx: number;
 		}> = [];
 		for (const anchor of sortedAnchors) {
@@ -1924,7 +1945,8 @@
 				relatedCapTopPx: compressedYByParagraphId.get(anchor.paragraphId) ?? anchor.y,
 				relatedCapWidthPx,
 				paragraphId: anchor.paragraphId,
-				paragraphEnumLabel: anchor.paragraphEnumLabel,
+				relationKind: anchor.relationKind,
+				relationLabel: anchor.relationLabel,
 				labelLeftPx: baseLeft - 50
 			});
 		}
@@ -1982,7 +2004,7 @@
 			return;
 		}
 		const nextScrollMarkers: RelatedScrollMarker[] = [];
-		for (const related of paragraphExplanationRelatedParagraphs) {
+		for (const related of bridgeRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
 			if (!relatedElement) continue;
 			const relatedRect = relatedElement.getBoundingClientRect();
@@ -2010,11 +2032,15 @@
 	}
 
 	function handleParagraphExplanationShiftWheel(event: WheelEvent) {
-		if (!shouldShowParagraphExplanationDecorations) return;
+		if (!shouldShowRelatedBridgeDecorations) return;
 		if (!event.shiftKey) return;
+		const wheelDelta =
+			Math.abs(event.deltaY) >= PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE
+				? event.deltaY
+				: event.deltaX;
+		if (Math.abs(wheelDelta) < PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE) return;
 		event.preventDefault();
-		if (Math.abs(event.deltaY) < PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE) return;
-		const nextTarget = event.deltaY > 0 ? 1 : 0;
+		const nextTarget = wheelDelta > 0 ? 1 : 0;
 		if (
 			nextTarget === paragraphExplanationCompressionTarget &&
 			paragraphExplanationCompressionTweenFrame != null
@@ -4293,7 +4319,7 @@ function setRightDrawerWidth(nextWidth: number) {
 				</div>
 			{/if}
 
-			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationConnectors.length > 0}
+			{#if shouldShowRelatedBridgeDecorations && paragraphExplanationConnectors.length > 0}
 				<div class="pointer-events-none absolute inset-0 z-20 overflow-hidden">
 					{#if paragraphExplanationPrimaryConnector}
 						<span
@@ -4326,7 +4352,7 @@ function setRightDrawerWidth(nextWidth: number) {
 							style={`left: ${connector.leftPx}px; top: ${connector.relatedCapTopPx}px; width: ${connector.relatedCapWidthPx}px;`}
 							role="button"
 							tabindex="0"
-							aria-label={`Go to related paragraph ${connector.paragraphEnumLabel}`}
+							aria-label={`Go to related paragraph (${connector.relationLabel})`}
 							on:click={() => jumpToRelatedParagraphMarker(connector.paragraphId)}
 							on:keydown={(event) => {
 								if (event.key === 'Enter' || event.key === ' ') {
@@ -4336,10 +4362,14 @@ function setRightDrawerWidth(nextWidth: number) {
 							}}
 						></span>
 						<span
-							class="docx-paragraph-explanation-cap-label"
+							class={`docx-paragraph-explanation-cap-label ${
+								connector.relationKind === 'similarity'
+									? 'docx-paragraph-explanation-cap-label--similarity'
+									: 'docx-paragraph-explanation-cap-label--reference'
+							}`}
 							style={`left: ${connector.labelLeftPx}px; top: ${connector.relatedCapTopPx}px;`}
 						>
-							{connector.paragraphEnumLabel}
+							{connector.relationLabel}
 						</span>
 					{/each}
 					{#each paragraphExplanationFolds as fold, index (`fold-${index}`)}
@@ -4365,7 +4395,7 @@ function setRightDrawerWidth(nextWidth: number) {
 				</div>
 			{/if}
 
-			{#if shouldShowParagraphExplanationDecorations && paragraphExplanationScrollMarkers.length > 0}
+			{#if shouldShowRelatedBridgeDecorations && paragraphExplanationScrollMarkers.length > 0}
 				<div class="absolute top-2 right-1 bottom-2 z-20 w-2" on:mousedown={startManualScrollDrag}>
 					{#each paragraphExplanationScrollMarkers as marker (`related-marker-${marker.paragraphId}`)}
 						<span
