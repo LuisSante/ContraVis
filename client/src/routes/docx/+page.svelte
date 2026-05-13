@@ -134,6 +134,7 @@
 	const TOOL_BRAND_SHORT_NAME = 'ContractVis';
 	const MANUAL_SCROLL_DRAG_SPEED = 100;
 	const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
+	const CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX = 55;
 	const GLOBAL_ANALYSIS_MODEL_OPTIONS = Array.from(
 		new Map(
 			[...CONTRADICTION_OPENAI_MODEL_OPTIONS, ...PARAGRAPH_EXPLANATION_MODEL_OPTIONS].map(
@@ -149,6 +150,8 @@
 	const PARAGRAPH_EXPLANATION_COMPRESS_DURATION_MS = 560;
 	const PARAGRAPH_EXPLANATION_COMPRESS_SNAP_EPSILON = 0.001;
 	const PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE = 2;
+	const CONTRADICTION_EVIDENCE_COMPRESS_DURATION_MS = 420;
+	const CONTRADICTION_EVIDENCE_COMPRESS_SNAP_EPSILON = 0.001;
 	const PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX = 72;
 	const PARAGRAPH_EXPLANATION_STACK_OFFSET_PX = 18;
 	const PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX = 12;
@@ -285,6 +288,18 @@
 	} | null = null;
 	let contradictionMarkerFrame: number | null = null;
 	let contradictionMarkerResizeObserver: ResizeObserver | null = null;
+	let contradictionEvidenceCompression = 0;
+	let contradictionEvidenceCompressionTarget = 0;
+	let contradictionEvidenceCompressionTweenFrame: number | null = null;
+	let contradictionEvidenceCompressionStart = 0;
+	let contradictionEvidenceCompressionStartTime = 0;
+	const contradictionEvidenceBSourceElements = new Set<HTMLElement>();
+	let contradictionEvidenceBCollapsedCard: {
+		topPx: number;
+		leftPx: number;
+		widthPx: number;
+		html: string;
+	} | null = null;
 	let selectedContradictionResult: ContradictionParagraphResult | null = null;
 	let selectedContradictionEvidence: ContradictionParagraphResult['evidence'] = null;
 	let selectedContradictionCategoryColor = CONTRADICTION_TAXONOMY_COLORS.specificity;
@@ -480,6 +495,24 @@
 		if (activeRightPanelTab === 'related' && isRightDrawerOpen) {
 			applyParagraphExplanationHighlights();
 			scheduleParagraphExplanationConnectorRefresh();
+		}
+	}
+	$: {
+		const contradictionIsInterParagraph =
+			activeRightPanelTab === 'analysis' &&
+			(selectedContradictionEvidence?.source_a === 'context' ||
+				selectedContradictionEvidence?.source_b === 'context');
+		if (!contradictionIsInterParagraph) {
+			clearContradictionEvidenceBTransforms();
+		}
+		if (!contradictionIsInterParagraph && contradictionEvidenceCompression !== 0) {
+			contradictionEvidenceCompression = 0;
+			contradictionEvidenceCompressionTarget = 0;
+			if (typeof window !== 'undefined' && contradictionEvidenceCompressionTweenFrame != null) {
+				window.cancelAnimationFrame(contradictionEvidenceCompressionTweenFrame);
+				contradictionEvidenceCompressionTweenFrame = null;
+			}
+			refreshContradictionScrollMarkers();
 		}
 	}
 
@@ -1390,6 +1423,7 @@
 
 	function clearContradictionHighlights() {
 		selectedContradictionEvidenceLink = null;
+		clearContradictionEvidenceBTransforms();
 		for (const element of paragraphElementById.values()) {
 			element.classList.remove('docx-contradiction-highlight', 'docx-contradiction-selected');
 			element.style.removeProperty('--tw-ring-color');
@@ -1488,9 +1522,12 @@
 
 		const selected = get(selectedParagraph);
 		if (!selected?.id || !contradictionResultsByParagraphId.get(selected.id)?.contradiction) {
+			clearContradictionEvidenceBTransforms();
 			selectedContradictionEvidenceLink = null;
 			return;
 		}
+		const selectedContradiction = contradictionResultsByParagraphId.get(selected.id);
+		const selectedEvidence = selectedContradiction?.evidence;
 
 		let markA: HTMLElement | null = null;
 		let markB: HTMLElement | null = null;
@@ -1507,6 +1544,7 @@
 		}
 
 		if (!markA || !markB) {
+			clearContradictionEvidenceBTransforms();
 			selectedContradictionEvidenceLink = null;
 			return;
 		}
@@ -1520,9 +1558,14 @@
 
 		let displayACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
 		let displayBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
-		if (showA && showB) {
+		let bTransformDeltaPx = 0;
+		let bVisualCenterPx: number | null = null;
+		const contradictionIsInterParagraph =
+			(selectedEvidence?.source_a || '').trim().toLowerCase() === 'context' ||
+			(selectedEvidence?.source_b || '').trim().toLowerCase() === 'context';
+		{
 			const currentGap = Math.abs(displayACenterPx - displayBCenterPx);
-			if (currentGap < CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
+			if (showA && showB && currentGap < CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
 				const aIsAbove = displayACenterPx <= displayBCenterPx;
 				const center = (displayACenterPx + displayBCenterPx) / 2;
 				let top = center - CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX / 2;
@@ -1550,11 +1593,38 @@
 					displayBCenterPx = top;
 				}
 			}
+			if (contradictionIsInterParagraph && contradictionEvidenceCompression > 0) {
+				// Keep A fixed and move only B toward A (same behavior pattern as Related tab:
+				// selected anchor stays fixed, related anchor moves).
+				const aFixed = displayACenterPx;
+				const bStart = displayBCenterPx;
+				const direction = bStart >= aFixed ? 1 : -1;
+				const bTarget = aFixed + direction * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
+				displayBCenterPx =
+					bStart * (1 - contradictionEvidenceCompression) +
+					bTarget * contradictionEvidenceCompression;
+				displayACenterPx = aFixed;
+				// Use unclamped centers for the floating copy movement so B can travel across pages
+				// instead of being capped at viewport bounds.
+				const rawDirection = bCenterPx >= aCenterPx ? 1 : -1;
+				const rawTarget = aCenterPx + rawDirection * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
+				const rawCompressed =
+					bCenterPx * (1 - contradictionEvidenceCompression) +
+					rawTarget * contradictionEvidenceCompression;
+				bTransformDeltaPx = rawCompressed - bCenterPx;
+				bVisualCenterPx = rawCompressed;
+			}
+		}
+		if (contradictionIsInterParagraph && Math.abs(bTransformDeltaPx) > 0.5) {
+			applyContradictionEvidenceBTransforms(selected.id, bTransformDeltaPx);
+		} else {
+			clearContradictionEvidenceBTransforms();
 		}
 
 		const topPx = Math.min(displayACenterPx, displayBCenterPx);
 		const bottomPx = Math.max(displayACenterPx, displayBCenterPx);
 		if (bottomPx - topPx < 2) {
+			clearContradictionEvidenceBTransforms();
 			selectedContradictionEvidenceLink = null;
 			return;
 		}
@@ -1565,9 +1635,9 @@
 			bottomPx,
 			leftPx,
 			showA,
-			showB,
+			showB: showB || (contradictionIsInterParagraph && contradictionEvidenceCompression > 0),
 			aCenterPx: displayACenterPx,
-			bCenterPx: displayBCenterPx
+			bCenterPx: bVisualCenterPx ?? displayBCenterPx
 		};
 	}
 
@@ -2032,7 +2102,18 @@
 	}
 
 	function handleParagraphExplanationShiftWheel(event: WheelEvent) {
-		if (!shouldShowRelatedBridgeDecorations) return;
+		const selected = get(selectedParagraph);
+		const selectedContradiction = selected?.id
+			? contradictionResultsByParagraphId.get(selected.id)
+			: null;
+		const selectedEvidence = selectedContradiction?.evidence;
+		const contradictionIsInterParagraph =
+			activeRightPanelTab === 'analysis' &&
+			shouldShowContradictionDecorations &&
+			(selectedContradiction?.contradiction ?? false) &&
+			((selectedEvidence?.source_a || '').trim().toLowerCase() === 'context' ||
+				(selectedEvidence?.source_b || '').trim().toLowerCase() === 'context');
+		if (!shouldShowRelatedBridgeDecorations && !contradictionIsInterParagraph) return;
 		if (!event.shiftKey) return;
 		const wheelDelta =
 			Math.abs(event.deltaY) >= PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE
@@ -2041,6 +2122,54 @@
 		if (Math.abs(wheelDelta) < PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE) return;
 		event.preventDefault();
 		const nextTarget = wheelDelta > 0 ? 1 : 0;
+		if (contradictionIsInterParagraph) {
+			if (
+				nextTarget === contradictionEvidenceCompressionTarget &&
+				contradictionEvidenceCompressionTweenFrame != null
+			) {
+				return;
+			}
+			contradictionEvidenceCompressionTarget = nextTarget;
+			contradictionEvidenceCompressionStart = contradictionEvidenceCompression;
+			contradictionEvidenceCompressionStartTime =
+				typeof performance !== 'undefined' ? performance.now() : Date.now();
+			if (contradictionEvidenceCompressionTweenFrame != null) {
+				window.cancelAnimationFrame(contradictionEvidenceCompressionTweenFrame);
+				contradictionEvidenceCompressionTweenFrame = null;
+			}
+			clearContradictionEvidenceBTransforms();
+			const animateCompression = (timestamp: number) => {
+				const elapsed = timestamp - contradictionEvidenceCompressionStartTime;
+				const linearProgress = Math.max(
+					0,
+					Math.min(1, elapsed / CONTRADICTION_EVIDENCE_COMPRESS_DURATION_MS)
+				);
+				const easedProgress =
+					linearProgress < 0.5
+						? 4 * linearProgress * linearProgress * linearProgress
+						: 1 - Math.pow(-2 * linearProgress + 2, 3) / 2;
+				contradictionEvidenceCompression =
+					contradictionEvidenceCompressionStart +
+					(contradictionEvidenceCompressionTarget - contradictionEvidenceCompressionStart) *
+						easedProgress;
+				refreshContradictionScrollMarkers();
+				const delta = Math.abs(
+					contradictionEvidenceCompressionTarget - contradictionEvidenceCompression
+				);
+				if (linearProgress >= 1 || delta <= CONTRADICTION_EVIDENCE_COMPRESS_SNAP_EPSILON) {
+					contradictionEvidenceCompression = contradictionEvidenceCompressionTarget;
+					contradictionEvidenceCompressionTweenFrame = null;
+					refreshContradictionScrollMarkers();
+					return;
+				}
+				contradictionEvidenceCompressionTweenFrame =
+					window.requestAnimationFrame(animateCompression);
+			};
+			animateCompression(contradictionEvidenceCompressionStartTime);
+			contradictionEvidenceCompressionTweenFrame =
+				window.requestAnimationFrame(animateCompression);
+			return;
+		}
 		if (
 			nextTarget === paragraphExplanationCompressionTarget &&
 			paragraphExplanationCompressionTweenFrame != null
@@ -2300,6 +2429,50 @@
 			llmCostLabel = formatAccumulatedCostLabel();
 		} catch (err) {
 			console.error('[COST_DEBUG][client] failed to load /llm/cost/total:', err);
+		}
+	}
+
+	function clearContradictionEvidenceBTransforms() {
+		contradictionEvidenceBCollapsedCard = null;
+		for (const element of contradictionEvidenceBSourceElements) {
+			element.classList.remove('docx-contradiction-source-hidden');
+		}
+		contradictionEvidenceBSourceElements.clear();
+	}
+
+	function applyContradictionEvidenceBTransforms(paragraphId: string, deltaY: number) {
+		clearContradictionEvidenceBTransforms();
+		if (typeof document === 'undefined') return;
+		const marks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		const containers = new Set<HTMLElement>();
+		for (const mark of marks) {
+			if (
+				mark.dataset.contradictionOwner === paragraphId &&
+				mark.dataset.contradictionRole === 'b'
+			) {
+				const paragraphContainer = mark.closest<HTMLElement>('[data-node-id]');
+				if (paragraphContainer) containers.add(paragraphContainer);
+			}
+		}
+		for (const container of containers) {
+			const hostRect = documentScrollHost?.getBoundingClientRect();
+			if (!hostRect) continue;
+			const rect = container.getBoundingClientRect();
+			const clone = container.cloneNode(true) as HTMLElement;
+			clone.removeAttribute('contenteditable');
+			clone.removeAttribute('spellcheck');
+			delete clone.dataset.nodeId;
+			delete clone.dataset.paragraphKind;
+			delete clone.dataset.docxEditableRoot;
+			clone.classList.add('docx-paragraph-explanation-cloned-node');
+			contradictionEvidenceBCollapsedCard = {
+				topPx: rect.top - hostRect.top + deltaY,
+				leftPx: rect.left - hostRect.left,
+				widthPx: rect.width,
+				html: clone.outerHTML
+			};
+			container.classList.add('docx-contradiction-source-hidden');
+			contradictionEvidenceBSourceElements.add(container);
 		}
 	}
 
@@ -4124,6 +4297,10 @@ function setRightDrawerWidth(nextWidth: number) {
 				window.cancelAnimationFrame(contradictionMarkerFrame);
 				contradictionMarkerFrame = null;
 			}
+			if (contradictionEvidenceCompressionTweenFrame != null) {
+				window.cancelAnimationFrame(contradictionEvidenceCompressionTweenFrame);
+				contradictionEvidenceCompressionTweenFrame = null;
+			}
 			if (paragraphExplanationFrame != null) {
 				window.cancelAnimationFrame(paragraphExplanationFrame);
 				paragraphExplanationFrame = null;
@@ -4315,6 +4492,14 @@ function setRightDrawerWidth(nextWidth: number) {
 						>
 							B
 						</span>
+					{/if}
+					{#if contradictionEvidenceBCollapsedCard}
+						<div
+							class="docx-paragraph-explanation-collapsed-card"
+							style={`left: ${contradictionEvidenceBCollapsedCard.leftPx}px; top: ${contradictionEvidenceBCollapsedCard.topPx}px; width: ${contradictionEvidenceBCollapsedCard.widthPx}px;`}
+						>
+							{@html contradictionEvidenceBCollapsedCard.html}
+						</div>
 					{/if}
 				</div>
 			{/if}
