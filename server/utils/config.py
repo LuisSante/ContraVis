@@ -44,7 +44,7 @@ class Config:
   SEMANTIC_RELATED_MODE = semantic_mode_raw if semantic_mode_raw in {"top_k", "all"} else "top_k"
   
   SEMANTIC_TOP_K = max(1, _env_int("SEMANTIC_TOP_K", 5))
-  SEMANTIC_SIMILARITY_THRESHOLD = max(0.0, min(1.0, _env_float("SEMANTIC_SIMILARITY_THRESHOLD", 0.8)))
+  SEMANTIC_SIMILARITY_THRESHOLD = max(0.0, min(1.0, _env_float("SEMANTIC_SIMILARITY_THRESHOLD", 0.79)))
   
   REFERENCE_PATTERNS = [
     ("section", re.compile(r'\b[Ss]ection\s+(\d+(?:\.\d+)*)\b')),

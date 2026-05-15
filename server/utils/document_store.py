@@ -77,7 +77,7 @@ class DocumentStore:
             if len(doc_ids) == 1
         }
 
-        self._documents = documents
+        self._documents = sorted(documents, key=self._document_sort_key)
         self._path_map = path_map
         self._canonical_id_by_alias = canonical_id_by_alias
         self._aliases_by_doc_id = aliases_by_doc_id
@@ -85,7 +85,7 @@ class DocumentStore:
         logger.info("DocumentStore initialized with %d documents.", len(documents))
 
     def get_documents(self) -> list[DatasetDocument]:
-        return self._documents
+        return sorted(self._documents, key=self._document_sort_key)
 
     def get_path(self, doc_id: str) -> Path | None:
         canonical = self.get_canonical_id(doc_id)
@@ -162,3 +162,14 @@ class DocumentStore:
             Path(doc.full_path).stem,
         }
         return sorted(alias for alias in aliases if alias)
+
+    @staticmethod
+    def _document_sort_key(doc: DatasetDocument) -> tuple[int, str, str]:
+        group_rank = {
+            "root": 0,
+            "related": 1,
+            "target": 2,
+        }.get((doc.group_label or "").strip().lower(), 3)
+        group_value = (doc.group_label or "").strip().lower()
+        name_value = (doc.name or "").strip().lower()
+        return (group_rank, group_value, name_value)
