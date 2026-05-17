@@ -145,15 +145,6 @@
 										Reference
 									</Badge>
 								{/if}
-								{#if related.semanticScore != null}
-									<span
-										class={`text-[10px] font-semibold ${
-											hasSemanticRelation(related) ? 'text-green-600' : 'text-gray-500'
-										}`}
-									>
-										{(related.semanticScore * 100).toFixed(1)}%
-									</span>
-								{/if}
 							</div>
 						</div>
 
