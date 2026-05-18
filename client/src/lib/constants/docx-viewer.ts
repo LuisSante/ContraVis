@@ -73,12 +73,12 @@ export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonom
 };
 
 export const CONTRADICTION_TAXONOMY_COLORS: Readonly<Record<ContradictionTaxonomyType, string>> = {
-	temporal: '#c300ff',
-	numerical: '#019a34',
-	authority: '#e2c800',
-	process: '#0ea5e9',
-	policy_reversal: '#ff9901',
-	specificity: '#1653cc'
+	temporal: '#9c00cc',
+	numerical: '#0f8536',
+	authority: '#e4bb05',
+	process: '#1cb18e',
+	policy_reversal: '#ff8000',
+	specificity: '#07399d'
 };
 
 export const CONTRADICTION_CLAIM_SIDE_COLORS: Readonly<Record<'a' | 'b', string>> = {

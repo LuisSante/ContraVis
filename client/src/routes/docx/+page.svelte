@@ -1351,8 +1351,8 @@
 					CONTRADICTION_TAXONOMY_COLORS.specificity)
 				: CONTRADICTION_TAXONOMY_COLORS.specificity;
 			mark.style.setProperty('--contradiction-b-color', categoryColor);
-			mark.style.setProperty('--contradiction-b-bg', hexToRgba(categoryColor, 0.22));
-			mark.style.setProperty('--contradiction-b-bg-active', hexToRgba(categoryColor, 0.34));
+			mark.style.setProperty('--contradiction-b-bg', hexToRgba(categoryColor, 0.25));
+			mark.style.setProperty('--contradiction-b-bg-active', hexToRgba(categoryColor, 0.36));
 			mark.style.setProperty('--contradiction-b-ring', categoryColor);
 		}
 		try {
@@ -2286,10 +2286,47 @@
 		window.addEventListener('mouseup', stopManualScrollDrag);
 	}
 
+	function normalizeContradictionSnippetForKey(value: string | null | undefined): string {
+		return (value ?? '')
+			.normalize('NFKC')
+			.toLocaleLowerCase()
+			.replace(/[\u200B-\u200D\uFEFF]/g, '')
+			.replace(/["'`“”‘’]+/g, '')
+			.replace(/^[\s\p{P}\p{S}]+|[\s\p{P}\p{S}]+$/gu, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function buildSymmetricContradictionKey(row: ContradictionParagraphResult): string | null {
+		if (!row.contradiction) return null;
+		const evidence = row.evidence;
+		const snippetA = normalizeContradictionSnippetForKey(evidence?.snippet_a);
+		const snippetB = normalizeContradictionSnippetForKey(evidence?.snippet_b);
+		if (!snippetA || !snippetB) return null;
+		const left = snippetA;
+		const right = snippetB;
+		return left <= right ? `${left}<>${right}` : `${right}<>${left}`;
+	}
+
 	function setContradictionResults(results: ContradictionParagraphResult[], _source: string | null) {
 		const next = new Map<string, ContradictionParagraphResult>();
+		const seenSymmetricPairs = new Set<string>();
 		for (const row of results) {
-			next.set(String(row.paragraph_id), row);
+			const rowId = String(row.paragraph_id);
+			const symmetricKey = buildSymmetricContradictionKey(row);
+			if (symmetricKey && seenSymmetricPairs.has(symmetricKey)) {
+				next.set(rowId, {
+					...row,
+					contradiction: false,
+					confidence: Math.min(100, Math.max(0, Number(row.confidence || 0))),
+					brief_reason:
+						(row.brief_reason || '').trim() ||
+						'Deduplicated symmetric contradiction pair (A↔B equivalent).'
+				});
+				continue;
+			}
+			if (symmetricKey) seenSymmetricPairs.add(symmetricKey);
+			next.set(rowId, row);
 		}
 		contradictionResultsByParagraphId = next;
 		syncContradictionDecorations();

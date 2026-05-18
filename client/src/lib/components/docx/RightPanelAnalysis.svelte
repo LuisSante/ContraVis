@@ -239,15 +239,24 @@ type ProcessingStep = {
 		return nextType;
 	}
 
+	function hexToRgba(hex: string, alpha: number): string {
+		const normalized = (hex || '').replace('#', '').trim();
+		if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(132, 204, 22, ${alpha})`;
+		const r = Number.parseInt(normalized.slice(0, 2), 16);
+		const g = Number.parseInt(normalized.slice(2, 4), 16);
+		const b = Number.parseInt(normalized.slice(4, 6), 16);
+		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+	}
+
 	function resolveSnippetBStyle() {
 		const contradictionType = resolveContradictionTypeForSelected();
 		const color =
 			contradictionTaxonomyColors[contradictionType] ?? contradictionTaxonomyColors.specificity;
 		return {
 			color,
-			border: `${color}66`,
-			background: `${color}1A`,
-			badgeBorder: `${color}66`,
+			border: color,
+			background: hexToRgba(color, 0.14),
+			badgeBorder: color,
 			badgeText: color,
 			label: contradictionTaxonomyLabels[contradictionType] ?? contradictionTaxonomyLabels.specificity
 		};
@@ -518,7 +527,7 @@ type ProcessingStep = {
 											</div>
 											<Button
 												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-red-800 hover:bg-transparent hover:text-red-900"
+												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-red-900"
 												onclick={() =>
 													selectedContradictionResult &&
 													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
@@ -547,8 +556,7 @@ type ProcessingStep = {
 											</div>
 											<Button
 												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal hover:bg-transparent"
-												style={`color: ${snippetBStyle.color};`}
+												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-800"
 												onclick={() =>
 													selectedContradictionResult &&
 													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
