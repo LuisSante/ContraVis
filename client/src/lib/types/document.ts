@@ -192,6 +192,12 @@ export type AssistantChatMessage = {
 	content: string;
 	citations?: AssistantCitation[];
 	suggestedQuestions?: string[];
+	entityHighlights?: Array<{
+		label: string;
+		key: string;
+		color: string;
+		softColor: string;
+	}>;
 	structuredContradiction?: StructuredContradictionAnalysis;
 	freeContradictionExplanation?: FreeContradictionExplanation;
 	fixContradictionSuggestion?: FixContradictionSuggestion;

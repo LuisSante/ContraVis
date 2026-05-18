@@ -21,7 +21,12 @@
 	type ReferenceTextSegment = {
 		text: string;
 		isReference: boolean;
+		isEntity?: boolean;
+		entityKey?: string;
+		entityColor?: string;
+		entitySoftColor?: string;
 	};
+	type StructuredChatSection = { label: string | null; body: string };
 	type ChatHighlightTooltip = {
 		kind: 'claim' | 'highlight';
 		badgeText: string;
@@ -78,6 +83,8 @@
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
 	export let rewriteBusy = false;
+	export let entityHighlightsEnabled = true;
+	export let onToggleEntityHighlights: () => void = () => {};
 	$: showQuickActionSuggestions =
 		quickActionSuggestions.length > 0 &&
 		assistantMessages.length === 0 &&
@@ -104,6 +111,103 @@
 			segments.push({ text: value, isReference: false });
 		}
 		return segments;
+	}
+
+	function escapeRegex(value: string): string {
+		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function normalizeEntityKey(value: string): string {
+		return value
+			.toLocaleLowerCase()
+			.normalize('NFKD')
+			.replace(/[^\w\s-]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function splitReferenceAndEntityText(
+		value: string,
+		entities: NonNullable<AssistantChatMessage['entityHighlights']>
+	): ReferenceTextSegment[] {
+		const baseSegments = splitReferenceText(value);
+		if (!entities.length) return baseSegments;
+		const labels = entities
+			.map((entity) => entity.label.trim())
+			.filter((label) => label.length >= 2)
+			.sort((a, b) => b.length - a.length);
+		if (!labels.length) return baseSegments;
+		const entityMap = new Map(entities.map((entity) => [normalizeEntityKey(entity.label), entity]));
+		const pattern = new RegExp(labels.map((label) => escapeRegex(label)).join('|'), 'gi');
+
+		const merged: ReferenceTextSegment[] = [];
+		for (const segment of baseSegments) {
+			if (segment.isReference) {
+				merged.push(segment);
+				continue;
+			}
+			let cursor = 0;
+			const text = segment.text;
+			for (const match of text.matchAll(pattern)) {
+				const found = match[0] ?? '';
+				const index = match.index ?? 0;
+				if (!found) continue;
+				if (index > cursor) merged.push({ text: text.slice(cursor, index), isReference: false });
+				const entity = entityMap.get(normalizeEntityKey(found));
+				merged.push({
+					text: found,
+					isReference: false,
+					isEntity: true,
+					entityKey: entity?.key ?? normalizeEntityKey(found),
+					entityColor: entity?.color,
+					entitySoftColor: entity?.softColor
+				});
+				cursor = index + found.length;
+			}
+			if (cursor < text.length) merged.push({ text: text.slice(cursor), isReference: false });
+		}
+		return merged;
+	}
+
+	function parseStructuredRiskSections(content: string): StructuredChatSection[] | null {
+		const text = (content || '').trim();
+		if (!text) return null;
+		const knownLabels = new Set([
+			'context',
+			'contradiction',
+			'risks',
+			'affected',
+			'affected party',
+			'consequences'
+		]);
+		const labelPattern = /(Context|Contradiction|Risks|Affected|Affected Party|Consequences)\s*:/gi;
+		const matches = Array.from(text.matchAll(labelPattern));
+		const blocks =
+			matches.length >= 2
+				? matches.map((match, idx) => {
+						const start = match.index ?? 0;
+						const end = idx + 1 < matches.length ? (matches[idx + 1].index ?? text.length) : text.length;
+						return text.slice(start, end).trim();
+					})
+				: text.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+		const sections: StructuredChatSection[] = [];
+		let recognized = 0;
+		for (const block of blocks) {
+			const match = block.match(/^([^:\n]{2,30}):\s*([\s\S]*)$/);
+			if (!match) {
+				sections.push({ label: null, body: block });
+				continue;
+			}
+			const label = match[1].trim();
+			const body = match[2].trim();
+			if (knownLabels.has(label.toLowerCase())) {
+				recognized += 1;
+				sections.push({ label, body });
+			} else {
+				sections.push({ label: null, body: block });
+			}
+		}
+		return recognized >= 2 ? sections : null;
 	}
 
 	function toNonEmptyString(raw: unknown): string {
@@ -513,6 +617,12 @@
 <section class="flex min-h-0 flex-1 flex-col bg-white">
 	<ScrollArea class="min-h-0 flex-1" bind:viewportRef={assistantThread}>
 		<div class="flex min-h-full flex-col gap-2 p-2">
+			<div class="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-[10px] text-blue-800">
+				Tip: click an assistant message to toggle entity highlights.
+			</div>
+			<div class="rounded-md border border-indigo-100 bg-indigo-50/60 px-2 py-1 text-[10px] text-indigo-800">
+				Tip: hold <span class="font-semibold">Shift + Scroll</span> to bring related/evidence blocks closer.
+			</div>
 			{#if assistantMessages.length === 0 && !assistantLoading}
 				<div class="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
 					<p class="text-[10px] italic">Chat about this contract</p>
@@ -544,16 +654,56 @@
 										? 'border-blue-200 bg-blue-50 text-blue-800'
 										: 'border-gray-200 bg-white text-gray-700'
 								}`}
+								onclick={() => {
+									if (message.role === 'assistant' && (message.entityHighlights?.length ?? 0) > 0) {
+										onToggleEntityHighlights();
+									}
+								}}
 							>
-								<p class="whitespace-pre-wrap">
-									{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
-										{#if segment.isReference}
-											<span class="docx-reference-chip align-middle">{segment.text}</span>
-										{:else}
-											<span>{segment.text}</span>
-										{/if}
-									{/each}
-								</p>
+								{#if message.role === 'assistant' && parseStructuredRiskSections(message.content)}
+									<div class="space-y-6">
+										{#each parseStructuredRiskSections(message.content) ?? [] as section, sectionIndex (`${message.id}-section-${sectionIndex}`)}
+											<p class="whitespace-pre-wrap">
+												{#if section.label}
+													<span class="font-bold text-red-800">{section.label}:</span>{' '}
+												{/if}
+												{#each (entityHighlightsEnabled ? splitReferenceAndEntityText(section.body, message.entityHighlights ?? []) : splitReferenceText(section.body)) as segment, segmentIndex (`${message.id}-content-${sectionIndex}-${segmentIndex}`)}
+													{#if segment.isReference}
+														<span class="docx-reference-chip align-middle">{segment.text}</span>
+													{:else if segment.isEntity}
+														<span
+															class="docx-paragraph-explanation-entity-token"
+															data-entity-key={segment.entityKey}
+															style={`--entity-color:${segment.entityColor ?? '#2563eb'}; --entity-color-soft:${segment.entitySoftColor ?? 'rgba(37,99,235,0.16)'};`}
+														>
+															{segment.text}
+														</span>
+													{:else}
+														<span>{segment.text}</span>
+													{/if}
+												{/each}
+											</p>
+										{/each}
+									</div>
+								{:else}
+									<p class="whitespace-pre-wrap">
+										{#each (entityHighlightsEnabled ? splitReferenceAndEntityText(message.content, message.entityHighlights ?? []) : splitReferenceText(message.content)) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+											{#if segment.isReference}
+												<span class="docx-reference-chip align-middle">{segment.text}</span>
+											{:else if segment.isEntity}
+												<span
+													class="docx-paragraph-explanation-entity-token"
+													data-entity-key={segment.entityKey}
+													style={`--entity-color:${segment.entityColor ?? '#2563eb'}; --entity-color-soft:${segment.entitySoftColor ?? 'rgba(37,99,235,0.16)'};`}
+												>
+													{segment.text}
+												</span>
+											{:else}
+												<span>{segment.text}</span>
+											{/if}
+										{/each}
+									</p>
+								{/if}
 
 								{#if message.suggestedQuestions?.length}
 									<div class="mt-2">

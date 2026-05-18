@@ -8,6 +8,7 @@ import type {
 
 export const QUICK_ACTION_WHY_CONTRADICTION_FREE = 'Why is it a contradiction? (Free)';
 export const QUICK_ACTION_WHY_CONTRADICTION_AI = 'Why is it a contradiction? (AI cost)';
+export const QUICK_ACTION_CONTRADICTION_RISKS = 'What are the risks of this contradiction?';
 
 export const QUICK_ACTIONS = [
 	QUICK_ACTION_WHY_CONTRADICTION_FREE,

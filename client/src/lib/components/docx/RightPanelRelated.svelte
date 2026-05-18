@@ -76,6 +76,9 @@
 
 	<ScrollArea class="min-h-0 flex-1 bg-gray-50/30">
 		<div class="flex min-h-full flex-col space-y-2 p-2">
+			<div class="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-[10px] text-blue-800">
+				Tip: hold <span class="font-semibold">Shift + Scroll</span> to bring related paragraphs closer.
+			</div>
 			{#if backendGraphLoading}
 				<div class="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
 					<p class="mb-2 text-[10px] font-semibold text-gray-500">Processing panel</p>

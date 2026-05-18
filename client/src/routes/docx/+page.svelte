@@ -61,6 +61,7 @@
 		buildAssistantNodeSnapshot,
 		buildAssistantRelatedContext,
 		buildContradictionAiCostQuestion,
+		buildContradictionRiskQuestion,
 		resolveAssistantSuggestedQuestions
 	} from '$lib/utils/docx/assistant';
 	import { buildChangeLog } from '$lib/utils/docx/change-log';
@@ -80,6 +81,7 @@
 		PROVIDER_OPTIONS,
 		QUICK_ACTIONS,
 		QUICK_ACTION_WHY_CONTRADICTION_AI,
+		QUICK_ACTION_CONTRADICTION_RISKS,
 		QUICK_ACTION_WHY_CONTRADICTION_FREE,
 		RIGHT_DRAWER_DEFAULT_WIDTH,
 		RIGHT_DRAWER_KEYBOARD_STEP,
@@ -318,6 +320,8 @@
 		softColor: string;
 	};
 	let paragraphExplanationEntities: ParagraphExplanationEntityHighlight[] = [];
+	let contradictionChatEntities: ParagraphExplanationEntityHighlight[] = [];
+	let contradictionChatEntitiesEnabled = true;
 	let hoveredParagraphExplanationEntityKey: string | null = null;
 	let paragraphExplanationConnectors: Array<{
 		topPx: number;
@@ -472,11 +476,19 @@
 		const relatedIds = paragraphExplanationRelatedParagraphs
 			.map((related) => related.node.id)
 			.join('|');
-		const entitiesSignature = paragraphExplanationEntities.map((entity) => entity.key).join('|');
+		const entitiesSignature = (
+			activeRightPanelTab === 'analysis'
+				? contradictionChatEntitiesEnabled
+					? contradictionChatEntities
+					: []
+				: paragraphExplanationEntities
+		)
+			.map((entity) => entity.key)
+			.join('|');
 		void selectedId;
 		void relatedIds;
 		void entitiesSignature;
-		if (shouldShowRelatedBridgeDecorations) {
+		if (shouldShowRelatedBridgeDecorations || (shouldShowContradictionDecorations && contradictionChatEntities.length > 0)) {
 			applyParagraphExplanationHighlights();
 			scheduleParagraphExplanationConnectorRefresh();
 		} else {
@@ -942,6 +954,8 @@
 		assistantMessages = [];
 		assistantLoading = false;
 		assistantError = null;
+		contradictionChatEntities = [];
+		contradictionChatEntitiesEnabled = true;
 	}
 
 	function resetParagraphExplanationState() {
@@ -1753,7 +1767,13 @@
 
 	function applyParagraphExplanationHighlights() {
 		clearParagraphExplanationElementHighlights();
-		if (!shouldShowRelatedBridgeDecorations) return;
+		const activeEntities =
+			activeRightPanelTab === 'analysis'
+				? contradictionChatEntitiesEnabled
+					? contradictionChatEntities
+					: []
+				: paragraphExplanationEntities;
+		if (!shouldShowRelatedBridgeDecorations && activeEntities.length === 0) return;
 		const bridgeRelatedParagraphs = getBridgeRelatedParagraphs();
 		const shouldMuteOutOfContext =
 			paragraphExplanationCompression > 0.02 && paragraphExplanationMovedNodeIds.size > 0;
@@ -1770,7 +1790,7 @@
 		selectedElement?.classList.remove('docx-paragraph-explanation-muted');
 		selectedElement?.classList.add('docx-paragraph-explanation-selected');
 		if (selectedElement) {
-			highlightParagraphExplanationEntitiesInElement(selectedElement, paragraphExplanationEntities);
+			highlightParagraphExplanationEntitiesInElement(selectedElement, activeEntities);
 		}
 		for (const related of bridgeRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
@@ -1785,7 +1805,7 @@
 			if (relatedElement) {
 				highlightParagraphExplanationEntitiesInElement(
 					relatedElement,
-					paragraphExplanationEntities
+					activeEntities
 				);
 			}
 		}
@@ -2536,7 +2556,8 @@
 
 		if (
 			question === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
-			question === QUICK_ACTION_WHY_CONTRADICTION_AI
+			question === QUICK_ACTION_WHY_CONTRADICTION_AI ||
+			question === QUICK_ACTION_CONTRADICTION_RISKS
 		) {
 			assistantInput = questionOverride ? assistantInput : '';
 			await askQuickAction(question);
@@ -2748,14 +2769,170 @@
 				return;
 			}
 			const response = await fetchAssistantResponse(payload);
+			const parsedEntityAnswer = extractAnswerEntities(response.answer);
+			const fallbackEntities = buildFallbackContradictionEntities(selectedText, contradiction);
+			const entityHighlights = buildParagraphExplanationEntityHighlights(
+				parsedEntityAnswer.entities.length > 0 ? parsedEntityAnswer.entities : fallbackEntities
+			);
+			contradictionChatEntities = entityHighlights;
+			contradictionChatEntitiesEnabled = true;
+			applyParagraphExplanationHighlights();
 
 			assistantMessages = [
 				...assistantMessages,
 				{
 					id: nextAssistantMessageId(),
 					role: 'assistant',
-					content: response.answer,
+					content: parsedEntityAnswer.content || response.answer,
 					citations: response.citations,
+					entityHighlights,
+					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
+						mode: 'explain',
+						scope: 'selected',
+						contradiction: true
+					})
+				}
+			];
+		} catch (assistantRequestError) {
+			const message = getAxiosErrorMessage(assistantRequestError, 'Failed to generate a response.');
+			assistantError = message;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `I could not complete this request: ${message}`
+				}
+			];
+		} finally {
+			assistantLoading = false;
+			await scrollAssistantToBottom();
+		}
+	}
+
+	function extractAnswerEntities(answer: string): { content: string; entities: string[] } {
+		const normalized = answer.trim();
+		if (!normalized) return { content: '', entities: [] };
+
+		const entitiesMatch = normalized.match(/\n\s*ENTITIES:\s*([\s\S]*)$/i);
+		if (!entitiesMatch) return { content: normalized, entities: [] };
+
+		const entities = entitiesMatch[1]
+			.split('\n')
+			.map((line) => line.replace(/^[-*•]\s*/, '').trim())
+			.filter((line) => line.length >= 2)
+			.slice(0, 12);
+		const content = normalized.slice(0, entitiesMatch.index ?? normalized.length).trim();
+		return { content, entities: Array.from(new Set(entities)) };
+	}
+
+	function buildFallbackContradictionEntities(
+		paragraphText: string,
+		contradiction: ContradictionParagraphResult
+	): string[] {
+		const rawPool = [
+			paragraphText,
+			contradiction.evidence?.snippet_a ?? '',
+			contradiction.evidence?.snippet_b ?? '',
+			contradiction.brief_reason ?? ''
+		]
+			.join(' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+		if (!rawPool) return [];
+
+		const candidates = new Set<string>();
+		const quoted = rawPool.match(/"([^"]{3,80})"/g) ?? [];
+		for (const item of quoted) {
+			const cleaned = item.replace(/"/g, '').trim();
+			if (cleaned.length >= 3) candidates.add(cleaned);
+		}
+
+		const legalTerms = [
+			'agreement',
+			'applicable laws',
+			'licensees',
+			'subcontractors',
+			'miltenyi products',
+			'bellicum',
+			'compliance',
+			'minimum purchase',
+			'purchase order',
+			'written notice'
+		];
+		const lowerPool = rawPool.toLocaleLowerCase();
+		for (const term of legalTerms) {
+			if (lowerPool.includes(term)) candidates.add(term.replace(/\b\w/g, (c) => c.toUpperCase()));
+		}
+
+		const titleCase = rawPool.match(/\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2}\b/g) ?? [];
+		for (const token of titleCase) candidates.add(token.trim());
+
+		return Array.from(candidates)
+			.map((item) => item.trim())
+			.filter((item) => item.length >= 3)
+			.slice(0, 10);
+	}
+
+	async function submitContradictionRiskAssessment(
+		selected: ParagraphNode,
+		contradiction: ContradictionParagraphResult
+	) {
+		if (assistantLoading) return;
+		if (!activeDocumentId) {
+			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		const paragraphNodes = buildAssistantNodeSnapshot(get(paragraphs), nodeEditStateById);
+		if (paragraphNodes.length === 0) {
+			assistantError = 'The contract is still loading.';
+			return;
+		}
+
+		const selectedText = getNodeCurrentText(nodeEditStateById, selected);
+		const question = buildContradictionRiskQuestion(selected.id, selectedText, contradiction);
+
+		assistantLoading = true;
+		assistantError = null;
+		await scrollAssistantToBottom();
+
+		const payload: AssistantChatRequest = {
+			documentId: activeDocumentId,
+			question,
+			mode: 'explain',
+			scope: 'selected',
+			provider: assistantProvider,
+			model: globalAnalysisModel.trim() || undefined,
+			selectedParagraphId: selected.id,
+			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
+			paragraphNodes,
+			history: buildAssistantHistoryPayload(assistantMessages)
+		};
+
+		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) {
+				assistantLoading = false;
+				return;
+			}
+			const response = await fetchAssistantResponse(payload);
+			const parsedEntityAnswer = extractAnswerEntities(response.answer);
+			const fallbackEntities = buildFallbackContradictionEntities(selectedText, contradiction);
+			const entityHighlights = buildParagraphExplanationEntityHighlights(
+				parsedEntityAnswer.entities.length > 0 ? parsedEntityAnswer.entities : fallbackEntities
+			);
+			contradictionChatEntities = entityHighlights;
+			contradictionChatEntitiesEnabled = true;
+			applyParagraphExplanationHighlights();
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: parsedEntityAnswer.content || response.answer,
+					citations: response.citations,
+					entityHighlights,
 					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
 						mode: 'explain',
 						scope: 'selected',
@@ -2863,7 +3040,8 @@
 		if (assistantLoading) return;
 		if (
 			prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
-			prompt === QUICK_ACTION_WHY_CONTRADICTION_AI
+			prompt === QUICK_ACTION_WHY_CONTRADICTION_AI ||
+			prompt === QUICK_ACTION_CONTRADICTION_RISKS
 		) {
 			const selected = get(selectedParagraph);
 			assistantError = null;
@@ -2931,6 +3109,11 @@
 					}
 				);
 				await scrollAssistantToBottom();
+				return;
+			}
+
+			if (prompt === QUICK_ACTION_CONTRADICTION_RISKS) {
+				await submitContradictionRiskAssessment(selected, contradiction);
 				return;
 			}
 
@@ -4822,10 +5005,16 @@ function setRightDrawerWidth(nextWidth: number) {
 				{assistantError}
 				contradictionQuickActionFreeLabel={QUICK_ACTION_WHY_CONTRADICTION_FREE}
 				contradictionQuickActionAiLabel={QUICK_ACTION_WHY_CONTRADICTION_AI}
+				contradictionQuickActionRiskLabel={QUICK_ACTION_CONTRADICTION_RISKS}
 				contradictionTaxonomyOrder={CONTRADICTION_TAXONOMY_ORDER}
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
+				entityHighlightsEnabled={contradictionChatEntitiesEnabled}
+				onToggleEntityHighlights={() => {
+					contradictionChatEntitiesEnabled = !contradictionChatEntitiesEnabled;
+					applyParagraphExplanationHighlights();
+				}}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
 				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
@@ -4895,6 +5084,11 @@ function setRightDrawerWidth(nextWidth: number) {
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
+				entityHighlightsEnabled={contradictionChatEntitiesEnabled}
+				onToggleEntityHighlights={() => {
+					contradictionChatEntitiesEnabled = !contradictionChatEntitiesEnabled;
+					applyParagraphExplanationHighlights();
+				}}
 				onQuickActionSuggestionClick={handleAssistantQuickActionSuggestion}
 				{onSuggestedQuestionClick}
 				onFocusNodeFromPanel={focusNodeFromPanel}
