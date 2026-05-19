@@ -26,6 +26,7 @@ type ProcessingStep = {
 	type ContradictionSummaryItem = {
 		paragraphId: string;
 		label: string;
+		contradictionType: ContradictionTaxonomyType;
 	};
 	type ReferenceTextSegment = {
 		text: string;
@@ -269,6 +270,19 @@ type ProcessingStep = {
 		return nextType;
 	}
 
+	function resolveContradictionTypeStyle(contradictionType: ContradictionTaxonomyType | null | undefined) {
+		const type = contradictionType ?? 'specificity';
+		const color = contradictionTaxonomyColors[type] ?? contradictionTaxonomyColors.specificity;
+		return {
+			type,
+			color,
+			label: contradictionTaxonomyLabels[type] ?? contradictionTaxonomyLabels.specificity,
+			borderSoft: hexToRgba(color, 0.48),
+			backgroundSoft: hexToRgba(color, 0.06),
+			backgroundStrong: hexToRgba(color, 0.13)
+		};
+	}
+
 	function hexToRgba(hex: string, alpha: number): string {
 		const normalized = (hex || '').replace('#', '').trim();
 		if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(132, 204, 22, ${alpha})`;
@@ -285,7 +299,7 @@ type ProcessingStep = {
 		return {
 			color,
 			border: color,
-			background: hexToRgba(color, 0.14),
+			background: hexToRgba(color, 0.08),
 			badgeBorder: color,
 			badgeText: color,
 			label: contradictionTaxonomyLabels[contradictionType] ?? contradictionTaxonomyLabels.specificity
@@ -483,7 +497,7 @@ type ProcessingStep = {
 					<p class="text-[11px] text-red-700">{contradictionError}</p>
 				{:else}
 					<div class="flex flex-col gap-1">
-						<p class="text-[11px] text-red-700">
+						<p class="text-[11px] text-blue-600">
 							{contradictionCount} paragraph(s) with highlighted contradiction(s)
 						</p>
 						<div class="flex flex-wrap items-center gap-1.5">
@@ -505,59 +519,88 @@ type ProcessingStep = {
 			{/if}
 
 			{#if contradictionSummaryItems.length > 0}
-				<div class="mt-1 mb-2 flex flex-col gap-1.5">
+				<div class="mt-1 mb-2 flex flex-col gap-2">
 					{#each contradictionSummaryItems as item, index (item.paragraphId)}
+						{@const itemStyle = resolveContradictionTypeStyle(item.contradictionType)}
 						<div
-							class={`overflow-hidden rounded-md border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
+							class={`overflow-hidden rounded-lg border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
 								selectedParagraph?.id === item.paragraphId
-									? 'border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.15)]'
-									: 'border-gray-300 hover:border-gray-400 hover:bg-gray-50/40 hover:shadow-[0_1px_6px_rgba(15,23,42,0.08)]'
+									? 'shadow-[0_4px_12px_rgba(15,23,42,0.08)]'
+									: 'hover:shadow-[0_2px_10px_rgba(15,23,42,0.08)]'
 							}`}
+							style={`border-color: ${itemStyle.borderSoft}; background: ${
+								selectedParagraph?.id === item.paragraphId
+									? hexToRgba(itemStyle.color, 0.12)
+									: hexToRgba(itemStyle.color, 0.04)
+							};`}
 						>
 							<button
 								type="button"
-								class={`w-full px-3 py-1.5 text-left text-[11px] transition ${
+								class={`w-full px-3 py-2 text-left text-[11px] transition ${
 									selectedParagraph?.id === item.paragraphId
-										? 'bg-red-100/60 text-red-800 font-semibold'
-										: 'cursor-pointer text-gray-600 hover:bg-gray-100 hover:text-gray-700'
+										? 'font-semibold'
+										: 'cursor-pointer text-gray-700 hover:bg-white/70'
+								}`}
+								style={`${
+									selectedParagraph?.id === item.paragraphId
+										? `background: ${hexToRgba(itemStyle.color, 0.16)}; color: ${itemStyle.color};`
+										: `color: #374151;`
 								}`}
 								onclick={() => onFocusNodeFromPanel(item.paragraphId, true)}
 							>
-								Contradiction {index + 1} <!-- : {item.label} -->
+								<span class="inline-flex items-center gap-2">
+									<span>Contradiction {index + 1}</span>
+									<Badge
+										variant="outline"
+										class="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+										style={`border-color: ${itemStyle.color}; color: ${itemStyle.color};`}
+									>
+										{itemStyle.label}
+									</Badge>
+								</span>
 							</button>
 
 							{#if selectedParagraph?.id === item.paragraphId && selectedContradictionResult?.contradiction}
 								<div
-									class="border-t border-gray-200 p-1.5 text-[11px]"
+									class="border-t bg-white/80 p-2 text-[11px]"
+									style={`border-color: ${hexToRgba(itemStyle.color, 0.28)};`}
 									transition:slide={{ duration: 200, easing: cubicOut }}
 								>
-									<div class="mb-1 flex items-center justify-between px-0.5">
-										<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+									<div class="mb-2 flex items-center justify-between">
+										<p class="text-[9px] font-semibold" style={`color: ${itemStyle.color};`}>
+											Contradiction Evidence
+										</p>
 										{#if selectedContradictionEvidence}
 											<Badge
 												variant="outline"
-												class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-700"
+												class="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+												style={`border-color: ${itemStyle.color}; color: ${itemStyle.color};`}
 											>
 												{resolveEvidenceScopeLabel(selectedContradictionEvidence)}
 											</Badge>
 										{/if}
 									</div>
-									<div class="px-0.5">
-										<p class="text-[9px] font-semibold text-gray-700">Assessment</p>
-										<p class="text-[10px] leading-relaxed">
+									<div class="rounded-md border border-gray-200 bg-white px-2.5 py-2">
+										<p class="mb-1 text-[9px] font-semibold text-gray-700">Assessment</p>
+										<p class="text-[10px] leading-relaxed text-gray-700">
 											{selectedContradictionResult.brief_reason}
 										</p>
 									</div>
 
 									{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
 										{@const snippetBStyle = resolveSnippetBStyle()}
-										<div class="mt-1 rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
+										<div
+											class="mt-2 rounded-md border px-2.5 py-2"
+											style={`border-color: ${itemStyle.color}; background: ${hexToRgba(itemStyle.color, 0.08)};`}
+										>
 											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
+												<span class="text-[9px] font-semibold" style={`color: ${itemStyle.color};`}>
+													Snippet A
+												</span>
 											</div>
 											<Button
 												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-red-900"
+												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-900"
 												onclick={() =>
 													selectedContradictionResult &&
 													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
@@ -566,22 +609,10 @@ type ProcessingStep = {
 											</Button>
 										</div>
 
-										<div
-											class="mt-1 rounded border px-2.5 py-2"
-											style={`border-color: ${snippetBStyle.border}; background: ${snippetBStyle.background};`}
-										>
+										<div class="mt-2 rounded-md border px-2.5 py-2" style={`border-color: ${snippetBStyle.border}; background: ${snippetBStyle.background};`}>
 											<div class="mb-1 flex items-center justify-between">
 												<div class="flex items-center gap-1.5">
-													<span class="text-[9px] font-semibold" style={`color: ${snippetBStyle.color};`}
-														>Snippet B</span
-													>
-													<Badge
-														variant="outline"
-														class="h-4 bg-white px-1.5 text-[8px] font-semibold"
-														style={`border-color: ${snippetBStyle.badgeBorder}; color: ${snippetBStyle.badgeText};`}
-													>
-														{snippetBStyle.label}
-													</Badge>
+													<span class="text-[9px] font-semibold" style={`color: ${snippetBStyle.color};`}>Snippet B</span>
 												</div>
 											</div>
 											<Button

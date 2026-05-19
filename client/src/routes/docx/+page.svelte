@@ -310,6 +310,7 @@
 	let contradictionSummaryItems: Array<{
 		paragraphId: string;
 		label: string;
+		contradictionType: ContradictionTaxonomyType;
 	}> = [];
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
@@ -398,19 +399,33 @@
 		(row) => row.contradiction
 	).length;
 	$: {
-		const items: Array<{ paragraphId: string; label: string; paragraphEnum: number }> = [];
+		const items: Array<{
+			paragraphId: string;
+			label: string;
+			paragraphEnum: number;
+			contradictionType: ContradictionTaxonomyType;
+		}> = [];
 		for (const [paragraphId, row] of contradictionResultsByParagraphId.entries()) {
 			if (!row.contradiction) continue;
 			const paragraphEnumMatch = paragraphId.match(/-p-(\d+)$/);
 			const paragraphEnum = paragraphEnumMatch ? Number(paragraphEnumMatch[1]) : Number.POSITIVE_INFINITY;
 			const label = paragraphEnumMatch ? `p-${paragraphEnumMatch[1]}` : paragraphId;
-			items.push({ paragraphId, label, paragraphEnum });
+			items.push({
+				paragraphId,
+				label,
+				paragraphEnum,
+				contradictionType: row.contradiction_type ?? 'specificity'
+			});
 		}
 		items.sort(
 			(left, right) =>
 				left.paragraphEnum - right.paragraphEnum || left.paragraphId.localeCompare(right.paragraphId)
 		);
-		contradictionSummaryItems = items.map(({ paragraphId, label }) => ({ paragraphId, label }));
+		contradictionSummaryItems = items.map(({ paragraphId, label, contradictionType }) => ({
+			paragraphId,
+			label,
+			contradictionType
+		}));
 	}
 	$: selectedContradictionResult = $selectedParagraph
 		? (contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null)
