@@ -425,7 +425,7 @@
 
 	mark.docx-contradiction-snippet[data-contradiction-role='a'] {
 		color: inherit; /* color: #991b1b; */
-		background: rgba(255, 55, 55, 0.26);
+		background: rgba(232, 0, 0, 0.18);
 	}
 
 	mark.docx-contradiction-snippet[data-contradiction-role='b'] {
@@ -439,8 +439,8 @@
 	
 		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']
 	 {
-		background: rgba(255, 108, 108, 0.51);
-		box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.7);
+		background: rgba(251, 44, 44, 0.45);
+		box-shadow: 0 0 0 1px rgba(191, 0, 0, 0.85);
 	}
 
 	mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b'] {
