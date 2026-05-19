@@ -23,6 +23,8 @@
 		FixContradictionSuggestion,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
+		ContradictionEvidence,
+		ContradictionFinding,
 		ContradictionGraphMode,
 		ContradictionParagraphResult,
 		ContradictionTaxonomyType,
@@ -1690,46 +1692,52 @@
 			element.dataset.contradictionConfidence = String(result.confidence);
 			element.dataset.contradictionReason = result.brief_reason ?? '';
 
-			const evidence = result.evidence;
-			const contradictionType = result.contradiction_type ?? 'specificity';
-			if (evidence?.snippet_a?.trim()) {
-				if (evidence.source_a === 'context') {
-					highlightSnippetAcrossDocument(evidence.snippet_a, element, {
-						ownerParagraphId: paragraphId,
-						role: 'a',
-						contradictionType
-					});
-				} else {
-					highlightSnippetInElement(element, evidence.snippet_a, {
-						ownerParagraphId: paragraphId,
-						role: 'a',
-						contradictionType
-					}) ||
+			const findings = normalizeContradictionCandidates(result);
+			for (const [index, finding] of findings.entries()) {
+				const evidence = finding.evidence;
+				if (!hasUsableContradictionEvidence(evidence)) continue;
+				const contradictionType = finding.contradiction_type ?? 'specificity';
+				const roleA = index === 0 ? 'a' : undefined;
+				const roleB = index === 0 ? 'b' : undefined;
+				if (evidence.snippet_a.trim()) {
+					if (evidence.source_a === 'context') {
 						highlightSnippetAcrossDocument(evidence.snippet_a, element, {
 							ownerParagraphId: paragraphId,
-							role: 'a',
+							role: roleA,
 							contradictionType
 						});
+					} else {
+						highlightSnippetInElement(element, evidence.snippet_a, {
+							ownerParagraphId: paragraphId,
+							role: roleA,
+							contradictionType
+						}) ||
+							highlightSnippetAcrossDocument(evidence.snippet_a, element, {
+								ownerParagraphId: paragraphId,
+								role: roleA,
+								contradictionType
+							});
+					}
 				}
-			}
-			if (evidence?.snippet_b?.trim()) {
-				if (evidence.source_b === 'context') {
-					highlightSnippetAcrossDocument(evidence.snippet_b, element, {
-						ownerParagraphId: paragraphId,
-						role: 'b',
-						contradictionType
-					});
-				} else {
-					highlightSnippetInElement(element, evidence.snippet_b, {
-						ownerParagraphId: paragraphId,
-						role: 'b',
-						contradictionType
-					}) ||
+				if (evidence.snippet_b.trim()) {
+					if (evidence.source_b === 'context') {
 						highlightSnippetAcrossDocument(evidence.snippet_b, element, {
 							ownerParagraphId: paragraphId,
-							role: 'b',
+							role: roleB,
 							contradictionType
 						});
+					} else {
+						highlightSnippetInElement(element, evidence.snippet_b, {
+							ownerParagraphId: paragraphId,
+							role: roleB,
+							contradictionType
+						}) ||
+							highlightSnippetAcrossDocument(evidence.snippet_b, element, {
+								ownerParagraphId: paragraphId,
+								role: roleB,
+								contradictionType
+							});
+					}
 				}
 			}
 		}
@@ -2297,36 +2305,99 @@
 			.trim();
 	}
 
-	function buildSymmetricContradictionKey(row: ContradictionParagraphResult): string | null {
-		if (!row.contradiction) return null;
-		const evidence = row.evidence;
+	function hasUsableContradictionEvidence(
+		evidence: ContradictionEvidence | null | undefined
+	): evidence is ContradictionEvidence {
+		const snippetA = evidence?.snippet_a?.trim() ?? '';
+		const snippetB = evidence?.snippet_b?.trim() ?? '';
+		return Boolean(snippetA && snippetB);
+	}
+
+	function buildContradictionCandidateKey(candidate: ContradictionFinding): string | null {
+		const evidence = candidate.evidence;
+		if (!hasUsableContradictionEvidence(evidence)) return null;
 		const snippetA = normalizeContradictionSnippetForKey(evidence?.snippet_a);
 		const snippetB = normalizeContradictionSnippetForKey(evidence?.snippet_b);
 		if (!snippetA || !snippetB) return null;
-		const left = snippetA;
-		const right = snippetB;
-		return left <= right ? `${left}<>${right}` : `${right}<>${left}`;
+		const left = snippetA <= snippetB ? snippetA : snippetB;
+		const right = snippetA <= snippetB ? snippetB : snippetA;
+		const contradictionType = candidate.contradiction_type ?? 'specificity';
+		return `${contradictionType}|${left}<>${right}`;
+	}
+
+	function normalizeContradictionCandidates(row: ContradictionParagraphResult): ContradictionFinding[] {
+		const candidates: ContradictionFinding[] = [];
+		if (Array.isArray(row.contradictions)) {
+			for (const finding of row.contradictions) {
+				if (!finding || !hasUsableContradictionEvidence(finding.evidence)) continue;
+				candidates.push({
+					confidence: Math.min(100, Math.max(0, Number(finding.confidence || 0))),
+					brief_reason: (finding.brief_reason || '').trim(),
+					contradiction_type: finding.contradiction_type ?? 'specificity',
+					evidence: finding.evidence
+				});
+			}
+		}
+		if (candidates.length === 0 && row.contradiction && hasUsableContradictionEvidence(row.evidence)) {
+			candidates.push({
+				confidence: Math.min(100, Math.max(0, Number(row.confidence || 0))),
+				brief_reason: (row.brief_reason || '').trim(),
+				contradiction_type: row.contradiction_type ?? 'specificity',
+				evidence: row.evidence
+			});
+		}
+
+		const byKey = new Map<string, ContradictionFinding>();
+		for (const candidate of candidates) {
+			const key = buildContradictionCandidateKey(candidate);
+			if (!key) continue;
+			const current = byKey.get(key);
+			if (!current || Number(candidate.confidence || 0) > Number(current.confidence || 0)) {
+				byKey.set(key, candidate);
+			}
+		}
+
+		const normalized = Array.from(byKey.values());
+		normalized.sort((left, right) => Number(right.confidence || 0) - Number(left.confidence || 0));
+		return normalized;
 	}
 
 	function setContradictionResults(results: ContradictionParagraphResult[], _source: string | null) {
 		const next = new Map<string, ContradictionParagraphResult>();
-		const seenSymmetricPairs = new Set<string>();
+		const seenGlobalContradictionKeys = new Set<string>();
 		for (const row of results) {
+			const candidates = normalizeContradictionCandidates(row);
+			const uniqueCandidates: ContradictionFinding[] = [];
+			for (const candidate of candidates) {
+				const key = buildContradictionCandidateKey(candidate);
+				if (!key) continue;
+				if (seenGlobalContradictionKeys.has(key)) continue;
+				seenGlobalContradictionKeys.add(key);
+				uniqueCandidates.push(candidate);
+			}
+			const primary = uniqueCandidates[0];
 			const rowId = String(row.paragraph_id);
-			const symmetricKey = buildSymmetricContradictionKey(row);
-			if (symmetricKey && seenSymmetricPairs.has(symmetricKey)) {
+			if (!primary) {
 				next.set(rowId, {
 					...row,
 					contradiction: false,
-					confidence: Math.min(100, Math.max(0, Number(row.confidence || 0))),
-					brief_reason:
-						(row.brief_reason || '').trim() ||
-						'Deduplicated symmetric contradiction pair (A↔B equivalent).'
+					confidence: 0,
+					brief_reason: '',
+					contradiction_type: null,
+					evidence: null,
+					contradictions: []
 				});
 				continue;
 			}
-			if (symmetricKey) seenSymmetricPairs.add(symmetricKey);
-			next.set(rowId, row);
+			next.set(rowId, {
+				...row,
+				contradiction: true,
+				confidence: Math.min(100, Math.max(0, Number(primary.confidence || 0))),
+				brief_reason: (primary.brief_reason || '').trim(),
+				contradiction_type: primary.contradiction_type ?? 'specificity',
+				evidence: primary.evidence ?? null,
+				contradictions: uniqueCandidates
+			});
 		}
 		contradictionResultsByParagraphId = next;
 		syncContradictionDecorations();

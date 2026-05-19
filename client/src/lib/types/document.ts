@@ -312,6 +312,7 @@ export type ContradictionParagraphResult = {
 	brief_reason: string;
 	contradiction_type?: ContradictionTaxonomyType | null;
 	evidence?: ContradictionEvidence | null;
+	contradictions?: ContradictionFinding[];
 };
 
 export type ContradictionEvidence = {
@@ -321,6 +322,13 @@ export type ContradictionEvidence = {
 	source_b: 'paragraph' | 'context' | 'unknown';
 	evidence_status?: 'exact' | 'missing' | 'approximate';
 	evidence_note?: string;
+};
+
+export type ContradictionFinding = {
+	confidence: number;
+	brief_reason: string;
+	contradiction_type?: ContradictionTaxonomyType | null;
+	evidence?: ContradictionEvidence | null;
 };
 
 export type ContradictionGraphMode = 'with_kg' | 'without_kg';
