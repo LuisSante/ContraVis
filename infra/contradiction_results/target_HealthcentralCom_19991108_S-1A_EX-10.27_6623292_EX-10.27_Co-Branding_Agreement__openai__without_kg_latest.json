@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-05-19T21:22:51.182666+00:00",
+  "savedAt": "2026-05-19T22:24:43.262538+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-9",
@@ -235,12 +235,12 @@
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-52",
       "contradiction": true,
-      "confidence": 85,
-      "brief_reason": "Paragraph states only HCI may grant access to HCI Marks, but context says MLX determines and grants rights to HCI Marks.",
+      "confidence": 95,
+      "brief_reason": "Paragraph states HCI owns all right, title, and goodwill in MLX Marks, but related paragraph states HCI acquires no right, title, or interest in MLX Marks.",
       "contradiction_type": "authority",
       "evidence": {
-        "snippet_a": "Only HCI shall have the authority to grant access to and use of the HCI Marks for any purpose under this Agreement.",
-        "snippet_b": "The right, title, and interest in the HCI Marks, including any associated goodwill, shall be determined and granted solely by MLX.",
+        "snippet_a": "that MLX acquires no right, title or interest in the MLX Marks, and any and all goodwill associated with the MLX Marks enures exclusively to the benefit of HCI;",
+        "snippet_b": "that HCI acquires no right, title or interest in the MLX Marks, and any and all goodwill associated with the MLX Marks enures exclusively to the benefit of MLX;",
         "source_a": "paragraph",
         "source_b": "context",
         "evidence_status": "exact",
@@ -248,12 +248,12 @@
       },
       "contradictions": [
         {
-          "confidence": 85,
-          "brief_reason": "Paragraph states only HCI may grant access to HCI Marks, but context says MLX determines and grants rights to HCI Marks.",
+          "confidence": 95,
+          "brief_reason": "Paragraph states HCI owns all right, title, and goodwill in MLX Marks, but related paragraph states HCI acquires no right, title, or interest in MLX Marks.",
           "contradiction_type": "authority",
           "evidence": {
-            "snippet_a": "Only HCI shall have the authority to grant access to and use of the HCI Marks for any purpose under this Agreement.",
-            "snippet_b": "The right, title, and interest in the HCI Marks, including any associated goodwill, shall be determined and granted solely by MLX.",
+            "snippet_a": "that MLX acquires no right, title or interest in the MLX Marks, and any and all goodwill associated with the MLX Marks enures exclusively to the benefit of HCI;",
+            "snippet_b": "that HCI acquires no right, title or interest in the MLX Marks, and any and all goodwill associated with the MLX Marks enures exclusively to the benefit of MLX;",
             "source_a": "paragraph",
             "source_b": "context",
             "evidence_status": "exact",
@@ -310,11 +310,11 @@
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-64",
       "contradiction": true,
-      "confidence": 80,
-      "brief_reason": "Paragraph omits indemnity requirement for third parties, but context requires it.",
+      "confidence": 85,
+      "brief_reason": "Paragraph omits indemnity requirement for third parties, but related paragraph requires full indemnity.",
       "contradiction_type": "specificity",
       "evidence": {
-        "snippet_a": "ensure that such third party",
+        "snippet_a": "ensure that such third party shall be wholly responsible for all products and transactions that may occur on the Co-Branded Site, that all such transactions shall comply with all applicable Canadian and US laws and regulations, including privacy laws and including compliance with MediaLinx's standards and guidelines, and ensure that such third party",
         "snippet_b": "ensure that such third party provides a full indemnity to MediaLinx and HCI in respect of any and all transactions and products that may be hosted on the Co-Branded Site.",
         "source_a": "paragraph",
         "source_b": "context",
@@ -323,11 +323,11 @@
       },
       "contradictions": [
         {
-          "confidence": 80,
-          "brief_reason": "Paragraph omits indemnity requirement for third parties, but context requires it.",
+          "confidence": 85,
+          "brief_reason": "Paragraph omits indemnity requirement for third parties, but related paragraph requires full indemnity.",
           "contradiction_type": "specificity",
           "evidence": {
-            "snippet_a": "ensure that such third party",
+            "snippet_a": "ensure that such third party shall be wholly responsible for all products and transactions that may occur on the Co-Branded Site, that all such transactions shall comply with all applicable Canadian and US laws and regulations, including privacy laws and including compliance with MediaLinx's standards and guidelines, and ensure that such third party",
             "snippet_b": "ensure that such third party provides a full indemnity to MediaLinx and HCI in respect of any and all transactions and products that may be hosted on the Co-Branded Site.",
             "source_a": "paragraph",
             "source_b": "context",
@@ -520,26 +520,26 @@
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-112",
       "contradiction": true,
-      "confidence": 90,
-      "brief_reason": "Paragraph requires HCI to follow MLX's logo guidelines, but then allows use without adhering to them if HCI notifies MLX.",
-      "contradiction_type": "policy_reversal",
+      "confidence": 95,
+      "brief_reason": "Paragraph states MLX acquires both no right and all right, title, and interest in the HCI Marks, which is mutually exclusive.",
+      "contradiction_type": "authority",
       "evidence": {
-        "snippet_a": "HCI assures that the MLX marks are used in accordance with MLX's logo usage guidelines as provided by MLX from time to time.",
-        "snippet_b": "HCI may use the MLX marks without adhering to MLX's logo usage guidelines, provided HCI notifies MLX in writing prior to such use.",
-        "source_a": "context",
+        "snippet_a": "that MLX acquires no right, title or interest in the HCI Marks, and any and all goodwill associated with the HCI Marks enures exclusively to the benefit of HCI;",
+        "snippet_b": "that MLX acquires all right, title and interest in the HCI Marks, and any and all goodwill associated with the HCI Marks enures exclusively to the benefit of MLX;",
+        "source_a": "paragraph",
         "source_b": "paragraph",
         "evidence_status": "exact",
         "evidence_note": ""
       },
       "contradictions": [
         {
-          "confidence": 90,
-          "brief_reason": "Paragraph requires HCI to follow MLX's logo guidelines, but then allows use without adhering to them if HCI notifies MLX.",
-          "contradiction_type": "policy_reversal",
+          "confidence": 95,
+          "brief_reason": "Paragraph states MLX acquires both no right and all right, title, and interest in the HCI Marks, which is mutually exclusive.",
+          "contradiction_type": "authority",
           "evidence": {
-            "snippet_a": "HCI assures that the MLX marks are used in accordance with MLX's logo usage guidelines as provided by MLX from time to time.",
-            "snippet_b": "HCI may use the MLX marks without adhering to MLX's logo usage guidelines, provided HCI notifies MLX in writing prior to such use.",
-            "source_a": "context",
+            "snippet_a": "that MLX acquires no right, title or interest in the HCI Marks, and any and all goodwill associated with the HCI Marks enures exclusively to the benefit of HCI;",
+            "snippet_b": "that MLX acquires all right, title and interest in the HCI Marks, and any and all goodwill associated with the HCI Marks enures exclusively to the benefit of MLX;",
+            "source_a": "paragraph",
             "source_b": "paragraph",
             "evidence_status": "exact",
             "evidence_note": ""
@@ -837,12 +837,33 @@
     },
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-187",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 90,
+      "brief_reason": "Paragraph allows termination on both 30 days and 10 days prior written notice for the same breach, which is inconsistent.",
+      "contradiction_type": "temporal",
+      "evidence": {
+        "snippet_a": "Either Party may terminate this Agreement upon 30 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+        "snippet_b": "Either Party may terminate this Agreement upon 10 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 90,
+          "brief_reason": "Paragraph allows termination on both 30 days and 10 days prior written notice for the same breach, which is inconsistent.",
+          "contradiction_type": "temporal",
+          "evidence": {
+            "snippet_a": "Either Party may terminate this Agreement upon 30 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+            "snippet_b": "Either Party may terminate this Agreement upon 10 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-189",
@@ -882,12 +903,33 @@
     },
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-197",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 90,
+      "brief_reason": "Paragraph allows termination on both 30 days and 10 days prior written notice for the same breach, which is inconsistent.",
+      "contradiction_type": "temporal",
+      "evidence": {
+        "snippet_a": "Either party may terminate this Agreement upon 30 days written notice if either Party's corporate structure has undergone a material ownership change such that its corporate interests are then in conflict with the corporate interests of the other Party; and Either Party may terminate this Agreement upon 10 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+        "snippet_b": "Either Party may terminate this Agreement upon 10 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 90,
+          "brief_reason": "Paragraph allows termination on both 30 days and 10 days prior written notice for the same breach, which is inconsistent.",
+          "contradiction_type": "temporal",
+          "evidence": {
+            "snippet_a": "Either party may terminate this Agreement upon 30 days written notice if either Party's corporate structure has undergone a material ownership change such that its corporate interests are then in conflict with the corporate interests of the other Party; and Either Party may terminate this Agreement upon 10 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+            "snippet_b": "Either Party may terminate this Agreement upon 10 days prior written notice to the other Party if 1) such other Party breaches any material term of this Agreement, unless such breach is cured within 30 days; or 2) if any of the terms of this Agreement that require mutual approval are not mutually agreed to;",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-199",
@@ -1943,5 +1985,5 @@
       "contradictions": []
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 11031, \"estimated_output_tokens_total\": 8736, \"estimated_cost_usd\": \"0.091950\", \"batches\": [{\"batch\": 1, \"rows\": 36, \"estimated_input_tokens\": 11031, \"estimated_output_tokens\": 1512, \"estimated_cost_usd\": \"0.034158\", \"response_chars\": 10096, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-42\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-52\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 85,\\n          \\\"contradiction_type\\\": \\\"authority\\\",\\n          \\\"brief_reason\\\": \\\"Paragraph states only HCI may grant access to HCI Marks, \"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 10529, \"estimated_output_tokens_total\": 8736, \"estimated_cost_usd\": \"0.090946\", \"batches\": [{\"batch\": 1, \"rows\": 36, \"estimated_input_tokens\": 10529, \"estimated_output_tokens\": 1512, \"estimated_cost_usd\": \"0.033154\", \"response_chars\": 12189, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-42\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::HealthcentralCom_19991108_S-1A_EX-10.27_6623292_EX-10.27_Co-Branding_Agreement-p-52\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 95,\\n          \\\"contradiction_type\\\": \\\"authority\\\",\\n          \\\"brief_reason\\\": \\\"Paragraph states HCI owns all right, title, and goodwill \"}]}"
 }

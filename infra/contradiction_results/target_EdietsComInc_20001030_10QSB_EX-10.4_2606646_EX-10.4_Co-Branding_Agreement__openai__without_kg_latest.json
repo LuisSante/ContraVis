@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-05-19T16:52:39.574024+00:00",
+  "savedAt": "2026-05-19T22:17:57.501011+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-5",
@@ -792,12 +792,59 @@
     },
     {
       "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-207",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "Paragraph grants Women.com rights to use eDiets Content without infringing any rights, but related paragraphs assert eDiets retains all rights and restricts transfer of ownership.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "the eDiets Content may be used by Women.com as permitted by this Agreement without violating or infringing the rights of any person or entity",
+        "snippet_b": "Nothing in this Agreement shall effect a transfer of ownership in the eDiets Content from eDiets to Women.com, and eDiets shall retain all rights of copyright, trademark or other intellectual property rights in such eDiets Content",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 95,
+          "brief_reason": "Paragraph grants Women.com rights to use eDiets Content without infringing any rights, but related paragraphs assert eDiets retains all rights and restricts transfer of ownership.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "the eDiets Content may be used by Women.com as permitted by this Agreement without violating or infringing the rights of any person or entity",
+            "snippet_b": "Nothing in this Agreement shall effect a transfer of ownership in the eDiets Content from eDiets to Women.com, and eDiets shall retain all rights of copyright, trademark or other intellectual property rights in such eDiets Content",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        },
+        {
+          "confidence": 90,
+          "brief_reason": "Paragraph allows Women.com to use eDiets Content, but related context states Women.com acquires no right, title or interest in eDiets Content.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "the eDiets Content may be used by Women.com as permitted by this Agreement",
+            "snippet_b": "Women.com acquires no right, title or interest therein or thereto",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        },
+        {
+          "confidence": 85,
+          "brief_reason": "Paragraph says Women.com may use eDiets Content as permitted, but related context says only the eDiets Marketing Committee can approve eDiets' use of Women.com Marks, suggesting mutual exclusivity of approval rights.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "the eDiets Content may be used by Women.com as permitted by this Agreement",
+            "snippet_b": "Only the eDiets Marketing Committee shall have the right to review and approve or disapprove eDiets' use of the Women.com Marks.",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-209",
@@ -810,33 +857,12 @@
     },
     {
       "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-211",
-      "contradiction": true,
-      "confidence": 100,
-      "brief_reason": "The paragraph both asserts and denies that use of the eDiets Marks by Women.com may infringe trademark rights.",
-      "contradiction_type": "policy_reversal",
-      "evidence": {
-        "snippet_a": "the use of the eDiets Marks by Women.com as permitted by this Agreement will not infringe or violate the trademark, service mark or trade dress rights of any Person;",
-        "snippet_b": "the use of the eDiets Marks by Women.com as permitted by this Agreement may infringe or violate the trademark, service mark or trade dress rights of any Person;",
-        "source_a": "paragraph",
-        "source_b": "paragraph",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      },
-      "contradictions": [
-        {
-          "confidence": 100,
-          "brief_reason": "The paragraph both asserts and denies that use of the eDiets Marks by Women.com may infringe trademark rights.",
-          "contradiction_type": "policy_reversal",
-          "evidence": {
-            "snippet_a": "the use of the eDiets Marks by Women.com as permitted by this Agreement will not infringe or violate the trademark, service mark or trade dress rights of any Person;",
-            "snippet_b": "the use of the eDiets Marks by Women.com as permitted by this Agreement may infringe or violate the trademark, service mark or trade dress rights of any Person;",
-            "source_a": "paragraph",
-            "source_b": "paragraph",
-            "evidence_status": "exact",
-            "evidence_note": ""
-          }
-        }
-      ]
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-213",
@@ -3008,5 +3034,5 @@
       "contradictions": []
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 50110, \"estimated_output_tokens_total\": 13902, \"estimated_cost_usd\": \"0.211436\", \"batches\": [{\"batch\": 1, \"rows\": 99, \"estimated_input_tokens\": 50110, \"estimated_output_tokens\": 4158, \"estimated_cost_usd\": \"0.133484\", \"response_chars\": 923, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-211\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 100,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph both asserts and denies that use of the eDiets Marks by Women.com may infringe trademark rights.\\\",\\n          \\\"evidence\\\": {\\n            \\\"snippet_a\\\": \\\"the use of the eDiets Marks by Women.com as perm\"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 54151, \"estimated_output_tokens_total\": 13902, \"estimated_cost_usd\": \"0.219518\", \"batches\": [{\"batch\": 1, \"rows\": 99, \"estimated_input_tokens\": 54151, \"estimated_output_tokens\": 4158, \"estimated_cost_usd\": \"0.141566\", \"response_chars\": 2306, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-207\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 95,\\n          \\\"contradiction_type\\\": \\\"authority\\\",\\n          \\\"brief_reason\\\": \\\"Paragraph grants Women.com rights to use eDiets Content without infringing any rights, but related paragraphs assert eDiets retains all rights and restricts transfer of ownership.\\\",\\n          \\\"evidence\\\": {\\n            \"}]}"
 }
