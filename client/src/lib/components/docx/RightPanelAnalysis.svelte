@@ -195,6 +195,33 @@ type ProcessingStep = {
 	function parseStructuredRiskSections(content: string): StructuredChatSection[] | null {
 		const text = (content || '').trim();
 		if (!text) return null;
+		const tryParseAnswerObject = (raw: string): string | null => {
+			const cleaned = raw
+				.replace(/^```(?:json)?\s*/i, '')
+				.replace(/\s*```$/i, '')
+				.trim();
+			try {
+				const parsed = JSON.parse(cleaned) as unknown;
+				if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+				const record = parsed as Record<string, unknown>;
+				const answerNode =
+					record.answer && typeof record.answer === 'object' && !Array.isArray(record.answer)
+						? (record.answer as Record<string, unknown>)
+						: null;
+				if (!answerNode) return null;
+				const labels = ['Context', 'Contradiction', 'Risks', 'Affected', 'Consequences'];
+				const lines = labels
+					.map((label) => {
+						const value = answerNode[label];
+						return typeof value === 'string' && value.trim() ? `${label}: ${value.trim()}` : '';
+					})
+					.filter(Boolean);
+				return lines.length > 0 ? lines.join('\n\n') : null;
+			} catch {
+				return null;
+			}
+		};
+		const normalizedText = tryParseAnswerObject(text) ?? text;
 		const knownLabels = new Set([
 			'context',
 			'contradiction',
@@ -204,15 +231,18 @@ type ProcessingStep = {
 			'consequences'
 		]);
 		const labelPattern = /(Context|Contradiction|Risks|Affected|Affected Party|Consequences)\s*:/gi;
-		const matches = Array.from(text.matchAll(labelPattern));
+		const matches = Array.from(normalizedText.matchAll(labelPattern));
 		const blocks =
 			matches.length >= 2
 				? matches.map((match, idx) => {
 						const start = match.index ?? 0;
-						const end = idx + 1 < matches.length ? (matches[idx + 1].index ?? text.length) : text.length;
-						return text.slice(start, end).trim();
+						const end =
+							idx + 1 < matches.length
+								? (matches[idx + 1].index ?? normalizedText.length)
+								: normalizedText.length;
+						return normalizedText.slice(start, end).trim();
 					})
-				: text.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+				: normalizedText.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
 		const sections: StructuredChatSection[] = [];
 		let recognized = 0;
 		for (const block of blocks) {

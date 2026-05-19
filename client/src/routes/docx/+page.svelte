@@ -1351,8 +1351,8 @@
 					CONTRADICTION_TAXONOMY_COLORS.specificity)
 				: CONTRADICTION_TAXONOMY_COLORS.specificity;
 			mark.style.setProperty('--contradiction-b-color', categoryColor);
-			mark.style.setProperty('--contradiction-b-bg', hexToRgba(categoryColor, 0.25));
-			mark.style.setProperty('--contradiction-b-bg-active', hexToRgba(categoryColor, 0.36));
+			mark.style.setProperty('--contradiction-b-bg', hexToRgba(categoryColor, 0.18));
+			mark.style.setProperty('--contradiction-b-bg-active', hexToRgba(categoryColor, 0.28));
 			mark.style.setProperty('--contradiction-b-ring', categoryColor);
 		}
 		try {
