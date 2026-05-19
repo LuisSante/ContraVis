@@ -1,0 +1,3012 @@
+{
+  "documentId": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement",
+  "documentRelativePath": "target/EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement.docx",
+  "documentGroup": "target",
+  "provider": "openai",
+  "temperature": 0.3,
+  "mode": "without_kg",
+  "savedAt": "2026-05-19T16:52:39.574024+00:00",
+  "paragraphResults": [
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-5",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-7",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-9",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-11",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-13",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-15",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-17",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-19",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-25",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-27",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-29",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-31",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-33",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-35",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-37",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-39",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-41",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-47",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-48",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-49",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-51",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-53",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-55",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-61",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-63",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-65",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-67",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-69",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-71",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-77",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-79",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-81",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-82",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-83",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-85",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-87",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-89",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-91",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-97",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-99",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-101",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-103",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-105",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-107",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-109",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-111",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-112",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-118",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-120",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-121",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-123",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-125",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-127",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-133",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-135",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-137",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-138",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-139",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-141",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-143",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-145",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-147",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-149",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-151",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-153",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-159",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-161",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-163",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-164",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-165",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-167",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-169",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-171",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-172",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-174",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-176",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-182",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-184",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-186",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-188",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-190",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-192",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-194",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-196",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-202",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-203",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-205",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-207",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-209",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-211",
+      "contradiction": true,
+      "confidence": 100,
+      "brief_reason": "The paragraph both asserts and denies that use of the eDiets Marks by Women.com may infringe trademark rights.",
+      "contradiction_type": "policy_reversal",
+      "evidence": {
+        "snippet_a": "the use of the eDiets Marks by Women.com as permitted by this Agreement will not infringe or violate the trademark, service mark or trade dress rights of any Person;",
+        "snippet_b": "the use of the eDiets Marks by Women.com as permitted by this Agreement may infringe or violate the trademark, service mark or trade dress rights of any Person;",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 100,
+          "brief_reason": "The paragraph both asserts and denies that use of the eDiets Marks by Women.com may infringe trademark rights.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "the use of the eDiets Marks by Women.com as permitted by this Agreement will not infringe or violate the trademark, service mark or trade dress rights of any Person;",
+            "snippet_b": "the use of the eDiets Marks by Women.com as permitted by this Agreement may infringe or violate the trademark, service mark or trade dress rights of any Person;",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-213",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-215",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-217",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-219",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-221",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-227",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-229",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-231",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-232",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-234",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-236",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-237",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-239",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-241",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-242",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-243",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-245",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-246",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-252",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-254",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-256",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-257",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-258",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-259",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-260",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-262",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-264",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-266",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-272",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-274",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-276",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-278",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-280",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-282",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-284",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-286",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-292",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-294",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-296",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-299",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-301",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-303",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-304",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-305",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-311",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-314",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-317",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-320",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-322",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-324",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-326",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-327",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-329",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-330",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-331",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-332",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-333",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-334",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-335",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-336",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-338",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-340",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-341",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-342",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-343",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-345",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-346",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-347",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-350",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-354",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-356",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-358",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-360",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-362",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-363",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-365",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-366",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-368",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-370",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-372",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-374",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-376",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-378",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-380",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-382",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-384",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-387",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-390",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-392",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-394",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-396",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-398",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-400",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-402",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-404",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-405",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-407",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-409",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-410",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-411",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-412",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-414",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-416",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-417",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-418",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-421",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-424",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-427",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-429",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-431",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-433",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-435",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-437",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-438",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-439",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-440",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-441",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-442",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-443",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-444",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-445",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-446",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-448",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-450",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-451",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-452",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-453",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-454",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-455",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-458",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-461",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-462",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-463",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-464",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-465",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-467",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-468",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-469",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-470",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-471",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-472",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-474",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-475",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-477",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-478",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-480",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-482",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-484",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-485",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-487",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-490",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-491",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-492",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-494",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-496",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-497",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-499",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-500",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-503",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-504",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-505",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-507",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-509",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-511",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-513",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-514",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-515",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-516",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-517",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-519",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-520",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-521",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-523",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-524",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-526",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-527",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-529",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-531",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-534",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-537",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-538",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-539",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-540",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-541",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-542",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-544",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-545",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-546",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-549",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-552",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-555",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-557",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-558",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-560",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-562",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-563",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-566",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-569",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-570",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-572",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-574",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-576",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-578",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-580",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-581",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-582",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-583",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-585",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-587",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-588",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-589",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-590",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-592",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-594",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-595",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-596",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-597",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-599",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-602",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-605",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-607",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-609",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-610",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-611",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-613",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-615",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-616",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-618",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-619",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-620",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-621",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-622",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-623",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-624",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-626",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-628",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-630",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-632",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-635",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-638",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-640",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    }
+  ],
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 50110, \"estimated_output_tokens_total\": 13902, \"estimated_cost_usd\": \"0.211436\", \"batches\": [{\"batch\": 1, \"rows\": 99, \"estimated_input_tokens\": 50110, \"estimated_output_tokens\": 4158, \"estimated_cost_usd\": \"0.133484\", \"response_chars\": 923, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::EdietsComInc_20001030_10QSB_EX-10.4_2606646_EX-10.4_Co-Branding_Agreement-p-211\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 100,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph both asserts and denies that use of the eDiets Marks by Women.com may infringe trademark rights.\\\",\\n          \\\"evidence\\\": {\\n            \\\"snippet_a\\\": \\\"the use of the eDiets Marks by Women.com as perm\"}]}"
+}
