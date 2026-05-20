@@ -18,7 +18,9 @@ from services.llm.factory import LLMProviderFactory
 
 logger = logging.getLogger(__name__)
 
-TARGET_BATCH_INPUT_TOKENS = 75_000
+TARGET_BATCH_INPUT_TOKENS = int(
+    os.getenv("CONTRADICTION_TARGET_BATCH_INPUT_TOKENS", "35000")
+)
 ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH = 42
 HIGH_RECALL_MODE = os.getenv("CONTRADICTION_HIGH_RECALL", "1").strip().lower() not in {
     "0",
@@ -174,7 +176,7 @@ def _write_debug_mode_payload(
         ],
     }
 
-    output_path = f"/home/luis/Documents/FGV/Laboratory/document-graph/infra/json/contradictions/{mode}.json"
+    output_path = f"/home/sante/Documents/FGV/Laboratorio/document-graph/infra/json/contradictions/{mode}.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 
@@ -204,11 +206,11 @@ def analyze_document_contradictions(
     )
 
     # ACTIVE THIS TO CHECK BODY FROM JSON
-    # _write_debug_mode_payload(
-    #     mode=payload.mode,
-    #     all_paragraph_rows=paragraph_rows,
-    #     batches=batches,
-    # )
+    _write_debug_mode_payload(
+        mode=payload.mode,
+        all_paragraph_rows=paragraph_rows,
+        batches=batches,
+    )
 
     estimated_input_total = 0
     for batch in batches:
@@ -499,7 +501,7 @@ def _run_batch_with_fallback(
             temperature=payload.temperature,
         )
     except RuntimeError as exc:
-        if _is_context_length_error(exc):
+        if _is_batch_too_large_error(exc):
             if len(batch_rows) > 1:
                 midpoint = max(1, len(batch_rows) // 2)
                 logger.warning(
@@ -586,9 +588,14 @@ def _shrink_single_row_context(
     return shrunk_row if changed else row
 
 
-def _is_context_length_error(exc: Exception) -> bool:
+def _is_batch_too_large_error(exc: Exception) -> bool:
     message = str(exc).lower()
-    return "context_length_exceeded" in message or "maximum context length" in message
+    return (
+        "context_length_exceeded" in message
+        or "maximum context length" in message
+        or "request too large" in message
+        or "tokens per min" in message
+    )
 
 
 def _estimate_prompt_tokens(
@@ -651,7 +658,13 @@ def _safe_json_loads(text: str) -> dict[str, Any] | list[Any]:
 
     json_match = re.search(r"\{[\s\S]*\}", cleaned)
     if json_match:
-        return json.loads(json_match.group(0))
+        try:
+            return json.loads(json_match.group(0))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "LLM did not return valid JSON "
+                f"(line {exc.lineno}, column {exc.colno}): {exc.msg}"
+            ) from exc
 
     raise RuntimeError("LLM did not return a valid JSON payload")
 

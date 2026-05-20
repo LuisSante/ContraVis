@@ -8,8 +8,9 @@ MODEL_PRICING_USD_PER_1M: dict[str, dict[str, float]] = {
     "gpt-4.1-2025-04-14": {"input": 2.0, "output": 8.0},
     "gpt-4_1-2025-04-14": {"input": 2.0, "output": 8.0},
     "gpt-5": {"input": 1.25, "output": 10.0},
-    "gpt-5-mini": {"input": 0.25, "output": 2.0},
-    "gpt-5-nano": {"input": 0.05, "output": 0.4},
+    "gpt-5.1": {"input": 1.25, "output": 10.0},
+    # "gpt-5-mini": {"input": 0.25, "output": 2.0},
+    # "gpt-5-nano": {"input": 0.05, "output": 0.4},
 }
 
 _TIKTOKEN_ENCODER: Any | None = None
@@ -56,13 +57,15 @@ def resolve_model_rates(model_name: str) -> dict[str, float] | None:
         return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
     if normalized.startswith("gpt-4_1-"):
         return MODEL_PRICING_USD_PER_1M["gpt-4.1"]
-    # Handle OpenAI variant model IDs (e.g., gpt-5.1-2026-..., gpt-5-mini-..., gpt-5-nano-...)
-    if normalized.startswith("gpt-5-mini"):
-        return MODEL_PRICING_USD_PER_1M["gpt-5-mini"]
-    if normalized.startswith("gpt-5-nano"):
-        return MODEL_PRICING_USD_PER_1M["gpt-5-nano"]
+    # # Handle OpenAI variant model IDs (e.g., gpt-5.1-2026-..., gpt-5-mini-..., gpt-5-nano-...)
+    # if normalized.startswith("gpt-5-mini"):
+    #     return MODEL_PRICING_USD_PER_1M["gpt-5-mini"]
+    # if normalized.startswith("gpt-5-nano"):
+    #     return MODEL_PRICING_USD_PER_1M["gpt-5-nano"]
     if normalized.startswith("gpt-5"):
         return MODEL_PRICING_USD_PER_1M["gpt-5"]
+    if normalized.startswith("gpt-5.1"):
+        return MODEL_PRICING_USD_PER_1M["gpt-5.1"]
 
     return None
 

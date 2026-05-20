@@ -425,12 +425,12 @@
 
 	mark.docx-contradiction-snippet[data-contradiction-role='a'] {
 		color: inherit; /* color: #991b1b; */
-		background: rgba(232, 0, 0, 0.18);
+		background: var(--contradiction-bg, rgba(232, 0, 0, 0.18));
 	}
 
 	mark.docx-contradiction-snippet[data-contradiction-role='b'] {
 		color: inherit;
-		background: var(--contradiction-b-bg, rgba(132, 204, 22, 0.22));
+		background: var(--contradiction-bg, rgba(132, 204, 22, 0.22));
 	}
 	mark.docx-contradiction-snippet.docx-contradiction-snippet--active {
 		box-shadow: 0 0 0 1px rgba(30, 41, 59, 0.28);
@@ -439,14 +439,14 @@
 	
 		mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='a']
 	 {
-		background: rgba(251, 44, 44, 0.45);
-		box-shadow: 0 0 0 1px rgba(191, 0, 0, 0.85);
+		background: var(--contradiction-bg-active, rgba(251, 44, 44, 0.45));
+		box-shadow: 0 0 0 1px var(--contradiction-ring, rgba(191, 0, 0, 0.85));
 	}
 
 	mark.docx-contradiction-snippet.docx-contradiction-snippet--active[data-contradiction-role='b'] {
 		color: inherit;
-		background: var(--contradiction-b-bg-active, rgba(132, 204, 22, 0.34));
-		box-shadow: 0 0 0 1px var(--contradiction-b-ring, #84cc16);
+		background: var(--contradiction-bg-active, rgba(132, 204, 22, 0.34));
+		box-shadow: 0 0 0 1px var(--contradiction-ring, #84cc16);
 	}
 
 	.docx-contradiction-scroll-marker {
@@ -529,7 +529,7 @@
 	}
 
 	.docx-contradiction-evidence-dot--a {
-		background: #dc2626;
+		background: var(--contradiction-a-color, #dc2626);
 	}
 
 	.docx-contradiction-evidence-dot--b {
@@ -545,7 +545,7 @@
 	}
 
 	.docx-contradiction-evidence-label--a {
-		color: #b91c1c;
+		color: var(--contradiction-a-color, #b91c1c);
 	}
 
 	.docx-contradiction-evidence-label--b {

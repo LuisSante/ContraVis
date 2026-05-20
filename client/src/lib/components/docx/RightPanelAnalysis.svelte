@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { cubicOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
+	import { diffWordsWithSpace } from 'diff';
 	import type {
 		AssistantChatMessage,
 		ContradictionTaxonomyType,
@@ -37,6 +38,10 @@ type ProcessingStep = {
 		entitySoftColor?: string;
 	};
 	type StructuredChatSection = { label: string | null; body: string };
+	type EvidenceDiffSegment = {
+		text: string;
+		changed: boolean;
+	};
 
 	export let selectedParagraph: ParagraphNode | null = null;
 	export let contradictionLoading = false;
@@ -304,6 +309,29 @@ type ProcessingStep = {
 			badgeText: color,
 			label: contradictionTaxonomyLabels[contradictionType] ?? contradictionTaxonomyLabels.specificity
 		};
+	}
+
+	function buildEvidenceDiffSegments(
+		snippetA: string,
+		snippetB: string
+	): { a: EvidenceDiffSegment[]; b: EvidenceDiffSegment[] } {
+		const aSegments: EvidenceDiffSegment[] = [];
+		const bSegments: EvidenceDiffSegment[] = [];
+		for (const segment of diffWordsWithSpace(snippetA || '', snippetB || '')) {
+			const value = segment.value ?? '';
+			if (!value) continue;
+			if (segment.removed) {
+				aSegments.push({ text: value, changed: true });
+				continue;
+			}
+			if (segment.added) {
+				bSegments.push({ text: value, changed: true });
+				continue;
+			}
+			aSegments.push({ text: value, changed: false });
+			bSegments.push({ text: value, changed: false });
+		}
+		return { a: aSegments, b: bSegments };
 	}
 
 	function resolveEvidenceScopeLabel(
@@ -587,27 +615,44 @@ type ProcessingStep = {
 										</p>
 									</div>
 
-									{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-										{@const snippetBStyle = resolveSnippetBStyle()}
-										<div
-											class="mt-2 rounded-md border px-2.5 py-2"
-											style={`border-color: ${itemStyle.color}; background: ${hexToRgba(itemStyle.color, 0.08)};`}
+										{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+											{@const snippetBStyle = resolveSnippetBStyle()}
+											{@const evidenceDiff = buildEvidenceDiffSegments(
+												selectedContradictionEvidence.snippet_a,
+												selectedContradictionEvidence.snippet_b
+											)}
+											<div
+												class="mt-2 rounded-md border px-2.5 py-2"
+												style={`border-color: ${itemStyle.color}; background: ${hexToRgba(itemStyle.color, 0.08)};`}
 										>
 											<div class="mb-1 flex items-center justify-between">
 												<span class="text-[9px] font-semibold" style={`color: ${itemStyle.color};`}>
 													Snippet A
 												</span>
 											</div>
-											<Button
-												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-900"
-												onclick={() =>
-													selectedContradictionResult &&
-													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
-											>
-												{selectedContradictionEvidence.snippet_a}
-											</Button>
-										</div>
+												<Button
+													variant="ghost"
+													class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-900"
+													onclick={() =>
+														selectedContradictionResult &&
+														onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+												>
+													<span>
+														{#each evidenceDiff.a as part, partIndex (`a-${partIndex}`)}
+															{#if part.changed}
+																<span
+																	class="rounded px-[1px]"
+																	style={`background: ${hexToRgba(itemStyle.color, 0.36)}; box-shadow: inset 0 0 0 1px ${hexToRgba(itemStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
+																>
+																	{part.text}
+																</span>
+															{:else}
+																<span>{part.text}</span>
+															{/if}
+														{/each}
+													</span>
+												</Button>
+											</div>
 
 										<div class="mt-2 rounded-md border px-2.5 py-2" style={`border-color: ${snippetBStyle.border}; background: ${snippetBStyle.background};`}>
 											<div class="mb-1 flex items-center justify-between">
@@ -615,16 +660,29 @@ type ProcessingStep = {
 													<span class="text-[9px] font-semibold" style={`color: ${snippetBStyle.color};`}>Snippet B</span>
 												</div>
 											</div>
-											<Button
-												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-800"
-												onclick={() =>
-													selectedContradictionResult &&
-													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
-											>
-												{selectedContradictionEvidence.snippet_b}
-											</Button>
-										</div>
+												<Button
+													variant="ghost"
+													class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-800"
+													onclick={() =>
+														selectedContradictionResult &&
+														onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+												>
+													<span>
+														{#each evidenceDiff.b as part, partIndex (`b-${partIndex}`)}
+															{#if part.changed}
+																<span
+																	class="rounded px-[1px]"
+																	style={`background: ${hexToRgba(snippetBStyle.color, 0.36)}; box-shadow: inset 0 0 0 1px ${hexToRgba(snippetBStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
+																>
+																	{part.text}
+																</span>
+															{:else}
+																<span>{part.text}</span>
+															{/if}
+														{/each}
+													</span>
+												</Button>
+											</div>
 									{:else}
 										<Card.Root size="sm" class="mt-1 border-gray-200 bg-gray-50 py-0 text-[11px]">
 											<Card.Content class="px-3 py-2 text-gray-600">

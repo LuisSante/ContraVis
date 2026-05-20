@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-05-19T22:32:27.443189+00:00",
+  "savedAt": "2026-05-20T15:24:13.860760+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-3",
@@ -242,6 +242,15 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-31",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-32",
       "contradiction": false,
       "confidence": 0,
@@ -270,33 +279,12 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-35",
-      "contradiction": true,
-      "confidence": 90,
-      "brief_reason": "The definition of 'Serious Incident' references two different European Commission Medical Devices Vigilance Guidelines (2.12-1 and 3.01-1), which may have different substantive requirements.",
-      "contradiction_type": "specificity",
-      "evidence": {
-        "snippet_a": "Serious Incident shall mean an incident involving the Products, which is reportable to a Competent Authority and as defined in Section 5 of Annex III of the IVD Directive, and the European Commission Medical Devices Vigilance Guidelines 2.12-1 or such other Guidelines as may be issued from time to time.",
-        "snippet_b": "Serious Incident shall mean an incident involving the Products, which is reportable to a Competent Authority and as defined in Section 5 of Annex III of the IVD Directive, and the European Commission Medical Devices Vigilance Guidelines 3.01-1 or such other Guidelines as may be issued from time to time.",
-        "source_a": "paragraph",
-        "source_b": "paragraph",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      },
-      "contradictions": [
-        {
-          "confidence": 90,
-          "brief_reason": "The definition of 'Serious Incident' references two different European Commission Medical Devices Vigilance Guidelines (2.12-1 and 3.01-1), which may have different substantive requirements.",
-          "contradiction_type": "specificity",
-          "evidence": {
-            "snippet_a": "Serious Incident shall mean an incident involving the Products, which is reportable to a Competent Authority and as defined in Section 5 of Annex III of the IVD Directive, and the European Commission Medical Devices Vigilance Guidelines 2.12-1 or such other Guidelines as may be issued from time to time.",
-            "snippet_b": "Serious Incident shall mean an incident involving the Products, which is reportable to a Competent Authority and as defined in Section 5 of Annex III of the IVD Directive, and the European Commission Medical Devices Vigilance Guidelines 3.01-1 or such other Guidelines as may be issued from time to time.",
-            "source_a": "paragraph",
-            "source_b": "paragraph",
-            "evidence_status": "exact",
-            "evidence_note": ""
-          }
-        }
-      ]
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-36",
@@ -327,6 +315,36 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-39",
+      "contradiction": true,
+      "confidence": 100,
+      "brief_reason": "The paragraph states both a three-year and a five-year initial term for the Agreement.",
+      "contradiction_type": "numerical",
+      "evidence": {
+        "snippet_a": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of three (3) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+        "snippet_b": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of five (5) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 100,
+          "brief_reason": "The paragraph states both a three-year and a five-year initial term for the Agreement.",
+          "contradiction_type": "numerical",
+          "evidence": {
+            "snippet_a": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of three (3) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+            "snippet_b": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of five (5) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-41",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -335,7 +353,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-40",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-42",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -380,7 +398,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-47",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-48",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -389,7 +407,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-48",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-49",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-50",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -416,24 +443,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-53",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-54",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-55",
       "contradiction": false,
       "confidence": 0,
@@ -443,7 +452,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-59",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-56",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -452,7 +461,25 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-60",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-57",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-58",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-59",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -488,7 +515,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-66",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-64",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-65",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -533,6 +569,24 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-71",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-72",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-73",
       "contradiction": false,
       "confidence": 0,
@@ -569,15 +623,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-77",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-78",
       "contradiction": false,
       "confidence": 0,
@@ -605,7 +650,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-81",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-83",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -614,7 +659,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-82",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-84",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -632,7 +677,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-86",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-87",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -641,7 +686,25 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-87",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-88",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-89",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-90",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -677,7 +740,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-96",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-94",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-95",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -749,7 +821,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-104",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-105",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-106",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -794,25 +875,25 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-111",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-112",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-113",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-114",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-115",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -867,6 +948,24 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-121",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-123",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-124",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -947,7 +1046,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-133",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-134",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-135",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -983,34 +1091,37 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-139",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-140",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 90,
+      "brief_reason": "The paragraph requires Qualigen to defend Sekisui against infringement claims, but only if the claim does not arise from Sekisui’s noncompliance, which could conflict with the warranty in the related paragraph that products will not infringe third party rights.",
+      "contradiction_type": "policy_reversal",
+      "evidence": {
+        "snippet_a": "Qualigen agrees to defend Sekisui in such action at its expense and shall pay any costs or damages finally awarded against Sekisui in any such action; provided, that Qualigen shall have had sole control of the defense of any such action",
+        "snippet_b": "The Products supplied to Sekisui under this Agreement shall conform to the applicable product specifications and shall not infringe upon the patents or proprietary rights of any Third Party.",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 90,
+          "brief_reason": "The paragraph requires Qualigen to defend Sekisui against infringement claims, but only if the claim does not arise from Sekisui’s noncompliance, which could conflict with the warranty in the related paragraph that products will not infringe third party rights.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "Qualigen agrees to defend Sekisui in such action at its expense and shall pay any costs or damages finally awarded against Sekisui in any such action; provided, that Qualigen shall have had sole control of the defense of any such action",
+            "snippet_b": "The Products supplied to Sekisui under this Agreement shall conform to the applicable product specifications and shall not infringe upon the patents or proprietary rights of any Third Party.",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-141",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-142",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1038,6 +1149,24 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-145",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-146",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-147",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1091,6 +1220,24 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-153",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-154",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-155",
       "contradiction": false,
       "confidence": 0,
@@ -1109,13 +1256,64 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-157",
+      "contradiction": true,
+      "confidence": 85,
+      "brief_reason": "Paragraph assigns responsibility for maintaining Regulatory Approvals to Qualigen, but related paragraph assigns responsibility for seeking, obtaining, and maintaining certain approvals to Sekisui.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "Qualigen shall be responsible for maintaining, at its sole cost, the Regulatory Approvals required for the marketing and sale of the Products in the Applicable Markets.",
+        "snippet_b": "Sekisui shall be responsible for seeking, obtaining and maintaining (i) all licenses, registrations and permits (excluding patents) required to be obtained by Sekisui to enable Sekisui to act as a distributor of the Product pursuant to this Agreement",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 85,
+          "brief_reason": "Paragraph assigns responsibility for maintaining Regulatory Approvals to Qualigen, but related paragraph assigns responsibility for seeking, obtaining, and maintaining certain approvals to Sekisui.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "Qualigen shall be responsible for maintaining, at its sole cost, the Regulatory Approvals required for the marketing and sale of the Products in the Applicable Markets.",
+            "snippet_b": "Sekisui shall be responsible for seeking, obtaining and maintaining (i) all licenses, registrations and permits (excluding patents) required to be obtained by Sekisui to enable Sekisui to act as a distributor of the Product pursuant to this Agreement",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-159",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 80,
+      "brief_reason": "Paragraph assigns Sekisui responsibility for seeking, obtaining, and maintaining licenses and permits, while related paragraph assigns Qualigen responsibility for maintaining Regulatory Approvals required for marketing and sale.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "Sekisui shall be responsible for seeking, obtaining and maintaining (i) all licenses, registrations and permits (excluding patents) required to be obtained by Sekisui to enable Sekisui to act as a distributor of the Product",
+        "snippet_b": "Qualigen shall be responsible for maintaining, at its sole cost, the Regulatory Approvals required for the marketing and sale of the Products in the Applicable Markets.",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 80,
+          "brief_reason": "Paragraph assigns Sekisui responsibility for seeking, obtaining, and maintaining licenses and permits, while related paragraph assigns Qualigen responsibility for maintaining Regulatory Approvals required for marketing and sale.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "Sekisui shall be responsible for seeking, obtaining and maintaining (i) all licenses, registrations and permits (excluding patents) required to be obtained by Sekisui to enable Sekisui to act as a distributor of the Product",
+            "snippet_b": "Qualigen shall be responsible for maintaining, at its sole cost, the Regulatory Approvals required for the marketing and sale of the Products in the Applicable Markets.",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-160",
@@ -1154,15 +1352,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-164",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-165",
       "contradiction": false,
       "confidence": 0,
@@ -1173,15 +1362,6 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-166",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-167",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1217,15 +1397,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-171",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-172",
       "contradiction": false,
       "confidence": 0,
@@ -1236,6 +1407,24 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-173",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-174",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-175",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1262,15 +1451,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-178",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-179",
       "contradiction": false,
       "confidence": 0,
@@ -1289,7 +1469,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-183",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-181",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-182",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1299,6 +1488,45 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-184",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-185",
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "The paragraph states the initial term is three years, but the related paragraph states both three and five years as the initial term.",
+      "contradiction_type": "numerical",
+      "evidence": {
+        "snippet_a": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of three (3) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+        "snippet_b": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of three (3) years unless earlier terminated pursuant to Section 14 hereof (the “Term”). The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of five (5) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 95,
+          "brief_reason": "The paragraph states the initial term is three years, but the related paragraph states both three and five years as the initial term.",
+          "contradiction_type": "numerical",
+          "evidence": {
+            "snippet_a": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of three (3) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+            "snippet_b": "The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of three (3) years unless earlier terminated pursuant to Section 14 hereof (the “Term”). The initial term of this Agreement shall commence on the Effective Date and shall continue for a period of five (5) years unless earlier terminated pursuant to Section 14 hereof (the “Term”).",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-186",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1325,7 +1553,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-189",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-190",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-191",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1371,33 +1608,12 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-196",
-      "contradiction": true,
-      "confidence": 95,
-      "brief_reason": "The paragraph states that only the Executive Committee can grant equitable relief, which may conflict with a court's inherent authority to grant such relief.",
-      "contradiction_type": "authority",
-      "evidence": {
-        "snippet_a": "Only the Executive Committee shall have the authority to grant specific performance, restraining orders, or any other equitable relief under this Agreement.",
-        "snippet_b": "such Party shall give reasonable advance notice to the other Party of such proposed disclosure in order that the non-disclosing Party may intercede and oppose such process, and shall use its best efforts to secure a protective order or confidential-treatment order",
-        "source_a": "paragraph",
-        "source_b": "paragraph",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      },
-      "contradictions": [
-        {
-          "confidence": 95,
-          "brief_reason": "The paragraph states that only the Executive Committee can grant equitable relief, which may conflict with a court's inherent authority to grant such relief.",
-          "contradiction_type": "authority",
-          "evidence": {
-            "snippet_a": "Only the Executive Committee shall have the authority to grant specific performance, restraining orders, or any other equitable relief under this Agreement.",
-            "snippet_b": "such Party shall give reasonable advance notice to the other Party of such proposed disclosure in order that the non-disclosing Party may intercede and oppose such process, and shall use its best efforts to secure a protective order or confidential-treatment order",
-            "source_a": "paragraph",
-            "source_b": "paragraph",
-            "evidence_status": "exact",
-            "evidence_note": ""
-          }
-        }
-      ]
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-197",
@@ -1409,7 +1625,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-200",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-198",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1418,7 +1634,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-201",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-199",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-200",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1437,6 +1662,24 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-203",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-204",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-205",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1482,6 +1725,24 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-210",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-211",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-212",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1553,15 +1814,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-220",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-221",
       "contradiction": false,
       "confidence": 0,
@@ -1589,6 +1841,24 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-224",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-225",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-226",
       "contradiction": false,
       "confidence": 0,
@@ -1598,22 +1868,34 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-227",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-228",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 90,
+      "brief_reason": "The paragraph generally denies third-party beneficiary rights except as set forth in Section 11, but Section 11 provides indemnification rights to third parties.",
+      "contradiction_type": "policy_reversal",
+      "evidence": {
+        "snippet_a": "the terms and provisions of this Agreement are intended solely for the benefit of each Party hereto and their respective successors or permitted assigns and it is not the intention of the Parties to confer third-party beneficiary rights upon any other person.",
+        "snippet_b": "Except as expressly set forth in Section 11",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 90,
+          "brief_reason": "The paragraph generally denies third-party beneficiary rights except as set forth in Section 11, but Section 11 provides indemnification rights to third parties.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "the terms and provisions of this Agreement are intended solely for the benefit of each Party hereto and their respective successors or permitted assigns and it is not the intention of the Parties to confer third-party beneficiary rights upon any other person.",
+            "snippet_b": "Except as expressly set forth in Section 11",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-229",
@@ -1670,70 +1952,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-235",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-236",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-237",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-238",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-239",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-240",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-241",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-242",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1751,7 +1970,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-246",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-244",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-245",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1788,36 +2016,33 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-250",
-      "contradiction": true,
-      "confidence": 95,
-      "brief_reason": "The paragraph states that only the Executive Committee can grant equitable relief, which may contradict the inherent power of courts to grant such relief.",
-      "contradiction_type": "authority",
-      "evidence": {
-        "snippet_a": "Only the Executive Committee shall have the authority to grant specific performance, restraining orders, or any other equitable relief under this Agreement.",
-        "snippet_b": "each Party agrees that an opposed Party shall be entitled to specific performance, an order restraining any breach or threatened breach of Section 13 and all other provisions of this Agreement, and any other equitable relief (including but not limited to temporary, preliminary and/or permanent injunctive relief), without the necessity of posting of any bond or security.",
-        "source_a": "paragraph",
-        "source_b": "paragraph",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      },
-      "contradictions": [
-        {
-          "confidence": 95,
-          "brief_reason": "The paragraph states that only the Executive Committee can grant equitable relief, which may contradict the inherent power of courts to grant such relief.",
-          "contradiction_type": "authority",
-          "evidence": {
-            "snippet_a": "Only the Executive Committee shall have the authority to grant specific performance, restraining orders, or any other equitable relief under this Agreement.",
-            "snippet_b": "each Party agrees that an opposed Party shall be entitled to specific performance, an order restraining any breach or threatened breach of Section 13 and all other provisions of this Agreement, and any other equitable relief (including but not limited to temporary, preliminary and/or permanent injunctive relief), without the necessity of posting of any bond or security.",
-            "source_a": "paragraph",
-            "source_b": "paragraph",
-            "evidence_status": "exact",
-            "evidence_note": ""
-          }
-        }
-      ]
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-251",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-252",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-253",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1889,7 +2114,61 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-261",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-262",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-263",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-264",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-265",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-266",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-268",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -1917,6 +2196,15 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-271",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-272",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2105,6 +2393,15 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-293",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-294",
       "contradiction": false,
       "confidence": 0,
@@ -2132,115 +2429,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-297",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-298",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-299",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-300",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-301",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-302",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-303",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-304",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-305",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-306",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-307",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-309",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-310",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2258,42 +2447,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-312",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-313",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-314",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-315",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-316",
       "contradiction": false,
       "confidence": 0,
@@ -2303,34 +2456,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-317",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-318",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-319",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-320",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2366,7 +2492,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-326",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-324",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2375,7 +2501,79 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-340",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-325",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-327",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-329",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-330",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-334",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-335",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-336",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-337",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-344",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2393,7 +2591,25 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-347",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-348",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-349",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2429,43 +2645,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-353",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-354",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-356",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-358",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-359",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-362",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2492,7 +2681,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-365",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-366",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2501,7 +2690,43 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-366",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-367",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-368",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-369",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-371",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-372",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2519,7 +2744,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-374",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-375",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2546,15 +2771,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-378",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-379",
       "contradiction": false,
       "confidence": 0,
@@ -2565,24 +2781,6 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-380",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-381",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-388",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2618,15 +2816,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-395",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-396",
       "contradiction": false,
       "confidence": 0,
@@ -2637,15 +2826,6 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-397",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-398",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2681,7 +2861,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-404",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-403",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2690,25 +2870,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-405",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-406",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-408",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-407",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2718,6 +2880,78 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-409",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-410",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-412",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-413",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-414",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-415",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-417",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-418",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-419",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2744,16 +2978,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-422",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-425",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-423",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2771,7 +2996,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-429",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-427",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2780,7 +3005,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-430",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-428",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2789,25 +3014,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-431",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-432",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-436",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-435",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2825,7 +3032,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-439",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-440",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2852,7 +3059,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-443",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-444",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2861,7 +3068,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-444",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-445",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2888,15 +3095,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-448",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-449",
       "contradiction": false,
       "confidence": 0,
@@ -2915,7 +3113,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-452",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-451",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2924,7 +3122,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-455",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-452",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2951,6 +3149,42 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-458",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-459",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-461",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-462",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-464",
       "contradiction": false,
       "confidence": 0,
@@ -2960,7 +3194,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-467",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-465",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2969,7 +3203,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-469",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-466",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -2979,33 +3213,6 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-470",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-471",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-473",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-474",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3032,7 +3239,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-478",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-477",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3068,7 +3275,25 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-485",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-482",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-483",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-484",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3095,7 +3320,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-488",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-489",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3113,7 +3338,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-491",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-492",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3131,15 +3356,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-494",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-495",
       "contradiction": false,
       "confidence": 0,
@@ -3149,7 +3365,43 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-496",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-498",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-499",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-501",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-502",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3176,7 +3428,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-506",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-507",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3186,15 +3438,6 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-508",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-509",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3221,15 +3464,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-512",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-513",
       "contradiction": false,
       "confidence": 0,
@@ -3239,7 +3473,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-515",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-514",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3257,7 +3491,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-518",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-517",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3267,6 +3501,15 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-519",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-520",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3293,7 +3536,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-524",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-523",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3338,7 +3581,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-531",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-532",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3356,16 +3599,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-534",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-536",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-535",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3383,7 +3617,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-539",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-538",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3402,12 +3636,33 @@
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-542",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 80,
+      "brief_reason": "The percentage splits for April and May-Sep differ from those stated in the related paragraph.",
+      "contradiction_type": "numerical",
+      "evidence": {
+        "snippet_a": "90% Apr, 70% May - Sep / 10% Apr, 30% May - Sep",
+        "snippet_b": "70% Apr, 65% May - Sep / 30% Apr, 35% May - Sep",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 80,
+          "brief_reason": "The percentage splits for April and May-Sep differ from those stated in the related paragraph.",
+          "contradiction_type": "numerical",
+          "evidence": {
+            "snippet_a": "90% Apr, 70% May - Sep / 10% Apr, 30% May - Sep",
+            "snippet_b": "70% Apr, 65% May - Sep / 30% Apr, 35% May - Sep",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-543",
@@ -3428,7 +3683,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-546",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-547",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3446,25 +3701,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-549",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-550",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-551",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3482,7 +3719,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-554",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-553",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3491,7 +3728,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-556",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-555",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3509,7 +3746,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-559",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-558",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3518,7 +3755,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-561",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-560",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3536,7 +3773,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-564",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-563",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3545,7 +3782,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-566",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-565",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3563,7 +3800,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-569",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-568",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3572,34 +3809,13 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-571",
-      "contradiction": true,
-      "confidence": 85,
-      "brief_reason": "Conflicting percentage splits for April and May-Sep periods.",
-      "contradiction_type": "numerical",
-      "evidence": {
-        "snippet_a": "90% Apr, 70% May - Sep / 10% Apr, 30% May - Sep",
-        "snippet_b": "70% Apr, 65% May - Sep / 30% Apr, 35% May - Sep",
-        "source_a": "paragraph",
-        "source_b": "context",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      },
-      "contradictions": [
-        {
-          "confidence": 85,
-          "brief_reason": "Conflicting percentage splits for April and May-Sep periods.",
-          "contradiction_type": "numerical",
-          "evidence": {
-            "snippet_a": "90% Apr, 70% May - Sep / 10% Apr, 30% May - Sep",
-            "snippet_b": "70% Apr, 65% May - Sep / 30% Apr, 35% May - Sep",
-            "source_a": "paragraph",
-            "source_b": "context",
-            "evidence_status": "exact",
-            "evidence_note": ""
-          }
-        }
-      ]
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-570",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-572",
@@ -3611,7 +3827,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-574",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-573",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3620,7 +3836,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-576",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-575",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3638,7 +3854,25 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-578",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-579",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-580",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3665,7 +3899,25 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-583",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-584",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-585",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3683,16 +3935,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-587",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-589",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-588",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3710,7 +3953,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-592",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-594",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3719,7 +3962,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-594",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-595",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3755,16 +3998,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-601",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-602",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-600",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3782,25 +4016,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-606",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-607",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-608",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3818,25 +4034,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-610",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-611",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-612",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3854,15 +4052,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-615",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-616",
       "contradiction": false,
       "confidence": 0,
@@ -3872,7 +4061,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-618",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-619",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3881,7 +4070,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-621",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-622",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3899,55 +4088,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-625",
-      "contradiction": true,
-      "confidence": 80,
-      "brief_reason": "Sekisui cost is defined for both outbound freight/expensed instruments and for instruments purchased after 5/1/2016, but with different conditions for capitalization threshold.",
-      "contradiction_type": "specificity",
-      "evidence": {
-        "snippet_a": "Sekisui cost is for outbound freight and expensed Sekisui Instruments after 5/1/2016 (instruments sold to customers by Sekisui, and provided to customers through the reagent rental program when instrument cost is less than Sekisui’s capitalization threshold)",
-        "snippet_b": "Sekisui’s cost is for Sekisui Instruments purchased after 5/1/2016 and provided to customers through the reagent rental program (when instrument cost is greater than Sekisui’s capitalization threshold).",
-        "source_a": "paragraph",
-        "source_b": "context",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      },
-      "contradictions": [
-        {
-          "confidence": 80,
-          "brief_reason": "Sekisui cost is defined for both outbound freight/expensed instruments and for instruments purchased after 5/1/2016, but with different conditions for capitalization threshold.",
-          "contradiction_type": "specificity",
-          "evidence": {
-            "snippet_a": "Sekisui cost is for outbound freight and expensed Sekisui Instruments after 5/1/2016 (instruments sold to customers by Sekisui, and provided to customers through the reagent rental program when instrument cost is less than Sekisui’s capitalization threshold)",
-            "snippet_b": "Sekisui’s cost is for Sekisui Instruments purchased after 5/1/2016 and provided to customers through the reagent rental program (when instrument cost is greater than Sekisui’s capitalization threshold).",
-            "source_a": "paragraph",
-            "source_b": "context",
-            "evidence_status": "exact",
-            "evidence_note": ""
-          }
-        }
-      ]
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-626",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-627",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-629",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3965,7 +4106,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-634",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-635",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3974,7 +4115,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-637",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-638",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3983,7 +4124,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-639",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-640",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -3992,16 +4133,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-641",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-644",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-643",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4019,7 +4151,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-649",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-648",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4028,7 +4160,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-652",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-651",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4046,7 +4178,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-657",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-656",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4055,7 +4187,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-660",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-659",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4064,7 +4196,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-665",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-662",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4073,7 +4205,16 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-668",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-664",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-667",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4091,7 +4232,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-673",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-672",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4100,7 +4241,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-676",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-675",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4118,7 +4259,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-681",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-680",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4127,7 +4268,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-684",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-683",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4145,7 +4286,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-689",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-688",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4154,7 +4295,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-692",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-691",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4172,16 +4313,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-697",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-700",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-699",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4199,7 +4331,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-705",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-704",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4217,7 +4349,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-710",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-714",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4226,7 +4358,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-713",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-715",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4244,7 +4376,34 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-717",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-718",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-719",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-720",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4262,7 +4421,61 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-722",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-723",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-724",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-725",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-726",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-727",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-728",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4280,7 +4493,34 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-730",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-731",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-732",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-733",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4298,7 +4538,79 @@
       "contradictions": []
     },
     {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-735",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-736",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-737",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-738",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-739",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-740",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-741",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-742",
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
+    },
+    {
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-743",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4361,96 +4673,6 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-750",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-751",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-752",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-753",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-754",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-755",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-756",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-757",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-758",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-759",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
       "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-760",
       "contradiction": false,
       "confidence": 0,
@@ -4460,7 +4682,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-761",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-782",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4469,7 +4691,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-762",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-787",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4478,7 +4700,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-763",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-788",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4487,7 +4709,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-764",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-789",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4496,7 +4718,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-765",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-790",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4505,124 +4727,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-767",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-768",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-769",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-770",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-771",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-772",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-773",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-774",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-775",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-776",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-777",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-778",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-779",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-780",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-791",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4640,7 +4745,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-815",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-793",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4649,7 +4754,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-821",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-794",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4658,7 +4763,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-823",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-795",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4667,7 +4772,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-824",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-796",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4676,7 +4781,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-825",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-797",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4685,7 +4790,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-826",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-798",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4694,70 +4799,7 @@
       "contradictions": []
     },
     {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-827",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-828",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-829",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-830",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-831",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-832",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-833",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
-    },
-    {
-      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-834",
+      "paragraph_id": "target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-799",
       "contradiction": false,
       "confidence": 0,
       "brief_reason": "",
@@ -4766,5 +4808,5 @@
       "contradictions": []
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 86961, \"estimated_output_tokens_total\": 21714, \"estimated_cost_usd\": \"0.347634\", \"batches\": [{\"batch\": 1, \"rows\": 101, \"estimated_input_tokens\": 74704, \"estimated_output_tokens\": 4242, \"estimated_cost_usd\": \"0.183344\", \"response_chars\": 19652, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-5\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-10\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-33\\\",\\n      \\\"con\"}, {\"batch\": 2, \"rows\": 45, \"estimated_input_tokens\": 12257, \"estimated_output_tokens\": 1890, \"estimated_cost_usd\": \"0.039634\", \"response_chars\": 10265, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-421\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-422\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-426\\\",\\n      \"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 35000, \"estimated_input_tokens_total\": 85856, \"estimated_output_tokens_total\": 21714, \"estimated_cost_usd\": \"0.345424\", \"batches\": [{\"batch\": 1, \"rows\": 47, \"estimated_input_tokens\": 34790, \"estimated_output_tokens\": 1974, \"estimated_cost_usd\": \"0.085372\", \"response_chars\": 8615, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-5\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-10\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-32\\\",\\n      \\\"con\"}, {\"batch\": 2, \"rows\": 40, \"estimated_input_tokens\": 32150, \"estimated_output_tokens\": 1680, \"estimated_cost_usd\": \"0.077740\", \"response_chars\": 13518, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-140\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 90,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph requires Qualigen to defend Sekisui against infringement claims, but only if the claim does not arise from Sekisui’s noncompliance, which could conflict with the warranty in the relate\"}, {\"batch\": 3, \"rows\": 59, \"estimated_input_tokens\": 18916, \"estimated_output_tokens\": 2478, \"estimated_cost_usd\": \"0.057656\", \"response_chars\": 11616, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::RitterPharmaceuticalsInc_20200313_S-4A_EX-10.54_12055220_EX-10.54_Development_Agreement-p-228\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 90,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph generally denies third-party beneficiary rights except as set forth in Section 11, but Section 11 provides indemnification rights to third parties.\\\",\\n          \\\"evidence\\\": {\\n          \"}]}"
 }

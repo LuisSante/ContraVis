@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-05-19T22:38:59.311630+00:00",
+  "savedAt": "2026-05-20T07:22:32.086761+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-3",
@@ -873,12 +873,33 @@
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-126",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "The paragraph states sublicensing requires prior written approval from Online BVI, but also requires prior written approval from Skype, each of which may be withheld in its sole discretion.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "upon the prior written approval of Online BVI, which approval may be withheld in its sole discretion, the Company shall be permitted to sublicense its rights hereunder",
+        "snippet_b": "upon the prior written approval of Skype, which approval may be withheld in its sole discretion, the Company shall be permitted to sublicense its rights hereunder",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 95,
+          "brief_reason": "The paragraph states sublicensing requires prior written approval from Online BVI, but also requires prior written approval from Skype, each of which may be withheld in its sole discretion.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "upon the prior written approval of Online BVI, which approval may be withheld in its sole discretion, the Company shall be permitted to sublicense its rights hereunder",
+            "snippet_b": "upon the prior written approval of Skype, which approval may be withheld in its sole discretion, the Company shall be permitted to sublicense its rights hereunder",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-127",
@@ -891,21 +912,63 @@
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-128",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 80,
+      "brief_reason": "The paragraph both restricts access to Skype premium features and permits access if payment methods are used.",
+      "contradiction_type": "policy_reversal",
+      "evidence": {
+        "snippet_a": "Online BVI and the Company shall ensure that no Company-Skype Branded Customer (or potential Company-Skype Branded Customer) shall be permitted to access, using the Company-Skype Branded Application or the Company-Skype Toolbar or through the Company-Skype Branded Web Site, any Skype premium features requiring payment by the Company-Skype Branded Customer (or potential Company-Skype Branded Customer), including, but not limited to, SkypeIn, SkypeOut, or Skype Plus",
+        "snippet_b": "unless such Company-Skype Branded Customer (or potential Company-Skype Branded Customer) uses the payment methods made available by the Company pursuant to Section 2.5 for the purchase of such premium features.",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 80,
+          "brief_reason": "The paragraph both restricts access to Skype premium features and permits access if payment methods are used.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "Online BVI and the Company shall ensure that no Company-Skype Branded Customer (or potential Company-Skype Branded Customer) shall be permitted to access, using the Company-Skype Branded Application or the Company-Skype Toolbar or through the Company-Skype Branded Web Site, any Skype premium features requiring payment by the Company-Skype Branded Customer (or potential Company-Skype Branded Customer), including, but not limited to, SkypeIn, SkypeOut, or Skype Plus",
+            "snippet_b": "unless such Company-Skype Branded Customer (or potential Company-Skype Branded Customer) uses the payment methods made available by the Company pursuant to Section 2.5 for the purchase of such premium features.",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-131",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 85,
+      "brief_reason": "The paragraph allows sublicensing to unaffiliated third parties with Skype's approval, which may conflict with related paragraphs only permitting sublicensing to subsidiaries.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "the Company shall be permitted to sublicense its rights hereunder to a wholly-owned Subsidiary, a majority-owned Subsidiary of Tom Holding, or to an unaffiliated third party distributor or reseller, for the same purpose and under the same terms and conditions as the license set forth herein.",
+        "snippet_b": "the Company shall be permitted to sublicense its rights hereunder to a wholly-owned Subsidiary of the Company or a majority-owned Subsidiary of Tom Holding, for the same purpose and under the same terms and conditions as the license set forth herein.",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 85,
+          "brief_reason": "The paragraph allows sublicensing to unaffiliated third parties with Skype's approval, which may conflict with related paragraphs only permitting sublicensing to subsidiaries.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "the Company shall be permitted to sublicense its rights hereunder to a wholly-owned Subsidiary, a majority-owned Subsidiary of Tom Holding, or to an unaffiliated third party distributor or reseller, for the same purpose and under the same terms and conditions as the license set forth herein.",
+            "snippet_b": "the Company shall be permitted to sublicense its rights hereunder to a wholly-owned Subsidiary of the Company or a majority-owned Subsidiary of Tom Holding, for the same purpose and under the same terms and conditions as the license set forth herein.",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-132",
@@ -963,21 +1026,63 @@
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-139",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 75,
+      "brief_reason": "The paragraph claims Skype exclusively owns all rights to translations, but context allows for joint ownership in some cases.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "all copyrights, patents, trade marks, service marks, rights of publicity, authors’ rights, contract and licensing rights, goodwill and all other intellectual property rights in and to the foregoing translations as may exist now and/or hereafter come into existence and arising under the laws of any jurisdiction for the entire term of such rights and all renewals, revivals and extensions thereof.",
+        "snippet_b": "then such rights shall be jointly owned by the Parties, and may be exploited by any Party in accordance with this Agreement",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 75,
+          "brief_reason": "The paragraph claims Skype exclusively owns all rights to translations, but context allows for joint ownership in some cases.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "all copyrights, patents, trade marks, service marks, rights of publicity, authors’ rights, contract and licensing rights, goodwill and all other intellectual property rights in and to the foregoing translations as may exist now and/or hereafter come into existence and arising under the laws of any jurisdiction for the entire term of such rights and all renewals, revivals and extensions thereof.",
+            "snippet_b": "then such rights shall be jointly owned by the Parties, and may be exploited by any Party in accordance with this Agreement",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-142",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 75,
+      "brief_reason": "The paragraph claims exclusive ownership by the Online Group, but context allows for joint ownership in certain cases.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "the Online Group shall, at all times, exclusively own all rights, title, and interest in the Online BVI Intellectual Property, and all Improvements and translations thereto",
+        "snippet_b": "then such rights shall be jointly owned by the Parties, and may be exploited by any Party in accordance with this Agreement",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 75,
+          "brief_reason": "The paragraph claims exclusive ownership by the Online Group, but context allows for joint ownership in certain cases.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "the Online Group shall, at all times, exclusively own all rights, title, and interest in the Online BVI Intellectual Property, and all Improvements and translations thereto",
+            "snippet_b": "then such rights shall be jointly owned by the Parties, and may be exploited by any Party in accordance with this Agreement",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-143",
@@ -990,12 +1095,33 @@
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-144",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 75,
+      "brief_reason": "The paragraph claims exclusive ownership by Skype or Online Group, but context allows for joint ownership in some circumstances.",
+      "contradiction_type": "authority",
+      "evidence": {
+        "snippet_a": "Skype shall, at all times, exclusively own all right, title, and interest in the Company-Skype Branded Application and the Company-Skype Toolbar, save and except for the Group Rights (including, without limitation, any Improvement to the Group Rights) to the extent included therein, and that Skype will exclusively own any Improvement to any Skype Rights.",
+        "snippet_b": "then such rights shall be jointly owned by the Parties, and may be exploited by any Party in accordance with this Agreement",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 75,
+          "brief_reason": "The paragraph claims exclusive ownership by Skype or Online Group, but context allows for joint ownership in some circumstances.",
+          "contradiction_type": "authority",
+          "evidence": {
+            "snippet_a": "Skype shall, at all times, exclusively own all right, title, and interest in the Company-Skype Branded Application and the Company-Skype Toolbar, save and except for the Group Rights (including, without limitation, any Improvement to the Group Rights) to the extent included therein, and that Skype will exclusively own any Improvement to any Skype Rights.",
+            "snippet_b": "then such rights shall be jointly owned by the Parties, and may be exploited by any Party in accordance with this Agreement",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-145",
@@ -1008,12 +1134,33 @@
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-146",
-      "contradiction": false,
-      "confidence": 0,
-      "brief_reason": "",
-      "contradiction_type": null,
-      "evidence": null,
-      "contradictions": []
+      "contradiction": true,
+      "confidence": 85,
+      "brief_reason": "The paragraph assigns exclusive ownership of certain intellectual property rights to Skype for the entire term and all renewals, but then limits some rights to exist only until December 31, 2030.",
+      "contradiction_type": "temporal",
+      "evidence": {
+        "snippet_a": "each assigns to Skype, with full title guarantee, all copyrights, patents, trade marks, service marks, rights of publicity, authors’ rights, contract and licensing rights, goodwill and all other intellectual property rights in and to the same as may exist now and/or hereafter come into existence and arising under the laws of any jurisdiction for the entire term of such rights and all renewals, revivals and extensions thereof.",
+        "snippet_b": "all copyrights, patents, trade marks, service marks, right of publicity, authors’ rights, contract and licensing rights, goodwill and all other intellectual property rights therein and thereto as may exist only until December 31, 2030",
+        "source_a": "paragraph",
+        "source_b": "paragraph",
+        "evidence_status": "exact",
+        "evidence_note": ""
+      },
+      "contradictions": [
+        {
+          "confidence": 85,
+          "brief_reason": "The paragraph assigns exclusive ownership of certain intellectual property rights to Skype for the entire term and all renewals, but then limits some rights to exist only until December 31, 2030.",
+          "contradiction_type": "temporal",
+          "evidence": {
+            "snippet_a": "each assigns to Skype, with full title guarantee, all copyrights, patents, trade marks, service marks, rights of publicity, authors’ rights, contract and licensing rights, goodwill and all other intellectual property rights in and to the same as may exist now and/or hereafter come into existence and arising under the laws of any jurisdiction for the entire term of such rights and all renewals, revivals and extensions thereof.",
+            "snippet_b": "all copyrights, patents, trade marks, service marks, right of publicity, authors’ rights, contract and licensing rights, goodwill and all other intellectual property rights therein and thereto as may exist only until December 31, 2030",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-149",
@@ -1127,26 +1274,26 @@
       "paragraph_id": "target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-167",
       "contradiction": true,
       "confidence": 95,
-      "brief_reason": "The paragraph both states that termination is not a waiver or release and that it is a waiver or release for obligations incurred under the agreement.",
+      "brief_reason": "The paragraph waives all liabilities and obligations upon termination, but context 6.3.3 states the opposite.",
       "contradiction_type": "policy_reversal",
       "evidence": {
-        "snippet_a": "The termination or expiration of this Agreement shall not act as a waiver of any breach of this Agreement and shall not act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
-        "snippet_b": "The termination or expiration of this Agreement shall act as a waiver of any breach of this Agreement and shall act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
+        "snippet_a": "The termination or expiration of this Agreement shall act as a waiver of any breach of this Agreement and shall act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
+        "snippet_b": "The termination or expiration of this Agreement shall not act as a waiver of any breach of this Agreement and shall not act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
         "source_a": "paragraph",
-        "source_b": "paragraph",
+        "source_b": "context",
         "evidence_status": "exact",
         "evidence_note": ""
       },
       "contradictions": [
         {
           "confidence": 95,
-          "brief_reason": "The paragraph both states that termination is not a waiver or release and that it is a waiver or release for obligations incurred under the agreement.",
+          "brief_reason": "The paragraph waives all liabilities and obligations upon termination, but context 6.3.3 states the opposite.",
           "contradiction_type": "policy_reversal",
           "evidence": {
-            "snippet_a": "The termination or expiration of this Agreement shall not act as a waiver of any breach of this Agreement and shall not act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
-            "snippet_b": "The termination or expiration of this Agreement shall act as a waiver of any breach of this Agreement and shall act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
+            "snippet_a": "The termination or expiration of this Agreement shall act as a waiver of any breach of this Agreement and shall act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
+            "snippet_b": "The termination or expiration of this Agreement shall not act as a waiver of any breach of this Agreement and shall not act as a release of either party for any liability or obligation, including, without limitation, any payment due pursuant to Section 5.3, incurred under this Agreement.",
             "source_a": "paragraph",
-            "source_b": "paragraph",
+            "source_b": "context",
             "evidence_status": "exact",
             "evidence_note": ""
           }
@@ -2459,5 +2606,5 @@
       "contradictions": []
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 141611, \"estimated_output_tokens_total\": 11340, \"estimated_cost_usd\": \"0.373942\", \"batches\": [{\"batch\": 1, \"rows\": 54, \"estimated_input_tokens\": 73182, \"estimated_output_tokens\": 2268, \"estimated_cost_usd\": \"0.164508\", \"response_chars\": 182, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-128\\\",\\n      \\\"contradictions\\\": []\\n    }\\n  ]\\n}\"}, {\"batch\": 2, \"rows\": 65, \"estimated_input_tokens\": 68429, \"estimated_output_tokens\": 2730, \"estimated_cost_usd\": \"0.158698\", \"response_chars\": 11862, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-155\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-158\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-160\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragra\"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 24000, \"estimated_input_tokens_total\": 144141, \"estimated_output_tokens_total\": 11340, \"estimated_cost_usd\": \"0.379002\", \"batches\": [{\"batch\": 1, \"rows\": 30, \"estimated_input_tokens\": 23650, \"estimated_output_tokens\": 1260, \"estimated_cost_usd\": \"0.057380\", \"response_chars\": 4531, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-8\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-12\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-13\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_i\"}, {\"batch\": 2, \"rows\": 9, \"estimated_input_tokens\": 17779, \"estimated_output_tokens\": 378, \"estimated_cost_usd\": \"0.038582\", \"response_chars\": 2205, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-101\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-105\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-106\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragra\"}, {\"batch\": 3, \"rows\": 9, \"estimated_input_tokens\": 23104, \"estimated_output_tokens\": 378, \"estimated_cost_usd\": \"0.049232\", \"response_chars\": 6042, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-128\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 80,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph both restricts access to Skype premium features and permits access if payment methods are used.\\\",\\n          \\\"evidence\\\": {\\n            \\\"snippet_a\\\": \\\"Online BVI and the Company shall ensure that no Comp\"}, {\"batch\": 4, \"rows\": 11, \"estimated_input_tokens\": 22444, \"estimated_output_tokens\": 462, \"estimated_cost_usd\": \"0.048584\", \"response_chars\": 2846, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-146\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 85,\\n          \\\"contradiction_type\\\": \\\"temporal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph assigns exclusive ownership of certain intellectual property rights to Skype for the entire term and all renewals, but then limits some rights to exist only until December 31, 2030.\\\",\\n          \\\"evidence\\\": {\"}, {\"batch\": 5, \"rows\": 14, \"estimated_input_tokens\": 22861, \"estimated_output_tokens\": 588, \"estimated_cost_usd\": \"0.050426\", \"response_chars\": 3123, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-165\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-166\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-167\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confide\"}, {\"batch\": 6, \"rows\": 32, \"estimated_input_tokens\": 23283, \"estimated_output_tokens\": 1344, \"estimated_cost_usd\": \"0.057318\", \"response_chars\": 5897, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-185\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 100,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph both states that termination or expiration does not act as a waiver or release and that it does act as a waiver or release for the same liabilities.\\\",\\n          \\\"evidence\\\": {\\n            \\\"snippet_a\\\":\"}, {\"batch\": 7, \"rows\": 14, \"estimated_input_tokens\": 11020, \"estimated_output_tokens\": 588, \"estimated_cost_usd\": \"0.026744\", \"response_chars\": 2145, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-250\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-253\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragraph_id\\\": \\\"target::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement-p-254\\\",\\n      \\\"contradictions\\\": []\\n    },\\n    {\\n      \\\"paragra\"}]}"
 }

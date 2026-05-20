@@ -167,7 +167,7 @@ class ContradictionAnalysisRequest(BaseModel):
     documentId: str
     graph: Graph
     provider: AssistantProvider = "openai"
-    temperature: float = 0.3
+    temperature: float = 0.1
     model: Optional[str] = None
     mode: ContradictionGraphMode = "without_kg"
 
