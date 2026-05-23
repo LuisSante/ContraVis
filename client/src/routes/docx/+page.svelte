@@ -23,6 +23,8 @@
 		FixContradictionSuggestion,
 		ChangeLogState,
 		ContradictionAnalysisRequest,
+		ContradictionEvidence,
+		ContradictionFinding,
 		ContradictionGraphMode,
 		ContradictionParagraphResult,
 		ContradictionTaxonomyType,
@@ -61,6 +63,7 @@
 		buildAssistantNodeSnapshot,
 		buildAssistantRelatedContext,
 		buildContradictionAiCostQuestion,
+		buildContradictionRiskQuestion,
 		resolveAssistantSuggestedQuestions
 	} from '$lib/utils/docx/assistant';
 	import { buildChangeLog } from '$lib/utils/docx/change-log';
@@ -80,6 +83,7 @@
 		PROVIDER_OPTIONS,
 		QUICK_ACTIONS,
 		QUICK_ACTION_WHY_CONTRADICTION_AI,
+		QUICK_ACTION_CONTRADICTION_RISKS,
 		QUICK_ACTION_WHY_CONTRADICTION_FREE,
 		RIGHT_DRAWER_DEFAULT_WIDTH,
 		RIGHT_DRAWER_KEYBOARD_STEP,
@@ -293,6 +297,7 @@
 	let contradictionEvidenceCompressionTweenFrame: number | null = null;
 	let contradictionEvidenceCompressionStart = 0;
 	let contradictionEvidenceCompressionStartTime = 0;
+	let lastContradictionSelectionId: string | null = null;
 	const contradictionEvidenceBSourceElements = new Set<HTMLElement>();
 	let contradictionEvidenceBCollapsedCard: {
 		topPx: number;
@@ -306,6 +311,7 @@
 	let contradictionSummaryItems: Array<{
 		paragraphId: string;
 		label: string;
+		contradictionType: ContradictionTaxonomyType;
 	}> = [];
 	let paragraphExplanationLoading = false;
 	let paragraphExplanationError: string | null = null;
@@ -318,6 +324,8 @@
 		softColor: string;
 	};
 	let paragraphExplanationEntities: ParagraphExplanationEntityHighlight[] = [];
+	let contradictionChatEntities: ParagraphExplanationEntityHighlight[] = [];
+	let contradictionChatEntitiesEnabled = true;
 	let hoveredParagraphExplanationEntityKey: string | null = null;
 	let paragraphExplanationConnectors: Array<{
 		topPx: number;
@@ -392,19 +400,33 @@
 		(row) => row.contradiction
 	).length;
 	$: {
-		const items: Array<{ paragraphId: string; label: string; paragraphEnum: number }> = [];
+		const items: Array<{
+			paragraphId: string;
+			label: string;
+			paragraphEnum: number;
+			contradictionType: ContradictionTaxonomyType;
+		}> = [];
 		for (const [paragraphId, row] of contradictionResultsByParagraphId.entries()) {
 			if (!row.contradiction) continue;
 			const paragraphEnumMatch = paragraphId.match(/-p-(\d+)$/);
 			const paragraphEnum = paragraphEnumMatch ? Number(paragraphEnumMatch[1]) : Number.POSITIVE_INFINITY;
 			const label = paragraphEnumMatch ? `p-${paragraphEnumMatch[1]}` : paragraphId;
-			items.push({ paragraphId, label, paragraphEnum });
+			items.push({
+				paragraphId,
+				label,
+				paragraphEnum,
+				contradictionType: row.contradiction_type ?? 'specificity'
+			});
 		}
 		items.sort(
 			(left, right) =>
 				left.paragraphEnum - right.paragraphEnum || left.paragraphId.localeCompare(right.paragraphId)
 		);
-		contradictionSummaryItems = items.map(({ paragraphId, label }) => ({ paragraphId, label }));
+		contradictionSummaryItems = items.map(({ paragraphId, label, contradictionType }) => ({
+			paragraphId,
+			label,
+			contradictionType
+		}));
 	}
 	$: selectedContradictionResult = $selectedParagraph
 		? (contradictionResultsByParagraphId.get($selectedParagraph.id) ?? null)
@@ -472,11 +494,19 @@
 		const relatedIds = paragraphExplanationRelatedParagraphs
 			.map((related) => related.node.id)
 			.join('|');
-		const entitiesSignature = paragraphExplanationEntities.map((entity) => entity.key).join('|');
+		const entitiesSignature = (
+			activeRightPanelTab === 'analysis'
+				? contradictionChatEntitiesEnabled
+					? contradictionChatEntities
+					: []
+				: paragraphExplanationEntities
+		)
+			.map((entity) => entity.key)
+			.join('|');
 		void selectedId;
 		void relatedIds;
 		void entitiesSignature;
-		if (shouldShowRelatedBridgeDecorations) {
+		if (shouldShowRelatedBridgeDecorations || (shouldShowContradictionDecorations && contradictionChatEntities.length > 0)) {
 			applyParagraphExplanationHighlights();
 			scheduleParagraphExplanationConnectorRefresh();
 		} else {
@@ -513,6 +543,26 @@
 				contradictionEvidenceCompressionTweenFrame = null;
 			}
 			refreshContradictionScrollMarkers();
+		}
+	}
+	$: {
+		const selectedId = $selectedParagraph?.id ?? null;
+		if (selectedId !== lastContradictionSelectionId) {
+			lastContradictionSelectionId = selectedId;
+			const hadCompressionState =
+				contradictionEvidenceCompression !== 0 ||
+				contradictionEvidenceCompressionTarget !== 0 ||
+				contradictionEvidenceBCollapsedCard !== null;
+			if (hadCompressionState) {
+				contradictionEvidenceCompression = 0;
+				contradictionEvidenceCompressionTarget = 0;
+				if (typeof window !== 'undefined' && contradictionEvidenceCompressionTweenFrame != null) {
+					window.cancelAnimationFrame(contradictionEvidenceCompressionTweenFrame);
+					contradictionEvidenceCompressionTweenFrame = null;
+				}
+				clearContradictionEvidenceBTransforms();
+				scheduleContradictionScrollMarkerRefresh();
+			}
 		}
 	}
 
@@ -942,6 +992,8 @@
 		assistantMessages = [];
 		assistantLoading = false;
 		assistantError = null;
+		contradictionChatEntities = [];
+		contradictionChatEntitiesEnabled = true;
 	}
 
 	function resetParagraphExplanationState() {
@@ -1171,6 +1223,12 @@
 		}
 	}
 
+	function getContradictionSnippetMarks(): HTMLElement[] {
+		if (typeof document === 'undefined') return [];
+		const scope = viewer ?? document;
+		return Array.from(scope.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet'));
+	}
+
 	function escapeRegex(value: string): string {
 		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
@@ -1278,6 +1336,136 @@
 		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 	}
 
+	function normalizeSnippetChar(char: string): string {
+		if (char === '\u00A0') return ' ';
+		if (char === '“' || char === '”' || char === '„' || char === '‟') return '"';
+		if (char === '’' || char === '‘' || char === '`' || char === '´') return "'";
+		return char;
+	}
+
+	function normalizeSnippetForSearch(value: string): string {
+		let normalized = '';
+		let previousWasSpace = false;
+		for (const rawChar of (value || '').normalize('NFKC')) {
+			if (/[\u200B-\u200D\uFEFF]/.test(rawChar)) continue;
+			const char = normalizeSnippetChar(rawChar).toLocaleLowerCase();
+			if (char === '"' || char === "'") continue;
+			if (/\s/.test(char)) {
+				if (!previousWasSpace && normalized.length > 0) {
+					normalized += ' ';
+				}
+				previousWasSpace = true;
+				continue;
+			}
+			normalized += char;
+			previousWasSpace = false;
+		}
+		return normalized.trim();
+	}
+
+	function stripLeadingSnippetMarker(value: string): string {
+		return value
+			// Bullets
+			.replace(/^(?:[o0•◦▪·\-])\s*/i, '')
+			.replace(/^\(\s*(?:[o0•◦▪·\-])\s*\)\s*/i, '')
+			// Clause/list markers: (a), (i), (1), a), i), 1), a., i., 1.
+			.replace(
+				/^(?:\(\s*(?:[a-z]{1,3}|[ivxlcdm]{1,8}|\d{1,3})\s*\)|(?:[a-z]{1,3}|[ivxlcdm]{1,8}|\d{1,3})[.)])\s*/i,
+				''
+			)
+			.trim();
+	}
+
+	function splitSnippetByEllipsis(value: string): string[] {
+		return (value || '')
+			.split(/(?:\.\s*){3,}|…+/g)
+			.map((part) => part.trim())
+			.filter(Boolean);
+	}
+
+	function findSnippetRangeWithNormalization(
+		textContent: string,
+		rawSnippet: string
+	): { start: number; end: number } | null {
+		const normalizedRawSnippet = normalizeSnippetForSearch(rawSnippet);
+		const normalizedSnippetWithoutBullet = stripLeadingSnippetMarker(normalizedRawSnippet);
+		const targets = [normalizedRawSnippet];
+		if (
+			normalizedSnippetWithoutBullet &&
+			normalizedSnippetWithoutBullet !== normalizedRawSnippet
+		) {
+			targets.push(normalizedSnippetWithoutBullet);
+		}
+
+		let normalizedText = '';
+		const normalizedToOriginalIndex: number[] = [];
+		let previousWasSpace = false;
+		for (let index = 0; index < textContent.length; index += 1) {
+			const sourceChar = textContent[index];
+			if (/[\u200B-\u200D\uFEFF]/.test(sourceChar)) continue;
+			for (const rawNormalizedChar of sourceChar.normalize('NFKC')) {
+				const normalizedChar = normalizeSnippetChar(rawNormalizedChar).toLocaleLowerCase();
+				if (normalizedChar === '"' || normalizedChar === "'") continue;
+				if (/\s/.test(normalizedChar)) {
+					if (!previousWasSpace && normalizedText.length > 0) {
+						normalizedText += ' ';
+						normalizedToOriginalIndex.push(index);
+					}
+					previousWasSpace = true;
+					continue;
+				}
+				normalizedText += normalizedChar;
+				normalizedToOriginalIndex.push(index);
+				previousWasSpace = false;
+			}
+		}
+
+		while (normalizedText.endsWith(' ') && normalizedToOriginalIndex.length > 0) {
+			normalizedText = normalizedText.slice(0, -1);
+			normalizedToOriginalIndex.pop();
+		}
+
+		// Handle abbreviated snippets like "foo ... bar ... baz":
+		// match chunks in order while allowing gaps between them.
+		const ellipsisParts = splitSnippetByEllipsis(rawSnippet)
+			.map((part) => normalizeSnippetForSearch(part))
+			.filter((part) => part.length > 0);
+		if (ellipsisParts.length >= 2) {
+			let scanFrom = 0;
+			let firstStart = -1;
+			let lastEnd = -1;
+			for (const part of ellipsisParts) {
+				const idx = normalizedText.indexOf(part, scanFrom);
+				if (idx === -1) {
+					firstStart = -1;
+					break;
+				}
+				if (firstStart === -1) firstStart = idx;
+				lastEnd = idx + part.length - 1;
+				scanFrom = idx + part.length;
+			}
+			if (firstStart >= 0 && lastEnd >= firstStart) {
+				const start = normalizedToOriginalIndex[firstStart];
+				const end = normalizedToOriginalIndex[lastEnd];
+				if (Number.isFinite(start) && Number.isFinite(end)) {
+					return { start, end: end + 1 };
+				}
+			}
+		}
+
+		for (const target of targets) {
+			if (!target) continue;
+			const matchStartInNormalized = normalizedText.indexOf(target);
+			if (matchStartInNormalized === -1) continue;
+			const matchEndInNormalized = matchStartInNormalized + target.length - 1;
+			const start = normalizedToOriginalIndex[matchStartInNormalized];
+			const end = normalizedToOriginalIndex[matchEndInNormalized];
+			if (!Number.isFinite(start) || !Number.isFinite(end)) continue;
+			return { start, end: end + 1 };
+		}
+		return null;
+	}
+
 	function highlightSnippetInElement(
 		element: HTMLElement,
 		rawSnippet: string,
@@ -1293,9 +1481,23 @@
 		const textContent = element.textContent ?? '';
 		if (!textContent) return false;
 
-		const matchStart = textContent.toLocaleLowerCase().indexOf(snippet.toLocaleLowerCase());
-		if (matchStart === -1) return false;
-		const matchEnd = matchStart + snippet.length;
+		let matchStart = textContent.toLocaleLowerCase().indexOf(snippet.toLocaleLowerCase());
+		let matchEnd = matchStart >= 0 ? matchStart + snippet.length : -1;
+		if (matchStart === -1) {
+			const normalizedMatch = findSnippetRangeWithNormalization(textContent, snippet);
+			if (!normalizedMatch) return false;
+			matchStart = normalizedMatch.start;
+			matchEnd = normalizedMatch.end;
+		}
+		// Trim leading/trailing whitespace from matched boundaries to avoid empty highlighted
+		// lines created by indentation/newline layout nodes in DOCX rendering.
+		while (matchStart < matchEnd && /\s/.test(textContent[matchStart] ?? '')) {
+			matchStart += 1;
+		}
+		while (matchEnd > matchStart && /\s/.test(textContent[matchEnd - 1] ?? '')) {
+			matchEnd -= 1;
+		}
+		if (matchEnd <= matchStart) return false;
 
 		const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
 		const segments: Array<{ node: Text; start: number; end: number }> = [];
@@ -1319,6 +1521,18 @@
 		range.setStart(startPos.node, startPos.offset);
 		range.setEnd(endPos.node, endPos.offset);
 		if (range.collapsed) return false;
+		const rangeText = range.toString();
+		if (!/\S/.test(rangeText)) return false;
+		// Guard against over-expanded matches spanning large invisible layout gaps.
+		const normalizedSnippetLength = normalizeSnippetForSearch(snippet).length;
+		const normalizedRangeLength = normalizeSnippetForSearch(rangeText).length;
+		if (
+			normalizedSnippetLength > 0 &&
+			normalizedRangeLength > Math.max(normalizedSnippetLength * 1.8, normalizedSnippetLength + 80)
+		) {
+			return false;
+		}
+		if (/[\s\u200B-\u200D\uFEFF]{20,}/.test(rangeText)) return false;
 
 		const mark = document.createElement('mark');
 		mark.className = 'docx-contradiction-snippet';
@@ -1331,15 +1545,14 @@
 		if (meta?.contradictionType) {
 			mark.dataset.contradictionType = meta.contradictionType;
 		}
-		if (meta?.role === 'b') {
+		if (meta?.contradictionType) {
 			const categoryColor = meta.contradictionType
 				? (CONTRADICTION_TAXONOMY_COLORS[meta.contradictionType] ??
 					CONTRADICTION_TAXONOMY_COLORS.specificity)
 				: CONTRADICTION_TAXONOMY_COLORS.specificity;
-			mark.style.setProperty('--contradiction-b-color', categoryColor);
-			mark.style.setProperty('--contradiction-b-bg', hexToRgba(categoryColor, 0.22));
-			mark.style.setProperty('--contradiction-b-bg-active', hexToRgba(categoryColor, 0.34));
-			mark.style.setProperty('--contradiction-b-ring', categoryColor);
+			mark.style.setProperty('--contradiction-bg', hexToRgba(categoryColor, 0.18));
+			mark.style.setProperty('--contradiction-bg-active', hexToRgba(categoryColor, 0.28));
+			mark.style.setProperty('--contradiction-ring', categoryColor);
 		}
 		try {
 			range.surroundContents(mark);
@@ -1355,6 +1568,7 @@
 	function highlightSnippetAcrossDocument(
 		snippet: string,
 		preferredElement?: HTMLElement,
+		excludedElement?: HTMLElement,
 		meta?: {
 			ownerParagraphId?: string;
 			role?: 'a' | 'b';
@@ -1363,11 +1577,16 @@
 	): boolean {
 		if (!snippet.trim()) return false;
 
-		if (preferredElement && highlightSnippetInElement(preferredElement, snippet, meta)) {
+		if (
+			preferredElement &&
+			preferredElement !== excludedElement &&
+			highlightSnippetInElement(preferredElement, snippet, meta)
+		) {
 			return true;
 		}
 
 		for (const element of paragraphElementById.values()) {
+			if (excludedElement && element === excludedElement) continue;
 			if (preferredElement && element === preferredElement) continue;
 			if (highlightSnippetInElement(element, snippet, meta)) {
 				return true;
@@ -1379,7 +1598,7 @@
 
 	function updateActiveContradictionSnippetMarks() {
 		if (typeof document === 'undefined') return;
-		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		const allMarks = getContradictionSnippetMarks();
 		for (const mark of allMarks) {
 			mark.classList.remove('docx-contradiction-snippet--active');
 		}
@@ -1397,7 +1616,7 @@
 
 	function focusEvidenceSnippet(paragraphId: string, role: 'a' | 'b') {
 		let targetMark: HTMLElement | null = null;
-		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		const allMarks = getContradictionSnippetMarks();
 		for (const mark of allMarks) {
 			if (
 				mark.dataset.contradictionOwner === paragraphId &&
@@ -1531,7 +1750,7 @@
 
 		let markA: HTMLElement | null = null;
 		let markB: HTMLElement | null = null;
-		const allMarks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		const allMarks = getContradictionSnippetMarks();
 		for (const mark of allMarks) {
 			if (mark.dataset.contradictionOwner !== selected.id) continue;
 			if (!markA && mark.dataset.contradictionRole === 'a') {
@@ -1676,47 +1895,43 @@
 			element.dataset.contradictionConfidence = String(result.confidence);
 			element.dataset.contradictionReason = result.brief_reason ?? '';
 
-			const evidence = result.evidence;
-			const contradictionType = result.contradiction_type ?? 'specificity';
-			if (evidence?.snippet_a?.trim()) {
-				if (evidence.source_a === 'context') {
-					highlightSnippetAcrossDocument(evidence.snippet_a, element, {
-						ownerParagraphId: paragraphId,
-						role: 'a',
-						contradictionType
-					});
-				} else {
-					highlightSnippetInElement(element, evidence.snippet_a, {
-						ownerParagraphId: paragraphId,
-						role: 'a',
-						contradictionType
-					}) ||
-						highlightSnippetAcrossDocument(evidence.snippet_a, element, {
-							ownerParagraphId: paragraphId,
-							role: 'a',
-							contradictionType
-						});
-				}
-			}
-			if (evidence?.snippet_b?.trim()) {
-				if (evidence.source_b === 'context') {
-					highlightSnippetAcrossDocument(evidence.snippet_b, element, {
-						ownerParagraphId: paragraphId,
-						role: 'b',
-						contradictionType
-					});
-				} else {
-					highlightSnippetInElement(element, evidence.snippet_b, {
-						ownerParagraphId: paragraphId,
-						role: 'b',
-						contradictionType
-					}) ||
-						highlightSnippetAcrossDocument(evidence.snippet_b, element, {
-							ownerParagraphId: paragraphId,
-							role: 'b',
-							contradictionType
-						});
-				}
+			const findings = normalizeContradictionCandidates(result);
+			for (const [index, finding] of findings.entries()) {
+				const evidence = finding.evidence;
+				if (!hasUsableContradictionEvidence(evidence)) continue;
+				const contradictionType = finding.contradiction_type ?? 'specificity';
+				const roleA = index === 0 ? 'a' : undefined;
+				const roleB = index === 0 ? 'b' : undefined;
+					if (evidence.snippet_a.trim()) {
+						if (evidence.source_a === 'context') {
+							highlightSnippetAcrossDocument(evidence.snippet_a, undefined, element, {
+								ownerParagraphId: paragraphId,
+								role: roleA,
+								contradictionType
+							});
+						} else {
+							highlightSnippetInElement(element, evidence.snippet_a, {
+								ownerParagraphId: paragraphId,
+								role: roleA,
+								contradictionType
+							});
+						}
+					}
+					if (evidence.snippet_b.trim()) {
+						if (evidence.source_b === 'context') {
+							highlightSnippetAcrossDocument(evidence.snippet_b, undefined, element, {
+								ownerParagraphId: paragraphId,
+								role: roleB,
+								contradictionType
+							});
+						} else {
+							highlightSnippetInElement(element, evidence.snippet_b, {
+								ownerParagraphId: paragraphId,
+								role: roleB,
+								contradictionType
+							});
+						}
+					}
 			}
 		}
 
@@ -1753,7 +1968,13 @@
 
 	function applyParagraphExplanationHighlights() {
 		clearParagraphExplanationElementHighlights();
-		if (!shouldShowRelatedBridgeDecorations) return;
+		const activeEntities =
+			activeRightPanelTab === 'analysis'
+				? contradictionChatEntitiesEnabled
+					? contradictionChatEntities
+					: []
+				: paragraphExplanationEntities;
+		if (!shouldShowRelatedBridgeDecorations && activeEntities.length === 0) return;
 		const bridgeRelatedParagraphs = getBridgeRelatedParagraphs();
 		const shouldMuteOutOfContext =
 			paragraphExplanationCompression > 0.02 && paragraphExplanationMovedNodeIds.size > 0;
@@ -1770,7 +1991,7 @@
 		selectedElement?.classList.remove('docx-paragraph-explanation-muted');
 		selectedElement?.classList.add('docx-paragraph-explanation-selected');
 		if (selectedElement) {
-			highlightParagraphExplanationEntitiesInElement(selectedElement, paragraphExplanationEntities);
+			highlightParagraphExplanationEntitiesInElement(selectedElement, activeEntities);
 		}
 		for (const related of bridgeRelatedParagraphs) {
 			const relatedElement = paragraphElementById.get(related.node.id);
@@ -1785,7 +2006,7 @@
 			if (relatedElement) {
 				highlightParagraphExplanationEntitiesInElement(
 					relatedElement,
-					paragraphExplanationEntities
+					activeEntities
 				);
 			}
 		}
@@ -2266,10 +2487,243 @@
 		window.addEventListener('mouseup', stopManualScrollDrag);
 	}
 
+	function normalizeContradictionSnippetForKey(value: string | null | undefined): string {
+		return (value ?? '')
+			.normalize('NFKC')
+			.toLocaleLowerCase()
+			.replace(/[\u200B-\u200D\uFEFF]/g, '')
+			.replace(/["'`“”‘’]+/g, '')
+			.replace(/^[\s\p{P}\p{S}]+|[\s\p{P}\p{S}]+$/gu, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function hasUsableContradictionEvidence(
+		evidence: ContradictionEvidence | null | undefined
+	): evidence is ContradictionEvidence {
+		const snippetA = evidence?.snippet_a?.trim() ?? '';
+		const snippetB = evidence?.snippet_b?.trim() ?? '';
+		return Boolean(snippetA && snippetB);
+	}
+
+	function containsEllipsisSnippet(value: string): boolean {
+		return /(?:\.\s*){3,}|…+/.test(value || '');
+	}
+
+	function findCaseInsensitiveSnippetInSource(source: string, snippet: string): string | null {
+		const haystack = source || '';
+		const needle = (snippet || '').trim();
+		if (!haystack || !needle) return null;
+		const needleWithoutMarker = stripLeadingSnippetMarker(needle);
+		const candidates =
+			needleWithoutMarker && needleWithoutMarker !== needle
+				? [needle, needleWithoutMarker]
+				: [needle];
+		for (const candidate of candidates) {
+			const index = haystack.toLocaleLowerCase().indexOf(candidate.toLocaleLowerCase());
+			if (index < 0) continue;
+			return haystack.slice(index, index + candidate.length);
+		}
+		return null;
+	}
+
+	function expandEllipsisSnippetInSource(source: string, snippet: string): string | null {
+		const haystack = source || '';
+		const needle = (snippet || '').trim();
+		if (!haystack || !needle || !containsEllipsisSnippet(needle)) return null;
+		const needleWithoutMarker = stripLeadingSnippetMarker(needle);
+		const candidates =
+			needleWithoutMarker && needleWithoutMarker !== needle
+				? [needle, needleWithoutMarker]
+				: [needle];
+		for (const candidate of candidates) {
+			const range = findSnippetRangeWithNormalization(haystack, candidate);
+			if (!range) continue;
+			const start = Math.max(0, Math.min(haystack.length, range.start));
+			const end = Math.max(start, Math.min(haystack.length, range.end));
+			const expanded = haystack.slice(start, end).trim();
+			if (expanded) return expanded;
+		}
+		return null;
+	}
+
+	function resolveSnippetAgainstSources(snippet: string, sources: string[]): string {
+		const cleaned = (snippet || '').trim();
+		if (!cleaned) return '';
+
+		for (const source of sources) {
+			const exact = findCaseInsensitiveSnippetInSource(source, cleaned);
+			if (exact) return exact;
+		}
+
+		if (containsEllipsisSnippet(cleaned)) {
+			for (const source of sources) {
+				const expanded = expandEllipsisSnippetInSource(source, cleaned);
+				if (expanded) return expanded;
+			}
+		}
+
+		return cleaned;
+	}
+
+	function buildContradictionSourceLookups(): {
+		textByNodeId: Map<string, string>;
+		relatedByNodeId: Map<string, Set<string>>;
+	} {
+		const textByNodeId = new Map<string, string>();
+		for (const node of get(paragraphs)) {
+			textByNodeId.set(node.id, getNodeCurrentText(nodeEditStateById, node));
+		}
+
+		const relatedByNodeId = new Map<string, Set<string>>();
+		for (const edge of backendEdges) {
+			const sourceId = String(edge.source);
+			const targetId = String(edge.target);
+			if (!textByNodeId.has(sourceId) || !textByNodeId.has(targetId)) continue;
+			const sourceSet = relatedByNodeId.get(sourceId) ?? new Set<string>();
+			sourceSet.add(targetId);
+			relatedByNodeId.set(sourceId, sourceSet);
+			const targetSet = relatedByNodeId.get(targetId) ?? new Set<string>();
+			targetSet.add(sourceId);
+			relatedByNodeId.set(targetId, targetSet);
+		}
+
+		return { textByNodeId, relatedByNodeId };
+	}
+
+	function repairEvidenceForParagraph(
+		rowId: string,
+		evidence: ContradictionEvidence,
+		lookups: {
+			textByNodeId: Map<string, string>;
+			relatedByNodeId: Map<string, Set<string>>;
+		}
+	): ContradictionEvidence {
+		const paragraphText = lookups.textByNodeId.get(rowId) ?? '';
+		const relatedIds = lookups.relatedByNodeId.get(rowId) ?? new Set<string>();
+		const relatedTexts = Array.from(relatedIds)
+			.map((id) => lookups.textByNodeId.get(id) ?? '')
+			.filter((text) => text.trim().length > 0);
+		const allTexts = [paragraphText, ...relatedTexts].filter((text) => text.trim().length > 0);
+
+		const sourcesFor = (sourceLabel: ContradictionEvidence['source_a']): string[] => {
+			if (sourceLabel === 'paragraph') return paragraphText ? [paragraphText] : [];
+			if (sourceLabel === 'context') return relatedTexts;
+			return allTexts;
+		};
+
+		const repairedA = resolveSnippetAgainstSources(
+			evidence.snippet_a,
+			sourcesFor(evidence.source_a)
+		);
+		const repairedB = resolveSnippetAgainstSources(
+			evidence.snippet_b,
+			sourcesFor(evidence.source_b)
+		);
+
+		const nextEvidence: ContradictionEvidence = {
+			...evidence,
+			snippet_a: repairedA,
+			snippet_b: repairedB
+		};
+		if (nextEvidence.snippet_a && nextEvidence.snippet_b) {
+			nextEvidence.evidence_status = 'exact';
+		}
+		return nextEvidence;
+	}
+
+	function buildContradictionCandidateKey(candidate: ContradictionFinding): string | null {
+		const evidence = candidate.evidence;
+		if (!hasUsableContradictionEvidence(evidence)) return null;
+		const snippetA = normalizeContradictionSnippetForKey(evidence?.snippet_a);
+		const snippetB = normalizeContradictionSnippetForKey(evidence?.snippet_b);
+		if (!snippetA || !snippetB) return null;
+		const left = snippetA <= snippetB ? snippetA : snippetB;
+		const right = snippetA <= snippetB ? snippetB : snippetA;
+		const contradictionType = candidate.contradiction_type ?? 'specificity';
+		return `${contradictionType}|${left}<>${right}`;
+	}
+
+	function normalizeContradictionCandidates(row: ContradictionParagraphResult): ContradictionFinding[] {
+		const candidates: ContradictionFinding[] = [];
+		if (Array.isArray(row.contradictions)) {
+			for (const finding of row.contradictions) {
+				if (!finding || !hasUsableContradictionEvidence(finding.evidence)) continue;
+				candidates.push({
+					confidence: Math.min(100, Math.max(0, Number(finding.confidence || 0))),
+					brief_reason: (finding.brief_reason || '').trim(),
+					contradiction_type: finding.contradiction_type ?? 'specificity',
+					evidence: finding.evidence
+				});
+			}
+		}
+		if (candidates.length === 0 && row.contradiction && hasUsableContradictionEvidence(row.evidence)) {
+			candidates.push({
+				confidence: Math.min(100, Math.max(0, Number(row.confidence || 0))),
+				brief_reason: (row.brief_reason || '').trim(),
+				contradiction_type: row.contradiction_type ?? 'specificity',
+				evidence: row.evidence
+			});
+		}
+
+		const byKey = new Map<string, ContradictionFinding>();
+		for (const candidate of candidates) {
+			const key = buildContradictionCandidateKey(candidate);
+			if (!key) continue;
+			const current = byKey.get(key);
+			if (!current || Number(candidate.confidence || 0) > Number(current.confidence || 0)) {
+				byKey.set(key, candidate);
+			}
+		}
+
+		const normalized = Array.from(byKey.values());
+		normalized.sort((left, right) => Number(right.confidence || 0) - Number(left.confidence || 0));
+		return normalized;
+	}
+
 	function setContradictionResults(results: ContradictionParagraphResult[], _source: string | null) {
 		const next = new Map<string, ContradictionParagraphResult>();
+		const seenGlobalContradictionKeys = new Set<string>();
+		const sourceLookups = buildContradictionSourceLookups();
 		for (const row of results) {
-			next.set(String(row.paragraph_id), row);
+			const rowId = String(row.paragraph_id);
+			const candidates = normalizeContradictionCandidates(row).map((candidate) => {
+				if (!hasUsableContradictionEvidence(candidate.evidence)) return candidate;
+				return {
+					...candidate,
+					evidence: repairEvidenceForParagraph(rowId, candidate.evidence, sourceLookups)
+				};
+			});
+			const uniqueCandidates: ContradictionFinding[] = [];
+			for (const candidate of candidates) {
+				const key = buildContradictionCandidateKey(candidate);
+				if (!key) continue;
+				if (seenGlobalContradictionKeys.has(key)) continue;
+				seenGlobalContradictionKeys.add(key);
+				uniqueCandidates.push(candidate);
+			}
+			const primary = uniqueCandidates[0];
+			if (!primary) {
+				next.set(rowId, {
+					...row,
+					contradiction: false,
+					confidence: 0,
+					brief_reason: '',
+					contradiction_type: null,
+					evidence: null,
+					contradictions: []
+				});
+				continue;
+			}
+			next.set(rowId, {
+				...row,
+				contradiction: true,
+				confidence: Math.min(100, Math.max(0, Number(primary.confidence || 0))),
+				brief_reason: (primary.brief_reason || '').trim(),
+				contradiction_type: primary.contradiction_type ?? 'specificity',
+				evidence: primary.evidence ?? null,
+				contradictions: uniqueCandidates
+			});
 		}
 		contradictionResultsByParagraphId = next;
 		syncContradictionDecorations();
@@ -2443,7 +2897,7 @@
 	function applyContradictionEvidenceBTransforms(paragraphId: string, deltaY: number) {
 		clearContradictionEvidenceBTransforms();
 		if (typeof document === 'undefined') return;
-		const marks = document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet');
+		const marks = getContradictionSnippetMarks();
 		const containers = new Set<HTMLElement>();
 		for (const mark of marks) {
 			if (
@@ -2536,7 +2990,8 @@
 
 		if (
 			question === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
-			question === QUICK_ACTION_WHY_CONTRADICTION_AI
+			question === QUICK_ACTION_WHY_CONTRADICTION_AI ||
+			question === QUICK_ACTION_CONTRADICTION_RISKS
 		) {
 			assistantInput = questionOverride ? assistantInput : '';
 			await askQuickAction(question);
@@ -2748,14 +3203,170 @@
 				return;
 			}
 			const response = await fetchAssistantResponse(payload);
+			const parsedEntityAnswer = extractAnswerEntities(response.answer);
+			const fallbackEntities = buildFallbackContradictionEntities(selectedText, contradiction);
+			const entityHighlights = buildParagraphExplanationEntityHighlights(
+				parsedEntityAnswer.entities.length > 0 ? parsedEntityAnswer.entities : fallbackEntities
+			);
+			contradictionChatEntities = entityHighlights;
+			contradictionChatEntitiesEnabled = true;
+			applyParagraphExplanationHighlights();
 
 			assistantMessages = [
 				...assistantMessages,
 				{
 					id: nextAssistantMessageId(),
 					role: 'assistant',
-					content: response.answer,
+					content: parsedEntityAnswer.content || response.answer,
 					citations: response.citations,
+					entityHighlights,
+					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
+						mode: 'explain',
+						scope: 'selected',
+						contradiction: true
+					})
+				}
+			];
+		} catch (assistantRequestError) {
+			const message = getAxiosErrorMessage(assistantRequestError, 'Failed to generate a response.');
+			assistantError = message;
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: `I could not complete this request: ${message}`
+				}
+			];
+		} finally {
+			assistantLoading = false;
+			await scrollAssistantToBottom();
+		}
+	}
+
+	function extractAnswerEntities(answer: string): { content: string; entities: string[] } {
+		const normalized = answer.trim();
+		if (!normalized) return { content: '', entities: [] };
+
+		const entitiesMatch = normalized.match(/\n\s*ENTITIES:\s*([\s\S]*)$/i);
+		if (!entitiesMatch) return { content: normalized, entities: [] };
+
+		const entities = entitiesMatch[1]
+			.split('\n')
+			.map((line) => line.replace(/^[-*•]\s*/, '').trim())
+			.filter((line) => line.length >= 2)
+			.slice(0, 12);
+		const content = normalized.slice(0, entitiesMatch.index ?? normalized.length).trim();
+		return { content, entities: Array.from(new Set(entities)) };
+	}
+
+	function buildFallbackContradictionEntities(
+		paragraphText: string,
+		contradiction: ContradictionParagraphResult
+	): string[] {
+		const rawPool = [
+			paragraphText,
+			contradiction.evidence?.snippet_a ?? '',
+			contradiction.evidence?.snippet_b ?? '',
+			contradiction.brief_reason ?? ''
+		]
+			.join(' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+		if (!rawPool) return [];
+
+		const candidates = new Set<string>();
+		const quoted = rawPool.match(/"([^"]{3,80})"/g) ?? [];
+		for (const item of quoted) {
+			const cleaned = item.replace(/"/g, '').trim();
+			if (cleaned.length >= 3) candidates.add(cleaned);
+		}
+
+		const legalTerms = [
+			'agreement',
+			'applicable laws',
+			'licensees',
+			'subcontractors',
+			'miltenyi products',
+			'bellicum',
+			'compliance',
+			'minimum purchase',
+			'purchase order',
+			'written notice'
+		];
+		const lowerPool = rawPool.toLocaleLowerCase();
+		for (const term of legalTerms) {
+			if (lowerPool.includes(term)) candidates.add(term.replace(/\b\w/g, (c) => c.toUpperCase()));
+		}
+
+		const titleCase = rawPool.match(/\b[A-Z][a-z]{2,}(?:\s+[A-Z][a-z]{2,}){0,2}\b/g) ?? [];
+		for (const token of titleCase) candidates.add(token.trim());
+
+		return Array.from(candidates)
+			.map((item) => item.trim())
+			.filter((item) => item.length >= 3)
+			.slice(0, 10);
+	}
+
+	async function submitContradictionRiskAssessment(
+		selected: ParagraphNode,
+		contradiction: ContradictionParagraphResult
+	) {
+		if (assistantLoading) return;
+		if (!activeDocumentId) {
+			assistantError = 'No document is loaded.';
+			return;
+		}
+
+		const paragraphNodes = buildAssistantNodeSnapshot(get(paragraphs), nodeEditStateById);
+		if (paragraphNodes.length === 0) {
+			assistantError = 'The contract is still loading.';
+			return;
+		}
+
+		const selectedText = getNodeCurrentText(nodeEditStateById, selected);
+		const question = buildContradictionRiskQuestion(selected.id, selectedText, contradiction);
+
+		assistantLoading = true;
+		assistantError = null;
+		await scrollAssistantToBottom();
+
+		const payload: AssistantChatRequest = {
+			documentId: activeDocumentId,
+			question,
+			mode: 'explain',
+			scope: 'selected',
+			provider: assistantProvider,
+			model: globalAnalysisModel.trim() || undefined,
+			selectedParagraphId: selected.id,
+			relatedParagraphs: buildAssistantRelatedContext(selectedRelatedParagraphs),
+			paragraphNodes,
+			history: buildAssistantHistoryPayload(assistantMessages)
+		};
+
+		try {
+			const approved = await confirmLlmEstimate('assistant_chat', payload);
+			if (!approved) {
+				assistantLoading = false;
+				return;
+			}
+			const response = await fetchAssistantResponse(payload);
+			const parsedEntityAnswer = extractAnswerEntities(response.answer);
+			const fallbackEntities = buildFallbackContradictionEntities(selectedText, contradiction);
+			const entityHighlights = buildParagraphExplanationEntityHighlights(
+				parsedEntityAnswer.entities.length > 0 ? parsedEntityAnswer.entities : fallbackEntities
+			);
+			contradictionChatEntities = entityHighlights;
+			contradictionChatEntitiesEnabled = true;
+			applyParagraphExplanationHighlights();
+			assistantMessages = [
+				...assistantMessages,
+				{
+					id: nextAssistantMessageId(),
+					role: 'assistant',
+					content: parsedEntityAnswer.content || response.answer,
+					citations: response.citations,
+					entityHighlights,
 					suggestedQuestions: resolveAssistantSuggestedQuestions(response.suggestedQuestions, {
 						mode: 'explain',
 						scope: 'selected',
@@ -2863,7 +3474,8 @@
 		if (assistantLoading) return;
 		if (
 			prompt === QUICK_ACTION_WHY_CONTRADICTION_FREE ||
-			prompt === QUICK_ACTION_WHY_CONTRADICTION_AI
+			prompt === QUICK_ACTION_WHY_CONTRADICTION_AI ||
+			prompt === QUICK_ACTION_CONTRADICTION_RISKS
 		) {
 			const selected = get(selectedParagraph);
 			assistantError = null;
@@ -2931,6 +3543,11 @@
 					}
 				);
 				await scrollAssistantToBottom();
+				return;
+			}
+
+			if (prompt === QUICK_ACTION_CONTRADICTION_RISKS) {
+				await submitContradictionRiskAssessment(selected, contradiction);
 				return;
 			}
 
@@ -4452,7 +5069,7 @@ function setRightDrawerWidth(nextWidth: number) {
 			{#if shouldShowContradictionDecorations && selectedContradictionEvidenceLink}
 				<div
 					class="pointer-events-none absolute inset-0 z-20 overflow-hidden"
-					style={`--contradiction-a-color: #dc2626; --contradiction-b-color: ${selectedContradictionCategoryColor};`}
+					style={`--contradiction-a-color: ${selectedContradictionCategoryColor}; --contradiction-b-color: ${selectedContradictionCategoryColor};`}
 				>
 					<span
 						class="docx-contradiction-evidence-bracket"
@@ -4822,10 +5439,16 @@ function setRightDrawerWidth(nextWidth: number) {
 				{assistantError}
 				contradictionQuickActionFreeLabel={QUICK_ACTION_WHY_CONTRADICTION_FREE}
 				contradictionQuickActionAiLabel={QUICK_ACTION_WHY_CONTRADICTION_AI}
+				contradictionQuickActionRiskLabel={QUICK_ACTION_CONTRADICTION_RISKS}
 				contradictionTaxonomyOrder={CONTRADICTION_TAXONOMY_ORDER}
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
+				entityHighlightsEnabled={contradictionChatEntitiesEnabled}
+				onToggleEntityHighlights={() => {
+					contradictionChatEntitiesEnabled = !contradictionChatEntitiesEnabled;
+					applyParagraphExplanationHighlights();
+				}}
 				onSuggestContradictionFix={suggestContradictionFixFromChat}
 				onAcceptFixSuggestion={acceptFixSuggestionFromChat}
 				onRunContradictionQuickAction={(prompt) => void askQuickAction(prompt)}
@@ -4895,6 +5518,11 @@ function setRightDrawerWidth(nextWidth: number) {
 				contradictionTaxonomyLabels={CONTRADICTION_TAXONOMY_LABELS}
 				contradictionTaxonomyColors={CONTRADICTION_TAXONOMY_COLORS}
 				contradictionClaimSideColors={CONTRADICTION_CLAIM_SIDE_COLORS}
+				entityHighlightsEnabled={contradictionChatEntitiesEnabled}
+				onToggleEntityHighlights={() => {
+					contradictionChatEntitiesEnabled = !contradictionChatEntitiesEnabled;
+					applyParagraphExplanationHighlights();
+				}}
 				onQuickActionSuggestionClick={handleAssistantQuickActionSuggestion}
 				{onSuggestedQuestionClick}
 				onFocusNodeFromPanel={focusNodeFromPanel}

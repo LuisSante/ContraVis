@@ -8,6 +8,7 @@ import type {
 
 export const QUICK_ACTION_WHY_CONTRADICTION_FREE = 'Why is it a contradiction? (Free)';
 export const QUICK_ACTION_WHY_CONTRADICTION_AI = 'Why is it a contradiction? (AI cost)';
+export const QUICK_ACTION_CONTRADICTION_RISKS = 'What are the risks of this contradiction?';
 
 export const QUICK_ACTIONS = [
 	QUICK_ACTION_WHY_CONTRADICTION_FREE,
@@ -35,14 +36,12 @@ export const PROVIDER_OPTIONS: ReadonlyArray<{ value: AssistantProvider; label: 
 export const CONTRADICTION_OPENAI_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 	{ value: 'gpt-4.1', label: 'gpt-4.1' },
 	{ value: 'gpt-5', label: 'gpt-5' },
-	{ value: 'gpt-5-mini', label: 'gpt-5-mini' },
-	{ value: 'gpt-5-nano', label: 'gpt-5-nano' },
 	{ value: 'gpt-5.1', label: 'gpt-5.1' }
 
 ];
 
 export const PARAGRAPH_EXPLANATION_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
-	{ value: 'gpt-5-mini', label: 'gpt-5-mini' },
+	{ value: 'gpt-5.1', label: 'gpt-5.1' },
 	{ value: 'gpt-5', label: 'gpt-5' },
 	{ value: 'gpt-4.1', label: 'gpt-4.1' }
 ];
@@ -72,12 +71,12 @@ export const CONTRADICTION_TAXONOMY_LABELS: Readonly<Record<ContradictionTaxonom
 };
 
 export const CONTRADICTION_TAXONOMY_COLORS: Readonly<Record<ContradictionTaxonomyType, string>> = {
-	temporal: '#c300ff',
-	numerical: '#019a34',
-	authority: '#e2c800',
-	process: '#0ea5e9',
-	policy_reversal: '#ff9901',
-	specificity: '#1653cc'
+	temporal: '#9c00cc',
+	numerical: '#0f8536',
+	authority: '#e4bb05',
+	process: '#1cb18e',
+	policy_reversal: '#ff8000',
+	specificity: '#07399d'
 };
 
 export const CONTRADICTION_CLAIM_SIDE_COLORS: Readonly<Record<'a' | 'b', string>> = {

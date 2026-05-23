@@ -366,6 +366,43 @@ export function buildContradictionAiCostQuestion(
 		'Do not use markdown, bullet lists, code fences, or labels.',
 		'Write a concise explanation in natural language, directly addressing the conflict between evidence A and evidence B.',
 		'If the paragraph is actually not contradictory, state that clearly and explain why.',
+		'After the explanation, add a blank line and then an "ENTITIES:" block with 2 to 4 highly relevant entities only, one per line.',
+		'Entities must prioritize contract parties/actors (e.g., company names, roles such as Licensor/Licensee/Affiliate/Customer).',
+		'Do NOT include actions, obligations, verbs, processes, dates, amounts, legal consequences, or generic legal terms as entities.',
+		`Known classifier signal: contradiction=true, confidence=${Math.round(contradiction.confidence || 0)}, reason="${(contradiction.brief_reason || '').trim()}".`,
+		`Evidence A (${sourceA}): "${evidenceA}"`,
+		`Evidence B (${sourceB}): "${evidenceB}"`,
+		'Selected paragraph text:',
+		`"""${paragraphText}"""`
+	].join('\n');
+}
+
+export function buildContradictionRiskQuestion(
+	paragraphId: string,
+	paragraphText: string,
+	contradiction: ContradictionParagraphResult
+): string {
+	const evidence = contradiction.evidence;
+	const evidenceA = evidence?.snippet_a?.trim() || '(missing)';
+	const evidenceB = evidence?.snippet_b?.trim() || '(missing)';
+	const sourceA = evidence?.source_a || 'unknown';
+	const sourceB = evidence?.source_b || 'unknown';
+
+	return [
+		`Assess the risks created by the contradiction identified in paragraph ${paragraphId}.`,
+		'Provide a concise and clear explanation (approximately 4-7 sentences).',
+		'Use this exact structure and labels (one section each, no markdown):',
+		'Context: <briefly explain what this contract section is about>',
+		'Contradiction: <describe the contradiction/inconsistency identified>',
+		'Risks: <specific legal, financial, operational, or practical risks>',
+		'Affected: <which party is most likely to be harmed and why>',
+		'Consequences: <practical/legal consequences from this issue>',
+		'Risk Highlight: <2-3 words that best summarize the single biggest risk; noun phrase only>',
+		'Use clear and accessible language whenever possible, avoiding unnecessary legal jargon.',
+		'Focus on real-world impact and contractual imbalance.',
+		'After all sections, add a blank line and then an "ENTITIES:" block with 2 to 4 highly relevant entities only, one per line.',
+		'Entities must prioritize contract parties/actors (e.g., company names, roles such as Licensor/Licensee/Affiliate/Customer).',
+		'Do NOT include actions, obligations, verbs, processes, dates, amounts, legal consequences, or generic legal terms as entities.',
 		`Known classifier signal: contradiction=true, confidence=${Math.round(contradiction.confidence || 0)}, reason="${(contradiction.brief_reason || '').trim()}".`,
 		`Evidence A (${sourceA}): "${evidenceA}"`,
 		`Evidence B (${sourceB}): "${evidenceB}"`,

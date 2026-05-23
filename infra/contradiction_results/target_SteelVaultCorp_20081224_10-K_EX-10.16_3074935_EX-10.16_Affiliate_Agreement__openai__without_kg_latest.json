@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-05-15T11:43:31.507087+00:00",
+  "savedAt": "2026-05-19T14:45:07.833550+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-5",
@@ -13,7 +13,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-6",
@@ -21,7 +22,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-7",
@@ -29,22 +31,38 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-8",
-      "contradiction": false,
-      "confidence": 90,
-      "brief_reason": "The paragraph only states the intent to enter an agreement and does not contain conflicting obligations or rights.",
-      "contradiction_type": null,
+      "contradiction": true,
+      "confidence": 95,
+      "brief_reason": "Paragraph allows Marketing Affiliate to offer, market, sell, or distribute Services without permission, but related paragraph requires express written permission.",
+      "contradiction_type": "policy_reversal",
       "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
+        "snippet_a": "Marketing Affiliate may otherwise offer for sale, market, sell or distribute the Services of Equidata without obtaining any permission from Equidata.",
+        "snippet_b": "Marketing Affiliate may not otherwise offer for sale, market, sell or distribute the Services of Equidata without express written permission.",
+        "source_a": "paragraph",
+        "source_b": "context",
+        "evidence_status": "exact",
         "evidence_note": ""
-      }
+      },
+      "contradictions": [
+        {
+          "confidence": 95,
+          "brief_reason": "Paragraph allows Marketing Affiliate to offer, market, sell, or distribute Services without permission, but related paragraph requires express written permission.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "Marketing Affiliate may otherwise offer for sale, market, sell or distribute the Services of Equidata without obtaining any permission from Equidata.",
+            "snippet_b": "Marketing Affiliate may not otherwise offer for sale, market, sell or distribute the Services of Equidata without express written permission.",
+            "source_a": "paragraph",
+            "source_b": "context",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-9",
@@ -52,7 +70,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-10",
@@ -60,7 +79,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-11",
@@ -68,52 +88,98 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-12",
       "contradiction": true,
-      "confidence": 100,
-      "brief_reason": "The paragraph both prohibits and allows the Marketing Affiliate to market, sell, or distribute Services without written permission.",
+      "confidence": 95,
+      "brief_reason": "Paragraph first allows display of Marketing Materials at principal places of business, then prohibits display at those locations.",
       "contradiction_type": "policy_reversal",
       "evidence": {
-        "snippet_a": "Marketing Affiliate may not otherwise offer for sale, market, sell or distribute the Services of Equidata without express written permission.",
-        "snippet_b": "Marketing Affiliate may offer for sale, market, sell or distribute the Services of Equidata without obtaining any prior written permission from Equidata.",
+        "snippet_a": "Marketing Affiliate may display Marketing Materials at its principal place(s) of business, or at the principal place(s) of its third party partners",
+        "snippet_b": "Marketing Affiliate may display Marketing Materials exclusively on the Marketing Affiliate Web Site and shall not display such Marketing Materials at any physical principal place of business or at any third party partner locations.",
         "source_a": "paragraph",
         "source_b": "paragraph",
         "evidence_status": "exact",
         "evidence_note": ""
-      }
+      },
+      "contradictions": [
+        {
+          "confidence": 95,
+          "brief_reason": "Paragraph first allows display of Marketing Materials at principal places of business, then prohibits display at those locations.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "Marketing Affiliate may display Marketing Materials at its principal place(s) of business, or at the principal place(s) of its third party partners",
+            "snippet_b": "Marketing Affiliate may display Marketing Materials exclusively on the Marketing Affiliate Web Site and shall not display such Marketing Materials at any physical principal place of business or at any third party partner locations.",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-13",
       "contradiction": true,
-      "confidence": 100,
-      "brief_reason": "The paragraph sets two different deadlines for payment of invoiced amounts: 30 days and 10 days from the invoice date.",
-      "contradiction_type": "temporal",
+      "confidence": 90,
+      "brief_reason": "Paragraph sets two different payment due dates for amounts billed bi-monthly: 30 days and 10 days from invoice date.",
+      "contradiction_type": "numerical",
       "evidence": {
-        "snippet_a": "are due and payable in full by Marketing Affiliate 30 days from the invoice date",
-        "snippet_b": "all such invoiced amounts shall be due and payable in full by the Marketing Affiliate no later than 10 days from the invoice date",
+        "snippet_a": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 30 days from the invoice date.",
+        "snippet_b": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 10 days from the invoice date.",
         "source_a": "paragraph",
         "source_b": "paragraph",
         "evidence_status": "exact",
         "evidence_note": ""
-      }
+      },
+      "contradictions": [
+        {
+          "confidence": 90,
+          "brief_reason": "Paragraph sets two different payment due dates for amounts billed bi-monthly: 30 days and 10 days from invoice date.",
+          "contradiction_type": "numerical",
+          "evidence": {
+            "snippet_a": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 30 days from the invoice date.",
+            "snippet_b": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 10 days from the invoice date.",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-14",
       "contradiction": true,
-      "confidence": 100,
-      "brief_reason": "The paragraph requires prompt payment when billed but also states payment is not due until at least 120 days after billing and can be deferred further.",
-      "contradiction_type": "temporal",
+      "confidence": 95,
+      "brief_reason": "Paragraph both requires Marketing Affiliate to pay late charges and returned check fees, and states they are not obligated to pay them.",
+      "contradiction_type": "policy_reversal",
       "evidence": {
-        "snippet_a": "Marketing Affiliate agrees to pay promptly and in full all charges incurred through services rendered when billed.",
-        "snippet_b": "the Marketing Affiliate shall not be obligated to pay any charges incurred through services rendered until at least 120 days after being billed, and may defer payment beyond such period at its sole discretion without being considered in default.",
+        "snippet_a": "The Marketing Affiliate agrees to pay a late charge of 1 l/2% per month on the unpaid, past-due amount as well as a returned check fee of not less than $35.00 per returned item.",
+        "snippet_b": "The Marketing Affiliate shall not be obligated to pay any late charge on unpaid, past-due amounts, nor shall the Marketing Affiliate be liable for any returned check fee under any circumstances.",
         "source_a": "paragraph",
         "source_b": "paragraph",
         "evidence_status": "exact",
         "evidence_note": ""
-      }
+      },
+      "contradictions": [
+        {
+          "confidence": 95,
+          "brief_reason": "Paragraph both requires Marketing Affiliate to pay late charges and returned check fees, and states they are not obligated to pay them.",
+          "contradiction_type": "policy_reversal",
+          "evidence": {
+            "snippet_a": "The Marketing Affiliate agrees to pay a late charge of 1 l/2% per month on the unpaid, past-due amount as well as a returned check fee of not less than $35.00 per returned item.",
+            "snippet_b": "The Marketing Affiliate shall not be obligated to pay any late charge on unpaid, past-due amounts, nor shall the Marketing Affiliate be liable for any returned check fee under any circumstances.",
+            "source_a": "paragraph",
+            "source_b": "paragraph",
+            "evidence_status": "exact",
+            "evidence_note": ""
+          }
+        }
+      ]
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-15",
@@ -121,7 +187,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-16",
@@ -129,7 +196,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-18",
@@ -137,7 +205,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-20",
@@ -145,7 +214,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-21",
@@ -153,22 +223,17 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-22",
-      "contradiction": true,
-      "confidence": 100,
-      "brief_reason": "The paragraph both prohibits and allows solicitation of existing business customers of Equidata for independent marketing purposes.",
-      "contradiction_type": "policy_reversal",
-      "evidence": {
-        "snippet_a": "Marketing Affiliate shall not directly or indirectly solicit an existing business customer of Equidata during the term and condition of this Agreement other than for joint marketing purposes.",
-        "snippet_b": "Notwithstanding the foregoing, Marketing Affiliate may directly or indirectly solicit existing business customers of Equidata for its own independent marketing purposes without any requirement that such solicitations be conducted as joint marketing activities.",
-        "source_a": "paragraph",
-        "source_b": "paragraph",
-        "evidence_status": "exact",
-        "evidence_note": ""
-      }
+      "contradiction": false,
+      "confidence": 0,
+      "brief_reason": "",
+      "contradiction_type": null,
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-23",
@@ -176,7 +241,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-24",
@@ -184,7 +250,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-25",
@@ -192,7 +259,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-26",
@@ -200,7 +268,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-27",
@@ -208,7 +277,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-28",
@@ -216,7 +286,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-29",
@@ -224,7 +295,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-30",
@@ -232,7 +304,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-31",
@@ -240,7 +313,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-32",
@@ -248,52 +322,35 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-33",
       "contradiction": false,
-      "confidence": 90,
-      "brief_reason": "The paragraph consistently describes termination rights and post-termination obligations without internal conflict.",
+      "confidence": 0,
+      "brief_reason": "",
       "contradiction_type": null,
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-34",
       "contradiction": false,
-      "confidence": 95,
-      "brief_reason": "The paragraph only addresses the obligation to remove URL data upon termination and does not contain conflicting statements.",
+      "confidence": 0,
+      "brief_reason": "",
       "contradiction_type": null,
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-35",
       "contradiction": false,
-      "confidence": 95,
-      "brief_reason": "The paragraph describes a specific right of termination and does not contain internally conflicting statements.",
+      "confidence": 0,
+      "brief_reason": "",
       "contradiction_type": null,
-      "evidence": {
-        "snippet_a": "",
-        "snippet_b": "",
-        "source_a": "unknown",
-        "source_b": "unknown",
-        "evidence_status": "missing",
-        "evidence_note": ""
-      }
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-36",
@@ -301,7 +358,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-37",
@@ -309,7 +367,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-38",
@@ -317,7 +376,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-39",
@@ -325,7 +385,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-41",
@@ -333,7 +394,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-42",
@@ -341,7 +403,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-44",
@@ -349,7 +412,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-46",
@@ -357,7 +421,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-47",
@@ -365,7 +430,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-48",
@@ -373,7 +439,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-49",
@@ -381,7 +448,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-50",
@@ -389,7 +457,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-51",
@@ -397,7 +466,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-53",
@@ -405,7 +475,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-55",
@@ -413,7 +484,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-59",
@@ -421,7 +493,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-60",
@@ -429,7 +502,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-61",
@@ -437,7 +511,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-64",
@@ -445,7 +520,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-66",
@@ -453,7 +529,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-68",
@@ -461,7 +538,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-70",
@@ -469,7 +547,8 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     },
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-72",
@@ -477,8 +556,9 @@
       "confidence": 0,
       "brief_reason": "",
       "contradiction_type": null,
-      "evidence": null
+      "evidence": null,
+      "contradictions": []
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 3911, \"estimated_output_tokens_total\": 2184, \"estimated_cost_usd\": \"0.025294\", \"batches\": [{\"batch\": 1, \"rows\": 8, \"estimated_input_tokens\": 3911, \"estimated_output_tokens\": 336, \"estimated_cost_usd\": \"0.010510\", \"response_chars\": 5360, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-8\\\",\\n      \\\"contradiction\\\": false,\\n      \\\"confidence\\\": 90,\\n      \\\"contradiction_type\\\": \\\"\\\",\\n      \\\"brief_reason\\\": \\\"The paragraph only states the intent to enter an agreement and does not contain conflicting obligations or rights.\\\",\\n      \\\"evidence\\\": {\\n        \\\"snippet_a\\\": \\\"\\\",\\n        \\\"snippet_b\\\": \\\"\\\",\\n        \\\"source_a\\\": \\\"\\\",\\n        \\\"source_b\\\": \\\"\\\"\\n      }\\n    \"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 4121, \"estimated_output_tokens_total\": 2184, \"estimated_cost_usd\": \"0.025714\", \"batches\": [{\"batch\": 1, \"rows\": 8, \"estimated_input_tokens\": 4121, \"estimated_output_tokens\": 336, \"estimated_cost_usd\": \"0.010930\", \"response_chars\": 5082, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-8\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 95,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"Paragraph allows Marketing Affiliate to offer, market, sell, or distribute Services without permission, but related paragraph requires express written permission.\\\",\\n          \\\"evidence\\\": {\\n            \\\"snippet_a\\\":\"}]}"
 }

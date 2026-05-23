@@ -18,7 +18,9 @@ from services.llm.factory import LLMProviderFactory
 
 logger = logging.getLogger(__name__)
 
-TARGET_BATCH_INPUT_TOKENS = 75_000
+TARGET_BATCH_INPUT_TOKENS = int(
+    os.getenv("CONTRADICTION_TARGET_BATCH_INPUT_TOKENS", "35000")
+)
 ESTIMATED_OUTPUT_TOKENS_PER_PARAGRAPH = 42
 HIGH_RECALL_MODE = os.getenv("CONTRADICTION_HIGH_RECALL", "1").strip().lower() not in {
     "0",
@@ -92,19 +94,36 @@ Return ONLY valid JSON (no markdown, no extra text) with this shape:
   "paragraph_results": [
     {{
       "paragraph_id": "string or integer",
-      "contradiction": true or false,
-      "confidence": integer from 0 to 100,
-      "contradiction_type": "temporal | numerical | authority | process | policy_reversal | specificity",
-      "brief_reason": "one short sentence",
-      "evidence": {{
-        "snippet_a": "exact short excerpt #1 that conflicts",
-        "snippet_b": "exact short excerpt #2 that conflicts",
-        "source_a": "paragraph | context | unknown",
-        "source_b": "paragraph | context | unknown"
-      }}
+      "contradictions": [
+        {{
+          "confidence": integer from 0 to 100,
+          "contradiction_type": "temporal | numerical | authority | process | policy_reversal | specificity",
+          "brief_reason": "one short sentence",
+          "evidence": {{
+            "snippet_a": "exact short excerpt #1 that conflicts",
+            "snippet_b": "exact short excerpt #2 that conflicts",
+            "source_a": "paragraph | context | unknown",
+            "source_b": "paragraph | context | unknown"
+          }}
+        }}
+      ]
     }}
   ]
 }}
+
+Rules:
+- List ALL distinct contradictions for each paragraph (max 4).
+- Never stop after finding the first contradiction in a paragraph.
+- A paragraph may contain multiple contradictions at the same time (intra and inter); include all distinct ones.
+- Do not return mirrored duplicates where A/B are the same pair in reverse order.
+- If no contradiction exists for a paragraph, return "contradictions": [].
+- Keep evidence snippets as exact substrings copied from the provided JSON text.
+- For each paragraph, perform two passes before deciding output:
+  1) Intra-paragraph pass: find conflicts fully inside the target paragraph text.
+  2) Inter-paragraph pass: find conflicts between target paragraph and related_paragraphs.
+- If both intra and inter contradictions exist, include both kinds in "contradictions".
+- If the target paragraph both grants and restricts/prohibits the same action (e.g., "may ..." vs "may not/shall not ..."),
+  this MUST be reported as an intra-paragraph contradiction, even when connected by words like "notwithstanding", "except", or "however".
 
 
 
@@ -117,7 +136,11 @@ SYSTEM_PROMPT = (
     "Return only valid JSON and follow the required schema exactly. "
     "Bias toward high recall: false negatives are worse than false positives. "
     "If uncertain, prefer contradiction=true with lower confidence. "
-    "For contradiction=true, evidence.snippet_a and evidence.snippet_b are mandatory and must be exact substrings "
+    "For each paragraph, return contradictions as a list with all distinct conflicts and avoid mirrored duplicates. "
+    "Never stop at the first contradiction for a paragraph; keep scanning and return all distinct contradictions (max 4). "
+    "When a paragraph both permits and prohibits the same action, treat it as an intra-paragraph contradiction even with connectors "
+    "such as notwithstanding/except/however. "
+    "For each contradiction item, evidence.snippet_a and evidence.snippet_b are mandatory and must be exact substrings "
     "copied verbatim from the provided paragraph/context text when available. "
     "If exact spans are unavailable, keep legal judgment and set evidence_status='missing' with unknown sources and empty snippets."
 )
@@ -153,7 +176,7 @@ def _write_debug_mode_payload(
         ],
     }
 
-    output_path = f"/home/luis/Documents/FGV/Laboratory/document-graph/infra/json/contradictions/{mode}.json"
+    output_path = f"/home/sante/Documents/FGV/Laboratorio/document-graph/infra/json/contradictions/{mode}.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 
@@ -183,11 +206,11 @@ def analyze_document_contradictions(
     )
 
     # ACTIVE THIS TO CHECK BODY FROM JSON
-    # _write_debug_mode_payload(
-    #     mode=payload.mode,
-    #     all_paragraph_rows=paragraph_rows,
-    #     batches=batches,
-    # )
+    _write_debug_mode_payload(
+        mode=payload.mode,
+        all_paragraph_rows=paragraph_rows,
+        batches=batches,
+    )
 
     estimated_input_total = 0
     for batch in batches:
@@ -271,6 +294,10 @@ def analyze_document_contradictions(
         )
 
     paragraph_results: list[ContradictionParagraphResult] = []
+    prediction_by_id = _select_primary_unique_contradictions(
+        prediction_by_id=prediction_by_id,
+        ordered_paragraph_ids=ordered_paragraph_ids,
+    )
     for paragraph_id in ordered_paragraph_ids:
         item = prediction_by_id.get(paragraph_id)
         if item is None:
@@ -282,6 +309,7 @@ def analyze_document_contradictions(
                     brief_reason="",
                     contradiction_type=None,
                     evidence=None,
+                    contradictions=[],
                 )
             )
             continue
@@ -294,6 +322,7 @@ def analyze_document_contradictions(
                 brief_reason=item["brief_reason"],
                 contradiction_type=item["contradiction_type"],
                 evidence=item["evidence"],
+                contradictions=item.get("contradictions", []),
             )
         )
 
@@ -472,7 +501,7 @@ def _run_batch_with_fallback(
             temperature=payload.temperature,
         )
     except RuntimeError as exc:
-        if _is_context_length_error(exc):
+        if _is_batch_too_large_error(exc):
             if len(batch_rows) > 1:
                 midpoint = max(1, len(batch_rows) // 2)
                 logger.warning(
@@ -559,9 +588,14 @@ def _shrink_single_row_context(
     return shrunk_row if changed else row
 
 
-def _is_context_length_error(exc: Exception) -> bool:
+def _is_batch_too_large_error(exc: Exception) -> bool:
     message = str(exc).lower()
-    return "context_length_exceeded" in message or "maximum context length" in message
+    return (
+        "context_length_exceeded" in message
+        or "maximum context length" in message
+        or "request too large" in message
+        or "tokens per min" in message
+    )
 
 
 def _estimate_prompt_tokens(
@@ -624,7 +658,13 @@ def _safe_json_loads(text: str) -> dict[str, Any] | list[Any]:
 
     json_match = re.search(r"\{[\s\S]*\}", cleaned)
     if json_match:
-        return json.loads(json_match.group(0))
+        try:
+            return json.loads(json_match.group(0))
+        except json.JSONDecodeError as exc:
+            raise RuntimeError(
+                "LLM did not return valid JSON "
+                f"(line {exc.lineno}, column {exc.colno}): {exc.msg}"
+            ) from exc
 
     raise RuntimeError("LLM did not return a valid JSON payload")
 
@@ -647,79 +687,239 @@ def _parse_paragraph_results(raw_json: dict[str, Any] | list[Any]) -> dict[str, 
         if not paragraph_id:
             continue
 
-        contradiction = bool(row.get("contradiction", False))
-
-        confidence_raw = row.get("confidence", 0)
-        try:
-            confidence = int(float(confidence_raw))
-        except (TypeError, ValueError):
-            confidence = 0
-        confidence = max(0, min(100, confidence))
-
-        brief_reason = str(row.get("brief_reason", "")).strip()
-        contradiction_type_raw = str(row.get("contradiction_type", "")).strip().lower()
-        contradiction_type: str | None = None
-        if contradiction:
-            contradiction_type = (
-                contradiction_type_raw
-                if contradiction_type_raw in _ALLOWED_CONTRADICTION_TYPES
-                else "specificity"
-            )
-
-        # High-recall mode: avoid low-confidence negatives.
-        if (
-            HIGH_RECALL_MODE
-            and not contradiction
-            and confidence <= max(0, min(100, HIGH_RECALL_NEGATIVE_FLIP_THRESHOLD))
-        ):
-            contradiction = True
-            if not brief_reason:
-                brief_reason = (
-                    "Converted from low-confidence negative to contradiction in high-recall mode."
+        candidates: list[dict[str, Any]] = []
+        contradictions_raw = row.get("contradictions")
+        if isinstance(contradictions_raw, list):
+            for contradiction_item in contradictions_raw:
+                candidate = _parse_single_contradiction_candidate(
+                    contradiction_item,
+                    fallback_row=row,
                 )
-            if contradiction_type is None:
-                contradiction_type = "specificity"
+                if candidate is not None:
+                    candidates.append(candidate)
 
-        evidence_obj = row.get("evidence")
-        evidence: dict[str, Any] | None = None
-        if isinstance(evidence_obj, dict):
-            snippet_a = str(evidence_obj.get("snippet_a", "")).strip()
-            snippet_b = str(evidence_obj.get("snippet_b", "")).strip()
-            source_a = str(evidence_obj.get("source_a", "unknown")).strip().lower()
-            source_b = str(evidence_obj.get("source_b", "unknown")).strip().lower()
-            evidence_status = str(evidence_obj.get("evidence_status", "")).strip().lower()
-            evidence_note = str(evidence_obj.get("evidence_note", "")).strip()
-            if source_a not in {"paragraph", "context", "unknown"}:
-                source_a = "unknown"
-            if source_b not in {"paragraph", "context", "unknown"}:
-                source_b = "unknown"
-            if evidence_status not in {"exact", "missing", "approximate"}:
-                evidence_status = "exact" if (snippet_a and snippet_b) else "missing"
+        # Backward compatibility: legacy single-contradiction shape.
+        if not candidates:
+            legacy_candidate = _parse_single_contradiction_candidate(
+                row,
+                fallback_row=row,
+            )
+            if legacy_candidate is not None:
+                candidates.append(legacy_candidate)
 
-            evidence = {
-                "snippet_a": snippet_a,
-                "snippet_b": snippet_b,
-                "source_a": source_a,
-                "source_b": source_b,
-                "evidence_status": evidence_status,
-                "evidence_note": evidence_note,
-            }
-        elif contradiction:
-            evidence = {
-                "snippet_a": "",
-                "snippet_b": "",
-                "source_a": "unknown",
-                "source_b": "unknown",
-                "evidence_status": "missing",
-                "evidence_note": "Model did not return structured evidence object.",
-            }
+        deduped_candidates = _dedupe_contradiction_candidates(candidates)
+        has_contradiction = len(deduped_candidates) > 0
 
+        if not has_contradiction:
+            # Never surface contradictions without usable evidence snippets.
+            deduped_candidates = []
+
+        primary = deduped_candidates[0] if deduped_candidates else None
         parsed[paragraph_id] = {
-            "contradiction": contradiction,
-            "confidence": confidence,
-            "brief_reason": brief_reason,
-            "contradiction_type": contradiction_type,
-            "evidence": evidence,
+            "contradiction": bool(primary),
+            "confidence": int(primary["confidence"]) if primary else 0,
+            "brief_reason": str(primary["brief_reason"]) if primary else "",
+            "contradiction_type": str(primary["contradiction_type"]) if primary else None,
+            "evidence": primary["evidence"] if primary else None,
+            "contradictions": deduped_candidates,
         }
 
     return parsed
+
+
+def _normalize_confidence(raw_value: Any) -> int:
+    try:
+        parsed = int(float(raw_value))
+    except (TypeError, ValueError):
+        parsed = 0
+    return max(0, min(100, parsed))
+
+
+def _normalize_evidence(
+    evidence_obj: Any,
+    *,
+    contradiction_detected: bool,
+) -> dict[str, Any] | None:
+    if isinstance(evidence_obj, dict):
+        snippet_a = str(evidence_obj.get("snippet_a", "")).strip()
+        snippet_b = str(evidence_obj.get("snippet_b", "")).strip()
+        source_a = str(evidence_obj.get("source_a", "unknown")).strip().lower()
+        source_b = str(evidence_obj.get("source_b", "unknown")).strip().lower()
+        evidence_status = str(evidence_obj.get("evidence_status", "")).strip().lower()
+        evidence_note = str(evidence_obj.get("evidence_note", "")).strip()
+        if source_a not in {"paragraph", "context", "unknown"}:
+            source_a = "unknown"
+        if source_b not in {"paragraph", "context", "unknown"}:
+            source_b = "unknown"
+        if evidence_status not in {"exact", "missing", "approximate"}:
+            evidence_status = "exact" if (snippet_a and snippet_b) else "missing"
+
+        return {
+            "snippet_a": snippet_a,
+            "snippet_b": snippet_b,
+            "source_a": source_a,
+            "source_b": source_b,
+            "evidence_status": evidence_status,
+            "evidence_note": evidence_note,
+        }
+
+    if contradiction_detected:
+        return {
+            "snippet_a": "",
+            "snippet_b": "",
+            "source_a": "unknown",
+            "source_b": "unknown",
+            "evidence_status": "missing",
+            "evidence_note": "Model did not return structured evidence object.",
+        }
+
+    return None
+
+
+def _parse_single_contradiction_candidate(
+    row: Any,
+    *,
+    fallback_row: dict[str, Any] | None = None,
+) -> dict[str, Any] | None:
+    if not isinstance(row, dict):
+        return None
+
+    contradiction_raw = row.get("contradiction", True)
+    contradiction = bool(contradiction_raw)
+    if not contradiction:
+        return None
+
+    fallback_confidence_raw = 0
+    if isinstance(fallback_row, dict):
+        fallback_confidence_raw = fallback_row.get("confidence", 0)
+    confidence = _normalize_confidence(row.get("confidence", fallback_confidence_raw))
+    brief_reason = str(row.get("brief_reason", "")).strip()
+    if not brief_reason and isinstance(fallback_row, dict):
+        brief_reason = str(fallback_row.get("brief_reason", "")).strip()
+
+    contradiction_type_raw = str(
+        row.get(
+            "contradiction_type",
+            fallback_row.get("contradiction_type", "") if isinstance(fallback_row, dict) else "",
+        )
+    ).strip().lower()
+    contradiction_type: str = (
+        contradiction_type_raw
+        if contradiction_type_raw in _ALLOWED_CONTRADICTION_TYPES
+        else "specificity"
+    )
+    evidence = _normalize_evidence(
+        row.get("evidence", fallback_row.get("evidence") if isinstance(fallback_row, dict) else None),
+        contradiction_detected=contradiction,
+    )
+
+    return {
+        "confidence": confidence,
+        "brief_reason": brief_reason,
+        "contradiction_type": contradiction_type,
+        "evidence": evidence,
+    }
+
+
+def _normalize_text_for_key(value: str) -> str:
+    return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+
+def _canonical_contradiction_key(candidate: dict[str, Any]) -> str:
+    evidence = candidate.get("evidence") if isinstance(candidate, dict) else None
+    contradiction_type = str(candidate.get("contradiction_type", "specificity")).strip().lower()
+    if contradiction_type not in _ALLOWED_CONTRADICTION_TYPES:
+        contradiction_type = "specificity"
+
+    snippet_a = ""
+    snippet_b = ""
+    if isinstance(evidence, dict):
+        snippet_a = _normalize_text_for_key(str(evidence.get("snippet_a", "")))
+        snippet_b = _normalize_text_for_key(str(evidence.get("snippet_b", "")))
+
+    if snippet_a or snippet_b:
+        left, right = sorted([snippet_a, snippet_b])
+        return f"{contradiction_type}|{left}|{right}"
+
+    reason = _normalize_text_for_key(str(candidate.get("brief_reason", "")))
+    return f"{contradiction_type}|{reason}"
+
+
+def _has_usable_evidence(evidence: Any) -> bool:
+    if not isinstance(evidence, dict):
+        return False
+    snippet_a = str(evidence.get("snippet_a", "")).strip()
+    snippet_b = str(evidence.get("snippet_b", "")).strip()
+    return bool(snippet_a and snippet_b)
+
+
+def _dedupe_contradiction_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    by_key: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for candidate in candidates:
+        if not _has_usable_evidence(candidate.get("evidence")):
+            continue
+        key = _canonical_contradiction_key(candidate)
+        existing = by_key.get(key)
+        if existing is None:
+            by_key[key] = candidate
+            order.append(key)
+            continue
+        if int(candidate.get("confidence", 0)) > int(existing.get("confidence", 0)):
+            by_key[key] = candidate
+
+    deduped = [by_key[key] for key in order]
+    deduped.sort(
+        key=lambda candidate: int(candidate.get("confidence", 0)),
+        reverse=True,
+    )
+    return deduped
+
+
+def _select_primary_unique_contradictions(
+    *,
+    prediction_by_id: dict[str, dict[str, Any]],
+    ordered_paragraph_ids: list[str],
+) -> dict[str, dict[str, Any]]:
+    used_keys: dict[str, str] = {}
+
+    for paragraph_id in ordered_paragraph_ids:
+        item = prediction_by_id.get(paragraph_id)
+        if not isinstance(item, dict):
+            continue
+
+        candidates_obj = item.get("contradictions")
+        candidates = candidates_obj if isinstance(candidates_obj, list) else []
+        if not candidates:
+            continue
+
+        unique_candidates: list[dict[str, Any]] = []
+        unique_keys: list[str] = []
+        for candidate in candidates:
+            key = _canonical_contradiction_key(candidate)
+            if key in used_keys:
+                continue
+            unique_candidates.append(candidate)
+            unique_keys.append(key)
+
+        if not unique_candidates:
+            item["contradiction"] = False
+            item["confidence"] = 0
+            item["brief_reason"] = ""
+            item["contradiction_type"] = None
+            item["evidence"] = None
+            item["contradictions"] = []
+            continue
+
+        selected = unique_candidates[0]
+        for key in unique_keys:
+            used_keys[key] = paragraph_id
+
+        item["contradiction"] = True
+        item["confidence"] = int(selected.get("confidence", 0))
+        item["brief_reason"] = str(selected.get("brief_reason", ""))
+        item["contradiction_type"] = str(selected.get("contradiction_type", "specificity"))
+        item["evidence"] = selected.get("evidence")
+        item["contradictions"] = unique_candidates
+
+    return prediction_by_id

@@ -3,6 +3,7 @@
 	import { browser } from '$app/environment';
 	import { cubicOut } from 'svelte/easing';
 	import { slide } from 'svelte/transition';
+	import { diffWordsWithSpace } from 'diff';
 	import type {
 		AssistantChatMessage,
 		ContradictionTaxonomyType,
@@ -26,10 +27,20 @@ type ProcessingStep = {
 	type ContradictionSummaryItem = {
 		paragraphId: string;
 		label: string;
+		contradictionType: ContradictionTaxonomyType;
 	};
 	type ReferenceTextSegment = {
 		text: string;
 		isReference: boolean;
+		isEntity?: boolean;
+		entityKey?: string;
+		entityColor?: string;
+		entitySoftColor?: string;
+	};
+	type StructuredChatSection = { label: string | null; body: string };
+	type EvidenceDiffSegment = {
+		text: string;
+		changed: boolean;
 	};
 
 	export let selectedParagraph: ParagraphNode | null = null;
@@ -52,12 +63,15 @@ type ProcessingStep = {
 	export let assistantThread: HTMLElement | null = null;
 	export let contradictionQuickActionFreeLabel = 'Why is it a contradiction? (Free)';
 	export let contradictionQuickActionAiLabel = 'Why is it a contradiction? (AI cost)';
+	export let contradictionQuickActionRiskLabel = 'What are the risks of this contradiction?';
 	export let onSuggestContradictionFix: () => void | Promise<void> = () => {};
 	export let onAcceptFixSuggestion: (messageId: string) => void | Promise<void> = () => {};
 	export let onRunContradictionQuickAction: (prompt: string) => void | Promise<void> = () => {};
 	export let onSubmitAssistantQuestion: () => void | Promise<void> = () => {};
 	export let onHandleAssistantInputKeydown: (event: KeyboardEvent) => void = () => {};
 	export let rewriteBusy = false;
+	export let entityHighlightsEnabled = true;
+	export let onToggleEntityHighlights: () => void = () => {};
 	export let contradictionTaxonomyLabels: Record<ContradictionTaxonomyType, string> = {
 		temporal: 'Temporal',
 		numerical: 'Numerical',
@@ -128,10 +142,159 @@ type ProcessingStep = {
 		return segments;
 	}
 
+	function escapeRegex(value: string): string {
+		return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	function normalizeEntityKey(value: string): string {
+		return value
+			.toLocaleLowerCase()
+			.normalize('NFKD')
+			.replace(/[^\w\s-]/g, '')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function splitReferenceAndEntityText(
+		value: string,
+		entities: NonNullable<AssistantChatMessage['entityHighlights']>
+	): ReferenceTextSegment[] {
+		const baseSegments = splitReferenceText(value);
+		if (!entities.length) return baseSegments;
+		const labels = entities
+			.map((entity) => entity.label.trim())
+			.filter((label) => label.length >= 2)
+			.sort((a, b) => b.length - a.length);
+		if (!labels.length) return baseSegments;
+		const entityMap = new Map(entities.map((entity) => [normalizeEntityKey(entity.label), entity]));
+		const pattern = new RegExp(labels.map((label) => escapeRegex(label)).join('|'), 'gi');
+
+		const merged: ReferenceTextSegment[] = [];
+		for (const segment of baseSegments) {
+			if (segment.isReference) {
+				merged.push(segment);
+				continue;
+			}
+			let cursor = 0;
+			const text = segment.text;
+			for (const match of text.matchAll(pattern)) {
+				const found = match[0] ?? '';
+				const index = match.index ?? 0;
+				if (!found) continue;
+				if (index > cursor) merged.push({ text: text.slice(cursor, index), isReference: false });
+				const entity = entityMap.get(normalizeEntityKey(found));
+				merged.push({
+					text: found,
+					isReference: false,
+					isEntity: true,
+					entityKey: entity?.key ?? normalizeEntityKey(found),
+					entityColor: entity?.color,
+					entitySoftColor: entity?.softColor
+				});
+				cursor = index + found.length;
+			}
+			if (cursor < text.length) merged.push({ text: text.slice(cursor), isReference: false });
+		}
+		return merged;
+	}
+
+	function parseStructuredRiskSections(content: string): StructuredChatSection[] | null {
+		const text = (content || '').trim();
+		if (!text) return null;
+		const tryParseAnswerObject = (raw: string): string | null => {
+			const cleaned = raw
+				.replace(/^```(?:json)?\s*/i, '')
+				.replace(/\s*```$/i, '')
+				.trim();
+			try {
+				const parsed = JSON.parse(cleaned) as unknown;
+				if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+				const record = parsed as Record<string, unknown>;
+				const answerNode =
+					record.answer && typeof record.answer === 'object' && !Array.isArray(record.answer)
+						? (record.answer as Record<string, unknown>)
+						: null;
+				if (!answerNode) return null;
+				const labels = ['Context', 'Contradiction', 'Risks', 'Affected', 'Consequences'];
+				const lines = labels
+					.map((label) => {
+						const value = answerNode[label];
+						return typeof value === 'string' && value.trim() ? `${label}: ${value.trim()}` : '';
+					})
+					.filter(Boolean);
+				return lines.length > 0 ? lines.join('\n\n') : null;
+			} catch {
+				return null;
+			}
+		};
+		const normalizedText = tryParseAnswerObject(text) ?? text;
+		const knownLabels = new Set([
+			'context',
+			'contradiction',
+			'risks',
+			'affected',
+			'affected party',
+			'consequences'
+		]);
+		const labelPattern = /(Context|Contradiction|Risks|Affected|Affected Party|Consequences)\s*:/gi;
+		const matches = Array.from(normalizedText.matchAll(labelPattern));
+		const blocks =
+			matches.length >= 2
+				? matches.map((match, idx) => {
+						const start = match.index ?? 0;
+						const end =
+							idx + 1 < matches.length
+								? (matches[idx + 1].index ?? normalizedText.length)
+								: normalizedText.length;
+						return normalizedText.slice(start, end).trim();
+					})
+				: normalizedText.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+		const sections: StructuredChatSection[] = [];
+		let recognized = 0;
+		for (const block of blocks) {
+			const match = block.match(/^([^:\n]{2,30}):\s*([\s\S]*)$/);
+			if (!match) {
+				sections.push({ label: null, body: block });
+				continue;
+			}
+			const label = match[1].trim();
+			const body = match[2].trim();
+			if (knownLabels.has(label.toLowerCase())) {
+				recognized += 1;
+				sections.push({ label, body });
+			} else {
+				sections.push({ label: null, body: block });
+			}
+		}
+		return recognized >= 2 ? sections : null;
+	}
+
 	function resolveContradictionTypeForSelected(): ContradictionTaxonomyType {
 		const nextType = selectedContradictionResult?.contradiction_type;
 		if (!nextType) return 'specificity';
 		return nextType;
+	}
+
+	function resolveContradictionTypeStyle(contradictionType: ContradictionTaxonomyType | null | undefined) {
+		const type = contradictionType ?? 'specificity';
+		const color = contradictionTaxonomyColors[type] ?? contradictionTaxonomyColors.specificity;
+		return {
+			type,
+			color,
+			label: contradictionTaxonomyLabels[type] ?? contradictionTaxonomyLabels.specificity,
+			borderSoft: hexToRgba(color, 0.48),
+			backgroundSoft: hexToRgba(color, 0.06),
+			backgroundStrong: hexToRgba(color, 0.13)
+		};
+	}
+
+	function hexToRgba(hex: string, alpha: number): string {
+		const normalized = (hex || '').replace('#', '').trim();
+		if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return `rgba(132, 204, 22, ${alpha})`;
+		const r = Number.parseInt(normalized.slice(0, 2), 16);
+		const g = Number.parseInt(normalized.slice(2, 4), 16);
+		const b = Number.parseInt(normalized.slice(4, 6), 16);
+		return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 	}
 
 	function resolveSnippetBStyle() {
@@ -140,12 +303,35 @@ type ProcessingStep = {
 			contradictionTaxonomyColors[contradictionType] ?? contradictionTaxonomyColors.specificity;
 		return {
 			color,
-			border: `${color}66`,
-			background: `${color}1A`,
-			badgeBorder: `${color}66`,
+			border: color,
+			background: hexToRgba(color, 0.08),
+			badgeBorder: color,
 			badgeText: color,
 			label: contradictionTaxonomyLabels[contradictionType] ?? contradictionTaxonomyLabels.specificity
 		};
+	}
+
+	function buildEvidenceDiffSegments(
+		snippetA: string,
+		snippetB: string
+	): { a: EvidenceDiffSegment[]; b: EvidenceDiffSegment[] } {
+		const aSegments: EvidenceDiffSegment[] = [];
+		const bSegments: EvidenceDiffSegment[] = [];
+		for (const segment of diffWordsWithSpace(snippetA || '', snippetB || '')) {
+			const value = segment.value ?? '';
+			if (!value) continue;
+			if (segment.removed) {
+				aSegments.push({ text: value, changed: true });
+				continue;
+			}
+			if (segment.added) {
+				bSegments.push({ text: value, changed: true });
+				continue;
+			}
+			aSegments.push({ text: value, changed: false });
+			bSegments.push({ text: value, changed: false });
+		}
+		return { a: aSegments, b: bSegments };
 	}
 
 	function resolveEvidenceScopeLabel(
@@ -339,7 +525,7 @@ type ProcessingStep = {
 					<p class="text-[11px] text-red-700">{contradictionError}</p>
 				{:else}
 					<div class="flex flex-col gap-1">
-						<p class="text-[11px] text-red-700">
+						<p class="text-[11px] text-blue-600">
 							{contradictionCount} paragraph(s) with highlighted contradiction(s)
 						</p>
 						<div class="flex flex-wrap items-center gap-1.5">
@@ -361,96 +547,142 @@ type ProcessingStep = {
 			{/if}
 
 			{#if contradictionSummaryItems.length > 0}
-				<div class="mt-1 mb-2 flex flex-col gap-1.5">
+				<div class="mt-1 mb-2 flex flex-col gap-2">
 					{#each contradictionSummaryItems as item, index (item.paragraphId)}
+						{@const itemStyle = resolveContradictionTypeStyle(item.contradictionType)}
 						<div
-							class={`overflow-hidden rounded-md border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
+							class={`overflow-hidden rounded-lg border bg-white transition-[border-color,box-shadow,background-color] duration-200 ${
 								selectedParagraph?.id === item.paragraphId
-									? 'border-red-300 shadow-[0_0_0_1px_rgba(239,68,68,0.15)]'
-									: 'border-gray-300 hover:border-gray-400 hover:bg-gray-50/40 hover:shadow-[0_1px_6px_rgba(15,23,42,0.08)]'
+									? 'shadow-[0_4px_12px_rgba(15,23,42,0.08)]'
+									: 'hover:shadow-[0_2px_10px_rgba(15,23,42,0.08)]'
 							}`}
+							style={`border-color: ${itemStyle.borderSoft}; background: ${
+								selectedParagraph?.id === item.paragraphId
+									? hexToRgba(itemStyle.color, 0.12)
+									: hexToRgba(itemStyle.color, 0.04)
+							};`}
 						>
 							<button
 								type="button"
-								class={`w-full px-3 py-1.5 text-left text-[11px] transition ${
+								class={`w-full px-3 py-2 text-left text-[11px] transition ${
 									selectedParagraph?.id === item.paragraphId
-										? 'bg-red-100/60 text-red-800 font-semibold'
-										: 'cursor-pointer text-gray-600 hover:bg-gray-100 hover:text-gray-700'
+										? 'font-semibold'
+										: 'cursor-pointer text-gray-700 hover:bg-white/70'
+								}`}
+								style={`${
+									selectedParagraph?.id === item.paragraphId
+										? `background: ${hexToRgba(itemStyle.color, 0.16)}; color: ${itemStyle.color};`
+										: `color: #374151;`
 								}`}
 								onclick={() => onFocusNodeFromPanel(item.paragraphId, true)}
 							>
-								Contradiction {index + 1} <!-- : {item.label} -->
+								<span class="inline-flex items-center gap-2">
+									<span>Contradiction {index + 1}</span>
+									<Badge
+										variant="outline"
+										class="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+										style={`border-color: ${itemStyle.color}; color: ${itemStyle.color};`}
+									>
+										{itemStyle.label}
+									</Badge>
+								</span>
 							</button>
 
 							{#if selectedParagraph?.id === item.paragraphId && selectedContradictionResult?.contradiction}
 								<div
-									class="border-t border-gray-200 p-1.5 text-[11px]"
+									class="border-t bg-white/80 p-2 text-[11px]"
+									style={`border-color: ${hexToRgba(itemStyle.color, 0.28)};`}
 									transition:slide={{ duration: 200, easing: cubicOut }}
 								>
-									<div class="mb-1 flex items-center justify-between px-0.5">
-										<p class="text-[9px] font-semibold text-red-700">Contradiction evidence</p>
+									<div class="mb-2 flex items-center justify-between">
+										<p class="text-[9px] font-semibold" style={`color: ${itemStyle.color};`}>
+											Contradiction Evidence
+										</p>
 										{#if selectedContradictionEvidence}
 											<Badge
 												variant="outline"
-												class="h-4 border-red-300 bg-white px-1.5 text-[8px] font-semibold text-red-700"
+												class="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+												style={`border-color: ${itemStyle.color}; color: ${itemStyle.color};`}
 											>
 												{resolveEvidenceScopeLabel(selectedContradictionEvidence)}
 											</Badge>
 										{/if}
 									</div>
-									<div class="px-0.5">
-										<p class="text-[9px] font-semibold text-gray-700">Assessment</p>
-										<p class="text-[10px] leading-relaxed">
+									<div class="rounded-md border border-gray-200 bg-white px-2.5 py-2">
+										<p class="mb-1 text-[9px] font-semibold text-gray-700">Assessment</p>
+										<p class="text-[10px] leading-relaxed text-gray-700">
 											{selectedContradictionResult.brief_reason}
 										</p>
 									</div>
 
-									{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
-										{@const snippetBStyle = resolveSnippetBStyle()}
-										<div class="mt-1 rounded border border-red-300 bg-red-100/80 px-2.5 py-2">
-											<div class="mb-1 flex items-center justify-between">
-												<span class="text-[9px] font-semibold text-red-800">Snippet A</span>
-											</div>
-											<Button
-												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-red-800 hover:bg-transparent hover:text-red-900"
-												onclick={() =>
-													selectedContradictionResult &&
-													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
-											>
-												{selectedContradictionEvidence.snippet_a}
-											</Button>
-										</div>
-
-										<div
-											class="mt-1 rounded border px-2.5 py-2"
-											style={`border-color: ${snippetBStyle.border}; background: ${snippetBStyle.background};`}
+										{#if selectedContradictionEvidence?.snippet_a?.trim() && selectedContradictionEvidence?.snippet_b?.trim()}
+											{@const snippetBStyle = resolveSnippetBStyle()}
+											{@const evidenceDiff = buildEvidenceDiffSegments(
+												selectedContradictionEvidence.snippet_a,
+												selectedContradictionEvidence.snippet_b
+											)}
+											<div
+												class="mt-2 rounded-md border px-2.5 py-2"
+												style={`border-color: ${itemStyle.color}; background: ${hexToRgba(itemStyle.color, 0.08)};`}
 										>
 											<div class="mb-1 flex items-center justify-between">
+												<span class="text-[9px] font-semibold" style={`color: ${itemStyle.color};`}>
+													Snippet A
+												</span>
+											</div>
+												<Button
+													variant="ghost"
+													class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-900"
+													onclick={() =>
+														selectedContradictionResult &&
+														onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')}
+												>
+													<span>
+														{#each evidenceDiff.a as part, partIndex (`a-${partIndex}`)}
+															{#if part.changed}
+																<span
+																	class="rounded px-[1px]"
+																	style={`background: ${hexToRgba(itemStyle.color, 0.36)}; box-shadow: inset 0 0 0 1px ${hexToRgba(itemStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
+																>
+																	{part.text}
+																</span>
+															{:else}
+																<span>{part.text}</span>
+															{/if}
+														{/each}
+													</span>
+												</Button>
+											</div>
+
+										<div class="mt-2 rounded-md border px-2.5 py-2" style={`border-color: ${snippetBStyle.border}; background: ${snippetBStyle.background};`}>
+											<div class="mb-1 flex items-center justify-between">
 												<div class="flex items-center gap-1.5">
-													<span class="text-[9px] font-semibold" style={`color: ${snippetBStyle.color};`}
-														>Snippet B</span
-													>
-													<Badge
-														variant="outline"
-														class="h-4 bg-white px-1.5 text-[8px] font-semibold"
-														style={`border-color: ${snippetBStyle.badgeBorder}; color: ${snippetBStyle.badgeText};`}
-													>
-														{snippetBStyle.label}
-													</Badge>
+													<span class="text-[9px] font-semibold" style={`color: ${snippetBStyle.color};`}>Snippet B</span>
 												</div>
 											</div>
-											<Button
-												variant="ghost"
-												class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal hover:bg-transparent"
-												style={`color: ${snippetBStyle.color};`}
-												onclick={() =>
-													selectedContradictionResult &&
-													onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
-											>
-												{selectedContradictionEvidence.snippet_b}
-											</Button>
-										</div>
+												<Button
+													variant="ghost"
+													class="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-800"
+													onclick={() =>
+														selectedContradictionResult &&
+														onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')}
+												>
+													<span>
+														{#each evidenceDiff.b as part, partIndex (`b-${partIndex}`)}
+															{#if part.changed}
+																<span
+																	class="rounded px-[1px]"
+																	style={`background: ${hexToRgba(snippetBStyle.color, 0.36)}; box-shadow: inset 0 0 0 1px ${hexToRgba(snippetBStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
+																>
+																	{part.text}
+																</span>
+															{:else}
+																<span>{part.text}</span>
+															{/if}
+														{/each}
+													</span>
+												</Button>
+											</div>
 									{:else}
 										<Card.Root size="sm" class="mt-1 border-gray-200 bg-gray-50 py-0 text-[11px]">
 											<Card.Content class="px-3 py-2 text-gray-600">
@@ -500,17 +732,17 @@ type ProcessingStep = {
 				variant="outline"
 				size="sm"
 				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionFreeLabel)}
+				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
 			>
-				Why is it a contradiction? Free
+				Why is it a contradiction?
 			</Button>
 			<Button
 				variant="outline"
 				size="sm"
 				class="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
-				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionAiLabel)}
+				onclick={() => void handleRunContradictionQuickAction(contradictionQuickActionRiskLabel)}
 			>
-				Why is it a contradiction? AI cost
+				What are the risks of this contradiction?
 			</Button>
 			<Button
 				variant="outline"
@@ -561,6 +793,12 @@ type ProcessingStep = {
 				bind:viewportRef={assistantThread}
 			>
 				<div class="space-y-1.5">
+					<div class="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-[10px] text-blue-800">
+						Tip: click an assistant message to toggle entity highlights.
+					</div>
+					<div class="rounded-md border border-indigo-100 bg-indigo-50/60 px-2 py-1 text-[10px] text-indigo-800">
+						Tip: hold <span class="font-semibold">Shift + Scroll</span> to bring evidence B closer to A.
+					</div>
 					{#if assistantMessages.length === 0}
 						<p class="text-[10px] text-gray-500">
 							Ask contradiction-focused questions about the selected paragraph.
@@ -592,16 +830,56 @@ type ProcessingStep = {
 													? 'border-blue-200 bg-blue-50 text-blue-800'
 													: 'border-gray-200 bg-white text-gray-700'
 											}`}
+											onclick={() => {
+												if (message.role === 'assistant' && (message.entityHighlights?.length ?? 0) > 0) {
+													onToggleEntityHighlights();
+												}
+											}}
 										>
-											<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
-												{#each splitReferenceText(message.content) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
-													{#if segment.isReference}
-														<span class="docx-reference-chip align-middle">{segment.text}</span>
-													{:else}
-														<span>{segment.text}</span>
-													{/if}
-												{/each}
-											</p>
+											{#if message.role === 'assistant' && parseStructuredRiskSections(message.content)}
+												<div class="space-y-6">
+													{#each parseStructuredRiskSections(message.content) ?? [] as section, sectionIndex (`${message.id}-section-${sectionIndex}`)}
+														<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+															{#if section.label}
+																<span class="font-bold text-red-800">{section.label}:</span>{' '}
+															{/if}
+															{#each (entityHighlightsEnabled ? splitReferenceAndEntityText(section.body, message.entityHighlights ?? []) : splitReferenceText(section.body)) as segment, segmentIndex (`${message.id}-content-${sectionIndex}-${segmentIndex}`)}
+																{#if segment.isReference}
+																	<span class="docx-reference-chip align-middle">{segment.text}</span>
+																{:else if segment.isEntity}
+																	<span
+																		class="docx-paragraph-explanation-entity-token"
+																		data-entity-key={segment.entityKey}
+																		style={`--entity-color:${segment.entityColor ?? '#2563eb'}; --entity-color-soft:${segment.entitySoftColor ?? 'rgba(37,99,235,0.16)'};`}
+																	>
+																		{segment.text}
+																	</span>
+																{:else}
+																	<span>{segment.text}</span>
+																{/if}
+															{/each}
+														</p>
+													{/each}
+												</div>
+											{:else}
+												<p class="[overflow-wrap:anywhere] break-words whitespace-pre-wrap">
+													{#each (entityHighlightsEnabled ? splitReferenceAndEntityText(message.content, message.entityHighlights ?? []) : splitReferenceText(message.content)) as segment, segmentIndex (`${message.id}-content-${segmentIndex}`)}
+														{#if segment.isReference}
+															<span class="docx-reference-chip align-middle">{segment.text}</span>
+														{:else if segment.isEntity}
+															<span
+																class="docx-paragraph-explanation-entity-token"
+																data-entity-key={segment.entityKey}
+																style={`--entity-color:${segment.entityColor ?? '#2563eb'}; --entity-color-soft:${segment.entitySoftColor ?? 'rgba(37,99,235,0.16)'};`}
+															>
+																{segment.text}
+															</span>
+														{:else}
+															<span>{segment.text}</span>
+														{/if}
+													{/each}
+												</p>
+											{/if}
 											<!-- {#if message.citations && message.citations.length > 0}
 											<div class="mt-1.5 flex flex-wrap gap-1">
 												{#each message.citations as citation}

@@ -146,6 +146,13 @@ class ContradictionEvidence(BaseModel):
     evidence_note: str = ""
 
 
+class ContradictionFinding(BaseModel):
+    confidence: int = Field(ge=0, le=100)
+    brief_reason: str = ""
+    contradiction_type: Optional[ContradictionTaxonomyType] = None
+    evidence: Optional[ContradictionEvidence] = None
+
+
 class ContradictionParagraphResult(BaseModel):
     paragraph_id: str
     contradiction: bool
@@ -153,13 +160,14 @@ class ContradictionParagraphResult(BaseModel):
     brief_reason: str = ""
     contradiction_type: Optional[ContradictionTaxonomyType] = None
     evidence: Optional[ContradictionEvidence] = None
+    contradictions: List[ContradictionFinding] = Field(default_factory=list)
 
 
 class ContradictionAnalysisRequest(BaseModel):
     documentId: str
     graph: Graph
     provider: AssistantProvider = "openai"
-    temperature: float = 0.3
+    temperature: float = 0.1
     model: Optional[str] = None
     mode: ContradictionGraphMode = "without_kg"
 

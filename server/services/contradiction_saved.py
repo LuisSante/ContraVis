@@ -217,38 +217,33 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
 
         brief_reason = str(row.get("brief_reason") or row.get("briefReason") or "").strip()
         contradiction_type = _normalize_contradiction_type(row, contradiction)
-        evidence_obj = row.get("evidence")
-        evidence = None
-        if isinstance(evidence_obj, dict):
-            snippet_a = str(evidence_obj.get("snippet_a") or "").strip()
-            snippet_b = str(evidence_obj.get("snippet_b") or "").strip()
-            source_a = str(evidence_obj.get("source_a") or "unknown").strip().lower()
-            source_b = str(evidence_obj.get("source_b") or "unknown").strip().lower()
-            evidence_status = str(evidence_obj.get("evidence_status") or "").strip().lower()
-            evidence_note = str(evidence_obj.get("evidence_note") or "").strip()
-            if source_a not in {"paragraph", "context", "unknown"}:
-                source_a = "unknown"
-            if source_b not in {"paragraph", "context", "unknown"}:
-                source_b = "unknown"
-            if evidence_status not in {"exact", "missing", "approximate"}:
-                evidence_status = "exact" if (snippet_a and snippet_b) else "missing"
-            evidence = {
-                "snippet_a": snippet_a,
-                "snippet_b": snippet_b,
-                "source_a": source_a,
-                "source_b": source_b,
-                "evidence_status": evidence_status,
-                "evidence_note": evidence_note,
-            }
-        elif contradiction:
-            evidence = {
-                "snippet_a": "",
-                "snippet_b": "",
-                "source_a": "unknown",
-                "source_b": "unknown",
-                "evidence_status": "missing",
-                "evidence_note": "",
-            }
+        evidence = _normalize_evidence_dict(row.get("evidence"), contradiction=contradiction)
+        contradictions = _normalize_contradiction_candidates(row)
+        if not contradictions and contradiction and _has_usable_evidence(evidence):
+            contradictions = [
+                {
+                    "confidence": confidence,
+                    "brief_reason": brief_reason,
+                    "contradiction_type": contradiction_type or "specificity",
+                    "evidence": evidence,
+                }
+            ]
+
+        primary = contradictions[0] if contradictions else None
+        contradiction = bool(primary)
+        if not primary:
+            confidence = 0
+            brief_reason = ""
+            contradiction_type = None
+            evidence = None
+            contradictions = []
+        else:
+            confidence = int(primary.get("confidence", 0))
+            brief_reason = str(primary.get("brief_reason", "")).strip()
+            contradiction_type = str(primary.get("contradiction_type", "specificity")).strip().lower()
+            if contradiction_type not in _ALLOWED_CONTRADICTION_TYPES:
+                contradiction_type = "specificity"
+            evidence = primary.get("evidence")
 
         normalized.append(
             ContradictionParagraphResult(
@@ -258,6 +253,7 @@ def _normalize_rows(rows: list[dict[str, Any]]) -> list[ContradictionParagraphRe
                 brief_reason=brief_reason,
                 contradiction_type=contradiction_type,
                 evidence=evidence,
+                contradictions=contradictions,
             )
         )
 
@@ -284,6 +280,126 @@ def _normalize_contradiction_type(row: dict[str, Any], contradiction: bool) -> s
     if value in _ALLOWED_CONTRADICTION_TYPES:
         return value
     return "specificity"
+
+
+def _normalize_evidence_dict(
+    evidence_obj: Any,
+    *,
+    contradiction: bool,
+) -> dict[str, Any] | None:
+    if isinstance(evidence_obj, dict):
+        snippet_a = str(evidence_obj.get("snippet_a") or "").strip()
+        snippet_b = str(evidence_obj.get("snippet_b") or "").strip()
+        source_a = str(evidence_obj.get("source_a") or "unknown").strip().lower()
+        source_b = str(evidence_obj.get("source_b") or "unknown").strip().lower()
+        evidence_status = str(evidence_obj.get("evidence_status") or "").strip().lower()
+        evidence_note = str(evidence_obj.get("evidence_note") or "").strip()
+        if source_a not in {"paragraph", "context", "unknown"}:
+            source_a = "unknown"
+        if source_b not in {"paragraph", "context", "unknown"}:
+            source_b = "unknown"
+        if evidence_status not in {"exact", "missing", "approximate"}:
+            evidence_status = "exact" if (snippet_a and snippet_b) else "missing"
+        return {
+            "snippet_a": snippet_a,
+            "snippet_b": snippet_b,
+            "source_a": source_a,
+            "source_b": source_b,
+            "evidence_status": evidence_status,
+            "evidence_note": evidence_note,
+        }
+
+    if contradiction:
+        return {
+            "snippet_a": "",
+            "snippet_b": "",
+            "source_a": "unknown",
+            "source_b": "unknown",
+            "evidence_status": "missing",
+            "evidence_note": "",
+        }
+
+    return None
+
+
+def _normalize_contradiction_candidates(row: dict[str, Any]) -> list[dict[str, Any]]:
+    raw_candidates = row.get("contradictions")
+    if not isinstance(raw_candidates, list):
+        return []
+
+    by_key: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    for candidate in raw_candidates:
+        if not isinstance(candidate, dict):
+            continue
+        confidence_raw = candidate.get("confidence", 0)
+        try:
+            confidence = int(float(confidence_raw))
+        except (TypeError, ValueError):
+            confidence = 0
+        confidence = max(0, min(100, confidence))
+
+        contradiction_type_raw = str(candidate.get("contradiction_type") or "").strip().lower()
+        contradiction_type = (
+            contradiction_type_raw
+            if contradiction_type_raw in _ALLOWED_CONTRADICTION_TYPES
+            else "specificity"
+        )
+
+        evidence = _normalize_evidence_dict(
+            candidate.get("evidence"),
+            contradiction=True,
+        )
+        if not _has_usable_evidence(evidence):
+            continue
+        normalized_candidate = {
+            "confidence": confidence,
+            "brief_reason": str(candidate.get("brief_reason") or "").strip(),
+            "contradiction_type": contradiction_type,
+            "evidence": evidence,
+        }
+        key = _canonical_contradiction_key(normalized_candidate)
+        existing = by_key.get(key)
+        if existing is None:
+            by_key[key] = normalized_candidate
+            order.append(key)
+            continue
+        if int(normalized_candidate.get("confidence", 0)) > int(existing.get("confidence", 0)):
+            by_key[key] = normalized_candidate
+
+    normalized = [by_key[key] for key in order]
+    normalized.sort(
+        key=lambda candidate: int(candidate.get("confidence", 0)),
+        reverse=True,
+    )
+    return normalized
+
+
+def _has_usable_evidence(evidence_obj: Any) -> bool:
+    if not isinstance(evidence_obj, dict):
+        return False
+    snippet_a = str(evidence_obj.get("snippet_a") or "").strip()
+    snippet_b = str(evidence_obj.get("snippet_b") or "").strip()
+    return bool(snippet_a and snippet_b)
+
+
+def _canonical_contradiction_key(candidate: dict[str, Any]) -> str:
+    contradiction_type = str(candidate.get("contradiction_type") or "specificity").strip().lower()
+    if contradiction_type not in _ALLOWED_CONTRADICTION_TYPES:
+        contradiction_type = "specificity"
+
+    evidence_obj = candidate.get("evidence")
+    snippet_a = ""
+    snippet_b = ""
+    if isinstance(evidence_obj, dict):
+        snippet_a = _normalize_snippet_for_key(str(evidence_obj.get("snippet_a") or ""))
+        snippet_b = _normalize_snippet_for_key(str(evidence_obj.get("snippet_b") or ""))
+    left, right = sorted([snippet_a, snippet_b])
+    return f"{contradiction_type}|{left}|{right}"
+
+
+def _normalize_snippet_for_key(value: str) -> str:
+    return re.sub(r"\s+", " ", str(value or "").strip().lower())
 
 
 def _sanitize_filename(value: str) -> str:
