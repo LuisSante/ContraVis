@@ -5,7 +5,7 @@
   "provider": "openai",
   "temperature": 0.3,
   "mode": "without_kg",
-  "savedAt": "2026-05-19T14:45:07.833550+00:00",
+  "savedAt": "2026-05-24T01:45:27.589264+00:00",
   "paragraphResults": [
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-5",
@@ -38,7 +38,7 @@
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-8",
       "contradiction": true,
       "confidence": 95,
-      "brief_reason": "Paragraph allows Marketing Affiliate to offer, market, sell, or distribute Services without permission, but related paragraph requires express written permission.",
+      "brief_reason": "The paragraph allows the Marketing Affiliate to offer, market, sell, or distribute Services without permission, but a related paragraph prohibits this without express written permission.",
       "contradiction_type": "policy_reversal",
       "evidence": {
         "snippet_a": "Marketing Affiliate may otherwise offer for sale, market, sell or distribute the Services of Equidata without obtaining any permission from Equidata.",
@@ -51,7 +51,7 @@
       "contradictions": [
         {
           "confidence": 95,
-          "brief_reason": "Paragraph allows Marketing Affiliate to offer, market, sell, or distribute Services without permission, but related paragraph requires express written permission.",
+          "brief_reason": "The paragraph allows the Marketing Affiliate to offer, market, sell, or distribute Services without permission, but a related paragraph prohibits this without express written permission.",
           "contradiction_type": "policy_reversal",
           "evidence": {
             "snippet_a": "Marketing Affiliate may otherwise offer for sale, market, sell or distribute the Services of Equidata without obtaining any permission from Equidata.",
@@ -94,8 +94,8 @@
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-12",
       "contradiction": true,
-      "confidence": 95,
-      "brief_reason": "Paragraph first allows display of Marketing Materials at principal places of business, then prohibits display at those locations.",
+      "confidence": 90,
+      "brief_reason": "The paragraph first allows display of Marketing Materials at physical locations, then prohibits it.",
       "contradiction_type": "policy_reversal",
       "evidence": {
         "snippet_a": "Marketing Affiliate may display Marketing Materials at its principal place(s) of business, or at the principal place(s) of its third party partners",
@@ -107,8 +107,8 @@
       },
       "contradictions": [
         {
-          "confidence": 95,
-          "brief_reason": "Paragraph first allows display of Marketing Materials at principal places of business, then prohibits display at those locations.",
+          "confidence": 90,
+          "brief_reason": "The paragraph first allows display of Marketing Materials at physical locations, then prohibits it.",
           "contradiction_type": "policy_reversal",
           "evidence": {
             "snippet_a": "Marketing Affiliate may display Marketing Materials at its principal place(s) of business, or at the principal place(s) of its third party partners",
@@ -124,8 +124,8 @@
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-13",
       "contradiction": true,
-      "confidence": 90,
-      "brief_reason": "Paragraph sets two different payment due dates for amounts billed bi-monthly: 30 days and 10 days from invoice date.",
+      "confidence": 85,
+      "brief_reason": "The paragraph sets two different payment deadlines for bi-monthly billed amounts: 30 days and 10 days from invoice date.",
       "contradiction_type": "numerical",
       "evidence": {
         "snippet_a": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 30 days from the invoice date.",
@@ -137,8 +137,8 @@
       },
       "contradictions": [
         {
-          "confidence": 90,
-          "brief_reason": "Paragraph sets two different payment due dates for amounts billed bi-monthly: 30 days and 10 days from invoice date.",
+          "confidence": 85,
+          "brief_reason": "The paragraph sets two different payment deadlines for bi-monthly billed amounts: 30 days and 10 days from invoice date.",
           "contradiction_type": "numerical",
           "evidence": {
             "snippet_a": "Such amounts shall be billed on a bi-monthly basis by Equidata and are due and payable in full by Marketing Affiliate 30 days from the invoice date.",
@@ -154,8 +154,8 @@
     {
       "paragraph_id": "target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-14",
       "contradiction": true,
-      "confidence": 95,
-      "brief_reason": "Paragraph both requires Marketing Affiliate to pay late charges and returned check fees, and states they are not obligated to pay them.",
+      "confidence": 100,
+      "brief_reason": "The paragraph both obligates and exempts the Marketing Affiliate from paying late charges and returned check fees.",
       "contradiction_type": "policy_reversal",
       "evidence": {
         "snippet_a": "The Marketing Affiliate agrees to pay a late charge of 1 l/2% per month on the unpaid, past-due amount as well as a returned check fee of not less than $35.00 per returned item.",
@@ -167,8 +167,8 @@
       },
       "contradictions": [
         {
-          "confidence": 95,
-          "brief_reason": "Paragraph both requires Marketing Affiliate to pay late charges and returned check fees, and states they are not obligated to pay them.",
+          "confidence": 100,
+          "brief_reason": "The paragraph both obligates and exempts the Marketing Affiliate from paying late charges and returned check fees.",
           "contradiction_type": "policy_reversal",
           "evidence": {
             "snippet_a": "The Marketing Affiliate agrees to pay a late charge of 1 l/2% per month on the unpaid, past-due amount as well as a returned check fee of not less than $35.00 per returned item.",
@@ -560,5 +560,5 @@
       "contradictions": []
     }
   ],
-  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 75000, \"estimated_input_tokens_total\": 4121, \"estimated_output_tokens_total\": 2184, \"estimated_cost_usd\": \"0.025714\", \"batches\": [{\"batch\": 1, \"rows\": 8, \"estimated_input_tokens\": 4121, \"estimated_output_tokens\": 336, \"estimated_cost_usd\": \"0.010930\", \"response_chars\": 5082, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-8\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 95,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"Paragraph allows Marketing Affiliate to offer, market, sell, or distribute Services without permission, but related paragraph requires express written permission.\\\",\\n          \\\"evidence\\\": {\\n            \\\"snippet_a\\\":\"}]}"
+  "rawResponse": "{\"mode\": \"batched\", \"target_batch_input_tokens\": 35000, \"estimated_input_tokens_total\": 4121, \"estimated_output_tokens_total\": 2184, \"estimated_cost_usd\": \"0.025714\", \"batches\": [{\"batch\": 1, \"rows\": 8, \"estimated_input_tokens\": 4121, \"estimated_output_tokens\": 336, \"estimated_cost_usd\": \"0.010930\", \"response_chars\": 5042, \"response_preview\": \"{\\n  \\\"paragraph_results\\\": [\\n    {\\n      \\\"paragraph_id\\\": \\\"target::SteelVaultCorp_20081224_10-K_EX-10.16_3074935_EX-10.16_Affiliate_Agreement-p-8\\\",\\n      \\\"contradictions\\\": [\\n        {\\n          \\\"confidence\\\": 95,\\n          \\\"contradiction_type\\\": \\\"policy_reversal\\\",\\n          \\\"brief_reason\\\": \\\"The paragraph allows the Marketing Affiliate to offer, market, sell, or distribute Services without permission, but a related paragraph prohibits this without express written permission.\\\",\\n          \\\"evidence\\\": {\\n\"}]}"
 }

@@ -83,9 +83,9 @@ type ProcessingStep = {
 	export let contradictionTaxonomyColors: Record<ContradictionTaxonomyType, string> = {
 		temporal: '#8b5cf6',
 		numerical: '#14b8a6',
-		authority: '#f97316',
+		authority: '#DB5F00',
 		process: '#0ea5e9',
-		policy_reversal: '#ef4444',
+		policy_reversal: '#D62400',
 		specificity: '#84cc16'
 	};
 	export let contradictionTaxonomyOrder: readonly ContradictionTaxonomyType[] = [
@@ -571,7 +571,7 @@ type ProcessingStep = {
 								}`}
 								style={`${
 									selectedParagraph?.id === item.paragraphId
-										? `background: ${hexToRgba(itemStyle.color, 0.16)}; color: ${itemStyle.color};`
+										? `background: ${hexToRgba(itemStyle.color, 0.06)}; color: ${itemStyle.color};`
 										: `color: #374151;`
 								}`}
 								onclick={() => onFocusNodeFromPanel(item.paragraphId, true)}
@@ -642,7 +642,7 @@ type ProcessingStep = {
 															{#if part.changed}
 																<span
 																	class="rounded px-[1px]"
-																	style={`background: ${hexToRgba(itemStyle.color, 0.36)}; box-shadow: inset 0 0 0 1px ${hexToRgba(itemStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
+																	style={`background: ${hexToRgba(itemStyle.color, 0.25)}; box-shadow: inset 0 0 0 1px ${hexToRgba(itemStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
 																>
 																	{part.text}
 																</span>
@@ -672,7 +672,7 @@ type ProcessingStep = {
 															{#if part.changed}
 																<span
 																	class="rounded px-[1px]"
-																	style={`background: ${hexToRgba(snippetBStyle.color, 0.36)}; box-shadow: inset 0 0 0 1px ${hexToRgba(snippetBStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
+																	style={`background: ${hexToRgba(snippetBStyle.color, 0.25)}; box-shadow: inset 0 0 0 1px ${hexToRgba(snippetBStyle.color, 0.7)}; color: #1f2937; font-weight: 700;`}
 																>
 																	{part.text}
 																</span>

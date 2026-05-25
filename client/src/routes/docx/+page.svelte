@@ -156,6 +156,7 @@
 	const PARAGRAPH_EXPLANATION_WHEEL_DIRECTION_DEADZONE = 2;
 	const CONTRADICTION_EVIDENCE_COMPRESS_DURATION_MS = 420;
 	const CONTRADICTION_EVIDENCE_COMPRESS_SNAP_EPSILON = 0.001;
+	const CONTRADICTION_EVIDENCE_PARAGRAPH_GAP_PX = 12;
 	const PARAGRAPH_EXPLANATION_COMPRESS_GAP_PX = 72;
 	const PARAGRAPH_EXPLANATION_STACK_OFFSET_PX = 18;
 	const PARAGRAPH_EXPLANATION_STACK_CARD_GAP_PX = 12;
@@ -2815,11 +2816,19 @@
 			const approved = await confirmLlmEstimate('contradictions_analyze', payload);
 			if (!approved) return;
 			const response = await fetchContradictionAnalysis(payload);
-			const resolvedModel = response.model?.trim() || payload.model || 'default';
-			setContradictionResults(
-				response.paragraphResults ?? [],
-				`llm:openai:${resolvedModel} (${contradictionModeLabel(response.mode)})`
-			);
+			try {
+				const savedResponse = await fetchSavedContradictions(payload.documentId, contradictionGraphMode);
+				setContradictionResults(
+					savedResponse.paragraphResults ?? [],
+					`${savedResponse.sourceFile} (${contradictionModeLabel(savedResponse.mode)})`
+				);
+			} catch {
+				const resolvedModel = response.model?.trim() || payload.model || 'default';
+				setContradictionResults(
+					response.paragraphResults ?? [],
+					`llm:openai:${resolvedModel} (${contradictionModeLabel(response.mode)})`
+				);
+			}
 		} catch (analysisError) {
 			setContradictionErrorMessage(
 				getAxiosErrorMessage(analysisError, 'Failed to search contradictions with LLM.')
@@ -2899,6 +2908,9 @@
 		if (typeof document === 'undefined') return;
 		const marks = getContradictionSnippetMarks();
 		const containers = new Set<HTMLElement>();
+		const selected = get(selectedParagraph);
+		const selectedContainer =
+			selected?.id && selected.id === paragraphId ? paragraphElementById.get(selected.id) : null;
 		for (const mark of marks) {
 			if (
 				mark.dataset.contradictionOwner === paragraphId &&
@@ -2912,6 +2924,27 @@
 			const hostRect = documentScrollHost?.getBoundingClientRect();
 			if (!hostRect) continue;
 			const rect = container.getBoundingClientRect();
+			const proposedTop = rect.top - hostRect.top + deltaY;
+			const proposedBottom = proposedTop + rect.height;
+			let safeTop = proposedTop;
+
+			if (selectedContainer) {
+				const selectedRect = selectedContainer.getBoundingClientRect();
+				const selectedTop = selectedRect.top - hostRect.top;
+				const selectedBottom = selectedTop + selectedRect.height;
+				const overlapsSelected =
+					proposedBottom > selectedTop && proposedTop < selectedBottom;
+				if (overlapsSelected) {
+					const bIsOriginallyBelowA = rect.top >= selectedRect.top;
+					if (bIsOriginallyBelowA) {
+						safeTop = selectedBottom + CONTRADICTION_EVIDENCE_PARAGRAPH_GAP_PX;
+					} else {
+						safeTop =
+							selectedTop - rect.height - CONTRADICTION_EVIDENCE_PARAGRAPH_GAP_PX;
+					}
+				}
+			}
+
 			const clone = container.cloneNode(true) as HTMLElement;
 			clone.removeAttribute('contenteditable');
 			clone.removeAttribute('spellcheck');
@@ -2920,7 +2953,7 @@
 			delete clone.dataset.docxEditableRoot;
 			clone.classList.add('docx-paragraph-explanation-cloned-node');
 			contradictionEvidenceBCollapsedCard = {
-				topPx: rect.top - hostRect.top + deltaY,
+				topPx: safeTop,
 				leftPx: rect.left - hostRect.left,
 				widthPx: rect.width,
 				html: clone.outerHTML

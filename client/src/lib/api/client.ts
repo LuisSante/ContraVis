@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { PUBLIC_DEV_LOCAL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
+
+const baseURL = env.PUBLIC_DEV_LOCAL || 'http://localhost:8300/api/v1';
 
 export const api = axios.create({
-	baseURL: PUBLIC_DEV_LOCAL, 
+	baseURL,
 	withCredentials: false
 });

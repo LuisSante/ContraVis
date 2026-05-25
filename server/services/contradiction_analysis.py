@@ -5,6 +5,7 @@ import logging
 import os
 import re
 from collections import defaultdict
+from pathlib import Path
 from typing import Any
 
 from schemas.types import (
@@ -17,6 +18,7 @@ from services.llm.cost_estimator import estimate_model_cost_usd, estimate_tokens
 from services.llm.factory import LLMProviderFactory
 
 logger = logging.getLogger(__name__)
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 TARGET_BATCH_INPUT_TOKENS = int(
     os.getenv("CONTRADICTION_TARGET_BATCH_INPUT_TOKENS", "35000")
@@ -176,7 +178,9 @@ def _write_debug_mode_payload(
         ],
     }
 
-    output_path = f"/home/sante/Documents/FGV/Laboratorio/document-graph/infra/json/contradictions/{mode}.json"
+    output_dir = PROJECT_ROOT / "infra" / "json" / "contradictions"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_path = output_dir / f"{mode}.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(debug_payload, f, ensure_ascii=False, indent=2)
 

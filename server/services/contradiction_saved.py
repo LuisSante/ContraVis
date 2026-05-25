@@ -4,9 +4,12 @@ import json
 import re
 from datetime import datetime, timezone
 from typing import Any
+import logging
 
 from schemas.types import ContradictionAnalysisResponse, ContradictionParagraphResult
 from utils.config import Config
+
+logger = logging.getLogger(__name__)
 
 _ALLOWED_CONTRADICTION_TYPES = {
     "temporal",
@@ -29,17 +32,25 @@ def load_saved_contradictions_for_document(
             f"Pasta de resultados salvos nao encontrada: {base_dir}"
         )
 
-    json_files = sorted(
-        base_dir.glob("*.json"),
-        key=lambda path: path.stat().st_mtime,
-        reverse=True,
-    )
+    json_files_with_mtime: list[tuple[float, Any]] = []
+    for path in base_dir.glob("*.json"):
+        try:
+            json_files_with_mtime.append((path.stat().st_mtime, path))
+        except OSError as exc:
+            logger.warning("Skipping unreadable saved contradiction file %s: %s", path, exc)
+            continue
+
+    json_files = [path for _, path in sorted(json_files_with_mtime, key=lambda item: item[0], reverse=True)]
 
     candidate_ids = _build_candidate_ids(document_id, aliases)
 
     for json_path in json_files:
-        with json_path.open("r", encoding="utf-8") as f:
-            payload = json.load(f)
+        try:
+            with json_path.open("r", encoding="utf-8") as f:
+                payload = json.load(f)
+        except (OSError, json.JSONDecodeError) as exc:
+            logger.warning("Skipping invalid saved contradiction file %s: %s", json_path, exc)
+            continue
 
         if not _payload_matches_mode(payload, json_path, mode):
             continue
