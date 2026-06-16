@@ -1,0 +1,116 @@
+{
+  "system": "You will receive the full details of ONE contract paragraph node: {id, text, paragraph_enum, relationsCount}. Treat this paragraph as the source evidence for extraction. Do not invent section numbers, titles, or hierarchy not explicitly supported by the text.",
+  "user": "
+  Your task is to act as a legal contract graph extractor following a contract ontology. From this single paragraph, create a self-contained set of nodes and edges that are explicitly supported by the text.
+  The input unit is a paragraph node, not a guaranteed formal clause header. Therefore, preserve the paragraph as the primary structural unit unless the text itself explicitly states a clause or section reference.
+  Output ONLY a single, strict JSON object with this structure:
+  {
+    \"contract_id\": \"...\",
+    \"source_paragraph_id\": \"...\",
+    \"nodes\": [ ... ],
+    \"edges\": [ ... ]
+  }
+  Use only facts explicitly supported by the text. If something is ambiguous, omit it.
+  ──────────────────────────
+  REASONING PROCESS
+  ──────────────────────────
+  1. Isolate the contractual prose and ignore noise such as page headers, redaction notices, tables of contents, or formatting artifacts.
+  2. Create one structural `CLAUSE` node representing the source paragraph itself.
+  3. Identify explicit legal entities, defined terms, references, values, obligations, rights, prohibitions, and conditions stated in the paragraph.
+  4. Create only nodes that are textually grounded in the paragraph.
+  5. Connect the nodes using the edge types defined below.
+  ──────────────────────────
+  NODE TYPES
+  ──────────────────────────
+  1. CLAUSE
+  Format:
+  {
+    \"id\": \"clause:<source paragraph id>\",
+    \"node_type\": \"CLAUSE\",
+    \"source_paragraph_id\": \"<original paragraph id>\",
+    \"text\": \"<full paragraph text>\",
+    \"paragraph_enum\": <int>,
+    \"clause_id\": \"<explicit section/clause label if present, else null>\",
+    \"title\": \"<explicit title if present, else null>\",
+    \"level\": <int or null>
+  }
+  Rules:
+  - Always create exactly one primary `CLAUSE` node for the source paragraph.
+  - `clause_id`, `title`, and `level` are optional. Set them to null if not explicit in the text.
+  - Do not infer hierarchy from paragraph IDs such as `...-p-391`.
+  2. DEFINED_TERM
+  Format:
+  { \"id\": \"term:<Canonical Term>\", \"node_type\": \"DEFINED_TERM\", \"term\": \"<Canonical Term>\", \"definition\": \"<definition text or null>\" }
+  Rules:
+  - Create when the paragraph explicitly defines a term or clearly uses a contract-defined capitalized term.
+  - Canonicalize to the clean term name.
+  3. PARTY
+  Format:
+  { \"id\": \"party:<Party Name>\", \"node_type\": \"PARTY\", \"name\": \"<Party Name>\", \"role\": \"<explicit role or null>\", \"address\": \"<explicit address or null>\" }
+  Rules:
+  - Create for legal entities, individuals, and explicit contract roles such as Supplier, Buyer, Licensor, Licensee, Employer, Employee.
+  - Only assign `role` if it is explicit in the text or directly stated through an alias definition.
+  4. OBLIGATION
+  Format:
+  { \"id\": \"obligation:<short canonical action>\", \"node_type\": \"OBLIGATION\", \"action\": \"<required action>\", \"deadline\": \"<explicit deadline or null>\" }
+  Rules:
+  - Create when the text imposes a duty, usually expressed with `shall`, `must`, `is required to`, or equivalent mandatory language.
+  5. RIGHT
+  Format:
+  { \"id\": \"right:<short canonical action>\", \"node_type\": \"RIGHT\", \"action\": \"<permitted action>\", \"frequency\": \"<explicit frequency or null>\" }
+  Rules:
+  - Create when the text grants discretion, entitlement, permission, or power, usually expressed with `may`, `is entitled to`, `has the right to`.
+  6. PROHIBITION
+  Format:
+  { \"id\": \"prohibition:<short canonical action>\", \"node_type\": \"PROHIBITION\", \"action\": \"<forbidden action>\" }
+  Rules:
+  - Create when the text forbids conduct, usually expressed with `shall not`, `may not`, `must not`, `is prohibited from`.
+  7. CONDITION
+  Format:
+  { \"id\": \"condition:<short canonical trigger>\", \"node_type\": \"CONDITION\", \"trigger\": \"<trigger text>\", \"operator\": \"IF|UNLESS|SUBJECT TO|WHEN|AFTER|BEFORE|OTHER\" }
+  Rules:
+  - Create when a prerequisite, trigger, dependency, or activating condition is explicit.
+  8. REFERENCE
+  Format:
+  { \"id\": \"reference:<canonical reference>\", \"node_type\": \"REFERENCE\", \"name\": \"<name>\", \"citation\": \"<citation or null>\" }
+  Rules:
+  - Create for external laws, standards, documents, regulatory authorities, or named non-contract references.
+  - Internal cross-references to sections or articles of the same contract should be modeled as `CLAUSE` nodes, not `REFERENCE` nodes.
+  9. VALUE
+  Format:
+  { \"id\": \"value:<literal text>\", \"node_type\": \"VALUE\", \"value_type\": \"Currency|Percentage|Days|Months|Years|Quantity|Date|Other\", \"amount\": \"<amount or literal>\", \"unit\": \"<unit or null>\" }
+  Rules:
+  - Create for explicit quantities, amounts, percentages, deadlines, durations, and dates.
+  ──────────────────────────
+  EDGE TYPES
+  ──────────────────────────
+  Format: { \"src\": \"<id>\", \"tgt\": \"<id>\", \"type\": \"<EDGE_TYPE>\" }
+  - CONTAINS: CLAUSE -> any extracted node contained in the paragraph.
+  - DEFINES: CLAUSE -> DEFINED_TERM when the paragraph defines the term.
+  - USES: CLAUSE -> DEFINED_TERM when the term is used but not defined here.
+  - MENTIONS_PARTY: CLAUSE -> PARTY for every explicitly mentioned party.
+  - REFERENCES: CLAUSE -> CLAUSE for explicit internal cross-references such as Section 3.1 or Article 10.
+  - CITES: CLAUSE -> REFERENCE for explicit external sources, standards, laws, or documents.
+  - ASSIGNS_OBLIGATION_TO: OBLIGATION -> PARTY when the obligated actor is explicit.
+  - GRANTS_RIGHT_TO: RIGHT -> PARTY when the holder is explicit.
+  - ASSIGNS_PROHIBITION_TO: PROHIBITION -> PARTY when the restricted subject is explicit.
+  - DEPENDS_ON: OBLIGATION|RIGHT|PROHIBITION|CLAUSE -> CONDITION when activation is conditional.
+  - HAS_VALUE: OBLIGATION|RIGHT|PROHIBITION|CONDITION|CLAUSE -> VALUE when the value qualifies that node.
+  ──────────────────────────
+  CRITICAL RULES
+  ──────────────────────────
+  1. Extract only what is explicitly supported by the paragraph text.
+  2. Do not invent a parent clause, section title, or clause hierarchy unless it is expressly present.
+  3. If an internal section or article is cited, create a minimal `CLAUSE` node for that cited target with only the explicit citation as its `clause_id`, and connect it with `REFERENCES`.
+  4. Create unique nodes and unique edges only once.
+  5. Sort nodes by `id` and edges by `src`, then `type`, then `tgt`.
+  6. If the paragraph contains no extractable legal information, return empty `nodes` and `edges` arrays, except you may still include the primary `CLAUSE` node if contractual prose is present.
+  7. Prefer omission over speculation.
+  SOURCE PARAGRAPH NODE
+  {
+    \"id\": \"root::TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding Agreement-p-3\",
+    \"text\": \"6 rue Adolphe Fischer L-1520 Luxembourg\",
+    \"paragraph_enum\": 0,
+    \"relationsCount\": 0
+  }"
+}
