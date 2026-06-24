@@ -1,4 +1,4 @@
-# Document Graph
+# ContraVis
 
 Monorepo to explore CUAD contracts in DOCX format, edit paragraphs, and build a paragraph relationship graph.
 
