@@ -4,23 +4,21 @@ const height = window.innerWidth > 980 ? window.innerHeight : Math.max(window.in
 const svg = d3.select("#graph-svg").attr("viewBox", [0, 0, width, height]);
 const root = svg.append("g");
 const linkLayer = root.append("g").attr("class", "links");
+const edgeLabelLayer = root.append("g").attr("class", "edge-labels");
 const nodeLayer = root.append("g").attr("class", "nodes");
 const labelLayer = root.append("g").attr("class", "labels");
 
-const pathInput = document.getElementById("graph-path");
-const loadButton = document.getElementById("load-default");
 const fileInput = document.getElementById("file-input");
 const searchInput = document.getElementById("search-input");
-const chargeInput = document.getElementById("charge-input");
 const labelsToggle = document.getElementById("labels-toggle");
 const statusText = document.getElementById("status-text");
 const legendList = document.getElementById("legend-list");
 const detailsContent = document.getElementById("details-content");
+const edgeDetailsContent = document.getElementById("edge-details-content");
 
 const statSource = document.getElementById("stat-source");
 const statNodes = document.getElementById("stat-nodes");
 const statEdges = document.getElementById("stat-edges");
-const statTypes = document.getElementById("stat-types");
 
 const colorByType = {
   CLAUSE: "#c26d38",
@@ -34,9 +32,12 @@ const colorByType = {
   VALUE: "#b45309"
 };
 
+const hiddenDetailKeys = new Set(["index", "x", "y", "vx", "vy", "fx", "fy"]);
+
 let simulation = null;
 let currentGraph = null;
 let selectedNodeId = null;
+let selectedEdgeKey = null;
 let neighborMap = new Map();
 
 const zoom = d3.zoom()
@@ -47,35 +48,13 @@ const zoom = d3.zoom()
 
 svg.call(zoom);
 
-loadButton.addEventListener("click", () => loadGraphFromPath(pathInput.value.trim()));
 fileInput.addEventListener("change", handleFileOpen);
 searchInput.addEventListener("input", applySearch);
-chargeInput.addEventListener("input", rerunForces);
 labelsToggle.addEventListener("change", () => {
   labelLayer.style("display", labelsToggle.checked ? null : "none");
 });
 
 window.addEventListener("resize", () => window.location.reload());
-
-async function loadGraphFromPath(path) {
-  if (!path) {
-    setStatus("Provide a JSON path to load.");
-    return;
-  }
-
-  setStatus(`Loading ${path}...`);
-  try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
-    const data = await response.json();
-    renderGraph(data);
-    setStatus(`Loaded ${data.source_file || path}`);
-  } catch (error) {
-    setStatus(`Failed to load graph: ${error.message}`);
-  }
-}
 
 function handleFileOpen(event) {
   const file = event.target.files?.[0];
@@ -108,27 +87,38 @@ function renderGraph(data) {
       target: nodeById.get(edge.tgt)
     }));
 
+  annotateLinkCurvature(links);
+
   currentGraph = { ...data, nodes, links };
   selectedNodeId = null;
+  selectedEdgeKey = null;
   neighborMap = buildNeighborMap(nodes, links);
 
   statSource.textContent = data.source_file || "-";
   statNodes.textContent = nodes.length;
   statEdges.textContent = links.length;
-  statTypes.textContent = new Set(nodes.map((node) => node.node_type || "UNKNOWN")).size;
   renderLegend(nodes);
 
   detailsContent.innerHTML = '<p class="muted">Select a node to inspect its attributes and connected relations.</p>';
+  edgeDetailsContent.innerHTML = '<p class="muted">No edge selected.</p>';
 
   if (simulation) {
     simulation.stop();
   }
 
   const linkSelection = linkLayer
-    .selectAll("line")
+    .selectAll("path")
     .data(links, (d) => `${d.src}|${d.type}|${d.tgt}`)
-    .join("line")
-    .attr("class", "link");
+    .join("path")
+    .attr("class", "link")
+    .on("click", (_, d) => selectEdge(d));
+
+  const edgeLabelSelection = edgeLabelLayer
+    .selectAll("text")
+    .data(links, (d) => `${d.src}|${d.type}|${d.tgt}`)
+    .join("text")
+    .attr("class", "edge-label")
+    .text((d) => d.type);
 
   const nodeSelection = nodeLayer
     .selectAll("circle")
@@ -151,17 +141,14 @@ function renderGraph(data) {
 
   simulation = d3.forceSimulation(nodes)
     .force("link", d3.forceLink(links).id((d) => d.id).distance(linkDistance))
-    .force("charge", d3.forceManyBody().strength(Number(chargeInput.value)))
-    .force("collide", d3.forceCollide().radius((d) => radiusForNode(d) + 10))
+    .force("charge", d3.forceManyBody().strength(-220))
+    .force("collide", d3.forceCollide().radius((d) => radiusForNode(d) + 16))
     .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("x", d3.forceX(width / 2).strength(0.03))
-    .force("y", d3.forceY(height / 2).strength(0.03))
+    .force("x", d3.forceX(width / 2).strength(0.04))
+    .force("y", d3.forceY(height / 2).strength(0.04))
     .on("tick", () => {
       linkSelection
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+        .attr("d", (d) => buildLinkArcPath(d));
 
       nodeSelection
         .attr("cx", (d) => d.x)
@@ -170,6 +157,11 @@ function renderGraph(data) {
       labelSelection
         .attr("x", (d) => d.x + radiusForNode(d) + 4)
         .attr("y", (d) => d.y + 3);
+
+      edgeLabelSelection
+        .attr("x", (d) => edgeLabelPosition(d).x)
+        .attr("y", (d) => edgeLabelPosition(d).y)
+        .attr("text-anchor", "middle");
     });
 
   svg.transition().duration(400).call(
@@ -189,9 +181,39 @@ function buildNeighborMap(nodes, links) {
   return map;
 }
 
+function annotateLinkCurvature(links) {
+  const groups = new Map();
+
+  links.forEach((link) => {
+    const key = [link.source.id, link.target.id].sort().join("||");
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
+    groups.get(key).push(link);
+  });
+
+  groups.forEach((group) => {
+    group.forEach((link, index) => {
+      const centerOffset = index - (group.length - 1) / 2;
+      const direction = link.source.id <= link.target.id ? 1 : -1;
+      link.curveOffset = centerOffset * 22 * direction;
+    });
+  });
+}
+
 function selectNode(node) {
   selectedNodeId = node.id;
+  selectedEdgeKey = null;
+  edgeDetailsContent.innerHTML = '<p class="muted">No edge selected.</p>';
   renderDetails(node);
+  updateHighlightState();
+}
+
+function selectEdge(edge) {
+  selectedNodeId = null;
+  selectedEdgeKey = edgeKey(edge);
+  detailsContent.innerHTML = '<p class="muted">Select a node to inspect its attributes and connected relations.</p>';
+  renderEdgeDetails(edge);
   updateHighlightState();
 }
 
@@ -200,7 +222,9 @@ function renderDetails(node) {
     (link) => link.source.id === node.id || link.target.id === node.id
   );
 
-  const fields = Object.entries(node).filter(([, value]) => value !== null && value !== "");
+  const fields = Object.entries(node).filter(
+    ([key, value]) => !hiddenDetailKeys.has(key) && value !== null && value !== ""
+  );
   const relations = connectedLinks.map((link) => {
     const direction = link.source.id === node.id ? "out" : "in";
     const counterpart = direction === "out" ? link.target : link.source;
@@ -226,63 +250,106 @@ function renderDetails(node) {
   `;
 }
 
+function renderEdgeDetails(edge) {
+  edgeDetailsContent.innerHTML = `
+    <div class="edge-meta">
+      <div class="detail-row">
+        <span class="detail-key">Source</span>
+        <div>${escapeHtml(labelForNode(edge.source))}</div>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Relation</span>
+        <div>${escapeHtml(edge.type)}</div>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Target</span>
+        <div>${escapeHtml(labelForNode(edge.target))}</div>
+      </div>
+    </div>
+    <div class="triplet-card">
+      <span class="triplet-label">Triplet</span>
+      <div class="triplet-value">${escapeHtml(labelForNode(edge.source))} → ${escapeHtml(edge.type)} → ${escapeHtml(labelForNode(edge.target))}</div>
+    </div>
+    <div class="details-grid">
+      <div class="detail-row">
+        <span class="detail-key">Source ID</span>
+        <div>${escapeHtml(edge.source.id)}</div>
+      </div>
+      <div class="detail-row">
+        <span class="detail-key">Target ID</span>
+        <div>${escapeHtml(edge.target.id)}</div>
+      </div>
+    </div>
+  `;
+}
+
 function applySearch() {
   if (!currentGraph) {
     return;
   }
 
-  const query = searchInput.value.trim().toLowerCase();
-  const matches = query
-    ? new Set(
-        currentGraph.nodes
-          .filter((node) => JSON.stringify(node).toLowerCase().includes(query))
-          .map((node) => node.id)
-      )
-    : null;
-
-  nodeLayer.selectAll(".node")
-    .classed("dimmed", (d) => matches ? !matches.has(d.id) : false);
-
-  labelLayer.selectAll(".node-label")
-    .classed("dimmed", (d) => matches ? !matches.has(d.id) : false);
-
-  linkLayer.selectAll(".link")
-    .classed("dimmed", (d) => matches ? !(matches.has(d.source.id) || matches.has(d.target.id)) : false);
-
   updateHighlightState();
 }
 
 function updateHighlightState() {
+  const matches = getSearchMatches();
   const activeNeighbors = selectedNodeId ? neighborMap.get(selectedNodeId) || new Set() : null;
 
   nodeLayer.selectAll(".node")
     .classed("active", (d) => d.id === selectedNodeId)
-    .classed("dimmed", function (d) {
-      const searchDimmed = d3.select(this).classed("dimmed");
-      if (searchDimmed) {
-        return true;
-      }
-      return activeNeighbors ? !activeNeighbors.has(d.id) : false;
+    .classed("dimmed", (d) => {
+      const searchDimmed = matches ? !matches.has(d.id) : false;
+      const selectionDimmed = activeNeighbors ? !activeNeighbors.has(d.id) : false;
+      return searchDimmed || selectionDimmed;
     });
 
   labelLayer.selectAll(".node-label")
-    .classed("dimmed", function (d) {
-      const searchDimmed = d3.select(this).classed("dimmed");
-      if (searchDimmed) {
-        return true;
-      }
-      return activeNeighbors ? !activeNeighbors.has(d.id) : false;
+    .classed("dimmed", (d) => {
+      const searchDimmed = matches ? !matches.has(d.id) : false;
+      const selectionDimmed = activeNeighbors ? !activeNeighbors.has(d.id) : false;
+      return searchDimmed || selectionDimmed;
+    });
+
+  edgeLabelLayer.selectAll(".edge-label")
+    .classed("dimmed", (d) => {
+      const searchDimmed = matches ? !(matches.has(d.source.id) || matches.has(d.target.id)) : false;
+      const edgeSelectionDimmed = selectedEdgeKey ? edgeKey(d) !== selectedEdgeKey : false;
+      const nodeSelectionDimmed = activeNeighbors
+        ? !(d.source.id === selectedNodeId || d.target.id === selectedNodeId)
+        : false;
+      return searchDimmed || edgeSelectionDimmed || nodeSelectionDimmed;
     });
 
   linkLayer.selectAll(".link")
-    .classed("active", (d) => selectedNodeId && (d.source.id === selectedNodeId || d.target.id === selectedNodeId))
-    .classed("dimmed", function (d) {
-      const searchDimmed = d3.select(this).classed("dimmed");
-      if (searchDimmed) {
-        return true;
-      }
-      return activeNeighbors ? !(d.source.id === selectedNodeId || d.target.id === selectedNodeId) : false;
+    .classed("active", (d) =>
+      (selectedNodeId && (d.source.id === selectedNodeId || d.target.id === selectedNodeId)) ||
+      (selectedEdgeKey && edgeKey(d) === selectedEdgeKey)
+    )
+    .classed("dimmed", (d) => {
+      const searchDimmed = matches ? !(matches.has(d.source.id) || matches.has(d.target.id)) : false;
+      const edgeSelectionDimmed = selectedEdgeKey ? edgeKey(d) !== selectedEdgeKey : false;
+      const nodeSelectionDimmed = activeNeighbors
+        ? !(d.source.id === selectedNodeId || d.target.id === selectedNodeId)
+        : false;
+      return searchDimmed || edgeSelectionDimmed || nodeSelectionDimmed;
     });
+}
+
+function getSearchMatches() {
+  if (!currentGraph) {
+    return null;
+  }
+
+  const query = searchInput.value.trim().toLowerCase();
+  if (!query) {
+    return null;
+  }
+
+  return new Set(
+    currentGraph.nodes
+      .filter((node) => JSON.stringify(node).toLowerCase().includes(query))
+      .map((node) => node.id)
+  );
 }
 
 function renderLegend(nodes) {
@@ -298,15 +365,6 @@ function renderLegend(nodes) {
       <span>${escapeHtml(type)} (${count})</span>
     </li>
   `).join("");
-}
-
-function rerunForces() {
-  if (!simulation) {
-    return;
-  }
-
-  simulation.force("charge").strength(Number(chargeInput.value));
-  simulation.alpha(0.8).restart();
 }
 
 function dragBehavior() {
@@ -351,22 +409,60 @@ function radiusForNode(node) {
 
 function linkDistance(link) {
   const distanceByType = {
-    CONTAINS: 70,
-    ASSIGNS_OBLIGATION_TO: 95,
-    GRANTS_RIGHT_TO: 95,
-    ASSIGNS_PROHIBITION_TO: 95,
-    DEPENDS_ON: 105,
-    REFERENCES: 110,
-    USES: 80,
-    DEFINES: 80,
-    HAS_VALUE: 72,
-    CITES: 86
+    CONTAINS: 95,
+    ASSIGNS_OBLIGATION_TO: 122,
+    GRANTS_RIGHT_TO: 122,
+    ASSIGNS_PROHIBITION_TO: 122,
+    DEPENDS_ON: 132,
+    REFERENCES: 138,
+    USES: 108,
+    DEFINES: 108,
+    HAS_VALUE: 96,
+    CITES: 116
   };
-  return distanceByType[link.type] || 85;
+  return distanceByType[link.type] || 110;
 }
 
 function labelForNode(node) {
   return node.clause_id || node.term || node.name || node.action || node.trigger || node.amount || node.id;
+}
+
+function edgeKey(edge) {
+  return `${edge.source.id}|${edge.type}|${edge.target.id}`;
+}
+
+function buildLinkArcPath(link) {
+  const x1 = link.source.x;
+  const y1 = link.source.y;
+  const x2 = link.target.x;
+  const y2 = link.target.y;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const distance = Math.hypot(dx, dy) || 1;
+  const nx = -dy / distance;
+  const ny = dx / distance;
+  const curveOffset = link.curveOffset || 0;
+  const cx = (x1 + x2) / 2 + nx * curveOffset;
+  const cy = (y1 + y2) / 2 + ny * curveOffset;
+  return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
+}
+
+function edgeLabelPosition(link) {
+  const x1 = link.source.x;
+  const y1 = link.source.y;
+  const x2 = link.target.x;
+  const y2 = link.target.y;
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const distance = Math.hypot(dx, dy) || 1;
+  const nx = -dy / distance;
+  const ny = dx / distance;
+  const curveOffset = link.curveOffset || 0;
+
+  return {
+    x: (x1 + x2) / 2 + nx * curveOffset * 0.5,
+    y: (y1 + y2) / 2 + ny * curveOffset * 0.5 - 4
+  };
 }
 
 function stringifyValue(value) {
@@ -388,5 +484,3 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 }
-
-loadGraphFromPath(pathInput.value.trim());

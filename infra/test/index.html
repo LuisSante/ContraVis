@@ -9,23 +9,9 @@
 <body>
   <div class="app-shell">
     <aside class="sidebar">
-      <div class="panel">
-        <p class="eyebrow">D3 Viewer</p>
-        <h1>Contract Knowledge Graph</h1>
-        <p class="muted">
-          Explore nodes, clause links, obligations, parties, and extracted terms from a contract graph JSON.
-        </p>
-      </div>
-
       <div class="panel controls">
-        <label class="field">
-          <span>JSON path</span>
-          <input id="graph-path" type="text" value="../json/knowledge_graph/TomOnlineInc_20060501_20-F_EX-4.46_749700_EX-4.46_Co-Branding_Agreement_knowledge_graph.json">
-        </label>
-
         <div class="actions">
-          <button id="load-default" type="button">Load Path</button>
-          <label class="file-button" for="file-input">Open File</label>
+          <label class="file-button primary-file-button" for="file-input">Open File</label>
           <input id="file-input" type="file" accept=".json,application/json">
         </div>
 
@@ -34,24 +20,12 @@
           <input id="search-input" type="search" placeholder="party, clause 5.3.5, obligation...">
         </label>
 
-        <label class="field">
-          <span>Charge</span>
-          <input id="charge-input" type="range" min="-600" max="-40" step="10" value="-220">
-        </label>
-
         <label class="checkbox">
-          <input id="labels-toggle" type="checkbox" checked>
+          <input id="labels-toggle" type="checkbox">
           <span>Show node labels</span>
         </label>
       </div>
-
-      <div class="panel stats">
-        <div class="stat-row"><span>Source file</span><strong id="stat-source">-</strong></div>
-        <div class="stat-row"><span>Nodes</span><strong id="stat-nodes">0</strong></div>
-        <div class="stat-row"><span>Edges</span><strong id="stat-edges">0</strong></div>
-        <div class="stat-row"><span>Node types</span><strong id="stat-types">0</strong></div>
-      </div>
-
+      
       <div class="panel legend">
         <div class="panel-header">
           <h2>Types</h2>
@@ -59,6 +33,34 @@
         <ul id="legend-list"></ul>
       </div>
 
+      <div class="panel stats">
+        <div class="stat-row"><span>Source file</span><strong id="stat-source">-</strong></div>
+        <div class="stat-row"><span>Nodes</span><strong id="stat-nodes">0</strong></div>
+        <div class="stat-row"><span>Edges</span><strong id="stat-edges">0</strong></div>
+      </div>
+
+
+    </aside>
+
+    <main class="canvas-wrap">
+      <div class="statusbar">
+        <span id="status-text">Waiting for graph data.</span>
+      </div>
+      <div class="graph-stage">
+        <svg id="graph-svg" aria-label="Knowledge graph visualization"></svg>
+      </div>
+      <section class="edge-panel">
+        <div class="edge-panel-header">
+          <h2>Selected Relation</h2>
+          <span class="muted">Click an edge to inspect its triplet.</span>
+        </div>
+        <div id="edge-details-content" class="edge-details-content">
+          <p class="muted">No edge selected.</p>
+        </div>
+      </section>
+    </main>
+
+    <aside class="details-sidebar">
       <div class="panel details">
         <div class="panel-header">
           <h2>Details</h2>
@@ -68,13 +70,6 @@
         </div>
       </div>
     </aside>
-
-    <main class="canvas-wrap">
-      <div class="statusbar">
-        <span id="status-text">Waiting for graph data.</span>
-      </div>
-      <svg id="graph-svg" aria-label="Knowledge graph visualization"></svg>
-    </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
