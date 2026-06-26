@@ -1,6 +1,8 @@
 *.env
 .vscode/
 .codex
+.agents
+.claude
 words_paragraph.json
 __pycache__/
 infra/neo4j/data/

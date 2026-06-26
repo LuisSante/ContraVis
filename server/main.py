@@ -19,8 +19,10 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 origins = [
-    "http://localhost:5173", 
+    "http://localhost:5173",  # legacy SvelteKit client
     "http://127.0.0.1:5173",
+    "http://localhost:3000",  # Next.js frontend (web/)
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
