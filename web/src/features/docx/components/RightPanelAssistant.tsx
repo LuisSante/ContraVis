@@ -13,11 +13,18 @@ interface RightPanelAssistantProps {
 	input: string;
 	loading: boolean;
 	error: string | null;
+	entityHighlightsEnabled?: boolean;
+	rewriteBusy?: boolean;
 	onInputChange: (value: string) => void;
 	onSubmit: () => void;
 	onKeydown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
 	onSuggestedQuestionClick: (question: string) => void;
 	onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void;
+	onToggleEntityHighlights?: () => void;
+	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
+	/** Preguntas rápidas iniciales (chat vacío). */
+	initialSuggestions?: string[];
+	onInitialSuggestionClick?: (question: string) => void;
 }
 
 /**
@@ -32,11 +39,17 @@ export function RightPanelAssistant({
 	input,
 	loading,
 	error,
+	entityHighlightsEnabled = true,
+	rewriteBusy = false,
 	onInputChange,
 	onSubmit,
 	onKeydown,
 	onSuggestedQuestionClick,
 	onFocusNodeFromPanel,
+	onToggleEntityHighlights,
+	onAcceptFixSuggestion,
+	initialSuggestions,
+	onInitialSuggestionClick,
 }: RightPanelAssistantProps) {
 	return (
 		<section className="flex min-h-0 flex-1 flex-col bg-white">
@@ -44,8 +57,12 @@ export function RightPanelAssistant({
 				<AssistantMessageList
 					messages={messages}
 					loading={loading}
+					entityHighlightsEnabled={entityHighlightsEnabled}
+					rewriteBusy={rewriteBusy}
 					onSuggestedQuestionClick={onSuggestedQuestionClick}
 					onFocusNodeFromPanel={onFocusNodeFromPanel}
+					onToggleEntityHighlights={onToggleEntityHighlights}
+					onAcceptFixSuggestion={onAcceptFixSuggestion}
 				/>
 			</ScrollArea>
 
@@ -61,6 +78,9 @@ export function RightPanelAssistant({
 				onInputChange={onInputChange}
 				onSubmit={onSubmit}
 				onKeydown={onKeydown}
+				suggestions={initialSuggestions}
+				messagesEmpty={messages.length === 0}
+				onSuggestionClick={onInitialSuggestionClick}
 			/>
 		</section>
 	);

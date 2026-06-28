@@ -12,6 +12,10 @@ interface AssistantMessageListProps {
 	loading: boolean;
 	onSuggestedQuestionClick: (question: string) => void;
 	onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void;
+	entityHighlightsEnabled?: boolean;
+	rewriteBusy?: boolean;
+	onToggleEntityHighlights?: () => void;
+	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
 }
 
 /**
@@ -24,6 +28,10 @@ export function AssistantMessageList({
 	loading,
 	onSuggestedQuestionClick,
 	onFocusNodeFromPanel,
+	entityHighlightsEnabled = true,
+	rewriteBusy = false,
+	onToggleEntityHighlights,
+	onAcceptFixSuggestion,
 }: AssistantMessageListProps) {
 	const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -53,6 +61,10 @@ export function AssistantMessageList({
 					message={message}
 					onSuggestedQuestionClick={onSuggestedQuestionClick}
 					onFocusNodeFromPanel={onFocusNodeFromPanel}
+					entityHighlightsEnabled={entityHighlightsEnabled}
+					rewriteBusy={rewriteBusy}
+					onToggleEntityHighlights={onToggleEntityHighlights}
+					onAcceptFixSuggestion={onAcceptFixSuggestion}
 				/>
 			))}
 

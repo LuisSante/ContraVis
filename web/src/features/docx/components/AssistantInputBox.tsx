@@ -11,12 +11,15 @@ interface AssistantInputBoxProps {
 	onInputChange: (value: string) => void;
 	onSubmit: () => void;
 	onKeydown: (event: KeyboardEvent<HTMLTextAreaElement>) => void;
+	/** Preguntas rápidas iniciales (solo con chat vacío y sin texto escrito). */
+	suggestions?: string[];
+	messagesEmpty?: boolean;
+	onSuggestionClick?: (question: string) => void;
 }
 
 /**
- * Chat input area: controlled textarea + send button. Ported from the form
- * block of the Svelte `RightPanelAssistant` component (quick-action suggestions
- * intentionally dropped in this migration step).
+ * Chat input area: controlled textarea + send button + quick-action suggestions
+ * iniciales. Port del bloque `form` del Svelte `RightPanelAssistant`.
  */
 export function AssistantInputBox({
 	input,
@@ -24,7 +27,13 @@ export function AssistantInputBox({
 	onInputChange,
 	onSubmit,
 	onKeydown,
+	suggestions = [],
+	messagesEmpty = false,
+	onSuggestionClick,
 }: AssistantInputBoxProps) {
+	const showSuggestions =
+		suggestions.length > 0 && messagesEmpty && input.trim().length === 0;
+
 	return (
 		<form
 			className="bg-white p-2"
@@ -33,6 +42,25 @@ export function AssistantInputBox({
 				onSubmit();
 			}}
 		>
+			{showSuggestions ? (
+				<div className="mb-2 flex justify-end">
+					<div className="inline-flex flex-col items-end gap-1.5">
+						{suggestions.map((suggestion) => (
+							<Button
+								key={suggestion}
+								type="button"
+								variant="outline"
+								size="sm"
+								className="h-6 w-auto shrink-0 border-black bg-white px-2 text-[10px] text-black hover:bg-blue-600 hover:text-white"
+								onClick={() => onSuggestionClick?.(suggestion)}
+							>
+								{suggestion}
+							</Button>
+						))}
+					</div>
+				</div>
+			) : null}
+
 			<div className="mt-2 flex items-end gap-1.5">
 				<Textarea
 					rows={2}

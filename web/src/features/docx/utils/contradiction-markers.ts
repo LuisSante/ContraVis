@@ -5,6 +5,7 @@ import type {
 import { resolveContradictionConfidenceBand } from './contradiction';
 
 const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
+const CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX = 55;
 
 export interface ContradictionEvidenceLink {
 	topPx: number;
@@ -16,24 +17,72 @@ export interface ContradictionEvidenceLink {
 	bCenterPx: number;
 }
 
+export interface ContradictionEvidenceCollapsedCard {
+	topPx: number;
+	leftPx: number;
+	widthPx: number;
+	html: string;
+}
+
+export interface ContradictionMarkersResult {
+	markers: ContradictionScrollMarker[];
+	link: ContradictionEvidenceLink | null;
+	/** True si la evidencia A/B vive en párrafos distintos (compresible). */
+	interParagraph: boolean;
+	/** Tarjeta(s) flotantes con el clon de los párrafos B al comprimir. */
+	collapsedCards: ContradictionEvidenceCollapsedCard[];
+	/** Ids (data-node-id) de los párrafos B a ocultar mientras se comprime. */
+	hiddenParagraphIds: string[];
+}
+
+/** Clona el contenedor del párrafo B a HTML estático para la tarjeta colapsada. */
+function cloneParagraphHtml(container: HTMLElement): string {
+	const clone = container.cloneNode(true) as HTMLElement;
+	clone.removeAttribute('contenteditable');
+	clone.removeAttribute('spellcheck');
+	delete clone.dataset.nodeId;
+	delete clone.dataset.paragraphKind;
+	delete clone.dataset.docxEditableRoot;
+	// El original ya puede tener la clase de ocultado/atenuado de un frame previo;
+	// el clon debe verse a opacidad/color plenos (no heredar el "source-hidden").
+	clone.classList.remove(
+		'docx-contradiction-source-hidden',
+		'docx-paragraph-explanation-muted'
+	);
+	clone.classList.add('docx-paragraph-explanation-cloned-node');
+	return clone.outerHTML;
+}
+
 export function computeContradictionMarkers(params: {
 	scrollHost: HTMLElement;
 	paragraphElementById: Map<string, HTMLElement>;
 	resultsByParagraphId: Map<string, ContradictionParagraphResult>;
 	selectedParagraphId: string | null;
-}): { markers: ContradictionScrollMarker[]; link: ContradictionEvidenceLink | null } {
-	const { scrollHost, paragraphElementById, resultsByParagraphId, selectedParagraphId } = params;
+	/** 0 = posiciones reales, 1 = B totalmente acercado a A (solo inter-párrafo). */
+	compression?: number;
+}): ContradictionMarkersResult {
+	const {
+		scrollHost,
+		paragraphElementById,
+		resultsByParagraphId,
+		selectedParagraphId,
+		compression = 0,
+	} = params;
 
-	if (resultsByParagraphId.size === 0) {
-		return { markers: [], link: null };
-	}
+	const empty: ContradictionMarkersResult = {
+		markers: [],
+		link: null,
+		interParagraph: false,
+		collapsedCards: [],
+		hiddenParagraphIds: [],
+	};
+
+	if (resultsByParagraphId.size === 0) return empty;
 
 	const hostRect = scrollHost.getBoundingClientRect();
 	const hostScrollHeight = scrollHost.scrollHeight;
 	const hostScrollTop = scrollHost.scrollTop;
-	if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) {
-		return { markers: [], link: null };
-	}
+	if (!Number.isFinite(hostScrollHeight) || hostScrollHeight <= 0) return empty;
 
 	const nextMarkers: ContradictionScrollMarker[] = [];
 
@@ -48,38 +97,40 @@ export function computeContradictionMarkers(params: {
 		const rawTopPercent = (centerOffset / hostScrollHeight) * 100;
 		const topPercent = Math.min(99.6, Math.max(0.4, rawTopPercent));
 
-		nextMarkers.push({
-			paragraphId,
-			topPercent,
-			confidenceBand
-		});
+		nextMarkers.push({ paragraphId, topPercent, confidenceBand });
 	}
 
 	nextMarkers.sort((left, right) => left.topPercent - right.topPercent);
 
-	if (!selectedParagraphId || !resultsByParagraphId.get(selectedParagraphId)?.contradiction) {
-		return { markers: nextMarkers, link: null };
+	const selectedResult = selectedParagraphId
+		? resultsByParagraphId.get(selectedParagraphId)
+		: null;
+	if (!selectedParagraphId || !selectedResult?.contradiction) {
+		return { ...empty, markers: nextMarkers };
 	}
 
 	let markA: HTMLElement | null = null;
 	let markB: HTMLElement | null = null;
+	const bContainers = new Set<HTMLElement>();
 	const allMarks = Array.from(
 		document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet')
 	);
 	for (const mark of allMarks) {
 		if (mark.dataset.contradictionOwner !== selectedParagraphId) continue;
-		if (!markA && mark.dataset.contradictionRole === 'a') {
-			markA = mark;
+		if (!markA && mark.dataset.contradictionRole === 'a') markA = mark;
+		if (mark.dataset.contradictionRole === 'b') {
+			if (!markB) markB = mark;
+			const container = mark.closest<HTMLElement>('[data-node-id]');
+			if (container) bContainers.add(container);
 		}
-		if (!markB && mark.dataset.contradictionRole === 'b') {
-			markB = mark;
-		}
-		if (markA && markB) break;
 	}
 
-	if (!markA || !markB) {
-		return { markers: nextMarkers, link: null };
-	}
+	if (!markA || !markB) return { ...empty, markers: nextMarkers };
+
+	const evidence = selectedResult.evidence;
+	const interParagraph =
+		(evidence?.source_a || '').trim().toLowerCase() === 'context' ||
+		(evidence?.source_b || '').trim().toLowerCase() === 'context';
 
 	const markARect = markA.getBoundingClientRect();
 	const markBRect = markB.getBoundingClientRect();
@@ -90,6 +141,8 @@ export function computeContradictionMarkers(params: {
 
 	let displayACenterPx = Math.max(0, Math.min(hostRect.height, aCenterPx));
 	let displayBCenterPx = Math.max(0, Math.min(hostRect.height, bCenterPx));
+	let bTransformDeltaPx = 0;
+	let bVisualCenterPx: number | null = null;
 	{
 		const currentGap = Math.abs(displayACenterPx - displayBCenterPx);
 		if (showA && showB && currentGap < CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX) {
@@ -120,12 +173,44 @@ export function computeContradictionMarkers(params: {
 				displayBCenterPx = top;
 			}
 		}
+		// Inter-párrafo: A queda fija y solo B se acerca a A (Shift+Scroll).
+		if (interParagraph && compression > 0) {
+			const aFixed = displayACenterPx;
+			const bStart = displayBCenterPx;
+			const direction = bStart >= aFixed ? 1 : -1;
+			const bTarget = aFixed + direction * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
+			displayBCenterPx = bStart * (1 - compression) + bTarget * compression;
+			displayACenterPx = aFixed;
+			// Centros sin clamp para que la copia flotante pueda viajar entre páginas.
+			const rawDirection = bCenterPx >= aCenterPx ? 1 : -1;
+			const rawTarget = aCenterPx + rawDirection * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
+			const rawCompressed = bCenterPx * (1 - compression) + rawTarget * compression;
+			bTransformDeltaPx = rawCompressed - bCenterPx;
+			bVisualCenterPx = rawCompressed;
+		}
+	}
+
+	// Tarjetas colapsadas + ids a ocultar (solo si B se movió de verdad).
+	const collapsedCards: ContradictionEvidenceCollapsedCard[] = [];
+	const hiddenParagraphIds: string[] = [];
+	if (interParagraph && Math.abs(bTransformDeltaPx) > 0.5) {
+		for (const container of bContainers) {
+			const rect = container.getBoundingClientRect();
+			collapsedCards.push({
+				topPx: rect.top - hostRect.top + bTransformDeltaPx,
+				leftPx: rect.left - hostRect.left,
+				widthPx: rect.width,
+				html: cloneParagraphHtml(container),
+			});
+			const nodeId = container.dataset.nodeId;
+			if (nodeId) hiddenParagraphIds.push(nodeId);
+		}
 	}
 
 	const topPx = Math.min(displayACenterPx, displayBCenterPx);
 	const bottomPx = Math.max(displayACenterPx, displayBCenterPx);
 	if (bottomPx - topPx < 2) {
-		return { markers: nextMarkers, link: null };
+		return { ...empty, markers: nextMarkers, interParagraph };
 	}
 	const rightEdge = Math.max(markARect.right, markBRect.right);
 	const leftPx = Math.max(8, rightEdge - hostRect.left + 16);
@@ -135,10 +220,10 @@ export function computeContradictionMarkers(params: {
 		bottomPx,
 		leftPx,
 		showA,
-		showB,
+		showB: showB || (interParagraph && compression > 0),
 		aCenterPx: displayACenterPx,
-		bCenterPx: displayBCenterPx
+		bCenterPx: bVisualCenterPx ?? displayBCenterPx,
 	};
 
-	return { markers: nextMarkers, link };
+	return { markers: nextMarkers, link, interParagraph, collapsedCards, hiddenParagraphIds };
 }

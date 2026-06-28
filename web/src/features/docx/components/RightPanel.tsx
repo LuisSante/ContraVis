@@ -56,7 +56,7 @@ export function RightPanel({
 	return (
 		<aside
 			className={cn(
-				'absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-gray-200 bg-white transition-all duration-300',
+				'absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-gray-200 bg-white transition-[transform,opacity,box-shadow] duration-300',
 				isOpen
 					? 'pointer-events-auto visible opacity-100 shadow-2xl'
 					: 'pointer-events-none invisible opacity-0 shadow-none'
@@ -69,7 +69,7 @@ export function RightPanel({
 		>
 			<header className="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5">
 				<div className="flex min-w-0 flex-1 items-center gap-2">
-					<h2 className="inline-flex min-w-0 items-center gap-2 truncate text-sm font-semibold text-gray-700">
+					<h2 className="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-gray-700">
 						<span className="shrink-0 text-blue-700">
 							<Icon className="h-4 w-4" />
 						</span>

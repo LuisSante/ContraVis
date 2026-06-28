@@ -1,12 +1,14 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
 import { DocxPageHeader } from './DocxPageHeader';
 import { DocumentViewer } from './DocumentViewer';
 import { RightPanel } from './RightPanel';
 import { ToolRail } from './ToolRail';
 import { RightPanelAnalysis } from './RightPanelAnalysis';
 import { RightPanelAssistant } from './RightPanelAssistant';
+import { ContradictionChatPanel } from './ContradictionChatPanel';
+import { LlmEstimateDialog } from './LlmEstimateDialog';
 import { RightPanelParagraphExplanation } from './RightPanelParagraphExplanation';
 import { RightPanelRelated } from './RightPanelRelated';
 import { Button } from '@/components/ui/button';
@@ -20,6 +22,8 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { useRightDrawer } from '@/features/docx/hooks/useRightDrawer';
+import { useLlmEstimate } from '@/features/docx/hooks/useLlmEstimate';
+import { useDocumentEntityHighlights } from '@/features/docx/hooks/useDocumentEntityHighlights';
 import { useDocumentViewer } from '@/features/docx/hooks/useDocumentViewer';
 import { useContradictionAnalysis } from '@/features/docx/hooks/useContradictionAnalysis';
 import { useContradictionDecorations } from '@/features/docx/hooks/useContradictionDecorations';
@@ -28,7 +32,15 @@ import { useParagraphExplanation } from '@/features/docx/hooks/useParagraphExpla
 import { useRelatedGraph } from '@/features/docx/hooks/useRelatedGraph';
 import { useDocumentStore } from '@/stores/document';
 import { fetchLlmTotalCost } from '@/services/llm';
-import { PROVIDER_OPTIONS } from '@/constants/docx-viewer';
+import {
+	PROVIDER_OPTIONS,
+	QUICK_ACTIONS,
+	QUICK_ACTION_CONTRADICTION_RISKS,
+	QUICK_ACTION_WHY_CONTRADICTION_AI,
+	QUICK_ACTION_WHY_CONTRADICTION_FREE,
+	RIGHT_DRAWER_KEYBOARD_STEP,
+} from '@/constants/docx-viewer';
+import { buildBridgeRelatedParagraphs } from '@/features/docx/utils/related-bridge';
 import type { AssistantProvider } from '@/types/document';
 
 interface DocxViewerProps {
@@ -37,6 +49,12 @@ interface DocxViewerProps {
 
 const ACTION_BTN =
 	'h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100';
+
+// Preguntas rápidas iniciales del Contract Chat Assistant (sin las de contradicción).
+const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
+	(action) =>
+		action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
+);
 
 // Pasos mostrados mientras se forma el grafo de relaciones (bloqueo inicial).
 const GRAPH_PROCESSING_STEPS: ProcessingStep[] = [
@@ -56,6 +74,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const docId = id ?? '';
 
 	const drawer = useRightDrawer();
+	const llmEstimate = useLlmEstimate();
 	const viewer = useDocumentViewer(id);
 	const { paragraphElementById, nodeEditStateById } = viewer.maps;
 
@@ -65,11 +84,15 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const [model, setModel] = useState('gpt-4.1');
 	const [costLabel, setCostLabel] = useState<string | null>(null);
 
+	const related = useRelatedGraph({ docId, maps: viewer.maps });
+
 	const contradiction = useContradictionAnalysis({
 		docId,
 		nodeEditStateById: nodeEditStateById.current,
+		backendEdges: related.edges,
+		model,
+		confirmLlmEstimate: llmEstimate.confirm,
 	});
-	const assistant = useAssistantChat({ docId, nodeEditStateById: nodeEditStateById.current });
 	const explanation = useParagraphExplanation({
 		docId,
 		nodeEditStateById: nodeEditStateById.current,
@@ -79,7 +102,56 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const explanationActive = drawer.isOpen && drawer.activeTab === 'paragraph_explanation';
 	const relatedActive = drawer.isOpen && drawer.activeTab === 'related';
 
-	const related = useRelatedGraph({ docId, maps: viewer.maps });
+	// Chat compartido: un único hilo alimenta el Contract Chat Assistant y el chat
+	// embebido en Contradiction Analysis (quick-actions + fix estructurado).
+	const assistant = useAssistantChat({
+		docId,
+		nodeEditStateById: nodeEditStateById.current,
+		getViewerElement: () => viewer.containerRef.current,
+		paragraphElementById: paragraphElementById.current,
+		contradictionResultsByParagraphId: contradiction.resultsByParagraphId,
+		selectedRelatedParagraphs: related.selectedRelatedParagraphs,
+		model,
+		confirmLlmEstimate: llmEstimate.confirm,
+	});
+
+	// Puente de relacionados: activo en Related y en Paragraph Explanation. La lista
+	// difiere por pestaña (todos vs la cola tras el top-5 que ya muestra el panel).
+	const relatedBridgeActive = relatedActive || explanationActive;
+	const relatedBridgeParagraphs = useMemo(
+		() =>
+			relatedActive
+				? related.selectedRelatedParagraphs
+				: explanationActive
+					? buildBridgeRelatedParagraphs(related.selectedRelatedParagraphs, 'paragraph_explanation')
+					: [],
+		[relatedActive, explanationActive, related.selectedRelatedParagraphs]
+	);
+
+	// Resaltado de entidades en el cuerpo del documento: de Paragraph Explanation o
+	// del why/risk de contradicción (toggle on). Se aplican al párrafo seleccionado
+	// y a sus relacionados.
+	const documentEntities = explanationActive
+		? explanation.entities
+		: analysisActive
+			? assistant.contradictionEntities
+			: [];
+	const entityTargetIds = useMemo(
+		() =>
+			selectedParagraph
+				? Array.from(
+						new Set([selectedParagraph.id, ...relatedBridgeParagraphs.map((item) => item.node.id)])
+					)
+				: [],
+		[selectedParagraph, relatedBridgeParagraphs]
+	);
+	useDocumentEntityHighlights({
+		active: documentEntities.length > 0 && (explanationActive || analysisActive),
+		renderEpoch: viewer.renderEpoch,
+		paragraphElementById: paragraphElementById.current,
+		targetIds: entityTargetIds,
+		entities: documentEntities,
+	});
 
 	useContradictionDecorations({
 		active: analysisActive,
@@ -116,13 +188,8 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	// (Se libera también si el render falla, para no bloquear indefinidamente.)
 	const graphBlocking = id != null && !relatedComputed && viewer.status !== 'error';
 
-	// Carga las contradicciones guardadas cuando el grafo ya está formado.
-	const { hasTriggered, loadSavedContradictions } = contradiction;
-	useEffect(() => {
-		if (id && analysisActive && relatedComputed && !hasTriggered) {
-			void loadSavedContradictions();
-		}
-	}, [id, analysisActive, relatedComputed, hasTriggered, loadSavedContradictions]);
+	// Las contradicciones se cargan solo bajo demanda: "Saved" (guardadas) o
+	// "Search" (búsqueda con LLM). No se auto-cargan al formarse el grafo.
 
 	// Pide la explicación al abrir su tab con un párrafo seleccionado aún no explicado.
 	const selectedParagraphId = selectedParagraph?.id ?? null;
@@ -141,6 +208,35 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 			void submitExplanation();
 		}
 	}, [explanationActive, selectedParagraphId, explanationLoadedId, explanationLoading, submitExplanation]);
+
+	// Resize del drawer derecho por arrastre del separador vertical.
+	const startDrawerResize = (event: React.MouseEvent) => {
+		if (window.innerWidth < 1024 || !drawer.isOpen) return;
+		event.preventDefault();
+		document.body.style.userSelect = 'none';
+		const sidebarWidth = drawer.sidebarWidth;
+		const onMove = (moveEvent: MouseEvent) => {
+			drawer.setWidth(window.innerWidth - sidebarWidth - moveEvent.clientX);
+		};
+		const onUp = () => {
+			window.removeEventListener('mousemove', onMove);
+			window.removeEventListener('mouseup', onUp);
+			document.body.style.userSelect = '';
+		};
+		window.addEventListener('mousemove', onMove);
+		window.addEventListener('mouseup', onUp);
+	};
+
+	const handleDrawerResizeKeydown = (event: React.KeyboardEvent) => {
+		if (!drawer.isOpen) return;
+		if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			drawer.setWidth(drawer.width + RIGHT_DRAWER_KEYBOARD_STEP);
+		} else if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			drawer.setWidth(drawer.width - RIGHT_DRAWER_KEYBOARD_STEP);
+		}
+	};
 
 	const onFocusNodeFromPanel = (nodeId: string, emphasize = false) => {
 		const node = useDocumentStore.getState().paragraphs.find((n) => n.id === nodeId) ?? null;
@@ -181,7 +277,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 					variant="outline"
 					size="sm"
 					className={ACTION_BTN}
-					disabled={contradiction.loading}
+					disabled={contradiction.loading || graphBlocking}
 					onClick={() => void contradiction.loadSavedContradictions()}
 				>
 					Saved
@@ -190,8 +286,9 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 					variant="outline"
 					size="sm"
 					className={ACTION_BTN}
-					disabled
-					title="Búsqueda con LLM — próximamente"
+					disabled={contradiction.loading || relatedLoading || graphBlocking}
+					title="Search contradictions with LLM"
+					onClick={() => void contradiction.searchContradictions()}
 				>
 					Search
 				</Button>
@@ -273,6 +370,9 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 					selectedParagraphId={selectedParagraphId}
 					categoryColor={contradiction.selectedContradictionCategoryColor}
 					onMarkerClick={(paragraphId) => onFocusNodeFromPanel(paragraphId, true)}
+						relatedBridgeActive={relatedBridgeActive}
+						selectedParagraph={selectedParagraph}
+						relatedBridgeParagraphs={relatedBridgeParagraphs}
 				/>
 			</div>
 
@@ -302,6 +402,26 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 						selectedContradictionEvidence={contradiction.selectedContradictionEvidence}
 						onFocusEvidenceSnippet={onFocusEvidenceSnippet}
 						onFocusNodeFromPanel={onFocusNodeFromPanel}
+						chatSlot={
+							<ContradictionChatPanel
+								messages={assistant.messages}
+								input={assistant.input}
+								loading={assistant.loading}
+								error={assistant.error}
+								rewriteBusy={assistant.rewriteBusy}
+								entityHighlightsEnabled={assistant.entityHighlightsEnabled}
+								onInputChange={assistant.setInput}
+								onSubmit={() => void assistant.submitContradictionQuestion()}
+								onKeydown={assistant.handleContradictionKeydown}
+								onWhy={() => void assistant.askQuickAction(QUICK_ACTION_WHY_CONTRADICTION_AI)}
+								onRisks={() => void assistant.askQuickAction(QUICK_ACTION_CONTRADICTION_RISKS)}
+								onSuggestFix={() => void assistant.suggestContradictionFix()}
+								onToggleEntityHighlights={assistant.toggleEntityHighlights}
+								onAcceptFixSuggestion={assistant.acceptFixSuggestion}
+								onSuggestedQuestionClick={(question) => void assistant.askQuickAction(question)}
+								onFocusNodeFromPanel={onFocusNodeFromPanel}
+							/>
+						}
 					/>
 				)}
 				{!graphBlocking && drawer.activeTab === 'assistant' && (
@@ -310,11 +430,17 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 						input={assistant.input}
 						loading={assistant.loading}
 						error={assistant.error}
+						entityHighlightsEnabled={assistant.entityHighlightsEnabled}
+						rewriteBusy={assistant.rewriteBusy}
 						onInputChange={assistant.setInput}
 						onSubmit={() => void assistant.submit()}
 						onKeydown={assistant.handleKeydown}
 						onSuggestedQuestionClick={(question) => void assistant.submit(question)}
 						onFocusNodeFromPanel={onFocusNodeFromPanel}
+						onToggleEntityHighlights={assistant.toggleEntityHighlights}
+						onAcceptFixSuggestion={assistant.acceptFixSuggestion}
+						initialSuggestions={ASSISTANT_CHAT_SUGGESTIONS}
+						onInitialSuggestionClick={(question) => void assistant.submit(question)}
 					/>
 				)}
 				{!graphBlocking && drawer.activeTab === 'paragraph_explanation' && (
@@ -339,6 +465,21 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 				)}
 			</RightPanel>
 
+			{drawer.isOpen && !graphBlocking && (
+				<div
+					role="separator"
+					aria-orientation="vertical"
+					aria-label="Resize side panel"
+					tabIndex={0}
+					className="absolute top-0 bottom-0 z-50 w-1 cursor-col-resize bg-gray-200/80 transition hover:bg-teal-300 focus:bg-teal-400 focus:outline-none"
+					style={{ right: drawer.sidebarWidth + drawer.width }}
+					onMouseDown={startDrawerResize}
+					onKeyDown={handleDrawerResizeKeydown}
+				>
+					<span className="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400/70" />
+				</div>
+			)}
+
 			<ToolRail
 				width={drawer.sidebarWidth}
 				labelsPinned={drawer.labelsPinned}
@@ -347,6 +488,12 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 				disabled={graphBlocking}
 				onSelectTool={drawer.selectTool}
 				onToggleLabels={drawer.toggleLabels}
+			/>
+
+			<LlmEstimateDialog
+				estimate={llmEstimate.estimate}
+				isOpen={llmEstimate.isOpen}
+				onResolve={llmEstimate.resolve}
 			/>
 		</main>
 	);

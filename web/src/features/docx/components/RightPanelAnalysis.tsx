@@ -117,10 +117,8 @@ export function RightPanelAnalysis({
 				</div>
 			</ScrollArea>
 
-			{/* Chat/assistant panel anclado abajo. */}
-			{chatSlot ? (
-				<div className="flex h-[42%] min-h-[220px] flex-col border-t">{chatSlot}</div>
-			) : null}
+			{/* Chat/assistant panel anclado abajo (controla su propia altura). */}
+			{chatSlot}
 		</section>
 	);
 }

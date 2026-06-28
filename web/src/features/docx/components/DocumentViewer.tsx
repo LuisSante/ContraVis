@@ -3,7 +3,13 @@
 import { useRef, type CSSProperties, type RefObject } from 'react';
 import type { DocumentViewerStatus } from '@/features/docx/hooks/useDocumentViewer';
 import { useContradictionScrollMarkers } from '@/features/docx/hooks/useContradictionScrollMarkers';
-import type { ContradictionParagraphResult } from '@/types/document';
+import { useRelatedBridge } from '@/features/docx/hooks/useRelatedBridge';
+import { RelatedBridgeOverlay } from './RelatedBridgeOverlay';
+import type {
+	ContradictionParagraphResult,
+	Node as ParagraphNode,
+	RelatedParagraph,
+} from '@/types/document';
 
 interface DocumentViewerProps {
 	containerRef: RefObject<HTMLDivElement | null>;
@@ -18,6 +24,10 @@ interface DocumentViewerProps {
 	selectedParagraphId: string | null;
 	categoryColor: string;
 	onMarkerClick: (paragraphId: string) => void;
+	/** Puente de párrafos relacionados (conector + Shift+Scroll + etiquetas). */
+	relatedBridgeActive: boolean;
+	selectedParagraph: ParagraphNode | null;
+	relatedBridgeParagraphs: RelatedParagraph[];
 }
 
 /**
@@ -36,10 +46,13 @@ export function DocumentViewer({
 	selectedParagraphId,
 	categoryColor,
 	onMarkerClick,
+	relatedBridgeActive,
+	selectedParagraph,
+	relatedBridgeParagraphs,
 }: DocumentViewerProps) {
 	const scrollHostRef = useRef<HTMLElement>(null);
 
-	const { markers, link } = useContradictionScrollMarkers({
+	const { markers, link, collapsedCards } = useContradictionScrollMarkers({
 		active: contradictionActive,
 		renderEpoch,
 		scrollHostRef,
@@ -47,6 +60,26 @@ export function DocumentViewer({
 		resultsByParagraphId,
 		selectedParagraphId,
 	});
+
+	const relatedBridge = useRelatedBridge({
+		active: relatedBridgeActive,
+		renderEpoch,
+		scrollHostRef,
+		paragraphElementById,
+		selectedParagraph,
+		related: relatedBridgeParagraphs,
+	});
+
+	// Salta a un párrafo relacionado (scroll + parpadeo), sin cambiar la selección.
+	const jumpToParagraph = (paragraphId: string) => {
+		const element = paragraphElementById.get(paragraphId);
+		if (!element) return;
+		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		element.classList.remove('docx-citation-flash');
+		void element.offsetHeight;
+		element.classList.add('docx-citation-flash');
+		window.setTimeout(() => element.classList.remove('docx-citation-flash'), 1300);
+	};
 
 	const linkVars = {
 		'--contradiction-a-color': categoryColor,
@@ -70,6 +103,10 @@ export function DocumentViewer({
 				{/* Contenedor del documento renderizado (DOM imperativo de docx4js). */}
 				<div ref={containerRef} className="docx-viewer-root min-h-full w-full" />
 			</section>
+
+			{relatedBridgeActive && (
+				<RelatedBridgeOverlay bridge={relatedBridge} onJumpToParagraph={jumpToParagraph} />
+			)}
 
 			{contradictionActive && markers.length > 0 && (
 				<div className="absolute top-2 right-1 bottom-2 z-20 w-2">
@@ -142,6 +179,15 @@ export function DocumentViewer({
 							</span>
 						</>
 					)}
+					{collapsedCards.map((card, index) => (
+						<div
+							key={`contradiction-collapsed-${index}`}
+							className="docx-paragraph-explanation-collapsed-card"
+							style={{ left: card.leftPx, top: card.topPx, width: card.widthPx }}
+							// HTML clonado del propio documento (estático).
+							dangerouslySetInnerHTML={{ __html: card.html }}
+						/>
+					))}
 				</div>
 			)}
 		</div>

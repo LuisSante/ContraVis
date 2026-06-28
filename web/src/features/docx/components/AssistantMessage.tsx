@@ -11,6 +11,7 @@ import {
 import type { AssistantChatMessage } from '@/types/document';
 
 import { CitationChips } from './CitationChips';
+import { ContradictionActionMessageCard } from './ContradictionActionMessageCard';
 import { StructuredContradictionMessage } from './StructuredContradictionMessage';
 import { SuggestedQuestions } from './SuggestedQuestions';
 
@@ -18,6 +19,12 @@ interface AssistantMessageProps {
 	message: AssistantChatMessage;
 	onSuggestedQuestionClick: (question: string) => void;
 	onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void;
+	/** Si las entidades de los mensajes se resaltan (toggle al hacer click). */
+	entityHighlightsEnabled?: boolean;
+	/** En proceso de reescritura: deshabilita el botón de la tarjeta de fix. */
+	rewriteBusy?: boolean;
+	onToggleEntityHighlights?: () => void;
+	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
 }
 
 function renderSegments(
@@ -63,13 +70,31 @@ export function AssistantMessage({
 	message,
 	onSuggestedQuestionClick,
 	onFocusNodeFromPanel,
+	entityHighlightsEnabled = true,
+	rewriteBusy = false,
+	onToggleEntityHighlights = () => {},
+	onAcceptFixSuggestion = () => {},
 }: AssistantMessageProps) {
-	// Stubbed: the fix-contradiction action card is not ported in this step.
-	if (message.fixContradictionSuggestion) return null;
-
 	const isUser = message.role === 'user';
 	const isAssistant = message.role === 'assistant';
+
+	// Las acciones de contradicción (fix estructurado / explicación gratuita) se
+	// renderizan con su propia tarjeta.
+	if (message.fixContradictionSuggestion || message.freeContradictionExplanation) {
+		return (
+			<div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+				<ContradictionActionMessageCard
+					message={message}
+					rewriteBusy={rewriteBusy}
+					onFocusNodeFromPanel={onFocusNodeFromPanel}
+					onAcceptFixSuggestion={onAcceptFixSuggestion}
+				/>
+			</div>
+		);
+	}
+
 	const entities = message.entityHighlights ?? [];
+	const canToggleEntities = isAssistant && entities.length > 0;
 
 	return (
 		<div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
@@ -86,7 +111,8 @@ export function AssistantMessage({
 						isUser
 							? 'border-blue-200 bg-blue-50 text-blue-800'
 							: 'border-gray-200 bg-white text-gray-700'
-					}`}
+					} ${canToggleEntities ? 'cursor-pointer' : ''}`}
+					onClick={canToggleEntities ? () => onToggleEntityHighlights() : undefined}
 				>
 					{isAssistant && message.structuredContradiction ? (
 						<StructuredContradictionMessage
@@ -96,7 +122,7 @@ export function AssistantMessage({
 					) : (
 						<p className="whitespace-pre-wrap">
 							{renderSegments(
-								entities.length
+								entityHighlightsEnabled && entities.length
 									? splitReferenceAndEntityText(message.content, entities)
 									: splitReferenceText(message.content),
 								`${message.id}-content`,

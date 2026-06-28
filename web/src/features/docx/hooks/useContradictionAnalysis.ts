@@ -2,8 +2,9 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { useDocumentStore } from '@/stores/document';
-import { fetchSavedContradictions } from '@/services/contradiction';
+import { fetchContradictionAnalysis, fetchSavedContradictions } from '@/services/contradiction';
 import { getAxiosErrorMessage } from '@/features/docx/utils/http-error';
+import { getNodeCurrentText } from '@/features/docx/utils/edit';
 import {
 	buildContradictionCandidateKey,
 	buildContradictionSourceLookups,
@@ -13,6 +14,7 @@ import {
 } from '@/features/docx/utils/contradiction';
 import { CONTRADICTION_TAXONOMY_COLORS } from '@/constants/docx-viewer';
 import type {
+	ContradictionAnalysisRequest,
 	ContradictionFinding,
 	ContradictionGraphMode,
 	ContradictionParagraphResult,
@@ -20,6 +22,11 @@ import type {
 	Edge as GraphEdge,
 	ParagraphEditState,
 } from '@/types/document';
+
+type ConfirmContradictionEstimate = (
+	callType: 'contradictions_analyze',
+	payload: ContradictionAnalysisRequest
+) => Promise<boolean>;
 
 export interface ContradictionSummaryItem {
 	paragraphId: string;
@@ -30,8 +37,12 @@ export interface ContradictionSummaryItem {
 interface UseContradictionAnalysisParams {
 	docId: string;
 	nodeEditStateById: Map<string, ParagraphEditState>;
-	/** Aristas del grafo de relaciones; vacío hasta portar el feature de related. */
+	/** Aristas del grafo de relaciones (para la búsqueda en tiempo real). */
 	backendEdges?: GraphEdge[];
+	/** Modelo de análisis (opcional). */
+	model?: string;
+	/** Confirmación de coste LLM antes de la búsqueda con LLM. */
+	confirmLlmEstimate?: ConfirmContradictionEstimate;
 }
 
 /**
@@ -46,6 +57,8 @@ export function useContradictionAnalysis({
 	docId,
 	nodeEditStateById,
 	backendEdges = [],
+	model,
+	confirmLlmEstimate,
 }: UseContradictionAnalysisParams) {
 	const nodes = useDocumentStore((s) => s.paragraphs);
 	const selectedParagraph = useDocumentStore((s) => s.selectedParagraph);
@@ -130,6 +143,46 @@ export function useContradictionAnalysis({
 		}
 	}, [docId, graphMode, ingestResults]);
 
+	// Búsqueda de contradicciones en tiempo real con LLM (con confirmación de coste).
+	const searchContradictions = useCallback(async () => {
+		setHasTriggered(true);
+		if (!docId) {
+			setError('No document is loaded.');
+			return;
+		}
+		const graphNodes = nodes.map((node) => ({
+			...node,
+			text: getNodeCurrentText(nodeEditStateById, node),
+		}));
+		if (graphNodes.length === 0) {
+			setError('No paragraph context is available yet.');
+			return;
+		}
+		const payload: ContradictionAnalysisRequest = {
+			documentId: docId,
+			provider: 'openai',
+			temperature: 0.3,
+			model: model?.trim() || undefined,
+			mode: graphMode,
+			graph: { nodes: graphNodes, edges: backendEdges },
+		};
+
+		setLoading(true);
+		setError(null);
+		try {
+			if (confirmLlmEstimate) {
+				const approved = await confirmLlmEstimate('contradictions_analyze', payload);
+				if (!approved) return;
+			}
+			const response = await fetchContradictionAnalysis(payload);
+			ingestResults(response.paragraphResults ?? []);
+		} catch (err) {
+			setError(getAxiosErrorMessage(err, 'Failed to search contradictions with LLM.'));
+		} finally {
+			setLoading(false);
+		}
+	}, [docId, nodes, nodeEditStateById, backendEdges, model, graphMode, confirmLlmEstimate, ingestResults]);
+
 	const summaryItems = useMemo<ContradictionSummaryItem[]>(() => {
 		const items: Array<ContradictionSummaryItem & { paragraphEnum: number }> = [];
 		for (const [paragraphId, row] of resultsByParagraphId.entries()) {
@@ -184,5 +237,6 @@ export function useContradictionAnalysis({
 		selectedContradictionEvidence,
 		selectedContradictionCategoryColor,
 		loadSavedContradictions,
+		searchContradictions,
 	};
 }

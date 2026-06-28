@@ -115,8 +115,8 @@ export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
 	{ id: 'assistant', label: 'Contract Chat Assistant' }
 ];
  
-export const RIGHT_TOOLBAR_WIDTH = 58;
-export const RIGHT_TOOLBAR_EXPANDED_WIDTH = 196;
+export const RIGHT_TOOLBAR_WIDTH = 42;
+export const RIGHT_TOOLBAR_EXPANDED_WIDTH = 162;
 export const RIGHT_DRAWER_MIN_WIDTH = 360;
 export const RIGHT_DRAWER_DEFAULT_WIDTH = 550;
 export const RIGHT_DRAWER_MAX_RATIO = 0.68;
