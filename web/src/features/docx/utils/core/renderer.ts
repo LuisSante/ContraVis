@@ -4,7 +4,7 @@ import type {
 	ParagraphKind,
 	XmlNode
 } from '@/features/docx/utils/core/types';
-import { ensureNodeEditState } from '@/features/docx/utils/edit/edit';
+import { ensureNodeEditState } from '@/features/docx/utils/core/edit-state';
 import { getRelationsCount, updateRelationBadge } from '@/features/docx/utils/core/docx-page';
 import { appendChildren, normalizeEditableText, setStyles, toNodeList } from '@/features/docx/utils/core/dom';
 import { getAttr, findChild, localName, toTwipsPx, toNumber } from '@/features/docx/utils/core/xml';

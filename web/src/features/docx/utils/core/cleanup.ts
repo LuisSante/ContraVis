@@ -1,4 +1,16 @@
-import { EDITABLE_PARAGRAPH_CLASSES } from '@/constants/docx-viewer';
+// Clases que el plugin de edición añade a un párrafo editable; al "congelar" un
+// párrafo ignorado se quitan. Interno al motor para que sea autocontenido.
+const EDITABLE_PARAGRAPH_CLASSES = [
+	'rounded-[2px]',
+	'-mx-[2px]',
+	'px-[2px]',
+	'outline-none',
+	'transition-all',
+	'hover:ring-1',
+	'hover:ring-blue-300',
+	'focus:ring-2',
+	'focus:ring-blue-700'
+] as const;
 
 function getEditableRootElement(element: HTMLElement): HTMLElement {
 	if (element.matches('[data-docx-editable-root="true"]')) return element;

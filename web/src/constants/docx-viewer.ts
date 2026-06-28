@@ -91,18 +91,6 @@ export const CONTRADICTION_CLAIM_SIDE_COLORS: Readonly<Record<'a' | 'b', string>
 	b: '#d97706'
 };
 
-export const EDITABLE_PARAGRAPH_CLASSES = [
-	'rounded-[2px]',
-	'-mx-[2px]',
-	'px-[2px]',
-	'outline-none',
-	'transition-all',
-	'hover:ring-1',
-	'hover:ring-blue-300',
-	'focus:ring-2',
-	'focus:ring-blue-700'
-] as const;
-
 export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
 	{ id: 'analysis', label: 'Contradiction Analysis' },
 	// { id: 'redundancy', label: 'Redundancy Analysis' },
