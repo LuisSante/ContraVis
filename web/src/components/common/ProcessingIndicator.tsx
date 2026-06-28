@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { Check, Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -17,16 +18,13 @@ interface ProcessingIndicatorProps {
 const TICK_INTERVAL_MS = 260;
 
 /**
- * Animated "processing…" indicator: a vertical list of steps where the active
- * step pulses and shows a cycling 1–3 dot ellipsis. Reusable across panels.
- *
- * Ported from the inline processing block of the Svelte `RightPanelAnalysis`
- * component (the `processingTick` interval + `activeProcessingStepIndex` /
- * `activeDotCount` derivations).
+ * Animated "processing…" indicator: a vertical list of steps where completed
+ * steps show a green check, the active one a spinning loader, and pending ones a
+ * muted dot. Reusable across panels.
  */
 export function ProcessingIndicator({
 	steps = [],
-	label = 'Processing panel',
+	label = 'Processing',
 }: ProcessingIndicatorProps) {
 	const [tick, setTick] = useState(0);
 
@@ -46,38 +44,62 @@ export function ProcessingIndicator({
 	const activeDotCount = (tick % 3) + 1;
 
 	return (
-		<div className="rounded-xl border border-gray-200 bg-gray-50/90 p-3 text-[11px] text-gray-700">
-			<p className="mb-2 text-[10px] font-semibold text-gray-500">{label}</p>
-			<ul className="space-y-1.5 text-[12px] text-gray-600">
+		<div className="rounded-xl border border-blue-100 bg-blue-50/40 p-3 dark:border-blue-950/50 dark:bg-blue-950/20">
+			<div className="mb-2.5 flex items-center gap-1.5">
+				<Loader2 className="size-3 animate-spin text-blue-600 dark:text-blue-400" aria-hidden="true" />
+				<p className="text-[10px] font-semibold tracking-wide text-blue-700 uppercase dark:text-blue-300">
+					{label}
+				</p>
+			</div>
+			<ul className="space-y-2">
 				{steps.map((step, index) => {
 					const isActive = index === activeProcessingStepIndex;
+					const isDone = index < activeProcessingStepIndex;
 					return (
 						<li
 							key={`${step.label}-${index}`}
-							className={cn(
-								'relative flex items-center gap-2 transition-opacity duration-300',
-								isActive ? 'opacity-100' : 'opacity-40',
-							)}
+							className="relative flex items-center gap-2.5"
 						>
 							{index < steps.length - 1 ? (
 								<span
-									className="absolute top-[13px] left-[3px] h-[18px] w-px bg-gray-300/80"
+									className={cn(
+										'absolute top-[15px] left-[7px] h-[14px] w-px',
+										isDone ? 'bg-green-300 dark:bg-green-800' : 'bg-border',
+									)}
 									aria-hidden="true"
 								/>
 							) : null}
 							<span
 								className={cn(
-									'h-1.5 w-1.5 rounded-full bg-gray-500 transition-opacity duration-300',
-									isActive ? 'animate-pulse opacity-95' : 'opacity-30',
+									'flex size-3.5 flex-none items-center justify-center rounded-full',
+									isDone
+										? 'bg-green-100 text-green-600 dark:bg-green-950/50 dark:text-green-400'
+										: isActive
+											? 'bg-blue-100 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400'
+											: 'bg-muted text-muted-foreground/50',
 								)}
 								aria-hidden="true"
-							/>
-							<span className="text-gray-600">
+							>
+								{isDone ? (
+									<Check className="size-2.5" strokeWidth={3} />
+								) : isActive ? (
+									<Loader2 className="size-2.5 animate-spin" />
+								) : (
+									<span className="size-1 rounded-full bg-current" />
+								)}
+							</span>
+							<span
+								className={cn(
+									'text-xs transition-colors',
+									isActive
+										? 'font-medium text-foreground'
+										: isDone
+											? 'text-muted-foreground'
+											: 'text-muted-foreground/60',
+								)}
+							>
 								{step.label}
-								<span
-									className="ml-px inline-flex min-w-[14px] text-gray-500"
-									aria-hidden="true"
-								>
+								<span className="ml-px inline-flex min-w-[14px]" aria-hidden="true">
 									{isActive
 										? `${activeDotCount >= 1 ? '.' : ''}${activeDotCount >= 2 ? '.' : ''}${
 												activeDotCount >= 3 ? '.' : ''
