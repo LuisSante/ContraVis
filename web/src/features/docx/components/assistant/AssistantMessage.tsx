@@ -7,7 +7,7 @@ import {
 	splitReferenceAndEntityText,
 	splitReferenceText,
 	type ReferenceTextSegment,
-} from '@/features/docx/utils/core/text';
+} from '@/features/docx/utils/text';
 import type { AssistantChatMessage } from '@/types/document';
 
 import { CitationChips } from '@/features/docx/components/assistant/CitationChips';

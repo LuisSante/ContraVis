@@ -5,7 +5,7 @@ import { Fragment } from 'react';
 import {
 	splitReferenceAndEntityText,
 	type ReferenceTextSegment,
-} from '@/features/docx/utils/core/text';
+} from '@/features/docx/utils/text';
 import type { ExplanationEntity } from '@/features/docx/utils/assistant/paragraph-explanation';
 
 interface ExplanationTextProps {

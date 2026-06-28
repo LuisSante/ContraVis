@@ -1,4 +1,4 @@
-import { escapeRegex } from '@/features/docx/utils/core/text';
+import { escapeRegex } from '@/features/docx/utils/text';
 import { normalizeParagraphExplanationEntityKey } from '@/features/docx/utils/assistant/paragraph-explanation';
 
 /**

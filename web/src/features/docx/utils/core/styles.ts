@@ -1,4 +1,3 @@
-import { highlightMap } from '@/constants/graph';
 import type { XmlNode } from '@/types/document';
 import {
 	findChild,
@@ -10,6 +9,28 @@ import {
 	toNumber,
 	toTwipsPx
 } from '@/features/docx/utils/core/xml';
+
+// Colores de `w:highlight` (resaltado de texto OOXML). Conocimiento puro de docx,
+// interno al motor de render.
+const highlightMap: Record<string, string> = {
+	yellow: '#fff59d',
+	green: '#a5d6a7',
+	cyan: '#80deea',
+	magenta: '#f48fb1',
+	blue: '#90caf9',
+	red: '#ef9a9a',
+	darkblue: '#5c6bc0',
+	darkcyan: '#26a69a',
+	darkgreen: '#43a047',
+	darkmagenta: '#ab47bc',
+	darkred: '#e53935',
+	darkyellow: '#f9a825',
+	lightgray: '#e0e0e0',
+	darkgray: '#757575',
+	black: '#000000',
+	white: '#ffffff',
+	none: 'transparent'
+};
 
 const MIN_RUN_FONT_SIZE_PT = 6;
 const MIN_SUP_SUB_RUN_FONT_SIZE_PT = 5;
