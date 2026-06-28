@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import type { DocumentMeta, Node } from '@/types/document';
 
 /**
- * Estado global del documento activo (reemplaza los Svelte writable stores
+ * Global state for the active document (replaces the Svelte writable stores
  * `currentDocument`, `paragraphs`, `loading`, `error`, `selectedParagraph`).
  *
- * Slices adicionales (contradiction / assistant / paragraphExplanation) se
- * añadirán al portar el panel docx — ver el plan de migración.
+ * Additional slices (contradiction / assistant / paragraphExplanation) will be
+ * added when porting the docx panel — see the migration plan.
  */
 interface DocumentState {
 	currentDocument: DocumentMeta | null;

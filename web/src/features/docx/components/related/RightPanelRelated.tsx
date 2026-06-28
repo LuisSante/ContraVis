@@ -46,8 +46,8 @@ function hasReferenceRelation(related: RelatedParagraph): boolean {
 }
 
 /**
- * Panel "Related Paragraphs": muestra los párrafos enlazados al seleccionado
- * (referencias cruzadas + similitud semántica) provenientes del grafo del backend.
+ * "Related Paragraphs" panel: shows the paragraphs linked to the selected one
+ * (cross-references + semantic similarity) coming from the backend graph.
  */
 export function RightPanelRelated({
 	selectedParagraph,

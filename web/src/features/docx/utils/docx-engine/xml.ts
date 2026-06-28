@@ -1,4 +1,4 @@
-import type { XmlNode } from '@/types/document';
+import type { XmlNode } from './types';
 
 export function localName(tag?: string): string {
 	return tag?.split(':').pop()?.toLowerCase() ?? '';

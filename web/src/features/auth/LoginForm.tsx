@@ -9,17 +9,17 @@ import {
 } from '@/components/ui/card';
 
 /**
- * Stub de login (andamiaje). El backend aún no expone autenticación; este
- * formulario existe para fijar la ruta `(auth)/login` y el layout. La lógica
- * real (envío de credenciales, token en `@/lib/api`) se implementará cuando el
- * backend tenga auth.
+ * Login stub (scaffolding). The backend does not expose auth yet; this form
+ * exists to pin down the `(auth)/login` route and layout. The real logic
+ * (sending credentials, token in `@/lib/api`) will be implemented once the
+ * backend has auth.
  */
 export function LoginForm() {
 	return (
 		<Card className="w-full max-w-sm">
 			<CardHeader>
 				<CardTitle>Sign in</CardTitle>
-				<CardDescription>Acceso a ContraVis (pendiente de backend).</CardDescription>
+				<CardDescription>Access to ContraVis (backend pending).</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-4">
 				<Input type="email" placeholder="Email" disabled />

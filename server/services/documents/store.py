@@ -30,7 +30,7 @@ class DocumentStore:
         )
 
     def ensure_initialized(self):
-        """Inicializa el store si aún no lo está (idempotente)."""
+        """Initialize the store if it isn't already (idempotent)."""
         if not self._initialized:
             self.initialize()
 

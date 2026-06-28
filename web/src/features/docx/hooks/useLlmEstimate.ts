@@ -30,10 +30,10 @@ function buildEstimateRequest(
 }
 
 /**
- * Confirmación de coste LLM: ante cada llamada se pide una estimación al backend
- * (`/llm/estimate`), se muestra un toast y se espera la decisión del usuario.
- * `confirm` devuelve una promesa que resuelve `true`/`false`. Port del
- * `confirmLlmEstimate` + toast del Svelte `+page.svelte`.
+ * LLM cost confirmation: on each call an estimate is requested from the backend
+ * (`/llm/estimate`), a toast is shown and the user's decision is awaited.
+ * `confirm` returns a promise that resolves to `true`/`false`. Port of the
+ * `confirmLlmEstimate` + toast from the Svelte `+page.svelte`.
  */
 export function useLlmEstimate() {
 	const [estimate, setEstimate] = useState<LlmEstimateResponse | null>(null);
@@ -51,7 +51,7 @@ export function useLlmEstimate() {
 	const confirm = useCallback(
 		async (callType: LlmEstimateCallType, payload: ConfirmPayload): Promise<boolean> => {
 			const next = await fetchLlmEstimate(buildEstimateRequest(callType, payload));
-			// Si había una confirmación pendiente, se cancela antes de abrir la nueva.
+			// If a confirmation was pending, cancel it before opening the new one.
 			if (resolverRef.current) {
 				resolverRef.current(false);
 				resolverRef.current = null;

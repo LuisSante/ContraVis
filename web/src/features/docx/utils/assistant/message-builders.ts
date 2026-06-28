@@ -1,5 +1,5 @@
-// Builders puros de mensajes del chat del asistente (sin React/estado). El hook
-// solo genera el id y hace `setMessages(prev => [...prev, build(...)])`.
+// Pure builders for the assistant chat messages (no React/state). The hook
+// just generates the id and calls `setMessages(prev => [...prev, build(...)])`.
 
 import type {
 	AssistantChatMessage,
@@ -15,7 +15,7 @@ export function buildAssistantMessage(id: string, content: string): AssistantCha
 	return { id, role: 'assistant', content };
 }
 
-/** Mensaje de asistente de un quick-action, con cita opcional al párrafo. */
+/** Assistant message from a quick-action, with optional citation to the paragraph. */
 export function buildQuickActionMessage(
 	id: string,
 	content: string,
@@ -29,7 +29,7 @@ export function buildQuickActionMessage(
 	};
 }
 
-/** Mensaje con la tarjeta de fix estructurado. */
+/** Message with the structured fix card. */
 export function buildFixSuggestionMessage(
 	id: string,
 	suggestion: FixContradictionSuggestion
@@ -43,7 +43,7 @@ export function buildFixSuggestionMessage(
 	};
 }
 
-/** Texto de la explicación "free" (sin coste LLM) de una contradicción. */
+/** Text of the "free" explanation (no LLM cost) of a contradiction. */
 export function buildFreeContradictionText(
 	paragraphId: string,
 	contradiction: ContradictionParagraphResult
@@ -69,7 +69,7 @@ export function buildFreeContradictionText(
 	].join('\n\n');
 }
 
-/** Entidades del último mensaje del asistente que las tenga (para el documento). */
+/** Entities from the latest assistant message that has them (for the document). */
 export function selectLatestEntityHighlights(
 	messages: AssistantChatMessage[]
 ): NonNullable<AssistantChatMessage['entityHighlights']> {

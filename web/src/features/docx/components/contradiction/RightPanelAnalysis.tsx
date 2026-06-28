@@ -31,7 +31,7 @@ interface RightPanelAnalysisProps {
 	selectedContradictionEvidence: ContradictionParagraphResult['evidence'];
 	onFocusEvidenceSnippet: (paragraphId: string, role: 'a' | 'b') => void;
 	onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void;
-	/** Panel de chat del asistente, anclado abajo. */
+	/** Assistant chat panel, anchored at the bottom. */
 	chatSlot?: ReactNode;
 }
 
@@ -117,7 +117,7 @@ export function RightPanelAnalysis({
 				</div>
 			</ScrollArea>
 
-			{/* Chat/assistant panel anclado abajo (controla su propia altura). */}
+			{/* Chat/assistant panel anchored at the bottom (controls its own height). */}
 			{chatSlot}
 		</section>
 	);

@@ -3,7 +3,7 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchAssistantResponse } from '@/services/assistant';
-import { getAxiosErrorMessage } from '@/features/docx/utils/core/http-error';
+import { getAxiosErrorMessage } from '@/features/docx/utils/docx-engine/http-error';
 import {
 	buildAssistantHistoryPayload,
 	buildAssistantNodeSnapshot,
@@ -67,7 +67,7 @@ interface UseContradictionQuickActionsParams {
 	paragraphElementById?: Map<string, HTMLElement>;
 	getViewerElement?: () => HTMLElement | null;
 	confirmLlmEstimate?: ConfirmLlmEstimate;
-	// Estado compartido del hilo de chat (lo posee el core useAssistantChat).
+	// Shared chat thread state (owned by the core useAssistantChat).
 	messages: AssistantChatMessage[];
 	messagesRef: { current: AssistantChatMessage[] };
 	setMessages: Dispatch<SetStateAction<AssistantChatMessage[]>>;
@@ -79,10 +79,10 @@ interface UseContradictionQuickActionsParams {
 }
 
 /**
- * Quick-actions de contradicción que comparten el hilo del chat: why estructurado
- * (con entidades), evaluación de riesgos, explicación "free", la sugerencia de fix
- * estructurada (+ aceptar) y el toggle/derivación de entidades. Se compone desde
- * `useAssistantChat`, que le pasa el estado del hilo (messages/setMessages/…).
+ * Contradiction quick-actions that share the chat thread: structured why
+ * (with entities), risk assessment, "free" explanation, the structured fix
+ * suggestion (+ accept) and the entity toggle/derivation. Composed from
+ * `useAssistantChat`, which passes it the thread state (messages/setMessages/…).
  */
 export function useContradictionQuickActions({
 	docId,
@@ -111,8 +111,8 @@ export function useContradictionQuickActions({
 	};
 
 	/**
-	 * Why estructurado / riesgos: misma mecánica, solo cambia el builder de la
-	 * pregunta. Responde con entidades resaltables.
+	 * Structured why / risks: same mechanics, only the question builder changes.
+	 * Responds with highlightable entities.
 	 */
 	const submitStructuredContradiction = async (
 		selected: ParagraphNode,
@@ -194,7 +194,7 @@ export function useContradictionQuickActions({
 		}
 	};
 
-	/** Despacha un quick-action: why (free/AI), riesgos, o texto libre. */
+	/** Dispatches a quick-action: why (free/AI), risks, or free text. */
 	const askQuickAction = async (prompt: string) => {
 		if (loading) return;
 		const isContradictionQuickAction =
@@ -261,7 +261,7 @@ export function useContradictionQuickActions({
 		);
 	};
 
-	/** Pide y muestra una sugerencia de fix estructurada para la contradicción activa. */
+	/** Requests and shows a structured fix suggestion for the active contradiction. */
 	const suggestContradictionFix = async () => {
 		if (rewriteBusy || loading) return;
 		setError(null);
@@ -317,7 +317,7 @@ export function useContradictionQuickActions({
 		}
 	};
 
-	/** Aplica una sugerencia de fix al párrafo y marca el mensaje como "applied". */
+	/** Applies a fix suggestion to the paragraph and marks the message as "applied". */
 	const acceptFixSuggestion = async (messageId: string) => {
 		const message = messagesRef.current.find((entry) => entry.id === messageId);
 		const suggestion = message?.fixContradictionSuggestion;
@@ -370,8 +370,8 @@ export function useContradictionQuickActions({
 
 	const toggleEntityHighlights = () => setEntityHighlightsEnabled((prev) => !prev);
 
-	// Entidades activas del chat de contradicción (último mensaje con highlights),
-	// para resaltarlas también en el cuerpo del documento mientras el toggle esté on.
+	// Active entities of the contradiction chat (last message with highlights),
+	// to highlight them in the document body too while the toggle is on.
 	const contradictionEntities = useMemo(
 		() => (entityHighlightsEnabled ? selectLatestEntityHighlights(messages) : []),
 		[messages, entityHighlightsEnabled]

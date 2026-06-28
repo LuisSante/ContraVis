@@ -6,7 +6,7 @@ import {
 	type ContradictionEvidenceCollapsedCard,
 	type ContradictionEvidenceLink,
 } from '@/features/docx/utils/contradiction/contradiction-markers';
-import { attachShiftWheelCompression } from '@/features/docx/utils/core/shift-wheel-compression';
+import { attachShiftWheelCompression } from '@/features/docx/utils/docx-engine/shift-wheel-compression';
 import type { ContradictionParagraphResult, ContradictionScrollMarker } from '@/types/document';
 
 const COMPRESS_DURATION_MS = 420;
@@ -92,7 +92,7 @@ export function useContradictionScrollMarkers({
 			host,
 			durationMs: COMPRESS_DURATION_MS,
 			refresh,
-			// Solo se comprime cuando la evidencia vive en párrafos distintos.
+			// Only compresses when the evidence lives in different paragraphs.
 			canCompress: () =>
 				isInterParagraph(
 					selectedParagraphId ? resultsByParagraphId.get(selectedParagraphId) : undefined

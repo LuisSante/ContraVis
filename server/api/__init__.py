@@ -1,4 +1,4 @@
-"""Agrega los routers de la API en un único `api_router` que monta `main.py`."""
+"""Aggregates the API routers into a single `api_router` that `main.py` mounts."""
 
 from fastapi import APIRouter
 

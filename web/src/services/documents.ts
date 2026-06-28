@@ -2,13 +2,13 @@ import { api } from '@/lib/api';
 import { useDocumentStore } from '@/stores/document';
 import type { DocumentMeta } from '@/types/document';
 
-/** Lista los documentos del dataset CUAD disponibles en el backend. */
+/** Lists the CUAD dataset documents available in the backend. */
 export async function listDocuments(): Promise<DocumentMeta[]> {
 	const response = await api.get<DocumentMeta[]>('/list_documents');
 	return response.data;
 }
 
-/** Descarga el binario `.docx` de un documento (para parsearlo con docx4js en el navegador). */
+/** Downloads a document's `.docx` binary (to parse it with docx4js in the browser). */
 export async function fetchDocumentFile(docId: string): Promise<ArrayBuffer> {
 	const response = await api.get<ArrayBuffer>(
 		`/document_file/${encodeURIComponent(docId)}`,
@@ -18,8 +18,8 @@ export async function fetchDocumentFile(docId: string): Promise<ArrayBuffer> {
 }
 
 /**
- * Resuelve la metadata de un documento por id. Usa el documento ya seleccionado
- * en el store si coincide; de lo contrario consulta la lista y lo cachea.
+ * Resolves a document's metadata by id. Uses the document already selected in
+ * the store if it matches; otherwise queries the list and caches it.
  */
 export async function resolveDocumentMeta(docId: string): Promise<DocumentMeta | null> {
 	const { currentDocument, setCurrentDocument } = useDocumentStore.getState();

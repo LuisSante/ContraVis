@@ -1,9 +1,9 @@
-import { parsePxValue } from '@/features/docx/utils/core/dom';
+import { parsePxValue } from './dom';
 import {
 	getLastMeaningfulElement,
 	getLastMeaningfulNode,
 	isIgnorablePageNode
-} from '@/features/docx/utils/core/tab-stops';
+} from './tab-stops';
 
 const PAGE_OVERFLOW_TOLERANCE_PX = 10;
 const PAGE_SPLIT_GUARD_LIMIT = 180;
@@ -241,11 +241,11 @@ export function paginateRenderedSections(targetViewer: HTMLElement): void {
 				node instanceof HTMLElement && node.tagName.toLowerCase() === 'section'
 		);
 
-	// Pre-pass: un salto de sección `continuous` NO abre página nueva (cambio de
-	// columnas/formato en la misma hoja). Volcamos su contenido (sin el chrome de
-	// página) al final de la sección anterior y la eliminamos, para que la
-	// paginación por altura decida los cortes reales. Sin esto, cada sección
-	// continua se convertía en una página casi vacía (p. ej. el bloque de firmas).
+	// Pre-pass: a `continuous` section break does NOT start a new page (change of
+	// columns/format on the same sheet). We dump its content (without the page
+	// chrome) at the end of the previous section and remove it, so that
+	// height-based pagination decides the real breaks. Without this, each
+	// continuous section turned into a nearly empty page (e.g. the signature block).
 	for (const section of collectSections()) {
 		if (section.dataset.docxSectionType !== 'continuous') continue;
 		const previous = section.previousElementSibling;
@@ -272,9 +272,9 @@ export function paginateRenderedSections(targetViewer: HTMLElement): void {
 					? measuredHeight
 					: null;
 		if (!pageHeight) continue;
-		// Altura de página real del docx (pgSz). Con fuentes y `line-height`
-		// métricamente correctos no hace falta calibrar: la paginación coincide
-		// con Word de forma natural (el soft-overflow ya evita cortes prematuros).
+		// Real docx page height (pgSz). With metrically correct fonts and
+		// `line-height` there is no need to calibrate: pagination matches
+		// Word naturally (soft-overflow already prevents premature breaks).
 		splitSectionIntoPages(section, pageHeight);
 	}
 }

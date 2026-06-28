@@ -1,23 +1,8 @@
 import type { Node as ParagraphNode, ParagraphEditState } from '@/types/document';
-import { normalizeEditableText } from '@/features/docx/utils/core/dom';
 
-export function ensureNodeEditState(
-	nodeEditStateById: Map<string, ParagraphEditState>,
-	nodeId: string,
-	fallbackText: string
-): ParagraphEditState {
-	const normalizedFallback = normalizeEditableText(fallbackText ?? '');
-	const existing = nodeEditStateById.get(nodeId);
-	if (existing) return existing;
-
-	const state: ParagraphEditState = {
-		committed: normalizedFallback,
-		current: normalizedFallback,
-		editedSinceCommit: false
-	};
-	nodeEditStateById.set(nodeId, state);
-	return state;
-}
+// `ensureNodeEditState` now lives in the engine (model helper). It is re-exported
+// here to avoid breaking the app's consumers.
+export { ensureNodeEditState } from '@/features/docx/utils/docx-engine/edit-state';
 
 export function getNodeCurrentText(
 	nodeEditStateById: Map<string, ParagraphEditState>,

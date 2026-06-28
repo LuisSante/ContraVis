@@ -11,12 +11,12 @@ import {
 import type { RightPanelTab } from '@/types/document';
 
 /**
- * Estado del drawer derecho del visor docx: visibilidad, ancho (con clamp) y
- * pestaña activa. Encapsula el cluster de UI-state que en Svelte vivía suelto en
+ * State of the docx viewer's right drawer: visibility, width (clamped) and active
+ * tab. Encapsulates the cluster of UI-state that in Svelte lived loose in
  * `docx/+page.svelte` (`isRightDrawerOpen`, `rightDrawerWidth`, `activeRightPanelTab`).
  *
- * La lógica de resize por arrastre (pointer events) se añadirá al iterar — ver el
- * mapa de descomposición del plan.
+ * The drag-resize logic (pointer events) will be added on iteration — see the
+ * decomposition map of the plan.
  */
 export function useRightDrawer(initialTab: RightPanelTab = 'analysis') {
 	const [isOpen, setIsOpen] = useState(true);

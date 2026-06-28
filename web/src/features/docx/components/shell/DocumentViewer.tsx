@@ -7,7 +7,7 @@ import {
 	type RefObject,
 } from 'react';
 
-/** Multiplicador del scrub al arrastrar el rail (1px de ratón → N px de scroll). */
+/** Scrub multiplier when dragging the rail (1px of mouse → N px of scroll). */
 const MANUAL_SCROLL_DRAG_SPEED = 100;
 import type { DocumentViewerStatus } from '@/features/docx/hooks/useDocumentViewer';
 import { useContradictionScrollMarkers } from '@/features/docx/hooks/useContradictionScrollMarkers';
@@ -22,9 +22,9 @@ import type {
 interface DocumentViewerProps {
 	containerRef: RefObject<HTMLDivElement | null>;
 	status: DocumentViewerStatus;
-	/** Atenúa y desactiva el documento mientras se forma el grafo. */
+	/** Dims and disables the document while the graph is being built. */
 	dimmed?: boolean;
-	/** Visualización de contradicciones (rail + link A↔B). */
+	/** Contradiction visualization (rail + A↔B link). */
 	contradictionActive: boolean;
 	renderEpoch: number;
 	resultsByParagraphId: Map<string, ContradictionParagraphResult>;
@@ -32,16 +32,16 @@ interface DocumentViewerProps {
 	selectedParagraphId: string | null;
 	categoryColor: string;
 	onMarkerClick: (paragraphId: string) => void;
-	/** Puente de párrafos relacionados (conector + Shift+Scroll + etiquetas). */
+	/** Related-paragraphs bridge (connector + Shift+Scroll + labels). */
 	relatedBridgeActive: boolean;
 	selectedParagraph: ParagraphNode | null;
 	relatedBridgeParagraphs: RelatedParagraph[];
 }
 
 /**
- * Área central del visor: scroll-host con el DOM renderizado por docx4js
- * (gestionado por ref) + las capas absolutas de visualización de contradicciones
- * (rail de marcadores y link de evidencia A↔B).
+ * Central viewer area: scroll-host with the DOM rendered by docx4js
+ * (managed by ref) + the absolute contradiction-visualization layers
+ * (marker rail and A↔B evidence link).
  */
 export function DocumentViewer({
 	containerRef,
@@ -78,11 +78,11 @@ export function DocumentViewer({
 		related: relatedBridgeParagraphs,
 	});
 
-	// Tras arrastrar el rail, se suprime el click-salto un instante para que el
-	// drag no dispare un salto al soltar.
+	// After dragging the rail, the click-jump is suppressed for a moment so the
+	// drag doesn't trigger a jump on release.
 	const suppressMarkerClickRef = useRef(false);
 
-	// Arrastrar el rail de marcadores scrollea el documento (scrub tipo minimapa).
+	// Dragging the marker rail scrolls the document (minimap-style scrub).
 	const startRailScrub = (event: ReactMouseEvent) => {
 		const host = scrollHostRef.current;
 		if (!host || event.button !== 0) return;
@@ -111,7 +111,7 @@ export function DocumentViewer({
 		window.addEventListener('mouseup', onUp);
 	};
 
-	// Salta a un párrafo relacionado (scroll + parpadeo), sin cambiar la selección.
+	// Jumps to a related paragraph (scroll + flash), without changing the selection.
 	const jumpToParagraph = (paragraphId: string) => {
 		if (suppressMarkerClickRef.current) return;
 		const element = paragraphElementById.get(paragraphId);
@@ -144,10 +144,10 @@ export function DocumentViewer({
 			>
 				{status === 'error' && (
 					<p className="text-destructive py-4 text-center text-sm">
-						No se pudo renderizar el documento.
+						Could not render the document.
 					</p>
 				)}
-				{/* Contenedor del documento renderizado (DOM imperativo de docx4js). */}
+				{/* Container for the rendered document (imperative docx4js DOM). */}
 				<div ref={containerRef} className="docx-viewer-root min-h-full w-full" />
 			</section>
 
@@ -235,7 +235,7 @@ export function DocumentViewer({
 							key={`contradiction-collapsed-${index}`}
 							className="docx-paragraph-explanation-collapsed-card"
 							style={{ left: card.leftPx, top: card.topPx, width: card.widthPx }}
-							// HTML clonado del propio documento (estático).
+							// HTML cloned from the document itself (static).
 							dangerouslySetInnerHTML={{ __html: card.html }}
 						/>
 					))}

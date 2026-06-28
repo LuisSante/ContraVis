@@ -28,9 +28,9 @@ interface DocxViewerProps {
 }
 
 /**
- * Orquestador (cliente) del visor docx: render del documento, contradicciones
- * (panel + decoraciones + rail/link), chat del asistente y explicación de
- * párrafo. Layout fiel al original: contenido + panel deslizante + rail de iconos.
+ * Docx viewer orchestrator (client): document render, contradictions
+ * (panel + decorations + rail/link), assistant chat, and paragraph explanation.
+ * Layout faithful to the original: content + sliding panel + icon rail.
  */
 export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const params = use(searchParams);
@@ -39,7 +39,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 
 	const drawer = useRightDrawer();
 	const llmEstimate = useLlmEstimate();
-	// Al confirmar (Ctrl/Cmd+Enter) una edición de párrafo se recalcula el grafo.
+	// Confirming (Ctrl/Cmd+Enter) a paragraph edit recomputes the graph.
 	const onParagraphCommitRef = useRef<(() => void) | null>(null);
 	const viewer = useDocumentViewer(id, { onParagraphCommitRef });
 	const { paragraphElementById, nodeEditStateById } = viewer.maps;
@@ -69,8 +69,8 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const explanationActive = drawer.isOpen && drawer.activeTab === 'paragraph_explanation';
 	const relatedActive = drawer.isOpen && drawer.activeTab === 'related';
 
-	// Chat compartido: un único hilo alimenta el Contract Chat Assistant y el chat
-	// embebido en Contradiction Analysis (quick-actions + fix estructurado).
+	// Shared chat: a single thread feeds the Contract Chat Assistant and the chat
+	// embedded in Contradiction Analysis (quick-actions + structured fix).
 	const assistant = useAssistantChat({
 		docId,
 		nodeEditStateById: nodeEditStateById.current,
@@ -82,8 +82,8 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		confirmLlmEstimate: llmEstimate.confirm,
 	});
 
-	// Puente de relacionados: activo en Related y en Paragraph Explanation. La lista
-	// difiere por pestaña (todos vs la cola tras el top-5 que ya muestra el panel).
+	// Related bridge: active in Related and in Paragraph Explanation. The list
+	// differs by tab (all vs the tail after the top-5 the panel already shows).
 	const relatedBridgeActive = relatedActive || explanationActive;
 	const relatedBridgeParagraphs = useMemo(
 		() =>
@@ -95,9 +95,9 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		[relatedActive, explanationActive, related.selectedRelatedParagraphs]
 	);
 
-	// Resaltado de entidades en el cuerpo del documento: de Paragraph Explanation o
-	// del why/risk de contradicción (toggle on). Se aplican al párrafo seleccionado
-	// y a sus relacionados.
+	// Entity highlighting in the document body: from Paragraph Explanation or
+	// from the contradiction why/risk (toggle on). Applied to the selected
+	// paragraph and its related ones.
 	const documentEntities = explanationActive
 		? explanation.entities
 		: analysisActive
@@ -120,8 +120,8 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		entities: documentEntities,
 	});
 
-	// Badges de relación: énfasis + dirección (reference/similarity) al seleccionar
-	// en la pestaña Related.
+	// Relation badges: emphasis + direction (reference/similarity) when selecting
+	// in the Related tab.
 	const relatedFocusOn = relatedActive && selectedParagraph != null;
 	useRelatedBadges({
 		active: relatedFocusOn,
@@ -138,8 +138,8 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		selectedParagraphId: selectedParagraph?.id ?? null,
 	});
 
-	// El grafo de relaciones se forma en cuanto el documento termina de renderizar
-	// (no al abrir Related). Mientras se forma, se bloquea la navegación (abajo).
+	// The relations graph is built as soon as the document finishes rendering
+	// (not when opening Related). While it builds, navigation is blocked (below).
 	const { computed: relatedComputed, loading: relatedLoading, recompute: recomputeRelated } = related;
 	useEffect(() => {
 		if (id && viewer.renderEpoch > 0 && !relatedComputed && !relatedLoading) {
@@ -147,7 +147,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		}
 	}, [id, viewer.renderEpoch, relatedComputed, relatedLoading, recomputeRelated]);
 
-	// Confirmar una edición de párrafo (Ctrl/Cmd+Enter) recalcula el grafo.
+	// Confirming a paragraph edit (Ctrl/Cmd+Enter) recomputes the graph.
 	useEffect(() => {
 		onParagraphCommitRef.current = () => void recomputeRelated();
 		return () => {
@@ -155,15 +155,15 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		};
 	}, [recomputeRelated]);
 
-	// Bloqueo global mientras se forma/recalcula el grafo: documento atenuado + sin
-	// navegación + animación de pasos en el panel. (Se libera si el render falla.)
+	// Global block while the graph builds/recomputes: dimmed document + no
+	// navigation + step animation in the panel. (Released if the render fails.)
 	const graphBlocking =
 		id != null && (!relatedComputed || relatedLoading) && viewer.status !== 'error';
 
-	// Las contradicciones se cargan solo bajo demanda: "Saved" (guardadas) o
-	// "Search" (búsqueda con LLM). No se auto-cargan al formarse el grafo.
+	// Contradictions are loaded only on demand: "Saved" (stored) or
+	// "Search" (LLM search). They don't auto-load when the graph is built.
 
-	// Pide la explicación al abrir su tab con un párrafo seleccionado aún no explicado.
+	// Requests the explanation when opening its tab with a selected paragraph not yet explained.
 	const selectedParagraphId = selectedParagraph?.id ?? null;
 	const {
 		loadedForParagraphId: explanationLoadedId,
@@ -181,7 +181,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		}
 	}, [explanationActive, selectedParagraphId, explanationLoadedId, explanationLoading, submitExplanation]);
 
-	// Resize del drawer derecho por arrastre del separador vertical.
+	// Resize of the right drawer by dragging the vertical separator.
 	const startDrawerResize = (event: React.MouseEvent) => {
 		if (window.innerWidth < 1024 || !drawer.isOpen) return;
 		event.preventDefault();
@@ -234,7 +234,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		return (
 			<div className="flex min-h-screen items-center justify-center">
 				<p className="text-muted-foreground text-sm">
-					Falta el parámetro <code>id</code> del documento.
+					Missing document <code>id</code> parameter.
 				</p>
 			</div>
 		);
@@ -346,10 +346,10 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	);
 }
 
-/** Parpadeo breve para llamar la atención sobre un elemento al navegar. */
+/** Brief flash to draw attention to an element when navigating. */
 function flashElement(element: HTMLElement) {
 	element.classList.remove('docx-citation-flash');
-	// Forzar reflow para reiniciar la animación.
+	// Force reflow to restart the animation.
 	void element.offsetWidth;
 	element.classList.add('docx-citation-flash');
 	window.setTimeout(() => element.classList.remove('docx-citation-flash'), 1300);

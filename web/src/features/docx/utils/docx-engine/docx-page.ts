@@ -1,10 +1,10 @@
-import type { Docx4jsBrowserModule } from '@/types/document';
-import { resolveDocx4jsFromRequire } from '@/features/docx/utils/core/loader';
+import type { Docx4jsBrowserModule } from './types';
+import { resolveDocx4jsFromRequire } from './loader';
 
 /**
- * Helpers de DOM del visor docx (carga del bundle docx4js de navegador y
- * gestión del badge de relaciones). Las consultas REST se trasladaron a
- * `@/services/*`; los builders del grafo a `@/services/graph`.
+ * DOM helpers for the docx viewer (loading the browser docx4js bundle and
+ * managing the relations badge). REST queries were moved to
+ * `@/services/*`; the graph builders to `@/services/graph`.
  */
 
 let browserDocxModulePromise: Promise<Docx4jsBrowserModule> | null = null;

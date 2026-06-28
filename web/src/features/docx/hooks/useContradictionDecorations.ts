@@ -8,9 +8,9 @@ import {
 import type { ContradictionParagraphResult } from '@/types/document';
 
 interface UseContradictionDecorationsParams {
-	/** El panel de análisis está visible (tab 'analysis' abierta). */
+	/** The analysis panel is visible (the 'analysis' tab is open). */
 	active: boolean;
-	/** Se incrementa al terminar cada render del documento. */
+	/** Incremented on completion of each document render. */
 	renderEpoch: number;
 	resultsByParagraphId: Map<string, ContradictionParagraphResult>;
 	paragraphElementById: Map<string, HTMLElement>;
@@ -18,11 +18,11 @@ interface UseContradictionDecorationsParams {
 }
 
 /**
- * Aplica/limpia las decoraciones de contradicción sobre el DOM renderizado
- * (clases de resaltado en párrafos + `<mark>` de snippets). Re-corre cuando
- * cambia el render, los resultados, la selección o la visibilidad del panel.
+ * Applies/clears the contradiction decorations over the rendered DOM
+ * (highlight classes on paragraphs + `<mark>` snippets). Re-runs when the
+ * render, the results, the selection or the panel visibility change.
  *
- * Difiere: rail de marcadores laterales, animación de compresión y link SVG.
+ * Deferred: side marker rail, compression animation and SVG link.
  */
 export function useContradictionDecorations({
 	active,
