@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import {
 	applyContradictionHighlights,
 	clearContradictionHighlights,
-} from '@/features/docx/utils/contradiction-decorations';
+} from '@/features/docx/utils/contradiction/contradiction-decorations';
 import type { ContradictionParagraphResult } from '@/types/document';
 
 interface UseContradictionDecorationsParams {

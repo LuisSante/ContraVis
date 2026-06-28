@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { DocxViewer } from '@/features/docx/components/DocxViewer';
+import { DocxViewer } from '@/features/docx/components/shell/DocxViewer';
 import '@/features/docx/styles/docx-viewer.css';
 
 type DocxSearchParams = Promise<{ [key: string]: string | string[] | undefined }>;

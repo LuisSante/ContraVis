@@ -5,7 +5,7 @@ import type {
 	ParagraphEditState,
 	ProcessDocumentResponse,
 } from '@/types/document';
-import { getNodeCurrentText } from '@/features/docx/utils/edit';
+import { getNodeCurrentText } from '@/features/docx/utils/edit/edit';
 
 function buildProcessPages(
 	nodes: ParagraphNode[],

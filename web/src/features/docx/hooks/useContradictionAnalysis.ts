@@ -3,15 +3,15 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchContradictionAnalysis, fetchSavedContradictions } from '@/services/contradiction';
-import { getAxiosErrorMessage } from '@/features/docx/utils/http-error';
-import { getNodeCurrentText } from '@/features/docx/utils/edit';
+import { getAxiosErrorMessage } from '@/features/docx/utils/core/http-error';
+import { getNodeCurrentText } from '@/features/docx/utils/edit/edit';
 import {
 	buildContradictionCandidateKey,
 	buildContradictionSourceLookups,
 	hasUsableContradictionEvidence,
 	normalizeContradictionCandidates,
 	repairEvidenceForParagraph,
-} from '@/features/docx/utils/contradiction';
+} from '@/features/docx/utils/contradiction/contradiction';
 import { CONTRADICTION_TAXONOMY_COLORS } from '@/constants/docx-viewer';
 import type {
 	ContradictionAnalysisRequest,

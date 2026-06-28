@@ -3,18 +3,18 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchDocumentFile, resolveDocumentMeta } from '@/services/documents';
-import { getAxiosErrorMessage } from '@/features/docx/utils/http-error';
-import { createRenderer } from '@/features/docx/utils/renderer';
-import { loadBrowserDocx4js } from '@/features/docx/utils/docx-page';
-import { ensureNodeEditState } from '@/features/docx/utils/edit';
-import { appendChildren, normalizeEditableText } from '@/features/docx/utils/dom';
-import { detectDocxNoiseNodeIds } from '@/features/docx/utils/noise';
-import { applyDocxTabStops } from '@/features/docx/utils/tab-stops';
-import { paginateRenderedSections } from '@/features/docx/utils/pagination';
+import { getAxiosErrorMessage } from '@/features/docx/utils/core/http-error';
+import { createRenderer } from '@/features/docx/utils/core/renderer';
+import { loadBrowserDocx4js } from '@/features/docx/utils/core/docx-page';
+import { ensureNodeEditState } from '@/features/docx/utils/edit/edit';
+import { appendChildren, normalizeEditableText } from '@/features/docx/utils/core/dom';
+import { detectDocxNoiseNodeIds } from '@/features/docx/utils/core/noise';
+import { applyDocxTabStops } from '@/features/docx/utils/core/tab-stops';
+import { paginateRenderedSections } from '@/features/docx/utils/core/pagination';
 import {
 	clearRelationBadgeHost,
 	freezeIgnoredParagraphElement,
-} from '@/features/docx/utils/cleanup';
+} from '@/features/docx/utils/core/cleanup';
 import type {
 	Node as ParagraphNode,
 	ParagraphEditState,

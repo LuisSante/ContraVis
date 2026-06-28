@@ -3,15 +3,15 @@
 import { useState } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchAssistantResponse } from '@/services/assistant';
-import { getAxiosErrorMessage } from '@/features/docx/utils/http-error';
-import { buildAssistantNodeSnapshot, buildAssistantRelatedContext } from '@/features/docx/utils/assistant';
-import { getNodeCurrentText } from '@/features/docx/utils/edit';
+import { getAxiosErrorMessage } from '@/features/docx/utils/core/http-error';
+import { buildAssistantNodeSnapshot, buildAssistantRelatedContext } from '@/features/docx/utils/assistant/assistant';
+import { getNodeCurrentText } from '@/features/docx/utils/edit/edit';
 import {
 	PARAGRAPH_EXPLANATION_PROMPT,
 	buildParagraphExplanationEntityHighlights,
 	parseParagraphExplanationVariants,
 	type ExplanationEntity,
-} from '@/features/docx/utils/paragraph-explanation';
+} from '@/features/docx/utils/assistant/paragraph-explanation';
 import type { AssistantChatRequest, ParagraphEditState } from '@/types/document';
 
 interface UseParagraphExplanationParams {

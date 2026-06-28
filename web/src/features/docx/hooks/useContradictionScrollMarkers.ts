@@ -5,12 +5,11 @@ import {
 	computeContradictionMarkers,
 	type ContradictionEvidenceCollapsedCard,
 	type ContradictionEvidenceLink,
-} from '@/features/docx/utils/contradiction-markers';
+} from '@/features/docx/utils/contradiction/contradiction-markers';
+import { attachShiftWheelCompression } from '@/features/docx/utils/core/shift-wheel-compression';
 import type { ContradictionParagraphResult, ContradictionScrollMarker } from '@/types/document';
 
 const COMPRESS_DURATION_MS = 420;
-const COMPRESS_SNAP_EPSILON = 0.001;
-const WHEEL_DIRECTION_DEADZONE = 2;
 const SOURCE_HIDDEN_CLASS = 'docx-contradiction-source-hidden';
 
 interface UseContradictionScrollMarkersParams {
@@ -31,13 +30,6 @@ function isInterParagraph(result: ContradictionParagraphResult | undefined): boo
 	);
 }
 
-/**
- * Rail de marcadores de contradicción + link de evidencia A↔B, con la animación
- * de compresión **B→A** por Shift+Scroll cuando la evidencia es inter-párrafo:
- * B se acerca a A, su párrafo original se oculta y se muestra una tarjeta clon.
- * Port de `refreshContradictionScrollMarkers` + `applyContradictionEvidenceBTransforms`
- * + el branch inter-párrafo de `handleParagraphExplanationShiftWheel` del Svelte.
- */
 export function useContradictionScrollMarkers({
 	active,
 	renderEpoch,
@@ -50,10 +42,6 @@ export function useContradictionScrollMarkers({
 	const [link, setLink] = useState<ContradictionEvidenceLink | null>(null);
 	const [collapsedCards, setCollapsedCards] = useState<ContradictionEvidenceCollapsedCard[]>([]);
 
-	const frameRef = useRef<number | null>(null);
-	const compressionRef = useRef(0);
-	const compressionTargetRef = useRef(0);
-	const tweenRef = useRef<number | null>(null);
 	const hiddenIdsRef = useRef<Set<string>>(new Set());
 
 	const clearHidden = () => {
@@ -65,10 +53,6 @@ export function useContradictionScrollMarkers({
 
 	useEffect(() => {
 		const host = scrollHostRef.current;
-		// La compresión se reinicia al cambiar de selección.
-		compressionRef.current = 0;
-		compressionTargetRef.current = 0;
-
 		if (!active || !host || renderEpoch === 0) {
 			setMarkers([]);
 			setLink(null);
@@ -88,7 +72,7 @@ export function useContradictionScrollMarkers({
 			hiddenIdsRef.current = nextSet;
 		};
 
-		const refresh = () => {
+		const refresh = (compression: number) => {
 			const currentHost = scrollHostRef.current;
 			if (!currentHost) return;
 			const result = computeContradictionMarkers({
@@ -96,7 +80,7 @@ export function useContradictionScrollMarkers({
 				paragraphElementById,
 				resultsByParagraphId,
 				selectedParagraphId,
-				compression: compressionRef.current,
+				compression,
 			});
 			applyHidden(result.hiddenParagraphIds);
 			setMarkers(result.markers);
@@ -104,75 +88,19 @@ export function useContradictionScrollMarkers({
 			setCollapsedCards(result.collapsedCards);
 		};
 
-		const schedule = () => {
-			if (frameRef.current != null) cancelAnimationFrame(frameRef.current);
-			frameRef.current = requestAnimationFrame(() => {
-				frameRef.current = null;
-				refresh();
-			});
-		};
-
-		const animateCompression = (timestamp: number, startValue: number, startTime: number) => {
-			const elapsed = timestamp - startTime;
-			const linearProgress = Math.max(0, Math.min(1, elapsed / COMPRESS_DURATION_MS));
-			const easedProgress =
-				linearProgress < 0.5
-					? 4 * linearProgress * linearProgress * linearProgress
-					: 1 - Math.pow(-2 * linearProgress + 2, 3) / 2;
-			compressionRef.current =
-				startValue + (compressionTargetRef.current - startValue) * easedProgress;
-			refresh();
-
-			const delta = Math.abs(compressionTargetRef.current - compressionRef.current);
-			if (linearProgress >= 1 || delta <= COMPRESS_SNAP_EPSILON) {
-				compressionRef.current = compressionTargetRef.current;
-				tweenRef.current = null;
-				refresh();
-				return;
-			}
-			tweenRef.current = requestAnimationFrame((next) =>
-				animateCompression(next, startValue, startTime)
-			);
-		};
-
-		const handleWheel = (event: WheelEvent) => {
-			if (!event.shiftKey) return;
-			if (!isInterParagraph(selectedParagraphId ? resultsByParagraphId.get(selectedParagraphId) : undefined)) {
-				return;
-			}
-			const wheelDelta =
-				Math.abs(event.deltaY) >= WHEEL_DIRECTION_DEADZONE ? event.deltaY : event.deltaX;
-			if (Math.abs(wheelDelta) < WHEEL_DIRECTION_DEADZONE) return;
-			event.preventDefault();
-			const nextTarget = wheelDelta > 0 ? 1 : 0;
-			if (nextTarget === compressionTargetRef.current && tweenRef.current != null) return;
-
-			compressionTargetRef.current = nextTarget;
-			const startValue = compressionRef.current;
-			const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
-			if (tweenRef.current != null) {
-				cancelAnimationFrame(tweenRef.current);
-				tweenRef.current = null;
-			}
-			tweenRef.current = requestAnimationFrame((next) =>
-				animateCompression(next, startValue, startTime)
-			);
-		};
-
-		schedule();
-		host.addEventListener('scroll', schedule, { passive: true });
-		window.addEventListener('resize', schedule);
-		host.addEventListener('wheel', handleWheel, { passive: false });
-		const observer = new ResizeObserver(schedule);
-		observer.observe(host);
+		const cleanup = attachShiftWheelCompression({
+			host,
+			durationMs: COMPRESS_DURATION_MS,
+			refresh,
+			// Solo se comprime cuando la evidencia vive en párrafos distintos.
+			canCompress: () =>
+				isInterParagraph(
+					selectedParagraphId ? resultsByParagraphId.get(selectedParagraphId) : undefined
+				),
+		});
 
 		return () => {
-			host.removeEventListener('scroll', schedule);
-			window.removeEventListener('resize', schedule);
-			host.removeEventListener('wheel', handleWheel);
-			observer.disconnect();
-			if (frameRef.current != null) cancelAnimationFrame(frameRef.current);
-			if (tweenRef.current != null) cancelAnimationFrame(tweenRef.current);
+			cleanup();
 			clearHidden();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps

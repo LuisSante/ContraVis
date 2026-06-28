@@ -1,48 +1,18 @@
-﻿from collections import Counter
+from collections import Counter
 import json
 import logging
 import re
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
-from schemas.types import (
-    AssistantChatRequest,
-    AssistantChatResponse,
-    ContradictionAnalysisRequest,
-    ContradictionAnalysisResponse,
-    ContradictionGraphMode,
-    DatasetDocument,
-    LlmEstimateRequest,
-    LlmEstimateResponse,
-    LlmUsageTotalResponse,
-    SavedContradictionsResponse,
-    SimplifySelectionRequest,
-    SimplifySelectionResponse,
-)
-from services.contradiction_analysis import analyze_document_contradictions
-from services.contradiction_saved import (
-    load_saved_contradictions_for_document,
-    save_analyzed_contradictions,
-)
-from services.contract_assistant import (
-    estimate_assistant_chat_request,
-    estimate_simplify_request,
-    fix_contradiction_selection,
-    generate_assistant_response,
-    simplify_paragraph_selection,
-)
-from services.contradiction_analysis import estimate_contradiction_analysis_request
+from schemas.types import DatasetDocument
 from services.graph.relations import generate_graph_data
-from services.llm.cost_estimator import format_cost
-from services.llm.usage_tracker import get_total_usage_cost_usd
 from utils.config import Config
-from utils.document_store import DocumentStore
+from api.deps import document_store
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
-
-document_store = DocumentStore()
 
 PAGE_NUMBER_ONLY_RE = re.compile(r"^(?:\d+|[ivxlcdm]{1,8})$", re.IGNORECASE)
 PAGE_LABEL_RE = re.compile(r"^(?:page|pagina|p[aÃ¡]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$", re.IGNORECASE)
@@ -224,143 +194,6 @@ async def process_document(data: dict):
     #     logger.exception("Failed to save graph output snapshot for document_id=%s", doc_id)
 
     return response
-
-
-@router.post("/assistant/chat", response_model=AssistantChatResponse)
-def assistant_chat(payload: AssistantChatRequest):
-    try:
-        return generate_assistant_response(payload)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected assistant error")
-        raise HTTPException(status_code=500, detail="Failed to generate assistant response") from exc
-
-
-@router.post("/assistant/simplify", response_model=SimplifySelectionResponse)
-def assistant_simplify(payload: SimplifySelectionRequest):
-    try:
-        return simplify_paragraph_selection(payload)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected simplify error")
-        raise HTTPException(status_code=500, detail="Failed to simplify selection") from exc
-
-
-@router.post("/assistant/fix_contradiction", response_model=SimplifySelectionResponse)
-def assistant_fix_contradiction(payload: SimplifySelectionRequest):
-    try:
-        return fix_contradiction_selection(payload)
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected fix-contradiction error")
-        raise HTTPException(status_code=500, detail="Failed to fix contradiction") from exc
-
-
-@router.post("/contradictions/analyze", response_model=ContradictionAnalysisResponse)
-def analyze_document_contradictions_endpoint(payload: ContradictionAnalysisRequest):
-    try:
-        canonical_doc_id = document_store.get_canonical_id(payload.documentId)
-        if canonical_doc_id and canonical_doc_id != payload.documentId:
-            payload = payload.model_copy(update={"documentId": canonical_doc_id})
-        response = analyze_document_contradictions(payload)
-        try:
-            doc_meta = document_store.get_document(payload.documentId)
-            saved_path = save_analyzed_contradictions(
-                response,
-                document_relative_path=doc_meta.relative_path if doc_meta else None,
-                document_group=doc_meta.group_label if doc_meta else None,
-            )
-            logger.info("Saved contradiction analysis: %s", saved_path)
-        except Exception:
-            logger.exception("Failed to persist contradiction analysis result")
-        return response
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected contradiction-analysis error")
-        raise HTTPException(status_code=500, detail="Failed to analyze contradictions") from exc
-
-
-@router.post("/llm/estimate", response_model=LlmEstimateResponse)
-def estimate_llm_request(payload: LlmEstimateRequest):
-    try:
-        if payload.callType == "assistant_chat":
-            if payload.assistantChat is None:
-                raise RuntimeError("assistantChat payload is required")
-            estimate = estimate_assistant_chat_request(payload.assistantChat)
-        elif payload.callType == "assistant_simplify":
-            if payload.simplifySelection is None:
-                raise RuntimeError("simplifySelection payload is required")
-            estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=False)
-        elif payload.callType == "assistant_fix_contradiction":
-            if payload.simplifySelection is None:
-                raise RuntimeError("simplifySelection payload is required")
-            estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=True)
-        elif payload.callType == "contradictions_analyze":
-            if payload.contradictionAnalysis is None:
-                raise RuntimeError("contradictionAnalysis payload is required")
-            estimate = estimate_contradiction_analysis_request(payload.contradictionAnalysis)
-        else:
-            raise RuntimeError("Unsupported callType")
-
-        return LlmEstimateResponse(
-            callType=payload.callType,
-            provider=estimate["provider"],
-            model=estimate["model"],
-            estimatedInputTokens=estimate["estimated_input_tokens"],
-            estimatedOutputTokens=estimate["estimated_output_tokens"],
-            estimatedTotalTokens=estimate["estimated_total_tokens"],
-            estimatedCostUsd=estimate["estimated_cost_usd"],
-            estimatedCostUsdFormatted=estimate["estimated_cost_usd_formatted"],
-        )
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected llm-estimate error")
-        raise HTTPException(status_code=500, detail="Failed to estimate LLM request") from exc
-
-
-@router.get("/llm/cost/total", response_model=LlmUsageTotalResponse)
-def get_llm_total_cost():
-    total_cost_usd = get_total_usage_cost_usd()
-    logger.info(
-        "[COST_DEBUG] /llm/cost/total response: total=%0.9f formatted=%s",
-        total_cost_usd,
-        format_cost(total_cost_usd),
-    )
-    return LlmUsageTotalResponse(
-        totalCostUsd=total_cost_usd,
-        totalCostUsdFormatted=format_cost(total_cost_usd),
-    )
-
-
-@router.get("/contradictions/saved/{document_id}", response_model=SavedContradictionsResponse)
-def get_saved_contradictions(
-    document_id: str,
-    mode: ContradictionGraphMode = Query(default="without_kg"),
-):
-    try:
-        aliases = document_store.get_document_aliases(document_id)
-        rows, source_file = load_saved_contradictions_for_document(
-            document_id,
-            mode=mode,
-            aliases=aliases,
-        )
-        canonical_id = document_store.get_canonical_id(document_id) or document_id
-        return SavedContradictionsResponse(
-            documentId=canonical_id,
-            sourceFile=source_file,
-            mode=mode,
-            paragraphResults=rows,
-        )
-    except RuntimeError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected saved-contradictions error")
-        raise HTTPException(status_code=500, detail="Failed to load saved contradictions") from exc
 
 
 @router.get("/")

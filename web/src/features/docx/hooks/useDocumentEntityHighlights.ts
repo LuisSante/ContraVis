@@ -6,7 +6,7 @@ import {
 	highlightEntitiesInElement,
 	syncHoveredEntityKey,
 	type DocumentEntityHighlight,
-} from '@/features/docx/utils/entity-marks';
+} from '@/features/docx/utils/assistant/entity-marks';
 
 interface UseDocumentEntityHighlightsParams {
 	active: boolean;

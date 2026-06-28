@@ -4,58 +4,51 @@ UVICORN = uvicorn
 PNPM = pnpm -C web
 NPM = npm --prefix client
 WEB_PORT = 3000
-BACKUP_DIR=./infra/backups
-NEO_CONTAINER=neo4j-dev
+BACKUP_DIR = ./infra/backups
+NEO_CONTAINER = neo4j-dev
 
-.PHONY: setup-backend setup-frontend setup-frontend-svelte setup dev \
-	dev-backend dev-frontend dev-frontend-svelte build-frontend help
+.PHONY: install finstall run frun \
+	build fbuild \
+	sinstall srun \
+	preprocess backup restore help
 
 help:
 	@echo "Commands available:"
-	@echo "  make setup                 - Install all dependencies (backend + frontend)"
-	@echo "  make setup-backend         - Install backend (FastAPI) dependencies"
-	@echo "  make setup-frontend        - Install frontend (Next.js, web/) dependencies"
-	@echo "  make dev-backend           - Run FastAPI on :8300"
-	@echo "  make dev-frontend          - Run Next.js dev server (web/) on :$(WEB_PORT)"
-	@echo "  make build-frontend        - Production build of the Next.js app (web/)"
-	@echo "  make dev-frontend-svelte   - Run the legacy SvelteKit client (client/)"
+	@echo "  make install      - Install backend dependencies"
+	@echo "  make finstall     - Install frontend dependencies"
+	@echo "  make run          - Run FastAPI"
+	@echo "  make frun         - Run Next.js"
+	@echo "  make fbuild       - Build Next.js"
+	@echo "  make sinstall     - Install legacy Svelte dependencies"
+	@echo "  make srun         - Run legacy Svelte app"
+	@echo "  make preprocess   - Preprocess data"
+	@echo "  make backup       - Backup Neo4j"
+	@echo "  make restore      - Restore Neo4j"
 
-setup: setup-backend setup-frontend
-
-setup-backend:
-	@echo "Installing dependencies in backend"
+install:
+	@echo "Installing backend dependencies..."
 	cd server && $(PYTHON) -m pip install -r requirements.txt
 
-setup-frontend:
-	@echo "Installing dependencies in frontend (Next.js, web/)"
+finstall:
+	@echo "Installing frontend dependencies..."
 	$(PNPM) install
 
-dev-backend:
-	@echo "Init FastAPI..."
+run:
+	@echo "Starting FastAPI..."
 	cd server && $(PYTHON) -m uvicorn main:app --reload --port 8300
 
-dev-frontend:
-	@echo "Init Next.js (web/)..."
+frun:
+	@echo "Starting Next.js..."
 	$(PNPM) dev --port $(WEB_PORT)
 
-build-frontend:
-	@echo "Building Next.js app (web/)..."
+fbuild:
+	@echo "Building Next.js..."
 	$(PNPM) build
-
-# --- Legacy SvelteKit client (se elimina al validar la migración a Next.js) ---
-setup-frontend-svelte:
-	@echo "Installing dependencies in legacy SvelteKit client"
-	cd client && npm install
-
-dev-frontend-svelte:
-	@echo "Init SvelteKit (legacy client/)..."
-	$(NPM) run dev -- --open --port 5173
 
 preprocess:
 	@echo "Preprocessing data..."
 	cd notebooks/KG && $(PYTHON) create_kg.py
 
-# Neo4j Backup
 backup:
 	@mkdir -p $(BACKUP_DIR)
 	docker exec $(NEO_CONTAINER) neo4j stop || true
@@ -65,7 +58,6 @@ backup:
 	docker cp $(NEO_CONTAINER):/var/lib/neo4j/backups/neo4j.dump $(BACKUP_DIR)
 	docker exec $(NEO_CONTAINER) neo4j start || true
 
-# Neo4j Restore
 restore:
 ifeq ($(FORCE),true)
 	@echo "FORCE enabled: removing old volumes..."

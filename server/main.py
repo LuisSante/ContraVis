@@ -8,12 +8,12 @@ load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-from api import documents
+from api import deps, documents, assistant, contradictions, llm
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize the document store on startup
-    documents.document_store.initialize()
+    deps.document_store.initialize()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -34,6 +34,9 @@ app.add_middleware(
 )
 
 app.include_router(documents.router, prefix="/api/v1")
+app.include_router(assistant.router, prefix="/api/v1")
+app.include_router(contradictions.router, prefix="/api/v1")
+app.include_router(llm.router, prefix="/api/v1")
 
 @app.get("/")
 def home():

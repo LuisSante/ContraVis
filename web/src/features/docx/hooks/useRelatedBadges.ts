@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { resolveRelatedVisualKind } from '@/features/docx/utils/related-bridge';
+import { resolveRelatedVisualKind } from '@/features/docx/utils/related/related-bridge';
 import type { RelatedParagraph } from '@/types/document';
 
 const BADGE_EMPHASIS_CLASSES = [
