@@ -1,9 +1,9 @@
 import type {
-	Node as ParagraphNode,
+	ParagraphNode,
 	ParagraphEditState,
 	ParagraphKind,
 	XmlNode
-} from '@/types/document';
+} from '@/features/docx/utils/core/types';
 import { ensureNodeEditState } from '@/features/docx/utils/edit/edit';
 import { getRelationsCount, updateRelationBadge } from '@/features/docx/utils/core/docx-page';
 import { appendChildren, normalizeEditableText, setStyles, toNodeList } from '@/features/docx/utils/core/dom';

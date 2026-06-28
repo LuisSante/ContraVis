@@ -1,4 +1,4 @@
-import type { Docx4jsBrowserModule } from '@/types/document';
+import type { Docx4jsBrowserModule } from '@/features/docx/utils/core/types';
 import { resolveDocx4jsFromRequire } from '@/features/docx/utils/core/loader';
 
 /**
