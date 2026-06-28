@@ -1,10 +1,13 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import type { RelatedBridge } from '@/features/docx/utils/related-bridge';
 
 interface RelatedBridgeOverlayProps {
 	bridge: RelatedBridge;
 	onJumpToParagraph: (paragraphId: string) => void;
+	/** Arrastrar el rail scrollea el documento (scrub). */
+	onRailMouseDown?: (event: MouseEvent) => void;
 }
 
 /**
@@ -13,7 +16,11 @@ interface RelatedBridgeOverlayProps {
  * las tarjetas colapsadas (al acercar con Shift+Scroll) y el rail de marcadores
  * de scroll. Port del bloque de plantilla del Svelte `RightPanelAnalysis`/page.
  */
-export function RelatedBridgeOverlay({ bridge, onJumpToParagraph }: RelatedBridgeOverlayProps) {
+export function RelatedBridgeOverlay({
+	bridge,
+	onJumpToParagraph,
+	onRailMouseDown,
+}: RelatedBridgeOverlayProps) {
 	const { connectors, primaryConnector, folds, collapsedCards, scrollMarkers } = bridge;
 
 	return (
@@ -112,7 +119,7 @@ export function RelatedBridgeOverlay({ bridge, onJumpToParagraph }: RelatedBridg
 			) : null}
 
 			{scrollMarkers.length > 0 ? (
-				<div className="absolute top-2 right-1 bottom-2 z-20 w-2">
+				<div className="absolute top-2 right-1 bottom-2 z-20 w-2" onMouseDown={onRailMouseDown}>
 					{scrollMarkers.map((marker) => (
 						<span
 							key={`related-marker-${marker.paragraphId}`}

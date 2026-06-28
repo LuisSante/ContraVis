@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchDocumentFile, resolveDocumentMeta } from '@/services/documents';
 import { getAxiosErrorMessage } from '@/features/docx/utils/http-error';
@@ -33,7 +33,11 @@ export type DocumentViewerStatus = 'idle' | 'loading' | 'ready' | 'error';
  * difieren: marcadores de contradicción, related, conectores de explicación y el
  * recompute del grafo al confirmar ediciones.
  */
-export function useDocumentViewer(docId: string | null) {
+export function useDocumentViewer(
+	docId: string | null,
+	options?: { onParagraphCommitRef?: RefObject<(() => void) | null> }
+) {
+	const onParagraphCommitRef = options?.onParagraphCommitRef;
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [status, setStatus] = useState<DocumentViewerStatus>('idle');
 	const [documentName, setDocumentName] = useState<string | null>(null);
@@ -166,7 +170,8 @@ export function useDocumentViewer(docId: string | null) {
 			state.committed = state.current;
 			state.editedSinceCommit = false;
 			if (selectedNodeId.current === node.id) setSelectedParagraph(node);
-			// TODO: recompute del grafo de relaciones (feature posterior).
+			// Confirmar una edición recalcula el grafo de relaciones (bloquea + pasos).
+			onParagraphCommitRef?.current?.();
 		};
 
 		const run = async () => {
@@ -291,7 +296,7 @@ export function useDocumentViewer(docId: string | null) {
 			releaseDoc = null;
 			container?.replaceChildren();
 		};
-	}, [docId, setParagraphs, setSelectedParagraph, setLoading, setError]);
+	}, [docId, setParagraphs, setSelectedParagraph, setLoading, setError, onParagraphCommitRef]);
 
 	return {
 		containerRef,

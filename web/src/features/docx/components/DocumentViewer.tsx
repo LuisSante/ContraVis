@@ -1,6 +1,14 @@
 'use client';
 
-import { useRef, type CSSProperties, type RefObject } from 'react';
+import {
+	useRef,
+	type CSSProperties,
+	type MouseEvent as ReactMouseEvent,
+	type RefObject,
+} from 'react';
+
+/** Multiplicador del scrub al arrastrar el rail (1px de ratón → N px de scroll). */
+const MANUAL_SCROLL_DRAG_SPEED = 100;
 import type { DocumentViewerStatus } from '@/features/docx/hooks/useDocumentViewer';
 import { useContradictionScrollMarkers } from '@/features/docx/hooks/useContradictionScrollMarkers';
 import { useRelatedBridge } from '@/features/docx/hooks/useRelatedBridge';
@@ -70,8 +78,42 @@ export function DocumentViewer({
 		related: relatedBridgeParagraphs,
 	});
 
+	// Tras arrastrar el rail, se suprime el click-salto un instante para que el
+	// drag no dispare un salto al soltar.
+	const suppressMarkerClickRef = useRef(false);
+
+	// Arrastrar el rail de marcadores scrollea el documento (scrub tipo minimapa).
+	const startRailScrub = (event: ReactMouseEvent) => {
+		const host = scrollHostRef.current;
+		if (!host || event.button !== 0) return;
+		event.preventDefault();
+		const startY = event.clientY;
+		const startTop = host.scrollTop;
+		let moved = false;
+		document.body.style.userSelect = 'none';
+		const onMove = (moveEvent: MouseEvent) => {
+			const delta = (moveEvent.clientY - startY) * MANUAL_SCROLL_DRAG_SPEED;
+			if (Math.abs(delta) > 2) moved = true;
+			host.scrollTop = startTop + delta;
+		};
+		const onUp = () => {
+			window.removeEventListener('mousemove', onMove);
+			window.removeEventListener('mouseup', onUp);
+			document.body.style.userSelect = '';
+			if (moved) {
+				suppressMarkerClickRef.current = true;
+				window.setTimeout(() => {
+					suppressMarkerClickRef.current = false;
+				}, 140);
+			}
+		};
+		window.addEventListener('mousemove', onMove);
+		window.addEventListener('mouseup', onUp);
+	};
+
 	// Salta a un párrafo relacionado (scroll + parpadeo), sin cambiar la selección.
 	const jumpToParagraph = (paragraphId: string) => {
+		if (suppressMarkerClickRef.current) return;
 		const element = paragraphElementById.get(paragraphId);
 		if (!element) return;
 		element.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -79,6 +121,11 @@ export function DocumentViewer({
 		void element.offsetHeight;
 		element.classList.add('docx-citation-flash');
 		window.setTimeout(() => element.classList.remove('docx-citation-flash'), 1300);
+	};
+
+	const handleMarkerClick = (paragraphId: string) => {
+		if (suppressMarkerClickRef.current) return;
+		onMarkerClick(paragraphId);
 	};
 
 	const linkVars = {
@@ -105,11 +152,15 @@ export function DocumentViewer({
 			</section>
 
 			{relatedBridgeActive && (
-				<RelatedBridgeOverlay bridge={relatedBridge} onJumpToParagraph={jumpToParagraph} />
+				<RelatedBridgeOverlay
+						bridge={relatedBridge}
+						onJumpToParagraph={jumpToParagraph}
+						onRailMouseDown={startRailScrub}
+					/>
 			)}
 
 			{contradictionActive && markers.length > 0 && (
-				<div className="absolute top-2 right-1 bottom-2 z-20 w-2">
+				<div className="absolute top-2 right-1 bottom-2 z-20 w-2" onMouseDown={startRailScrub}>
 					{markers.map((marker) => (
 						<span
 							key={marker.paragraphId}
@@ -118,11 +169,11 @@ export function DocumentViewer({
 							role="button"
 							tabIndex={0}
 							aria-label={`Go to contradiction in paragraph ${marker.paragraphId}`}
-							onClick={() => onMarkerClick(marker.paragraphId)}
+							onClick={() => handleMarkerClick(marker.paragraphId)}
 							onKeyDown={(event) => {
 								if (event.key === 'Enter' || event.key === ' ') {
 									event.preventDefault();
-									onMarkerClick(marker.paragraphId);
+									handleMarkerClick(marker.paragraphId);
 								}
 							}}
 						/>

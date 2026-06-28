@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useRef, useState } from 'react';
 import { DocxPageHeader } from './DocxPageHeader';
 import { DocumentViewer } from './DocumentViewer';
 import { RightPanel } from './RightPanel';
@@ -24,6 +24,7 @@ import {
 import { useRightDrawer } from '@/features/docx/hooks/useRightDrawer';
 import { useLlmEstimate } from '@/features/docx/hooks/useLlmEstimate';
 import { useDocumentEntityHighlights } from '@/features/docx/hooks/useDocumentEntityHighlights';
+import { useRelatedBadges } from '@/features/docx/hooks/useRelatedBadges';
 import { useDocumentViewer } from '@/features/docx/hooks/useDocumentViewer';
 import { useContradictionAnalysis } from '@/features/docx/hooks/useContradictionAnalysis';
 import { useContradictionDecorations } from '@/features/docx/hooks/useContradictionDecorations';
@@ -75,7 +76,9 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 
 	const drawer = useRightDrawer();
 	const llmEstimate = useLlmEstimate();
-	const viewer = useDocumentViewer(id);
+	// Al confirmar (Ctrl/Cmd+Enter) una edición de párrafo se recalcula el grafo.
+	const onParagraphCommitRef = useRef<(() => void) | null>(null);
+	const viewer = useDocumentViewer(id, { onParagraphCommitRef });
 	const { paragraphElementById, nodeEditStateById } = viewer.maps;
 
 	const selectedParagraph = useDocumentStore((s) => s.selectedParagraph);
@@ -153,6 +156,16 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		entities: documentEntities,
 	});
 
+	// Badges de relación: énfasis + dirección (reference/similarity) al seleccionar
+	// en la pestaña Related.
+	const relatedFocusOn = relatedActive && selectedParagraph != null;
+	useRelatedBadges({
+		active: relatedFocusOn,
+		paragraphRelationHostById: viewer.maps.paragraphRelationHostById.current,
+		selectedParagraphId: selectedParagraph?.id ?? null,
+		related: related.selectedRelatedParagraphs,
+	});
+
 	useContradictionDecorations({
 		active: analysisActive,
 		renderEpoch: viewer.renderEpoch,
@@ -183,10 +196,18 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		}
 	}, [id, viewer.renderEpoch, relatedComputed, relatedLoading, recomputeRelated]);
 
-	// Bloqueo global desde que se selecciona el documento hasta que el grafo está
-	// formado: documento atenuado + sin navegación + animación de pasos en el panel.
-	// (Se libera también si el render falla, para no bloquear indefinidamente.)
-	const graphBlocking = id != null && !relatedComputed && viewer.status !== 'error';
+	// Confirmar una edición de párrafo (Ctrl/Cmd+Enter) recalcula el grafo.
+	useEffect(() => {
+		onParagraphCommitRef.current = () => void recomputeRelated();
+		return () => {
+			onParagraphCommitRef.current = null;
+		};
+	}, [recomputeRelated]);
+
+	// Bloqueo global mientras se forma/recalcula el grafo: documento atenuado + sin
+	// navegación + animación de pasos en el panel. (Se libera si el render falla.)
+	const graphBlocking =
+		id != null && (!relatedComputed || relatedLoading) && viewer.status !== 'error';
 
 	// Las contradicciones se cargan solo bajo demanda: "Saved" (guardadas) o
 	// "Search" (búsqueda con LLM). No se auto-cargan al formarse el grafo.
@@ -349,7 +370,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		<main
 			className={`relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans ${
 				relatedActive ? 'related-badges-on' : 'related-badges-off'
-			}`}
+			} ${relatedFocusOn ? 'related-focus-on' : ''}`}
 		>
 			<div className="relative flex min-w-0 flex-col border-r border-gray-300" style={{ width: leftWidth }}>
 				<DocxPageHeader

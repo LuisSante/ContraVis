@@ -710,7 +710,7 @@ export function createRenderer(
 		});
 
 		element.addEventListener('keydown', (event: KeyboardEvent) => {
-			if (!(event.key === 'Enter' && event.ctrlKey && event.shiftKey)) return;
+			if (!(event.key === 'Enter' && (event.ctrlKey || event.metaKey))) return;
 			event.preventDefault();
 			const node = syncText();
 			if (!node) return;
