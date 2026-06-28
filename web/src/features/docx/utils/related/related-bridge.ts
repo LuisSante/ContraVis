@@ -1,5 +1,5 @@
 import type { Node as ParagraphNode, RelatedParagraph } from '@/types/document';
-import { cloneParagraphForCard } from '@/features/docx/utils/core/clone-paragraph';
+import { cloneParagraphForCard } from '@/features/docx/utils/docx-engine/clone-paragraph';
 
 /**
  * Geometría del "puente" de párrafos relacionados: la línea/conector que une el

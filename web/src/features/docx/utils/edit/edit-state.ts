@@ -2,7 +2,7 @@ import type { Node as ParagraphNode, ParagraphEditState } from '@/types/document
 
 // `ensureNodeEditState` ahora vive en el motor (helper de modelo). Se re-exporta
 // aquí para no romper a los consumidores de la app.
-export { ensureNodeEditState } from '@/features/docx/utils/core/edit-state';
+export { ensureNodeEditState } from '@/features/docx/utils/docx-engine/edit-state';
 
 export function getNodeCurrentText(
 	nodeEditStateById: Map<string, ParagraphEditState>,

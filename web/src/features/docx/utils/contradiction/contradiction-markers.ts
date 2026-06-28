@@ -3,7 +3,7 @@ import type {
 	ContradictionScrollMarker
 } from '@/types/document';
 import { resolveContradictionConfidenceBand } from '@/features/docx/utils/contradiction/contradiction';
-import { cloneParagraphForCard } from '@/features/docx/utils/core/clone-paragraph';
+import { cloneParagraphForCard } from '@/features/docx/utils/docx-engine/clone-paragraph';
 
 const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
 const CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX = 55;

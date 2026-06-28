@@ -6,7 +6,7 @@ import {
 	type ContradictionEvidenceCollapsedCard,
 	type ContradictionEvidenceLink,
 } from '@/features/docx/utils/contradiction/contradiction-markers';
-import { attachShiftWheelCompression } from '@/features/docx/utils/core/shift-wheel-compression';
+import { attachShiftWheelCompression } from '@/features/docx/utils/docx-engine/shift-wheel-compression';
 import type { ContradictionParagraphResult, ContradictionScrollMarker } from '@/types/document';
 
 const COMPRESS_DURATION_MS = 420;

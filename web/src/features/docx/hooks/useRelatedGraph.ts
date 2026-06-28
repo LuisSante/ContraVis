@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchBackendGraph } from '@/services/graph';
-import { updateRelationBadge } from '@/features/docx/utils/core/docx-page';
+import { updateRelationBadge } from '@/features/docx/utils/docx-engine/docx-page';
 import { buildRelatedParagraphs } from '@/features/docx/utils/edit/edit';
 import type { DocumentViewerMaps } from '@/features/docx/hooks/useDocumentViewer';
 import type { Edge as GraphEdge, RelatedParagraph } from '@/types/document';

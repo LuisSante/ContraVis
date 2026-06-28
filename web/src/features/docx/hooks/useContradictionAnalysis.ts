@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchContradictionAnalysis, fetchSavedContradictions } from '@/services/contradiction';
-import { getAxiosErrorMessage } from '@/features/docx/utils/core/http-error';
+import { getAxiosErrorMessage } from '@/features/docx/utils/docx-engine/http-error';
 import { getNodeCurrentText } from '@/features/docx/utils/edit/edit';
 import {
 	buildContradictionCandidateKey,

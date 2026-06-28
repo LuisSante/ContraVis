@@ -3,7 +3,7 @@
 import { useMemo, useState, type Dispatch, type SetStateAction } from 'react';
 import { useDocumentStore } from '@/stores/document';
 import { fetchAssistantResponse } from '@/services/assistant';
-import { getAxiosErrorMessage } from '@/features/docx/utils/core/http-error';
+import { getAxiosErrorMessage } from '@/features/docx/utils/docx-engine/http-error';
 import {
 	buildAssistantHistoryPayload,
 	buildAssistantNodeSnapshot,

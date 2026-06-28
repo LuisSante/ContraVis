@@ -1,4 +1,4 @@
-import { normalizeEditableText } from '@/features/docx/utils/core/dom';
+import { normalizeEditableText } from '@/features/docx/utils/docx-engine/dom';
 
 export type SimplifyTarget = {
 	paragraphId: string;

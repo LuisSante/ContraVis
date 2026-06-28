@@ -19,7 +19,7 @@ import {
 } from '@/features/docx/utils/edit/simplify-selection';
 import { buildFixRelatedContext } from '@/features/docx/utils/assistant/assistant';
 import { fetchFixContradictionSelection, fetchSimplifySelection } from '@/services/assistant';
-import { normalizeEditableText } from '@/features/docx/utils/core/paragraph';
+import { normalizeEditableText } from '@/features/docx/utils/docx-engine/paragraph';
 
 type ErrorResolver = (error: unknown, fallbackMessage: string) => string;
 
