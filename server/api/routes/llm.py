@@ -7,11 +7,11 @@ from schemas.types import (
     LlmEstimateResponse,
     LlmUsageTotalResponse,
 )
-from services.contract_assistant import (
+from services.assistant.contract_assistant import (
     estimate_assistant_chat_request,
     estimate_simplify_request,
 )
-from services.contradiction_analysis import estimate_contradiction_analysis_request
+from services.contradictions.analysis import estimate_contradiction_analysis_request
 from services.llm.cost_estimator import format_cost
 from services.llm.usage_tracker import get_total_usage_cost_usd
 

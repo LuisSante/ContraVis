@@ -1,19 +1,20 @@
-import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
+from core.logging import setup_logging
+
 load_dotenv()
+setup_logging()
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-from api import deps, documents, assistant, contradictions, llm
+from api import api_router
+from api.deps import document_store
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize the document store on startup
-    deps.document_store.initialize()
+    document_store.initialize()
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -33,10 +34,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(documents.router, prefix="/api/v1")
-app.include_router(assistant.router, prefix="/api/v1")
-app.include_router(contradictions.router, prefix="/api/v1")
-app.include_router(llm.router, prefix="/api/v1")
+app.include_router(api_router, prefix="/api/v1")
 
 @app.get("/")
 def home():

@@ -8,7 +8,7 @@ from schemas.types import (
     SimplifySelectionRequest,
     SimplifySelectionResponse,
 )
-from services.contract_assistant import (
+from services.assistant.contract_assistant import (
     fix_contradiction_selection,
     generate_assistant_response,
     simplify_paragraph_selection,

@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from schemas.types import ContradictionAnalysisResponse, ContradictionParagraphResult
-from utils.config import Config
+from core.config import settings
 
 _ALLOWED_CONTRADICTION_TYPES = {
     "temporal",
@@ -23,7 +23,7 @@ def load_saved_contradictions_for_document(
     mode: str | None = None,
     aliases: list[str] | None = None,
 ) -> tuple[list[ContradictionParagraphResult], str]:
-    base_dir = Config.SAVED_CONTRADICTIONS_DIR
+    base_dir = settings.SAVED_CONTRADICTIONS_DIR
     if not base_dir.exists() or not base_dir.is_dir():
         raise RuntimeError(
             f"Pasta de resultados salvos nao encontrada: {base_dir}"
@@ -63,7 +63,7 @@ def save_analyzed_contradictions(
     document_relative_path: str | None = None,
     document_group: str | None = None,
 ) -> str:
-    base_dir = Config.SAVED_CONTRADICTIONS_DIR
+    base_dir = settings.SAVED_CONTRADICTIONS_DIR
     base_dir.mkdir(parents=True, exist_ok=True)
 
     safe_document_id = _sanitize_filename(response.documentId)

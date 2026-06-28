@@ -6,7 +6,7 @@ import logging
 import re
 
 from schemas.types import DatasetDocument
-from utils.config import Config
+from core.constants import CUAD_DOC_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -34,8 +34,8 @@ class DocumentStore:
             return
 
         logger.info("Initializing DocumentStore...")
-        if not Config.CUAD_DOC_DIR.exists():
-            logger.error("Dataset directory not found: %s", Config.CUAD_DOC_DIR)
+        if not CUAD_DOC_DIR.exists():
+            logger.error("Dataset directory not found: %s", CUAD_DOC_DIR)
             return
 
         documents: list[DatasetDocument] = []
@@ -43,8 +43,8 @@ class DocumentStore:
         aliases_by_doc_id: dict[str, list[str]] = {}
         alias_candidates: dict[str, set[str]] = defaultdict(set)
 
-        for docx_path in sorted(self.iter_docxs(Config.CUAD_DOC_DIR)):
-            relative_path = docx_path.relative_to(Config.CUAD_DOC_DIR).as_posix()
+        for docx_path in sorted(self.iter_docxs(CUAD_DOC_DIR)):
+            relative_path = docx_path.relative_to(CUAD_DOC_DIR).as_posix()
             group_label = self._resolve_group_label(relative_path)
             document_id = self._build_document_id(
                 stem=docx_path.stem,

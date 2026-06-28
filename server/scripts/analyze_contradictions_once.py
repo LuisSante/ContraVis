@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 
 from schemas.types import ContradictionAnalysisRequest
-from services.contradiction_analysis import analyze_document_contradictions
+from services.contradictions.analysis import analyze_document_contradictions
 
 
 def main() -> None:

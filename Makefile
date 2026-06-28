@@ -1,6 +1,4 @@
 PYTHON = python
-PIP = pip
-UVICORN = uvicorn
 PNPM = pnpm -C web
 NPM = npm --prefix client
 WEB_PORT = 3000
@@ -14,9 +12,9 @@ NEO_CONTAINER = neo4j-dev
 
 help:
 	@echo "Commands available:"
-	@echo "  make install      - Install backend dependencies"
+	@echo "  make install      - Install backend deps (uv sync: Python + uv.lock)"
 	@echo "  make finstall     - Install frontend dependencies"
-	@echo "  make run          - Run FastAPI"
+	@echo "  make run          - Run FastAPI (uv run uvicorn)"
 	@echo "  make frun         - Run Next.js"
 	@echo "  make fbuild       - Build Next.js"
 	@echo "  make sinstall     - Install legacy Svelte dependencies"
@@ -26,16 +24,18 @@ help:
 	@echo "  make restore      - Restore Neo4j"
 
 install:
-	@echo "Installing backend dependencies..."
-	cd server && $(PYTHON) -m pip install -r requirements.txt
+	@echo "Installing backend dependencies (uv sync)..."
+	@echo "Reproducible: instala el Python fijado (.python-version) y las deps de uv.lock."
+	@echo "Requisito previo: tener uv instalado -> https://docs.astral.sh/uv/"
+	cd server && uv sync
 
 finstall:
 	@echo "Installing frontend dependencies..."
 	$(PNPM) install
 
 run:
-	@echo "Starting FastAPI..."
-	cd server && $(PYTHON) -m uvicorn main:app --reload --port 8300
+	@echo "Starting FastAPI (uv)..."
+	cd server && uv run uvicorn main:app --reload --port 8300
 
 frun:
 	@echo "Starting Next.js..."

@@ -1,7 +1,7 @@
 from sentence_transformers import SentenceTransformer, util
 from collections import Counter
-# from ...utils.config import Config
-from utils.config import Config
+from core.config import settings
+from core.constants import REFERENCE_PATTERNS
 from schemas.types import Graph, Node, Edge
 from typing import List
 
@@ -461,7 +461,7 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
         current_text = nodes[i].text
         current_heading_meta = heading_by_index.get(i)
         current_context = context_by_index.get(i, {})
-        for ref_type, pattern in Config.REFERENCE_PATTERNS:
+        for ref_type, pattern in REFERENCE_PATTERNS:
             matches = pattern.finditer(current_text)
             for match in matches:
                 base_ref_id, ref_subclause, ref_value = parse_reference_id_with_subclause(
@@ -547,8 +547,8 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
         semantic_texts = [nodes[idx].text for idx in semantic_candidate_indices]
         embeddings = model.encode(semantic_texts, convert_to_tensor=True)
         cosine_scores = util.cos_sim(embeddings, embeddings)
-        semantic_threshold = float(Config.SEMANTIC_SIMILARITY_THRESHOLD)
-        semantic_mode = str(Config.SEMANTIC_RELATED_MODE).strip().lower()
+        semantic_threshold = float(settings.SEMANTIC_SIMILARITY_THRESHOLD)
+        semantic_mode = str(settings.SEMANTIC_RELATED_MODE).strip().lower()
 
         pair_score_by_indices: dict[tuple[int, int], float] = {}
 
@@ -573,7 +573,7 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
                     if previous is None or score > previous:
                         pair_score_by_indices[pair] = score
         else:
-            semantic_top_k = max(1, int(Config.SEMANTIC_TOP_K))
+            semantic_top_k = max(1, int(settings.SEMANTIC_TOP_K))
             for left_local_idx in range(len(semantic_candidate_indices)):
                 candidates: list[tuple[int, float]] = []
                 for right_local_idx in range(len(semantic_candidate_indices)):

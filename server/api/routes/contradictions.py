@@ -8,8 +8,8 @@ from schemas.types import (
     ContradictionGraphMode,
     SavedContradictionsResponse,
 )
-from services.contradiction_analysis import analyze_document_contradictions
-from services.contradiction_saved import (
+from services.contradictions.analysis import analyze_document_contradictions
+from services.contradictions.saved import (
     load_saved_contradictions_for_document,
     save_analyzed_contradictions,
 )

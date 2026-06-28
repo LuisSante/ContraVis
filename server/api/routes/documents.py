@@ -8,7 +8,8 @@ from fastapi.responses import FileResponse
 
 from schemas.types import DatasetDocument
 from services.graph.relations import generate_graph_data
-from utils.config import Config
+from core.config import settings
+from core.constants import CUAD_DOC_DIR
 from api.deps import document_store
 
 router = APIRouter()
@@ -45,14 +46,14 @@ def safe_graph_filename(value: str) -> str:
 
 
 def save_graph_output_snapshot(*, document_id: str | None, graph_payload: dict) -> None:
-    output_dir = Config.GRAPH_OUTPUT_DIR
+    output_dir = settings.GRAPH_OUTPUT_DIR
     output_dir.mkdir(parents=True, exist_ok=True)
 
     file_stem = str(document_id or "unknown_document")
     doc_path = document_store.get_path(file_stem)
     if doc_path is not None:
         try:
-            relative = doc_path.relative_to(Config.CUAD_DOC_DIR).as_posix()
+            relative = doc_path.relative_to(CUAD_DOC_DIR).as_posix()
             file_stem = relative.rsplit(".", 1)[0].replace("/", "__")
         except Exception:
             file_stem = doc_path.stem

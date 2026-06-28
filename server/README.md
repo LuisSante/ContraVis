@@ -2,6 +2,10 @@
 
 FastAPI service to list CUAD DOCX contracts and serve contract-processing APIs.
 
+> **Architecture & conventions:** see [`AGENTS.md`](./AGENTS.md) for the target
+> file structure (layering, domains) and the planned paths for database and auth.
+> New code should follow that structure.
+
 ## Requirements
 
 - Python 3.11+ recommended.

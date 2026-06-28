@@ -3,6 +3,7 @@
 .codex
 .agents
 .claude
+.comands
 words_paragraph.json
 __pycache__/
 infra/neo4j/data/
