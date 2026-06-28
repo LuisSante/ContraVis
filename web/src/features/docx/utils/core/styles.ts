@@ -14,16 +14,45 @@ import {
 const MIN_RUN_FONT_SIZE_PT = 6;
 const MIN_SUP_SUB_RUN_FONT_SIZE_PT = 5;
 const MAX_RUN_FONT_SIZE_PT = 72;
-const PARAGRAPH_SPACING_SCALE = 0.62;
-const WORD_DEFAULT_FONT_FAMILY = "'Times New Roman'";
+// El interlineado "auto" de OOXML es relativo al alto NATURAL de la línea de la
+// fuente (no al em). Word usa las métricas de la fuente; para Times/Liberation
+// Serif ese alto natural ≈ 1.15× em, así `line=240` (sencillo) cae en ~normal.
+const FONT_NATURAL_LINE_RATIO = 1.15;
+const GENERIC_SERIF = 'serif';
+const GENERIC_SANS = 'sans-serif';
+const GENERIC_MONO = 'monospace';
 
-const THEME_FONT_VARIABLE_BY_KEY: Record<string, string> = {
-	majorhansi: '--docx-majorHAnsi-font',
-	minorhansi: '--docx-minorHAnsi-font',
-	majoreastasia: '--docx-majorEastAsia-font',
-	minoreastasia: '--docx-minorEastAsia-font',
-	majorbidi: '--docx-majorBidi-font',
-	minorbidi: '--docx-minorBidi-font'
+// Stack por defecto cuando un run no especifica fuente (los contratos son serif).
+const WORD_DEFAULT_FONT_FAMILY = `'Times New Roman', 'Liberation Serif', 'Tinos', ${GENERIC_SERIF}`;
+
+// Equivalentes MÉTRICAMENTE compatibles: mismos anchos de glifo que la fuente de
+// Microsoft, así el navegador puede sustituir sin cambiar dónde corta cada línea.
+// Liberation = clones del sistema (Linux); Tinos/Arimo/Carlito/Caladea/Cousine = clones de Google.
+const METRIC_FALLBACKS: Record<string, string[]> = {
+	'times new roman': ["'Liberation Serif'", "'Tinos'", GENERIC_SERIF],
+	timesnewroman: ["'Liberation Serif'", "'Tinos'", GENERIC_SERIF],
+	times: ["'Liberation Serif'", "'Tinos'", GENERIC_SERIF],
+	georgia: ["'Tinos'", "'Liberation Serif'", GENERIC_SERIF],
+	cambria: ["'Caladea'", "'Liberation Serif'", GENERIC_SERIF],
+	arial: ["'Liberation Sans'", "'Arimo'", GENERIC_SANS],
+	helvetica: ["'Liberation Sans'", "'Arimo'", GENERIC_SANS],
+	calibri: ["'Carlito'", "'Liberation Sans'", GENERIC_SANS],
+	tahoma: ["'DejaVu Sans'", "'Liberation Sans'", GENERIC_SANS],
+	verdana: ["'DejaVu Sans'", "'Liberation Sans'", GENERIC_SANS],
+	'courier new': ["'Liberation Mono'", "'Cousine'", GENERIC_MONO],
+	consolas: ["'Liberation Mono'", "'Cousine'", GENERIC_MONO]
+};
+
+// Fuentes de tema de Office (theme1.xml). El render no parsea el tema, así que
+// asumimos el tema por defecto de Office (majorFont=Cambria, minorFont=Calibri),
+// el de la inmensa mayoría de documentos, y los mapeamos a stacks métricos.
+const THEME_FONT_STACK_BY_KEY: Record<string, string> = {
+	majorhansi: `'Cambria', 'Caladea', 'Liberation Serif', ${GENERIC_SERIF}`,
+	minorhansi: `'Calibri', 'Carlito', 'Liberation Sans', ${GENERIC_SANS}`,
+	majoreastasia: `'Liberation Serif', ${GENERIC_SERIF}`,
+	minoreastasia: `'Liberation Sans', ${GENERIC_SANS}`,
+	majorbidi: WORD_DEFAULT_FONT_FAMILY,
+	minorbidi: WORD_DEFAULT_FONT_FAMILY
 };
 
 export type ParagraphTabStop = {
@@ -46,13 +75,16 @@ function sanitizeFontFamilyName(raw: unknown): string | null {
 	return /[\s,]/.test(trimmed) ? `'${trimmed}'` : trimmed;
 }
 
+function metricFallbacksFor(name: string): string[] {
+	const key = name.trim().toLowerCase().replace(/^['"]|['"]$/g, '');
+	return METRIC_FALLBACKS[key] ?? [];
+}
+
 function resolveThemeFontFamily(rawThemeValue: string | undefined): string | null {
 	if (!rawThemeValue) return null;
-	const themeValue = rawThemeValue.trim();
-	if (!themeValue) return null;
-	const variableName =
-		THEME_FONT_VARIABLE_BY_KEY[themeValue.toLowerCase()] ?? `--docx-${themeValue}-font`;
-	return `var(${variableName}, ${WORD_DEFAULT_FONT_FAMILY})`;
+	const key = rawThemeValue.trim().toLowerCase();
+	if (!key) return null;
+	return THEME_FONT_STACK_BY_KEY[key] ?? WORD_DEFAULT_FONT_FAMILY;
 }
 
 function buildRunFontFamily(fontsNode?: XmlNode | null): string | null {
@@ -60,28 +92,40 @@ function buildRunFontFamily(fontsNode?: XmlNode | null): string | null {
 
 	const entries: string[] = [];
 	const seen = new Set<string>();
-	const appendFont = (font: string | null) => {
-		if (!font) return;
-		const normalized = font.toLowerCase();
+	const appendToken = (token: string | null) => {
+		if (!token) return;
+		const normalized = token.toLowerCase();
 		if (seen.has(normalized)) return;
 		seen.add(normalized);
-		entries.push(font);
+		entries.push(token);
+	};
+	// Una fuente explícita arrastra su clon métrico justo después, para que el
+	// navegador sustituya con los mismos anchos si no tiene la original.
+	const appendNamed = (raw: string | null | undefined) => {
+		const name = sanitizeFontFamilyName(raw);
+		if (!name) return;
+		appendToken(name);
+		for (const fallback of metricFallbacksFor(name)) appendToken(fallback);
 	};
 
-	appendFont(resolveThemeFontFamily(getAttr(fontsNode, 'asciiTheme')));
-	appendFont(resolveThemeFontFamily(getAttr(fontsNode, 'hAnsiTheme')));
-	appendFont(sanitizeFontFamilyName(getAttr(fontsNode, 'ascii')));
-	appendFont(sanitizeFontFamilyName(getAttr(fontsNode, 'hAnsi')));
-	appendFont(resolveThemeFontFamily(getAttr(fontsNode, 'eastAsiaTheme')));
-	appendFont(sanitizeFontFamilyName(getAttr(fontsNode, 'eastAsia')));
-	appendFont(
+	appendToken(resolveThemeFontFamily(getAttr(fontsNode, 'asciiTheme')));
+	appendToken(resolveThemeFontFamily(getAttr(fontsNode, 'hAnsiTheme')));
+	appendNamed(getAttr(fontsNode, 'ascii'));
+	appendNamed(getAttr(fontsNode, 'hAnsi'));
+	appendToken(resolveThemeFontFamily(getAttr(fontsNode, 'eastAsiaTheme')));
+	appendNamed(getAttr(fontsNode, 'eastAsia'));
+	appendToken(
 		resolveThemeFontFamily(getAttr(fontsNode, 'csTheme') ?? getAttr(fontsNode, 'cstheme'))
 	);
-	appendFont(sanitizeFontFamilyName(getAttr(fontsNode, 'cs')));
+	appendNamed(getAttr(fontsNode, 'cs'));
 
 	if (entries.length === 0) return null;
-	appendFont(WORD_DEFAULT_FONT_FAMILY);
-	return entries.join(', ');
+
+	// Garantizar un genérico final por si la última entrada no lo es.
+	const joined = entries.join(', ');
+	return /(?:serif|sans-serif|monospace)$/.test(joined)
+		? joined
+		: `${joined}, ${WORD_DEFAULT_FONT_FAMILY}`;
 }
 
 export function hasOnlySectionBreak(pr?: XmlNode | null): boolean {
@@ -134,11 +178,12 @@ export function getParagraphStyles(pr?: XmlNode | null): Record<string, string> 
 	const line = toNumber(getAttr(spacing, 'line'));
 	const lineRule = getAttr(spacing, 'lineRule')?.toLowerCase();
 
-	if (before != null) style['margin-top'] = `${Math.max(before * PARAGRAPH_SPACING_SCALE, 0)}px`;
-	if (after != null) style['margin-bottom'] = `${Math.max(after * PARAGRAPH_SPACING_SCALE, 0)}px`;
+	// Valores reales de Word, sin escalar (antes se multiplicaba por un fudge 0.62).
+	if (before != null) style['margin-top'] = `${Math.max(before, 0)}px`;
+	if (after != null) style['margin-bottom'] = `${Math.max(after, 0)}px`;
 	if (line != null) {
 		if (lineRule === 'auto') {
-			style['line-height'] = `${Math.max(1, line / 240)}`;
+			style['line-height'] = `${Math.max((line / 240) * FONT_NATURAL_LINE_RATIO, 1)}`;
 		} else {
 			const linePx = toTwipsPx(line);
 			if (linePx != null) style['line-height'] = `${Math.max(linePx, 1)}px`;

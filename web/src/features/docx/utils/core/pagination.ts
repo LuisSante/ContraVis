@@ -7,7 +7,6 @@ import {
 
 const PAGE_OVERFLOW_TOLERANCE_PX = 10;
 const PAGE_SPLIT_GUARD_LIMIT = 180;
-const PAGE_HEIGHT_CALIBRATION_PX = 28;
 const PAGE_SOFT_OVERFLOW_ALLOWANCE_PX = 24;
 
 function getMeaningfulNodes(parent: HTMLElement): Node[] {
@@ -236,10 +235,31 @@ export function paginateRenderedSections(targetViewer: HTMLElement): void {
 	const root = targetViewer.firstElementChild;
 	if (!(root instanceof HTMLElement)) return;
 
-	const sections = Array.from(root.children).filter(
-		(node): node is HTMLElement =>
-			node instanceof HTMLElement && node.tagName.toLowerCase() === 'section'
-	);
+	const collectSections = () =>
+		Array.from(root.children).filter(
+			(node): node is HTMLElement =>
+				node instanceof HTMLElement && node.tagName.toLowerCase() === 'section'
+		);
+
+	// Pre-pass: un salto de sección `continuous` NO abre página nueva (cambio de
+	// columnas/formato en la misma hoja). Volcamos su contenido (sin el chrome de
+	// página) al final de la sección anterior y la eliminamos, para que la
+	// paginación por altura decida los cortes reales. Sin esto, cada sección
+	// continua se convertía en una página casi vacía (p. ej. el bloque de firmas).
+	for (const section of collectSections()) {
+		if (section.dataset.docxSectionType !== 'continuous') continue;
+		const previous = section.previousElementSibling;
+		if (!(previous instanceof HTMLElement) || previous.tagName.toLowerCase() !== 'section') {
+			continue;
+		}
+		for (const child of Array.from(section.childNodes)) {
+			if (child instanceof HTMLElement && child.dataset.docxPageChrome === 'true') continue;
+			previous.appendChild(child);
+		}
+		section.remove();
+	}
+
+	const sections = collectSections();
 
 	for (const section of sections) {
 		const declaredHeight =
@@ -252,8 +272,9 @@ export function paginateRenderedSections(targetViewer: HTMLElement): void {
 					? measuredHeight
 					: null;
 		if (!pageHeight) continue;
-		// Word and browser font metrics differ slightly; use a small calibrated height
-		// to avoid premature splits that leave a mostly empty trailing area.
-		splitSectionIntoPages(section, pageHeight + PAGE_HEIGHT_CALIBRATION_PX);
+		// Altura de página real del docx (pgSz). Con fuentes y `line-height`
+		// métricamente correctos no hace falta calibrar: la paginación coincide
+		// con Word de forma natural (el soft-overflow ya evita cortes prematuros).
+		splitSectionIntoPages(section, pageHeight);
 	}
 }

@@ -539,8 +539,12 @@ export function createRenderer(
 
 	const applyShrinkToTextBox = (element: HTMLElement) => {
 		element.dataset.docxShrinkToText = 'true';
+		// Nivel bloque (no inline): la caja abraza el ancho del texto pero sigue
+		// apilando verticalmente como un párrafo de Word. Con inline-block, dos
+		// párrafos cortos consecutivos fluían en la MISMA línea (p. ej. "products."
+		// junto a "NOW, THEREFORE…"), rompiendo el layout 1:1.
 		element.style.display =
-			element.dataset.docxListLayout === 'hanging-grid' ? 'inline-grid' : 'inline-block';
+			element.dataset.docxListLayout === 'hanging-grid' ? 'grid' : 'block';
 		element.style.width = 'fit-content';
 		element.style.maxWidth = '100%';
 		element.style.verticalAlign = 'top';
@@ -836,6 +840,14 @@ export function createRenderer(
 					section.style.position = 'relative';
 					section.dataset.docxPageWidthPx = String(layout.width);
 					section.dataset.docxPageHeightPx = String(layout.height);
+					// Tipo de salto de sección: `continuous` NO abre página nueva
+					// (cambio de columnas/formato en la misma hoja); la paginación
+					// fusiona estas secciones con la anterior.
+					const sectionType = getAttr(
+						findChild((safeProps.node as XmlNode) ?? null, 'type'),
+						'val'
+					)?.toLowerCase();
+					if (sectionType) section.dataset.docxSectionType = sectionType;
 					const pageChrome = createPageChromeLayer(headerPart, footerPart);
 					if (pageChrome) section.appendChild(pageChrome);
 					appendChildren(section, children);
@@ -995,6 +1007,19 @@ export function createRenderer(
 						paragraph.classList.add('min-h-[1px]');
 					}
 					appendChildren(paragraph, children);
+					// Word: un párrafo vacío ocupa una línea (su marca de párrafo). En HTML
+					// un <p> vacío colapsa a altura 0, lo que pega los párrafos vecinos
+					// (p. ej. las definiciones separadas por párrafos en blanco). Le damos
+					// la altura de una línea para reproducir el espaciado del documento.
+					if (
+						!hasOnlySectionBreak(pr) &&
+						(paragraph.textContent ?? '').trim() === '' &&
+						!paragraph.querySelector(
+							'img,table,svg,canvas,video,audio,object,iframe,br'
+						)
+					) {
+						paragraph.style.minHeight = '1lh';
+					}
 					if (shouldShrinkParagraphBox(paragraph, pr)) {
 						applyShrinkToTextBox(paragraph);
 					}
