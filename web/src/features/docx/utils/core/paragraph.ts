@@ -1,6 +1,6 @@
-export { appendChildren, normalizeEditableText, setStyles, toNodeList } from '@/features/docx/utils/core/dom';
+export { appendChildren, normalizeEditableText, setStyles, toNodeList } from './dom';
 
-export { resolveDocx4jsFromRequire } from '@/features/docx/utils/core/loader';
+export { resolveDocx4jsFromRequire } from './loader';
 
 export {
 	getParagraphStyles,
@@ -8,7 +8,7 @@ export {
 	getSectionLayout,
 	hasOnlySectionBreak,
 	parseBorder
-} from '@/features/docx/utils/core/styles';
+} from './styles';
 
 export {
 	findChild,
@@ -19,4 +19,4 @@ export {
 	toBorderPx,
 	toNumber,
 	toTwipsPx
-} from '@/features/docx/utils/core/xml';
+} from './xml';

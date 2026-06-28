@@ -1,4 +1,4 @@
-import type { XmlNode } from '@/features/docx/utils/core/types';
+import type { XmlNode } from './types';
 import {
 	findChild,
 	getAttr,
@@ -8,7 +8,7 @@ import {
 	toBorderPx,
 	toNumber,
 	toTwipsPx
-} from '@/features/docx/utils/core/xml';
+} from './xml';
 
 // Colores de `w:highlight` (resaltado de texto OOXML). Conocimiento puro de docx,
 // interno al motor de render.

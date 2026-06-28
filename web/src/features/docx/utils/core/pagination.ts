@@ -1,9 +1,9 @@
-import { parsePxValue } from '@/features/docx/utils/core/dom';
+import { parsePxValue } from './dom';
 import {
 	getLastMeaningfulElement,
 	getLastMeaningfulNode,
 	isIgnorablePageNode
-} from '@/features/docx/utils/core/tab-stops';
+} from './tab-stops';
 
 const PAGE_OVERFLOW_TOLERANCE_PX = 10;
 const PAGE_SPLIT_GUARD_LIMIT = 180;

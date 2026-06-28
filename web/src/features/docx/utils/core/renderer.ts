@@ -3,11 +3,11 @@ import type {
 	ParagraphEditState,
 	ParagraphKind,
 	XmlNode
-} from '@/features/docx/utils/core/types';
-import { ensureNodeEditState } from '@/features/docx/utils/core/edit-state';
-import { getRelationsCount, updateRelationBadge } from '@/features/docx/utils/core/docx-page';
-import { appendChildren, normalizeEditableText, setStyles, toNodeList } from '@/features/docx/utils/core/dom';
-import { getAttr, findChild, localName, toTwipsPx, toNumber } from '@/features/docx/utils/core/xml';
+} from './types';
+import { ensureNodeEditState } from './edit-state';
+import { getRelationsCount, updateRelationBadge } from './docx-page';
+import { appendChildren, normalizeEditableText, setStyles, toNodeList } from './dom';
+import { getAttr, findChild, localName, toTwipsPx, toNumber } from './xml';
 import {
 	getParagraphTabStops,
 	getParagraphStyleId,
@@ -16,7 +16,7 @@ import {
 	getSectionLayout,
 	hasOnlySectionBreak,
 	parseBorder
-} from '@/features/docx/utils/core/styles';
+} from './styles';
 
 export type DocxRendererCallbacks = {
 	onNodeUpsert: (node: ParagraphNode) => void;

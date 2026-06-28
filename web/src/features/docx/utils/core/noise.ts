@@ -1,4 +1,4 @@
-import { normalizeEditableText } from '@/features/docx/utils/core/dom';
+import { normalizeEditableText } from './dom';
 
 const PAGE_NUMBER_ONLY_RE = /^(?:\d+|[ivxlcdm]{1,8})$/i;
 const PAGE_LABEL_RE = /^(?:page|pagina|p[aá]g\.?)\s*\d+(?:\s*(?:\/|of|de)\s*\d+)?$/i;

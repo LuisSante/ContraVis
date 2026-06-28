@@ -1,4 +1,4 @@
-import type { Docx4jsBrowserModule } from '@/features/docx/utils/core/types';
+import type { Docx4jsBrowserModule } from './types';
 
 export function resolveDocx4jsFromRequire(): Docx4jsBrowserModule | null {
 	const maybeRequire = (

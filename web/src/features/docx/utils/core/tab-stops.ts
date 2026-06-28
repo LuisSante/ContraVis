@@ -1,4 +1,4 @@
-import { parsePxValue, normalizeEditableText } from '@/features/docx/utils/core/dom';
+import { parsePxValue, normalizeEditableText } from './dom';
 
 const DOCX_DEFAULT_TAB_INTERVAL_PX = 48;
 

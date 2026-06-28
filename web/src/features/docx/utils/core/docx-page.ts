@@ -1,5 +1,5 @@
-import type { Docx4jsBrowserModule } from '@/features/docx/utils/core/types';
-import { resolveDocx4jsFromRequire } from '@/features/docx/utils/core/loader';
+import type { Docx4jsBrowserModule } from './types';
+import { resolveDocx4jsFromRequire } from './loader';
 
 /**
  * Helpers de DOM del visor docx (carga del bundle docx4js de navegador y

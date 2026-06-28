@@ -1,5 +1,5 @@
-import { normalizeEditableText } from '@/features/docx/utils/core/dom';
-import type { ParagraphEditState } from '@/features/docx/utils/core/types';
+import { normalizeEditableText } from './dom';
+import type { ParagraphEditState } from './types';
 
 /**
  * Garantiza una entrada de estado de edición para un párrafo (idempotente).

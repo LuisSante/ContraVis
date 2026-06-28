@@ -1,4 +1,4 @@
-import type { XmlNode } from '@/features/docx/utils/core/types';
+import type { XmlNode } from './types';
 
 export function localName(tag?: string): string {
 	return tag?.split(':').pop()?.toLowerCase() ?? '';
