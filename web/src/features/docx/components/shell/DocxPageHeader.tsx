@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+import { FileText, ChevronLeft, Coins } from 'lucide-react';
+
 import {
 	Select,
 	SelectContent,
@@ -29,27 +32,39 @@ export function DocxPageHeader({
 	modelDisabled,
 }: DocxPageHeaderProps) {
 	return (
-		<header className="flex flex-none items-center gap-3 border-b border-gray-200/90 bg-white/90 px-4 py-3 shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur supports-[backdrop-filter]:bg-white/75">
+		<header className="flex flex-none items-center gap-3 border-b border-border bg-background/85 px-4 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+			<Link
+				href="/"
+				className="flex size-7 flex-none items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+				aria-label="Back to documents"
+				title="Back to documents"
+			>
+				<ChevronLeft className="size-4" />
+			</Link>
+
 			<div className="flex min-w-0 flex-1 items-center gap-2">
-				<p className="shrink-0 text-[11px] text-gray-500">Document</p>
-				<div className="min-w-0 truncate text-sm font-medium text-gray-800">
+				<span className="flex size-7 flex-none items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+					<FileText className="size-4" />
+				</span>
+				<div className="min-w-0 truncate text-sm font-medium text-foreground">
 					{documentName || 'No document selected'}
 				</div>
 			</div>
 
-			<div className="flex shrink-0 items-center gap-3">
+			<div className="flex shrink-0 items-center gap-2.5">
 				{costLabel && (
 					<div
-						className="text-[12px] font-medium text-gray-500"
+						className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
 						title="Total accumulated real LLM usage cost"
 					>
+						<Coins className="size-3 text-blue-500" />
 						{costLabel}
 					</div>
 				)}
 				<Select value={model} onValueChange={onModelChange} disabled={modelDisabled}>
 					<SelectTrigger
 						size="sm"
-						className="h-7 w-[88px] shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+						className="h-7 w-[88px] shrink-0 px-2 text-[11px]"
 						title="Global model for Contradiction Analysis and Paragraph Explanation"
 					>
 						<SelectValue />

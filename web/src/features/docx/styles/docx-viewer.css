@@ -10,17 +10,30 @@
 	.docx-relations-badge-host::before {
 		content: '';
 		position: absolute;
-		right: var(--docx-relations-guide-right, -14px);
-		top: 2px;
-		bottom: 2px;
+		right: var(--docx-relations-guide-right, -13px);
+		top: -2px;
+		bottom: -2px;
 		width: 2px;
 		border-radius: 9999px;
-		background: #d1d5db;
+		background: linear-gradient(
+			to bottom,
+			transparent 0%,
+			#e2e8f0 18%,
+			#e2e8f0 82%,
+			transparent 100%
+		);
 		pointer-events: none;
+		transition: background 140ms ease;
 	}
 
 	.docx-relations-badge-host[data-relations-tone='linked']::before {
-		background: #60a5fa;
+		background: linear-gradient(
+			to bottom,
+			transparent 0%,
+			#60a5fa 18%,
+			#60a5fa 82%,
+			transparent 100%
+		);
 	}
 
 	.docx-relations-badge-host::after {
