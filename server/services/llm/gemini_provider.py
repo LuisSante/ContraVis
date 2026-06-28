@@ -10,7 +10,7 @@ class GeminiProvider(LLMProvider):
 
     def __init__(self, *, api_key: str, model: str = "gemini-2.5-flash"):
         try:
-            from google import genai 
+            from google import genai
         except ImportError as exc: 
             raise RuntimeError(
                 "Gemini provider requires the `google-genai` package. "

@@ -9,7 +9,6 @@ dependencies = [
     "datasets>=5.0.0",
     "evaluate>=0.4.6",
     "fastapi>=0.138.1",
-    "fuzzywuzzy>=0.18.0",
     "google-genai>=2.10.0",
     "llama-cloud>=2.1",
     "llama-parse>=0.5.20",
@@ -18,7 +17,6 @@ dependencies = [
     "pydantic>=2.13.4",
     "pydantic-settings>=2.14.2",
     "python-dotenv>=1.2.2",
-    "python-levenshtein>=0.27.3",
     "python-multipart>=0.0.32",
     "sentence-transformers>=5.6.0",
     "spacy>=3.8.14",
@@ -41,3 +39,7 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+# FastAPI usa llamadas en defaults (Query/Depends/...) a propósito → no es B008.
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Query", "fastapi.Depends", "fastapi.Path", "fastapi.Body", "fastapi.Header", "fastapi.Form"]

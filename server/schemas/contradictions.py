@@ -1,5 +1,7 @@
-from typing import List, Literal, Optional
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
 from schemas.common import (
     AssistantProvider,
     ContradictionGraphMode,
@@ -20,8 +22,8 @@ class ContradictionEvidence(BaseModel):
 class ContradictionFinding(BaseModel):
     confidence: int = Field(ge=0, le=100)
     brief_reason: str = ""
-    contradiction_type: Optional[ContradictionTaxonomyType] = None
-    evidence: Optional[ContradictionEvidence] = None
+    contradiction_type: ContradictionTaxonomyType | None = None
+    evidence: ContradictionEvidence | None = None
 
 
 class ContradictionParagraphResult(BaseModel):
@@ -29,9 +31,9 @@ class ContradictionParagraphResult(BaseModel):
     contradiction: bool
     confidence: int = Field(ge=0, le=100)
     brief_reason: str = ""
-    contradiction_type: Optional[ContradictionTaxonomyType] = None
-    evidence: Optional[ContradictionEvidence] = None
-    contradictions: List[ContradictionFinding] = Field(default_factory=list)
+    contradiction_type: ContradictionTaxonomyType | None = None
+    evidence: ContradictionEvidence | None = None
+    contradictions: list[ContradictionFinding] = Field(default_factory=list)
 
 
 class ContradictionAnalysisRequest(BaseModel):
@@ -39,7 +41,7 @@ class ContradictionAnalysisRequest(BaseModel):
     graph: Graph
     provider: AssistantProvider = "openai"
     temperature: float = 0.1
-    model: Optional[str] = None
+    model: str | None = None
     mode: ContradictionGraphMode = "without_kg"
 
 
@@ -47,9 +49,9 @@ class ContradictionAnalysisResponse(BaseModel):
     documentId: str
     provider: AssistantProvider
     temperature: float
-    model: Optional[str] = None
+    model: str | None = None
     mode: ContradictionGraphMode = "without_kg"
-    paragraphResults: List[ContradictionParagraphResult]
+    paragraphResults: list[ContradictionParagraphResult]
     rawResponse: str
 
 
@@ -57,4 +59,4 @@ class SavedContradictionsResponse(BaseModel):
     documentId: str
     sourceFile: str
     mode: ContradictionGraphMode
-    paragraphResults: List[ContradictionParagraphResult]
+    paragraphResults: list[ContradictionParagraphResult]

@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from schemas.types import (
@@ -17,9 +18,8 @@ from schemas.types import (
     SimplifySelectionRequest,
     SimplifySelectionResponse,
 )
-from services.llm.factory import LLMProviderFactory
 from services.llm.cost_estimator import estimate_model_cost_usd, estimate_tokens, format_cost
-import logging
+from services.llm.factory import LLMProviderFactory
 
 logger = logging.getLogger(__name__)
 
@@ -437,7 +437,7 @@ def _build_system_prompt(mode: str) -> str:
     }.get(mode, "Explain in plain language.")
 
     logger.info("\t\t SYSTEM PROMPT")
-    logger.info ((
+    logger.info (
         f"\n\n\n"
         "You are a What-if Contract Assistant. "
         "Use only the provided contract paragraph context. "
@@ -448,7 +448,7 @@ def _build_system_prompt(mode: str) -> str:
         "If information is incomplete, state that clearly but still cite the best supporting paragraphs. "
         f"{mode_instruction}"
         f"\n\n\n"
-    ))
+    )
     logger.info("======================")
 
     return (
@@ -787,7 +787,7 @@ def _append_simplify_audit_log(
 ) -> None:
     SIMPLIFY_AUDIT_LOG.append(
         {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "document_id": payload.documentId,
             "provider": payload.provider,
             "paragraph_id": evidence.paragraph_id,

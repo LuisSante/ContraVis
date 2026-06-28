@@ -2,8 +2,6 @@ import re
 from pathlib import Path
 
 CUAD_DOC_DIR = Path("../infra/CUAD_v1/full_contract_docx_contradictions")
-EDITED_PDF_DIR = Path("../infra/edited_pdfs")
-EDITED_DOC_DIR = Path("../infra/edited_docs")
 
 REFERENCE_PATTERNS = [
     ("section", re.compile(r"\b[Ss]ection\s+(\d+(?:\.\d+)*)\b")),

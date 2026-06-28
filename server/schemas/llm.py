@@ -1,9 +1,10 @@
-from typing import Literal, Optional
-from pydantic import BaseModel
-from schemas.common import AssistantProvider
-from schemas.assistant import AssistantChatRequest, SimplifySelectionRequest
-from schemas.contradictions import ContradictionAnalysisRequest
+from typing import Literal
 
+from pydantic import BaseModel
+
+from schemas.assistant import AssistantChatRequest, SimplifySelectionRequest
+from schemas.common import AssistantProvider
+from schemas.contradictions import ContradictionAnalysisRequest
 
 LlmEstimateCallType = Literal[
     "assistant_chat",
@@ -15,9 +16,9 @@ LlmEstimateCallType = Literal[
 
 class LlmEstimateRequest(BaseModel):
     callType: LlmEstimateCallType
-    assistantChat: Optional[AssistantChatRequest] = None
-    simplifySelection: Optional[SimplifySelectionRequest] = None
-    contradictionAnalysis: Optional[ContradictionAnalysisRequest] = None
+    assistantChat: AssistantChatRequest | None = None
+    simplifySelection: SimplifySelectionRequest | None = None
+    contradictionAnalysis: ContradictionAnalysisRequest | None = None
 
 
 class LlmEstimateResponse(BaseModel):
@@ -27,7 +28,7 @@ class LlmEstimateResponse(BaseModel):
     estimatedInputTokens: int
     estimatedOutputTokens: int
     estimatedTotalTokens: int
-    estimatedCostUsd: Optional[float] = None
+    estimatedCostUsd: float | None = None
     estimatedCostUsdFormatted: str
 
 

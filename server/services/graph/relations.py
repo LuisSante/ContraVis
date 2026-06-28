@@ -1,14 +1,14 @@
-from sentence_transformers import SentenceTransformer, util
-from collections import Counter
-from core.config import settings
-from core.constants import REFERENCE_PATTERNS
-from schemas.types import Graph, Node, Edge
-from typing import List
-
 import json
+import logging
 import os
 import re
-import logging
+from collections import Counter
+
+from sentence_transformers import SentenceTransformer, util
+
+from core.config import settings
+from core.constants import REFERENCE_PATTERNS
+from schemas.types import Edge, Graph, Node
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ def create_folder(folder):
         os.makedirs(folder)
 
 def read_txt(path_txt):
-    with open(path_txt, 'r', encoding='utf-8') as f:
+    with open(path_txt, encoding='utf-8') as f:
         txt = f.read()
     return txt
 
@@ -426,8 +426,8 @@ def should_skip_semantic_similarity(text: str, repeat_count: int) -> bool:
 
 def generate_graph_data(paragraphs_data: list) -> Graph:
     model = SentenceTransformer('all-MiniLM-L6-v2')
-    nodes: List[Node] = []
-    edges: List[Edge] = []
+    nodes: list[Node] = []
+    edges: list[Edge] = []
     
     for p in paragraphs_data:
         paragraph_text = p.get("text", "").strip()

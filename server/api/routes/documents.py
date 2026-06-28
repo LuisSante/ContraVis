@@ -1,16 +1,13 @@
-from collections import Counter
-import json
 import logging
 import re
+from collections import Counter
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
+from api.deps import document_store
 from schemas.types import DatasetDocument
 from services.graph.relations import generate_graph_data
-from core.config import settings
-from core.constants import CUAD_DOC_DIR
-from api.deps import document_store
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -37,30 +34,6 @@ def is_repeated_boundary_candidate(text: str) -> bool:
         return False
     words = [token for token in text.split(" ") if token]
     return 0 < len(words) <= 22
-
-
-def safe_graph_filename(value: str) -> str:
-    token = re.sub(r"[^a-zA-Z0-9._-]+", "_", (value or "").strip())
-    token = re.sub(r"_+", "_", token).strip("._")
-    return token or "unknown_document"
-
-
-def save_graph_output_snapshot(*, document_id: str | None, graph_payload: dict) -> None:
-    output_dir = settings.GRAPH_OUTPUT_DIR
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    file_stem = str(document_id or "unknown_document")
-    doc_path = document_store.get_path(file_stem)
-    if doc_path is not None:
-        try:
-            relative = doc_path.relative_to(CUAD_DOC_DIR).as_posix()
-            file_stem = relative.rsplit(".", 1)[0].replace("/", "__")
-        except Exception:
-            file_stem = doc_path.stem
-
-    output_path = output_dir / f"{safe_graph_filename(file_stem)}.json"
-    with output_path.open("w", encoding="utf-8") as handle:
-        json.dump(graph_payload, handle, ensure_ascii=False, indent=2)
 
 
 def detect_repeated_boundary_texts(
@@ -188,11 +161,6 @@ async def process_document(data: dict):
         "graph": graph_obj.model_dump(),
         "cache": cache_meta,
     }
-
-    # try:
-    #     save_graph_output_snapshot(document_id=doc_id, graph_payload=response["graph"])
-    # except Exception:
-    #     logger.exception("Failed to save graph output snapshot for document_id=%s", doc_id)
 
     return response
 

@@ -2,11 +2,11 @@
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-from schemas.types import ContradictionAnalysisResponse, ContradictionParagraphResult
 from core.config import settings
+from schemas.types import ContradictionAnalysisResponse, ContradictionParagraphResult
 
 _ALLOWED_CONTRADICTION_TYPES = {
     "temporal",
@@ -78,7 +78,7 @@ def save_analyzed_contradictions(
         "provider": response.provider,
         "temperature": response.temperature,
         "mode": _normalize_mode(response.mode),
-        "savedAt": datetime.now(timezone.utc).isoformat(),
+        "savedAt": datetime.now(UTC).isoformat(),
         "paragraphResults": [
             item.model_dump()
             for item in response.paragraphResults

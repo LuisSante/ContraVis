@@ -1,15 +1,17 @@
+from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 
 from core.logging import setup_logging
 
 load_dotenv()
 setup_logging()
 
-from api import api_router
-from api.deps import document_store
+from api import api_router  # noqa: E402  (tras load_dotenv/setup_logging, a propósito)
+from api.deps import document_store  # noqa: E402
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -48,7 +50,3 @@ def health():
             "api": {"status": "ok"},
         },
     }
-
-@app.get("/documents/init")
-def home():
-    return {"message": "Document initialization endpoint"}

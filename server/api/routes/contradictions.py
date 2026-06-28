@@ -2,6 +2,7 @@ import logging
 
 from fastapi import APIRouter, HTTPException, Query
 
+from api.deps import document_store
 from schemas.types import (
     ContradictionAnalysisRequest,
     ContradictionAnalysisResponse,
@@ -13,7 +14,6 @@ from services.contradictions.saved import (
     load_saved_contradictions_for_document,
     save_analyzed_contradictions,
 )
-from api.deps import document_store
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

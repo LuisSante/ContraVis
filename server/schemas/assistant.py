@@ -1,5 +1,7 @@
-from typing import List, Literal, Optional
+from typing import Literal
+
 from pydantic import BaseModel, Field
+
 from schemas.common import (
     AssistantMessageRole,
     AssistantMode,
@@ -17,9 +19,9 @@ class AssistantParagraphNode(BaseModel):
 
 class AssistantRelatedParagraph(BaseModel):
     id: str
-    relationTypes: List[Literal["reference", "semantic_similarity"]] = Field(default_factory=list)
-    semanticScore: Optional[float] = None
-    references: List[str] = Field(default_factory=list)
+    relationTypes: list[Literal["reference", "semantic_similarity"]] = Field(default_factory=list)
+    semanticScore: float | None = None
+    references: list[str] = Field(default_factory=list)
 
 
 class AssistantHistoryMessage(BaseModel):
@@ -33,24 +35,24 @@ class AssistantChatRequest(BaseModel):
     mode: AssistantMode = "explain"
     scope: AssistantScope = "selected"
     provider: AssistantProvider = "gemini"
-    model: Optional[str] = None
-    selectedParagraphId: Optional[str] = None
-    relatedParagraphs: List[AssistantRelatedParagraph] = Field(default_factory=list)
-    paragraphNodes: List[AssistantParagraphNode]
-    history: List[AssistantHistoryMessage] = Field(default_factory=list)
+    model: str | None = None
+    selectedParagraphId: str | None = None
+    relatedParagraphs: list[AssistantRelatedParagraph] = Field(default_factory=list)
+    paragraphNodes: list[AssistantParagraphNode]
+    history: list[AssistantHistoryMessage] = Field(default_factory=list)
 
 
 class AssistantCitation(BaseModel):
     id: str
     excerpt: str
-    page: Optional[int] = None
-    paragraph_enum: Optional[int] = None
+    page: int | None = None
+    paragraph_enum: int | None = None
 
 
 class AssistantChatResponse(BaseModel):
     answer: str
-    citations: List[AssistantCitation]
-    suggestedQuestions: List[str]
+    citations: list[AssistantCitation]
+    suggestedQuestions: list[str]
     mode: AssistantMode
     scope: AssistantScope
     provider: AssistantProvider
@@ -71,11 +73,11 @@ class SimplifyAudit(BaseModel):
 class SimplifyRelatedParagraph(BaseModel):
     id: str
     text: str
-    paragraph_enum: Optional[int] = None
-    page: Optional[int] = None
-    relationTypes: List[Literal["reference", "semantic_similarity"]] = Field(default_factory=list)
-    semanticScore: Optional[float] = None
-    references: List[str] = Field(default_factory=list)
+    paragraph_enum: int | None = None
+    page: int | None = None
+    relationTypes: list[Literal["reference", "semantic_similarity"]] = Field(default_factory=list)
+    semanticScore: float | None = None
+    references: list[str] = Field(default_factory=list)
 
 
 class SimplifySelectionRequest(BaseModel):
@@ -85,8 +87,8 @@ class SimplifySelectionRequest(BaseModel):
     paragraphText: str
     selectionStart: int = 0
     selectionEnd: int = 0
-    contradictionReason: Optional[str] = None
-    relatedParagraphs: List[SimplifyRelatedParagraph] = Field(default_factory=list)
+    contradictionReason: str | None = None
+    relatedParagraphs: list[SimplifyRelatedParagraph] = Field(default_factory=list)
 
 
 class SimplifySelectionResponse(BaseModel):

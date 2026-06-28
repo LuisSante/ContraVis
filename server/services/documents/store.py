@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from pathlib import Path
 import logging
 import re
+from collections import defaultdict
+from pathlib import Path
 
-from schemas.types import DatasetDocument
 from core.constants import CUAD_DOC_DIR
+from schemas.types import DatasetDocument
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class DocumentStore:
 
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(DocumentStore, cls).__new__(cls)
+            cls._instance = super().__new__(cls)
             cls._instance._documents = []
             cls._instance._path_map = {}
             cls._instance._canonical_id_by_alias = {}

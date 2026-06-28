@@ -1,4 +1,5 @@
-from typing import List, Literal, Optional
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -26,11 +27,11 @@ class Edge(BaseModel):
     source: str
     target: str
     type: str
-    score: Optional[float] = None
-    ref_label: Optional[str] = None
-    ref_value: Optional[str] = None
+    score: float | None = None
+    ref_label: str | None = None
+    ref_value: str | None = None
 
 
 class Graph(BaseModel):
-    nodes: List[Node]
-    edges: List[Edge]
+    nodes: list[Node]
+    edges: list[Edge]
