@@ -9,8 +9,10 @@ from core.logging import setup_logging
 load_dotenv()
 setup_logging()
 
-from api import api_router  # noqa: E402  (tras load_dotenv/setup_logging, a propósito)
-from api.deps import document_store  # noqa: E402
+from api import api_router
+from api.deps import document_store
+from core.config import settings
+from core.errors import register_exception_handlers
 
 
 @asynccontextmanager
@@ -21,16 +23,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = [
-    "http://localhost:5173",  # legacy SvelteKit client
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",  # Next.js frontend (web/)
-    "http://127.0.0.1:3000",
-]
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

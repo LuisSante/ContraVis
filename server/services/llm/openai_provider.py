@@ -13,7 +13,14 @@ logger = logging.getLogger(__name__)
 class OpenAIProvider(LLMProvider):
     name = "openai"
 
-    def __init__(self, *, api_key: str, model: str = "gpt-4o-mini"):
+    def __init__(
+        self,
+        *,
+        api_key: str,
+        model: str = "gpt-4o-mini",
+        timeout: float | None = None,
+        max_retries: int | None = None,
+    ):
         try:
             from openai import OpenAI
         except ImportError as exc:
@@ -21,7 +28,13 @@ class OpenAIProvider(LLMProvider):
                 "OpenAI provider requires the `openai` package. Install dependencies and retry."
             ) from exc
 
-        self._client = OpenAI(api_key=api_key)
+        client_kwargs: dict[str, Any] = {"api_key": api_key}
+        if timeout is not None:
+            client_kwargs["timeout"] = timeout
+        if max_retries is not None:
+            client_kwargs["max_retries"] = max_retries
+
+        self._client = OpenAI(**client_kwargs)
         self._model = model
 
     def generate(self, *, system_prompt: str, user_prompt: str, temperature: float = 0.2) -> str:

@@ -1,11 +1,3 @@
-"""Settings de la app (variables de entorno tipadas).
-
-Usa pydantic-settings: lee de variables de entorno / `.env` y valida/normaliza.
-Las constantes de código (rutas fijas, regex) viven en `core/constants.py`.
-
-Uso: `from core.config import settings` → `settings.NEO4J_URI`, etc.
-"""
-
 from pathlib import Path
 
 from pydantic import field_validator
@@ -29,6 +21,16 @@ class Settings(BaseSettings):
     SEMANTIC_RELATED_MODE: str = "top_k"
     SEMANTIC_TOP_K: int = 5
     SEMANTIC_SIMILARITY_THRESHOLD: float = 0.79
+
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
+
+    LLM_TIMEOUT_SECONDS: float = 60.0
+    LLM_MAX_RETRIES: int = 2
 
     @field_validator("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
     @classmethod
@@ -55,6 +57,13 @@ class Settings(BaseSettings):
     @classmethod
     def _clamp_threshold(cls, value: float) -> float:
         return max(0.0, min(1.0, value))
+
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def _split_origins(cls, value):
+        if isinstance(value, str) and not value.strip().startswith("["):
+            return [item.strip() for item in value.split(",") if item.strip()]
+        return value
 
 
 settings = Settings()

@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
 from schemas.types import (
     LlmEstimateRequest,
@@ -21,41 +21,35 @@ logger = logging.getLogger(__name__)
 
 @router.post("/llm/estimate", response_model=LlmEstimateResponse)
 def estimate_llm_request(payload: LlmEstimateRequest):
-    try:
-        if payload.callType == "assistant_chat":
-            if payload.assistantChat is None:
-                raise RuntimeError("assistantChat payload is required")
-            estimate = estimate_assistant_chat_request(payload.assistantChat)
-        elif payload.callType == "assistant_simplify":
-            if payload.simplifySelection is None:
-                raise RuntimeError("simplifySelection payload is required")
-            estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=False)
-        elif payload.callType == "assistant_fix_contradiction":
-            if payload.simplifySelection is None:
-                raise RuntimeError("simplifySelection payload is required")
-            estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=True)
-        elif payload.callType == "contradictions_analyze":
-            if payload.contradictionAnalysis is None:
-                raise RuntimeError("contradictionAnalysis payload is required")
-            estimate = estimate_contradiction_analysis_request(payload.contradictionAnalysis)
-        else:
-            raise RuntimeError("Unsupported callType")
+    if payload.callType == "assistant_chat":
+        if payload.assistantChat is None:
+            raise RuntimeError("assistantChat payload is required")
+        estimate = estimate_assistant_chat_request(payload.assistantChat)
+    elif payload.callType == "assistant_simplify":
+        if payload.simplifySelection is None:
+            raise RuntimeError("simplifySelection payload is required")
+        estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=False)
+    elif payload.callType == "assistant_fix_contradiction":
+        if payload.simplifySelection is None:
+            raise RuntimeError("simplifySelection payload is required")
+        estimate = estimate_simplify_request(payload.simplifySelection, fix_contradiction=True)
+    elif payload.callType == "contradictions_analyze":
+        if payload.contradictionAnalysis is None:
+            raise RuntimeError("contradictionAnalysis payload is required")
+        estimate = estimate_contradiction_analysis_request(payload.contradictionAnalysis)
+    else:
+        raise RuntimeError("Unsupported callType")
 
-        return LlmEstimateResponse(
-            callType=payload.callType,
-            provider=estimate["provider"],
-            model=estimate["model"],
-            estimatedInputTokens=estimate["estimated_input_tokens"],
-            estimatedOutputTokens=estimate["estimated_output_tokens"],
-            estimatedTotalTokens=estimate["estimated_total_tokens"],
-            estimatedCostUsd=estimate["estimated_cost_usd"],
-            estimatedCostUsdFormatted=estimate["estimated_cost_usd_formatted"],
-        )
-    except RuntimeError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        logger.exception("Unexpected llm-estimate error")
-        raise HTTPException(status_code=500, detail="Failed to estimate LLM request") from exc
+    return LlmEstimateResponse(
+        callType=payload.callType,
+        provider=estimate["provider"],
+        model=estimate["model"],
+        estimatedInputTokens=estimate["estimated_input_tokens"],
+        estimatedOutputTokens=estimate["estimated_output_tokens"],
+        estimatedTotalTokens=estimate["estimated_total_tokens"],
+        estimatedCostUsd=estimate["estimated_cost_usd"],
+        estimatedCostUsdFormatted=estimate["estimated_cost_usd_formatted"],
+    )
 
 
 @router.get("/llm/cost/total", response_model=LlmUsageTotalResponse)

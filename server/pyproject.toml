@@ -40,6 +40,10 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+# main.py importa después de load_dotenv()/setup_logging() a propósito → no es E402.
+[tool.ruff.lint.per-file-ignores]
+"main.py" = ["E402"]
+
 # FastAPI usa llamadas en defaults (Query/Depends/...) a propósito → no es B008.
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = ["fastapi.Query", "fastapi.Depends", "fastapi.Path", "fastapi.Body", "fastapi.Header", "fastapi.Form"]

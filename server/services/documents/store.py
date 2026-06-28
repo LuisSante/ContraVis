@@ -29,6 +29,11 @@ class DocumentStore:
             p for p in base_dir.rglob("*") if p.is_file() and p.suffix.lower() == ".docx"
         )
 
+    def ensure_initialized(self):
+        """Inicializa el store si aún no lo está (idempotente)."""
+        if not self._initialized:
+            self.initialize()
+
     def initialize(self):
         if self._initialized:
             return

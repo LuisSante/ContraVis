@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class DatasetDocument(BaseModel):
@@ -35,3 +35,33 @@ class Edge(BaseModel):
 class Graph(BaseModel):
     nodes: list[Node]
     edges: list[Edge]
+
+
+class ProcessElement(BaseModel):
+    """Elemento (párrafo) de una página tal como lo envía el visor docx."""
+
+    id: str | None = None
+    text: str = ""
+
+
+class ProcessPage(BaseModel):
+    pageNumber: int | None = None
+    elements: list[ProcessElement] = Field(default_factory=list)
+
+
+class ProcessDocumentRequest(BaseModel):
+    documentId: str
+    pages: list[ProcessPage] = Field(default_factory=list)
+
+
+class ProcessCacheMeta(BaseModel):
+    enabled: bool = False
+    hit: bool = False
+    key: str | None = None
+
+
+class ProcessDocumentResponse(BaseModel):
+    status: str = "success"
+    documentId: str
+    graph: Graph
+    cache: ProcessCacheMeta = Field(default_factory=ProcessCacheMeta)

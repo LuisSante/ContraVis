@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Providers } from '@/app/providers';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { LoadingOverlay } from '@/components/common/LoadingOverlay';
 import '@/styles/globals.css';
@@ -15,10 +16,12 @@ export default function RootLayout({
 	return (
 		<html lang="en" className="h-full antialiased">
 			<body className="min-h-full">
-				<TooltipProvider>
-					<LoadingOverlay />
-					{children}
-				</TooltipProvider>
+				<Providers>
+					<TooltipProvider>
+						<LoadingOverlay />
+						{children}
+					</TooltipProvider>
+				</Providers>
 			</body>
 		</html>
 	);

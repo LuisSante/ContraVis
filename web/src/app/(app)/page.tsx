@@ -1,35 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { DocumentIcon } from '@/components/common/icons';
-import { listDocuments } from '@/services/documents';
-import type { DocumentMeta } from '@/types/document';
+import { useDocuments } from '@/hooks/useDocuments';
 
 export default function Home() {
-	const [documents, setDocuments] = useState<DocumentMeta[]>([]);
+	const { data, isPending, isError } = useDocuments();
+	const documents = useMemo(() => data ?? [], [data]);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState('');
-
-	useEffect(() => {
-		let active = true;
-		listDocuments()
-			.then((docs) => {
-				if (active) setDocuments(docs);
-			})
-			.catch((err) => {
-				console.error(err);
-				if (active) setError('Could not load CUAD documents from backend.');
-			})
-			.finally(() => {
-				if (active) setLoading(false);
-			});
-		return () => {
-			active = false;
-		};
-	}, []);
+	const loading = isPending;
+	const error = isError ? 'Could not load CUAD documents from backend.' : '';
 
 	const filteredDocuments = useMemo(() => {
 		const query = searchTerm.trim().toLowerCase();

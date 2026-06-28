@@ -18,8 +18,8 @@ import { useContradictionDecorations } from '@/features/docx/hooks/useContradict
 import { useAssistantChat } from '@/features/docx/hooks/useAssistantChat';
 import { useParagraphExplanation } from '@/features/docx/hooks/useParagraphExplanation';
 import { useRelatedGraph } from '@/features/docx/hooks/useRelatedGraph';
+import { useLlmTotalCost } from '@/features/docx/hooks/useLlmTotalCost';
 import { useDocumentStore } from '@/stores/document';
-import { fetchLlmTotalCost } from '@/services/llm';
 import { RIGHT_DRAWER_KEYBOARD_STEP } from '@/constants/docx-viewer';
 import { buildBridgeRelatedParagraphs } from '@/features/docx/utils/related/related-bridge';
 
@@ -48,7 +48,8 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const setSelectedParagraph = useDocumentStore((s) => s.setSelectedParagraph);
 
 	const [model, setModel] = useState('gpt-4.1');
-	const [costLabel, setCostLabel] = useState<string | null>(null);
+	const { data: llmCost } = useLlmTotalCost();
+	const costLabel = llmCost ? `Cost: ${llmCost.totalCostUsdFormatted} $` : null;
 
 	const related = useRelatedGraph({ docId, maps: viewer.maps });
 
@@ -136,19 +137,6 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		paragraphElementById: paragraphElementById.current,
 		selectedParagraphId: selectedParagraph?.id ?? null,
 	});
-
-	// Coste acumulado de LLM (header).
-	useEffect(() => {
-		let active = true;
-		fetchLlmTotalCost()
-			.then((cost) => {
-				if (active) setCostLabel(`Cost: ${cost.totalCostUsdFormatted} $`);
-			})
-			.catch(() => {});
-		return () => {
-			active = false;
-		};
-	}, []);
 
 	// El grafo de relaciones se forma en cuanto el documento termina de renderizar
 	// (no al abrir Related). Mientras se forma, se bloquea la navegación (abajo).

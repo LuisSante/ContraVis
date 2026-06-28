@@ -5,6 +5,7 @@ from logging import getLogger
 
 from dotenv import load_dotenv
 
+from core.config import settings
 from services.llm.base import LLMProvider
 from services.llm.gemini_provider import GeminiProvider
 from services.llm.openai_provider import OpenAIProvider
@@ -52,7 +53,12 @@ class LLMProviderFactory:
                 resolved_model,
                 cache_key,
             )
-            provider = OpenAIProvider(api_key=api_key, model=resolved_model)
+            provider = OpenAIProvider(
+                api_key=api_key,
+                model=resolved_model,
+                timeout=settings.LLM_TIMEOUT_SECONDS,
+                max_retries=settings.LLM_MAX_RETRIES,
+            )
             cls._cache[cache_key] = provider
             return provider
 

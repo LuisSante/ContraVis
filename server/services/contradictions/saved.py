@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from core.config import settings
+from core.errors import NotFoundError
 from schemas.types import ContradictionAnalysisResponse, ContradictionParagraphResult
 
 _ALLOWED_CONTRADICTION_TYPES = {
@@ -25,7 +26,7 @@ def load_saved_contradictions_for_document(
 ) -> tuple[list[ContradictionParagraphResult], str]:
     base_dir = settings.SAVED_CONTRADICTIONS_DIR
     if not base_dir.exists() or not base_dir.is_dir():
-        raise RuntimeError(
+        raise NotFoundError(
             f"Pasta de resultados salvos nao encontrada: {base_dir}"
         )
 
@@ -52,7 +53,7 @@ def load_saved_contradictions_for_document(
         if normalized:
             return normalized, str(json_path)
 
-    raise RuntimeError(
+    raise NotFoundError(
         f"Ainda nao ha contradicoes salvas para este documento: {document_id}"
     )
 

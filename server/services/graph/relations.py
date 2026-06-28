@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from collections import Counter
+from functools import lru_cache
 
 from sentence_transformers import SentenceTransformer, util
 
@@ -11,6 +12,14 @@ from core.constants import REFERENCE_PATTERNS
 from schemas.types import Edge, Graph, Node
 
 logger = logging.getLogger(__name__)
+
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+
+
+@lru_cache(maxsize=1)
+def get_embedding_model() -> SentenceTransformer:
+    logger.info("Loading embedding model: %s", EMBEDDING_MODEL_NAME)
+    return SentenceTransformer(EMBEDDING_MODEL_NAME)
 
 MIN_SEMANTIC_WORDS = 8
 MIN_SEMANTIC_CHARS = 45
@@ -425,7 +434,7 @@ def should_skip_semantic_similarity(text: str, repeat_count: int) -> bool:
 
 
 def generate_graph_data(paragraphs_data: list) -> Graph:
-    model = SentenceTransformer('all-MiniLM-L6-v2')
+    model = get_embedding_model()
     nodes: list[Node] = []
     edges: list[Edge] = []
     

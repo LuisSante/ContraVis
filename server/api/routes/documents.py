@@ -6,7 +6,12 @@ from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from api.deps import document_store
-from schemas.types import DatasetDocument
+from schemas.types import (
+    DatasetDocument,
+    ProcessCacheMeta,
+    ProcessDocumentRequest,
+    ProcessDocumentResponse,
+)
 from services.graph.relations import generate_graph_data
 
 router = APIRouter()
@@ -78,16 +83,14 @@ def detect_repeated_boundary_texts(
 
 @router.get("/list_documents", response_model=list[DatasetDocument])
 def list_documents():
-    if not document_store._initialized:
-        document_store.initialize()
+    document_store.ensure_initialized()
 
     return document_store.get_documents()
 
 
 @router.get("/document_file/{doc_id}")
 def get_document_file(doc_id: str):
-    if not document_store._initialized:
-        document_store.initialize()
+    document_store.ensure_initialized()
 
     path = document_store.get_path(doc_id)
     if path is None or not path.exists():
@@ -103,11 +106,11 @@ def get_document_file(doc_id: str):
     )
 
 
-@router.post("/process")
-async def process_document(data: dict):
-    raw_doc_id = data.get("documentId")
+@router.post("/process", response_model=ProcessDocumentResponse)
+async def process_document(payload: ProcessDocumentRequest) -> ProcessDocumentResponse:
+    raw_doc_id = payload.documentId
     doc_id = document_store.get_canonical_id(raw_doc_id) or raw_doc_id
-    pages = data.get("pages", [])
+    pages = [page.model_dump() for page in payload.pages]
     boundaries_by_page, repeated_top_texts, repeated_bottom_texts = detect_repeated_boundary_texts(pages)
 
     all_paragraphs_input = []
@@ -150,19 +153,12 @@ async def process_document(data: dict):
 
     graph_obj = generate_graph_data(all_paragraphs_input)
 
-    cache_meta = {
-        "enabled": False,
-        "hit": False,
-        "key": None,
-    }
-    response = {
-        "status": "success",
-        "documentId": doc_id,
-        "graph": graph_obj.model_dump(),
-        "cache": cache_meta,
-    }
-
-    return response
+    return ProcessDocumentResponse(
+        status="success",
+        documentId=doc_id,
+        graph=graph_obj,
+        cache=ProcessCacheMeta(),
+    )
 
 
 @router.get("/")
