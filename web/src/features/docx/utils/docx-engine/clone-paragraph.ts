@@ -1,7 +1,7 @@
-// Clona el contenedor de un párrafo a HTML estático para las tarjetas colapsadas
-// de los overlays (puente de related y compresión de evidencia de contradicción).
-// Se le quitan los atributos de edición y las clases transitorias para que el
-// clon se muestre a opacidad/color plenos, y se marca como nodo clonado.
+// Clones a paragraph container to static HTML for the collapsed cards
+// of the overlays (related bridge and contradiction evidence compression).
+// Editing attributes and transient classes are stripped so the
+// clone renders at full opacity/color, and it is marked as a cloned node.
 
 const TRANSIENT_CLASSES = [
 	'docx-paragraph-explanation-related',

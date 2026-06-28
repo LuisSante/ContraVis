@@ -24,14 +24,14 @@ import type {
 export type DocumentViewerStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 /**
- * Ciclo de vida del visor docx: descarga el `.docx`, lo parsea con docx4js,
- * lo renderiza con `createRenderer` y monta el DOM resultante en un contenedor
- * gestionado por ref (React no controla esos hijos). Mantiene los mapas de nodos
- * como refs y sincroniza los párrafos al store Zustand.
+ * Lifecycle of the docx viewer: downloads the `.docx`, parses it with docx4js,
+ * renders it with `createRenderer` and mounts the resulting DOM in a ref-managed
+ * container (React does not control those children). Keeps the node maps as refs
+ * and syncs the paragraphs to the Zustand store.
  *
- * Alcance de este feature: render + store de párrafos + selección básica. Se
- * difieren: marcadores de contradicción, related, conectores de explicación y el
- * recompute del grafo al confirmar ediciones.
+ * Scope of this feature: render + paragraph store + basic selection. Deferred:
+ * contradiction markers, related, explanation connectors and the graph recompute
+ * on commit of edits.
  */
 export function useDocumentViewer(
 	docId: string | null,
@@ -41,11 +41,11 @@ export function useDocumentViewer(
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [status, setStatus] = useState<DocumentViewerStatus>('idle');
 	const [documentName, setDocumentName] = useState<string | null>(null);
-	// Se incrementa cada vez que termina un render: las features que decoran el
-	// DOM (contradicciones, related…) dependen de él para re-aplicarse.
+	// Incremented every time a render finishes: the features that decorate the
+	// DOM (contradictions, related…) depend on it to re-apply themselves.
 	const [renderEpoch, setRenderEpoch] = useState(0);
 
-	// Mapas mutables del documento (refs: no deben provocar re-render).
+	// Mutable document maps (refs: they must not trigger a re-render).
 	const nodeEditStateById = useRef(new Map<string, ParagraphEditState>());
 	const paragraphElementById = useRef(new Map<string, HTMLElement>());
 	const paragraphRelationHostById = useRef(new Map<string, HTMLElement>());
@@ -170,7 +170,7 @@ export function useDocumentViewer(
 			state.committed = state.current;
 			state.editedSinceCommit = false;
 			if (selectedNodeId.current === node.id) setSelectedParagraph(node);
-			// Confirmar una edición recalcula el grafo de relaciones (bloquea + pasos).
+			// Committing an edit recomputes the relations graph (blocks + steps).
 			onParagraphCommitRef?.current?.();
 		};
 
@@ -220,8 +220,8 @@ export function useDocumentViewer(
 					parsedDoc as typeof parsedDoc & { officeDocument?: DocxOfficeDocument }
 				).officeDocument;
 
-				// `let` intencional: `renderExternalPart` referencia `renderer` antes de
-				// asignarlo (se invoca durante render(), ya con renderer definido).
+				// Intentional `let`: `renderExternalPart` references `renderer` before
+				// it is assigned (it runs during render(), with renderer already defined).
 				// eslint-disable-next-line prefer-const
 				let renderer: ReturnType<typeof createRenderer>;
 				const renderExternalPart = (part: unknown, rootLocalName: 'hdr' | 'ftr') => {
@@ -303,7 +303,7 @@ export function useDocumentViewer(
 		status,
 		documentName,
 		renderEpoch,
-		// Mapas vivos del documento (refs); las features de decoración los leen.
+		// Live document maps (refs); the decoration features read them.
 		maps: {
 			nodeEditStateById,
 			paragraphElementById,

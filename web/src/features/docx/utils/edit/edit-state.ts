@@ -1,7 +1,7 @@
 import type { Node as ParagraphNode, ParagraphEditState } from '@/types/document';
 
-// `ensureNodeEditState` ahora vive en el motor (helper de modelo). Se re-exporta
-// aquí para no romper a los consumidores de la app.
+// `ensureNodeEditState` now lives in the engine (model helper). It is re-exported
+// here to avoid breaking the app's consumers.
 export { ensureNodeEditState } from '@/features/docx/utils/docx-engine/edit-state';
 
 export function getNodeCurrentText(

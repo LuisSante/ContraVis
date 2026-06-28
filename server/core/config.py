@@ -7,17 +7,17 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
 
-    # Rutas de salida (configurables por entorno).
+    # Output paths (configurable per environment).
     SAVED_CONTRADICTIONS_DIR: Path = Path("../infra/contradiction_results")
     GRAPH_OUTPUT_DIR: Path = Path("../infra/json/graph")
 
-    # Neo4j (grafo de conocimiento).
+    # Neo4j (knowledge graph).
     NEO4J_URI: str = ""
     NEO4J_USERNAME: str = ""
     NEO4J_PASSWORD: str = ""
     NEO4J_DATABASE: str = "neo4j"
 
-    # Párrafos relacionados (similitud semántica).
+    # Related paragraphs (semantic similarity).
     SEMANTIC_RELATED_MODE: str = "top_k"
     SEMANTIC_TOP_K: int = 5
     SEMANTIC_SIMILARITY_THRESHOLD: float = 0.79

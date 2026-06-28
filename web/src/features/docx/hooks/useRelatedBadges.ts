@@ -18,11 +18,11 @@ interface UseRelatedBadgesParams {
 }
 
 /**
- * Resalta los badges de relación al seleccionar en la pestaña Related: enfatiza
- * el del párrafo seleccionado y los de sus relacionados, coloreándolos por
- * dirección (azul reference / verde similarity). El atenuado del resto lo hace el
- * CSS via la clase `related-focus-on` del contenedor. Port de la parte de badges
- * de `applyRelatedSelectionHighlight` / `clearRelatedSelectionHighlight` del Svelte.
+ * Highlights the relation badges on selection in the Related tab: emphasizes the
+ * one of the selected paragraph and those of its related ones, coloring them by
+ * direction (blue reference / green similarity). The dimming of the rest is done
+ * by CSS via the container's `related-focus-on` class. Port of the badges part of
+ * `applyRelatedSelectionHighlight` / `clearRelatedSelectionHighlight` from the Svelte.
  */
 export function useRelatedBadges({
 	active,

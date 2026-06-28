@@ -19,9 +19,9 @@ interface AssistantMessageProps {
 	message: AssistantChatMessage;
 	onSuggestedQuestionClick: (question: string) => void;
 	onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void;
-	/** Si las entidades de los mensajes se resaltan (toggle al hacer click). */
+	/** Whether message entities are highlighted (toggle on click). */
 	entityHighlightsEnabled?: boolean;
-	/** En proceso de reescritura: deshabilita el botón de la tarjeta de fix. */
+	/** Rewrite in progress: disables the fix card button. */
 	rewriteBusy?: boolean;
 	onToggleEntityHighlights?: () => void;
 	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
@@ -78,8 +78,8 @@ export function AssistantMessage({
 	const isUser = message.role === 'user';
 	const isAssistant = message.role === 'assistant';
 
-	// Las acciones de contradicción (fix estructurado / explicación gratuita) se
-	// renderizan con su propia tarjeta.
+	// Contradiction actions (structured fix / free explanation) are rendered
+	// with their own card.
 	if (message.fixContradictionSuggestion || message.freeContradictionExplanation) {
 		return (
 			<div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>

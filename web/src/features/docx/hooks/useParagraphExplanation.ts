@@ -20,11 +20,11 @@ interface UseParagraphExplanationParams {
 }
 
 /**
- * Explicación en lenguaje llano del párrafo seleccionado. Reusa `/assistant/chat`
- * con un prompt especial y parsea la respuesta en short / detailed / entidades.
+ * Plain-language explanation of the selected paragraph. Reuses `/assistant/chat`
+ * with a special prompt and parses the response into short / detailed / entities.
  *
- * Difiere: confirmación de coste LLM, related context (hoy vacío) y el resaltado
- * de entidades dentro del documento.
+ * Deferred: LLM cost confirmation, related context (empty today) and the entity
+ * highlighting inside the document.
  */
 export function useParagraphExplanation({ docId, nodeEditStateById }: UseParagraphExplanationParams) {
 	const [loading, setLoading] = useState(false);

@@ -92,7 +92,7 @@ export function useContradictionScrollMarkers({
 			host,
 			durationMs: COMPRESS_DURATION_MS,
 			refresh,
-			// Solo se comprime cuando la evidencia vive en párrafos distintos.
+			// Only compresses when the evidence lives in different paragraphs.
 			canCompress: () =>
 				isInterParagraph(
 					selectedParagraphId ? resultsByParagraphId.get(selectedParagraphId) : undefined

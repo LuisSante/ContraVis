@@ -38,7 +38,7 @@ class Graph(BaseModel):
 
 
 class ProcessElement(BaseModel):
-    """Elemento (párrafo) de una página tal como lo envía el visor docx."""
+    """Element (paragraph) of a page as sent by the docx viewer."""
 
     id: str | None = None
     text: str = ""

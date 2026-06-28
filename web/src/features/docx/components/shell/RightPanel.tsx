@@ -36,9 +36,9 @@ interface RightPanelProps {
 }
 
 /**
- * Panel derecho deslizante: cabecera con icono + nombre de la herramienta +
- * acciones específicas + cerrar, y el contenido del panel activo. Se posiciona a
- * la izquierda del rail de iconos (`right: sidebarWidth`).
+ * Sliding right panel: header with icon + tool name + specific actions + close,
+ * and the content of the active panel. Positioned to the left of the icon rail
+ * (`right: sidebarWidth`).
  */
 export function RightPanel({
 	activeTab,

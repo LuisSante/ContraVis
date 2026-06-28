@@ -14,11 +14,11 @@ interface UseRelatedGraphParams {
 }
 
 /**
- * Grafo de relaciones de párrafos: pide `/process` al backend (referencias +
- * similitud semántica), aplica el badge de conteo a cada párrafo del documento y
- * deriva la lista de relacionados del párrafo seleccionado.
+ * Paragraph relations graph: requests `/process` from the backend (references +
+ * semantic similarity), applies the count badge to each paragraph of the document
+ * and derives the related list of the selected paragraph.
  *
- * Difiere: las líneas conectoras y los marcadores laterales de related.
+ * Deferred: the connector lines and the side markers of related.
  */
 export function useRelatedGraph({ docId, maps }: UseRelatedGraphParams) {
 	const nodes = useDocumentStore((s) => s.paragraphs);
@@ -64,7 +64,7 @@ export function useRelatedGraph({ docId, maps }: UseRelatedGraphParams) {
 			if (token === tokenRef.current) {
 				console.error('Failed to compute backend graph edges:', error);
 				setEdges([]);
-				// Marca como "intentado" para no bloquear el documento indefinidamente.
+				// Mark as "attempted" so the document is not blocked indefinitely.
 				setComputed(true);
 			}
 		} finally {

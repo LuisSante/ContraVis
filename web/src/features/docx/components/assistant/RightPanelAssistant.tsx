@@ -22,7 +22,7 @@ interface RightPanelAssistantProps {
 	onFocusNodeFromPanel: (nodeId: string, emphasize?: boolean) => void;
 	onToggleEntityHighlights?: () => void;
 	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
-	/** Preguntas rápidas iniciales (chat vacío). */
+	/** Initial quick questions (empty chat). */
 	initialSuggestions?: string[];
 	onInitialSuggestionClick?: (question: string) => void;
 }

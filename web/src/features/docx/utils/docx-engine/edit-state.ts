@@ -2,8 +2,8 @@ import { normalizeEditableText } from './dom';
 import type { ParagraphEditState } from './types';
 
 /**
- * Garantiza una entrada de estado de edición para un párrafo (idempotente).
- * Helper de modelo del motor: opera sobre el mapa que le inyecta el consumidor.
+ * Ensures an edit-state entry for a paragraph (idempotent).
+ * Engine model helper: operates on the map injected by the consumer.
  */
 export function ensureNodeEditState(
 	nodeEditStateById: Map<string, ParagraphEditState>,

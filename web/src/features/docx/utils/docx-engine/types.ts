@@ -1,10 +1,10 @@
 /**
- * Tipos propios del motor de render docx. Standalone (sin dependencias de la app)
- * para que el motor sea portable a otro proyecto. Son estructuralmente idénticos
- * a los de `@/types`, así que TS los acepta en el límite (callbacks de render).
+ * The docx render engine's own types. Standalone (no app dependencies)
+ * so the engine is portable to another project. They are structurally identical
+ * to those in `@/types`, so TS accepts them at the boundary (render callbacks).
  */
 
-/** Nodo del árbol XML de OOXML, tal como lo expone docx4js. */
+/** Node of the OOXML XML tree, as exposed by docx4js. */
 export type XmlNode = {
 	name?: string;
 	attribs?: Record<string, string>;
@@ -32,7 +32,7 @@ export type Docx4jsBrowserModule = {
 	};
 };
 
-/** Modelo de párrafo que el motor expone a quien lo consume. */
+/** Paragraph model the engine exposes to its consumer. */
 export interface ParagraphNode {
 	id: string;
 	documentId: string;
@@ -44,7 +44,7 @@ export interface ParagraphNode {
 
 export type ParagraphKind = 'paragraph' | 'heading' | 'list';
 
-/** Estado de edición por párrafo (lo usa el plugin de edición de la app). */
+/** Per-paragraph edit state (used by the app's editing plugin). */
 export type ParagraphEditState = {
 	committed: string;
 	current: string;

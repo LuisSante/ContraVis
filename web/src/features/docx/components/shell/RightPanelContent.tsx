@@ -19,14 +19,14 @@ import { RightPanelAssistant } from '@/features/docx/components/assistant/RightP
 import { RightPanelParagraphExplanation } from '@/features/docx/components/paragraph-explanation/RightPanelParagraphExplanation';
 import { RightPanelRelated } from '@/features/docx/components/related/RightPanelRelated';
 
-// Pasos mostrados mientras se forma/recalcula el grafo de relaciones.
+// Steps shown while the relations graph builds/recomputes.
 const GRAPH_PROCESSING_STEPS: ProcessingStep[] = [
 	{ label: 'Scanning document structure', active: true },
 	{ label: 'Analyzing paragraph relations', active: false },
 	{ label: 'Searching linked context', active: false },
 ];
 
-// Preguntas rápidas iniciales del Contract Chat Assistant (sin las de contradicción).
+// Initial quick questions for the Contract Chat Assistant (without the contradiction ones).
 const ASSISTANT_CHAT_SUGGESTIONS = QUICK_ACTIONS.filter(
 	(action) =>
 		action !== QUICK_ACTION_WHY_CONTRADICTION_FREE && action !== QUICK_ACTION_WHY_CONTRADICTION_AI
@@ -46,8 +46,8 @@ interface RightPanelContentProps {
 }
 
 /**
- * Contenido del panel derecho según la pestaña activa (o el indicador de proceso
- * mientras se forma el grafo). Extraído de `DocxViewer` para aligerarlo.
+ * Right-panel content based on the active tab (or the processing indicator
+ * while the graph is being built). Extracted from `DocxViewer` to slim it down.
  */
 export function RightPanelContent({
 	activeTab,

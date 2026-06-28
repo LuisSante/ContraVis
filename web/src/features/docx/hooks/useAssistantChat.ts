@@ -29,28 +29,28 @@ import type {
 interface UseAssistantChatParams {
 	docId: string;
 	nodeEditStateById: Map<string, ParagraphEditState>;
-	/** Devuelve el contenedor del documento renderizado (target del fix). */
+	/** Returns the container of the rendered document (fix target). */
 	getViewerElement?: () => HTMLElement | null;
-	/** Mapa id de párrafo → elemento DOM (para aplicar la reescritura). */
+	/** Map of paragraph id → DOM element (used to apply the rewrite). */
 	paragraphElementById?: Map<string, HTMLElement>;
-	/** Resultados de contradicción por párrafo (alimentan los quick-actions). */
+	/** Contradiction results per paragraph (feed the quick-actions). */
 	contradictionResultsByParagraphId?: Map<string, ContradictionParagraphResult>;
-	/** Párrafos relacionados del seleccionado (contexto del fix). */
+	/** Related paragraphs of the selected one (fix context). */
 	selectedRelatedParagraphs?: RelatedParagraph[];
-	/** Modelo de análisis global (opcional, se reenvía al backend). */
+	/** Global analysis model (optional, forwarded to the backend). */
 	model?: string;
-	/** Confirmación de coste LLM antes de cada llamada (si se omite, no se pide). */
+	/** LLM cost confirmation before each call (if omitted, none is requested). */
 	confirmLlmEstimate?: ConfirmLlmEstimate;
 }
 
 /**
- * Chat del asistente sobre el contrato. Un único array `messages` alimenta tanto
- * el Contract Chat Assistant como el chat embebido en Contradiction Analysis, por
- * lo que lo que se escribe en uno aparece en el otro (paridad con el Svelte).
+ * Assistant chat over the contract. A single `messages` array feeds both the
+ * Contract Chat Assistant and the chat embedded in Contradiction Analysis, so
+ * whatever is typed in one appears in the other (parity with the Svelte version).
  *
- * Este hook es el **núcleo** (pregunta de texto libre + estado del hilo) y compone
- * `useContradictionQuickActions` (why/riesgos/fix/entidades) sobre el mismo hilo,
- * exponiendo una única API. Los builders de mensajes viven en `utils/assistant`.
+ * This hook is the **core** (free-text question + thread state) and composes
+ * `useContradictionQuickActions` (why/risks/fix/entities) over the same thread,
+ * exposing a single API. The message builders live in `utils/assistant`.
  */
 export function useAssistantChat({
 	docId,
@@ -70,7 +70,7 @@ export function useAssistantChat({
 	const [scope, setScope] = useState<AssistantScope>('full_contract');
 	const [provider, setProvider] = useState<AssistantProvider>('openai');
 
-	// Espejo de `messages` para construir el historial sin depender del re-render.
+	// Mirror of `messages` to build the history without depending on the re-render.
 	const messagesRef = useRef<AssistantChatMessage[]>([]);
 	useEffect(() => {
 		messagesRef.current = messages;
@@ -82,7 +82,7 @@ export function useAssistantChat({
 		return `assistant-msg-${messageCounter.current}`;
 	};
 
-	/** Núcleo de una pregunta de chat (texto libre o quick-action de texto). */
+	/** Core of a chat question (free text or text quick-action). */
 	const submitAssistantQuestion = async (
 		questionOverride?: string,
 		opts?: { scope?: AssistantScope }
@@ -162,11 +162,11 @@ export function useAssistantChat({
 
 	const submit = (questionOverride?: string) => submitAssistantQuestion(questionOverride);
 
-	/** Pregunta libre dentro del chat de contradicción (siempre scope seleccionado). */
+	/** Free question inside the contradiction chat (always selected scope). */
 	const submitContradictionQuestion = (questionOverride?: string) =>
 		submitAssistantQuestion(questionOverride, { scope: 'selected' });
 
-	// Quick-actions de contradicción (why/riesgos/fix/entidades) sobre el mismo hilo.
+	// Contradiction quick-actions (why/risks/fix/entities) over the same thread.
 	const quickActions = useContradictionQuickActions({
 		docId,
 		nodeEditStateById,
@@ -194,7 +194,7 @@ export function useAssistantChat({
 		}
 	};
 
-	/** Cmd/Ctrl+Enter envía en el chat de contradicción (scope seleccionado). */
+	/** Cmd/Ctrl+Enter sends in the contradiction chat (selected scope). */
 	const handleContradictionKeydown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
 			event.preventDefault();
@@ -217,7 +217,7 @@ export function useAssistantChat({
 		setInput,
 		submit,
 		handleKeydown,
-		// Chat de contradicción (compartido):
+		// Contradiction chat (shared):
 		askQuickAction: quickActions.askQuickAction,
 		suggestContradictionFix: quickActions.suggestContradictionFix,
 		acceptFixSuggestion: quickActions.acceptFixSuggestion,

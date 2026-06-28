@@ -14,10 +14,10 @@ interface ContradictionActionMessageCardProps {
 }
 
 /**
- * Tarjeta de acción del chat de contradicción: muestra una sugerencia de fix
- * estructurada (cambios + original vs reescritura + botón "Accept suggestion") o
- * una explicación gratuita con sus snippets. Port fiel del componente Svelte
- * `ContradictionActionMessageCard`.
+ * Contradiction chat action card: shows a structured fix suggestion (changes +
+ * original vs rewrite + "Accept suggestion" button) or a free explanation with
+ * its snippets. Faithful port of the Svelte `ContradictionActionMessageCard`
+ * component.
  */
 export function ContradictionActionMessageCard({
 	message,

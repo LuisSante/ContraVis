@@ -2,11 +2,11 @@ import type { Node as ParagraphNode, RelatedParagraph } from '@/types/document';
 import { cloneParagraphForCard } from '@/features/docx/utils/docx-engine/clone-paragraph';
 
 /**
- * Geometría del "puente" de párrafos relacionados: la línea/conector que une el
- * párrafo seleccionado con sus relacionados, las etiquetas reference/similarity,
- * los pliegues, las tarjetas colapsadas (al acercar con Shift+Scroll) y los
- * marcadores de scroll. Port del `refreshParagraphExplanationConnectorPaths` del
- * Svelte `+page.svelte`, sin React.
+ * Geometry of the related-paragraphs "bridge": the line/connector that joins the
+ * selected paragraph with its related ones, the reference/similarity labels,
+ * the folds, the collapsed cards (when moving them closer with Shift+Scroll) and
+ * the scroll markers. Port of `refreshParagraphExplanationConnectorPaths` from
+ * the Svelte `+page.svelte`, without React.
  */
 
 export type RelatedVisualKind = 'reference' | 'similarity';
@@ -67,7 +67,7 @@ export const EMPTY_RELATED_BRIDGE: RelatedBridge = {
 	movedNodeIds: new Set(),
 };
 
-/** Decide si un relacionado se muestra como "similarity" o "reference". */
+/** Decides whether a related paragraph is shown as "similarity" or "reference". */
 export function resolveRelatedVisualKind(related: RelatedParagraph): RelatedVisualKind {
 	const hasSimilarityByType = related.relationTypes.some((relationType) =>
 		String(relationType).toLowerCase().includes('semantic')
@@ -83,7 +83,7 @@ export function resolveRelatedVisualKind(related: RelatedParagraph): RelatedVisu
 	return isReference ? 'reference' : 'reference';
 }
 
-/** Ordena los relacionados priorizando reference > score semántico > nº refs > orden. */
+/** Sorts the related paragraphs prioritizing reference > semantic score > ref count > order. */
 export function sortRelatedParagraphs(related: RelatedParagraph[]): RelatedParagraph[] {
 	return [...related].sort((left, right) => {
 		const leftReference = left.relationTypes.includes('reference') ? 1 : 0;
@@ -103,10 +103,10 @@ export function sortRelatedParagraphs(related: RelatedParagraph[]): RelatedParag
 }
 
 /**
- * Lista de relacionados que alimenta el puente según la pestaña activa:
- * - `related`: todos los relacionados del párrafo.
- * - `paragraph_explanation`: la cola (a partir del top 5), que es lo que no se
- *   muestra ya en el panel de explicación.
+ * List of related paragraphs that feeds the bridge depending on the active tab:
+ * - `related`: all of the paragraph's related ones.
+ * - `paragraph_explanation`: the tail (beyond the top 5), which is what is no
+ *   longer shown in the explanation panel.
  */
 export function buildBridgeRelatedParagraphs(
 	related: RelatedParagraph[],
@@ -121,7 +121,7 @@ interface ComputeRelatedBridgeParams {
 	paragraphElementById: Map<string, HTMLElement>;
 	selectedParagraph: ParagraphNode;
 	related: RelatedParagraph[];
-	/** 0 = posiciones reales, 1 = totalmente acercado al seleccionado. */
+	/** 0 = real positions, 1 = fully moved next to the selected one. */
 	compression: number;
 }
 
@@ -132,9 +132,9 @@ function paragraphEnumOf(node: ParagraphNode): number {
 }
 
 /**
- * Calcula toda la geometría del puente para un estado de compresión dado. Mide
- * posiciones reales de los párrafos relativas al host de scroll y, según la
- * compresión, interpola las posiciones "acercadas".
+ * Computes the entire bridge geometry for a given compression state. Measures
+ * the real positions of the paragraphs relative to the scroll host and, based on
+ * the compression, interpolates the "moved closer" positions.
  */
 export function computeRelatedBridge({
 	scrollHost,
@@ -192,7 +192,7 @@ export function computeRelatedBridge({
 	const selectedTop = selectedRect.top - hostRect.top;
 	const selectedBottom = selectedTop + selectedRect.height;
 
-	// Los párrafos consecutivos y pegados al seleccionado no se mueven.
+	// Paragraphs that are consecutive and adjacent to the selected one don't move.
 	const stationaryByParagraphId = new Map<string, boolean>();
 	for (const anchor of anchors) {
 		const isConsecutive = Math.abs(anchor.paragraphEnum - selectedParagraphEnum) === 1;

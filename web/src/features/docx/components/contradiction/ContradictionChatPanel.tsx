@@ -34,10 +34,10 @@ interface ContradictionChatPanelProps {
 }
 
 /**
- * Chat embebido en Contradiction Analysis, anclado abajo y redimensionable. Barra
- * de quick-actions siempre visible; al abrirse muestra el hilo (compartido con el
- * Contract Chat Assistant) y el textarea. Port fiel del bloque de chat del Svelte
- * `RightPanelAnalysis`.
+ * Chat embedded in Contradiction Analysis, anchored at the bottom and
+ * resizable. Quick-actions bar always visible; when opened it shows the thread
+ * (shared with the Contract Chat Assistant) and the textarea. Faithful port of
+ * the chat block from the Svelte `RightPanelAnalysis`.
  */
 export function ContradictionChatPanel({
 	messages,
@@ -79,7 +79,7 @@ export function ContradictionChatPanel({
 		);
 	};
 
-	// Redimensionado por arrastre del tirador superior.
+	// Resizing by dragging the top handle.
 	useEffect(() => {
 		if (!isResizing) return;
 		const handleMove = (event: MouseEvent) => {

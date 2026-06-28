@@ -18,8 +18,8 @@ interface DocxPageHeaderProps {
 }
 
 /**
- * Cabecera superior del visor: etiqueta "Document" + nombre, coste acumulado de
- * LLM y selector de modelo global (Contradiction Analysis + Paragraph Explanation).
+ * Top header of the viewer: "Document" label + name, accumulated LLM cost, and
+ * global model selector (Contradiction Analysis + Paragraph Explanation).
  */
 export function DocxPageHeader({
 	documentName,

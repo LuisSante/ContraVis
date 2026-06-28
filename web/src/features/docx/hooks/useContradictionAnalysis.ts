@@ -37,21 +37,21 @@ export interface ContradictionSummaryItem {
 interface UseContradictionAnalysisParams {
 	docId: string;
 	nodeEditStateById: Map<string, ParagraphEditState>;
-	/** Aristas del grafo de relaciones (para la búsqueda en tiempo real). */
+	/** Edges of the relations graph (for the real-time search). */
 	backendEdges?: GraphEdge[];
-	/** Modelo de análisis (opcional). */
+	/** Analysis model (optional). */
 	model?: string;
-	/** Confirmación de coste LLM antes de la búsqueda con LLM. */
+	/** LLM cost confirmation before the LLM search. */
 	confirmLlmEstimate?: ConfirmContradictionEstimate;
 }
 
 /**
- * Estado y carga del análisis de contradicciones. Ingesta los resultados del
- * backend (normaliza candidatos, repara evidencia, dedup, rankea) y deriva el
- * resultado/evidencia del párrafo seleccionado y la lista resumen.
+ * State and loading of the contradiction analysis. Ingests the backend results
+ * (normalizes candidates, repairs evidence, dedups, ranks) and derives the
+ * result/evidence of the selected paragraph and the summary list.
  *
- * Slice actual: carga de contradicciones **guardadas**. El run con LLM (+coste)
- * y el grafo se difieren.
+ * Current slice: loading of **saved** contradictions. The LLM run (+cost) and
+ * the graph are deferred.
  */
 export function useContradictionAnalysis({
 	docId,
@@ -143,7 +143,7 @@ export function useContradictionAnalysis({
 		}
 	}, [docId, graphMode, ingestResults]);
 
-	// Búsqueda de contradicciones en tiempo real con LLM (con confirmación de coste).
+	// Real-time contradiction search with LLM (with cost confirmation).
 	const searchContradictions = useCallback(async () => {
 		setHasTriggered(true);
 		if (!docId) {

@@ -46,7 +46,7 @@ export const PARAGRAPH_EXPLANATION_MODEL_OPTIONS: ReadonlyArray<{ value: string;
 	{ value: 'gpt-4.1', label: 'gpt-4.1' }
 ];
 
-// Modelos para el selector global del header (Contradiction Analysis + Paragraph Explanation).
+// Models for the global header selector (Contradiction Analysis + Paragraph Explanation).
 export const GLOBAL_ANALYSIS_MODEL_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 	{ value: 'gpt-4.1', label: 'gpt-4.1' },
 	{ value: 'gpt-5', label: 'gpt-5' },
@@ -95,7 +95,7 @@ export const RIGHT_PANEL_TOOLS: Array<{ id: RightPanelTab; label: string }> = [
 	{ id: 'analysis', label: 'Contradiction Analysis' },
 	// { id: 'redundancy', label: 'Redundancy Analysis' },
 	{ id: 'related', label: 'Related Paragraphs' },
-	// Oculto del rail (el código/hook/panel se conservan en features/docx):
+	// Hidden from the rail (the code/hook/panel are kept in features/docx):
 	// { id: 'paragraph_explanation', label: 'Paragraph Explanation' },
 	// { id: 'summarize', label: 'Summarize & Simplify' },
 	// { id: 'ambiguity', label: 'Ambiguity Analysis' },

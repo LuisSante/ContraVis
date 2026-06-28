@@ -1,5 +1,5 @@
-// Clases que el plugin de edición añade a un párrafo editable; al "congelar" un
-// párrafo ignorado se quitan. Interno al motor para que sea autocontenido.
+// Classes the editing plugin adds to an editable paragraph; they are removed when
+// "freezing" an ignored paragraph. Internal to the engine so it stays self-contained.
 const EDITABLE_PARAGRAPH_CLASSES = [
 	'rounded-[2px]',
 	'-mx-[2px]',

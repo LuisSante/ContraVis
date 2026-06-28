@@ -539,10 +539,10 @@ export function createRenderer(
 
 	const applyShrinkToTextBox = (element: HTMLElement) => {
 		element.dataset.docxShrinkToText = 'true';
-		// Nivel bloque (no inline): la caja abraza el ancho del texto pero sigue
-		// apilando verticalmente como un párrafo de Word. Con inline-block, dos
-		// párrafos cortos consecutivos fluían en la MISMA línea (p. ej. "products."
-		// junto a "NOW, THEREFORE…"), rompiendo el layout 1:1.
+		// Block level (not inline): the box hugs the text width but still
+		// stacks vertically like a Word paragraph. With inline-block, two
+		// consecutive short paragraphs flowed on the SAME line (e.g. "products."
+		// next to "NOW, THEREFORE…"), breaking the 1:1 layout.
 		element.style.display =
 			element.dataset.docxListLayout === 'hanging-grid' ? 'grid' : 'block';
 		element.style.width = 'fit-content';
@@ -840,9 +840,9 @@ export function createRenderer(
 					section.style.position = 'relative';
 					section.dataset.docxPageWidthPx = String(layout.width);
 					section.dataset.docxPageHeightPx = String(layout.height);
-					// Tipo de salto de sección: `continuous` NO abre página nueva
-					// (cambio de columnas/formato en la misma hoja); la paginación
-					// fusiona estas secciones con la anterior.
+					// Section break type: `continuous` does NOT start a new page
+					// (change of columns/format on the same sheet); pagination
+					// merges these sections with the previous one.
 					const sectionType = getAttr(
 						findChild((safeProps.node as XmlNode) ?? null, 'type'),
 						'val'
@@ -1007,10 +1007,10 @@ export function createRenderer(
 						paragraph.classList.add('min-h-[1px]');
 					}
 					appendChildren(paragraph, children);
-					// Word: un párrafo vacío ocupa una línea (su marca de párrafo). En HTML
-					// un <p> vacío colapsa a altura 0, lo que pega los párrafos vecinos
-					// (p. ej. las definiciones separadas por párrafos en blanco). Le damos
-					// la altura de una línea para reproducir el espaciado del documento.
+					// Word: an empty paragraph takes up a line (its paragraph mark). In HTML
+					// an empty <p> collapses to height 0, which sticks neighboring paragraphs
+					// together (e.g. definitions separated by blank paragraphs). We give it
+					// the height of a line to reproduce the document's spacing.
 					if (
 						!hasOnlySectionBreak(pr) &&
 						(paragraph.textContent ?? '').trim() === '' &&

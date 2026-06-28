@@ -2,14 +2,14 @@ import type { ContradictionParagraphResult } from '@/types/document';
 import { buildChangeLog } from '@/features/docx/utils/edit/change-log';
 
 /**
- * Helpers del chat de contradicción (quick-actions y sugerencia de fix). Port
- * fiel de las funciones inline del `+page.svelte` de Svelte:
- * - separación de la respuesta del LLM en cuerpo + bloque `ENTITIES:`
- * - entidades de respaldo cuando el modelo no devuelve ninguna
- * - notas de cambio resumidas para la tarjeta de fix
+ * Helpers for the contradiction chat (quick-actions and fix suggestion). Faithful
+ * port of the inline functions from the Svelte `+page.svelte`:
+ * - splitting the LLM response into body + `ENTITIES:` block
+ * - fallback entities when the model returns none
+ * - summarized change notes for the fix card
  */
 
-/** Separa el cuerpo del mensaje del bloque `ENTITIES:` final, si existe. */
+/** Splits the message body from the trailing `ENTITIES:` block, if present. */
 export function extractAnswerEntities(answer: string): { content: string; entities: string[] } {
 	const normalized = answer.trim();
 	if (!normalized) return { content: '', entities: [] };
@@ -27,9 +27,9 @@ export function extractAnswerEntities(answer: string): { content: string; entiti
 }
 
 /**
- * Construye un conjunto de entidades de respaldo a partir del texto del párrafo,
- * la evidencia y el motivo de la contradicción cuando el modelo no devuelve un
- * bloque `ENTITIES:`.
+ * Builds a set of fallback entities from the paragraph text, the evidence and
+ * the contradiction reason when the model does not return an `ENTITIES:`
+ * block.
  */
 export function buildFallbackContradictionEntities(
 	paragraphText: string,
@@ -79,7 +79,7 @@ export function buildFallbackContradictionEntities(
 		.slice(0, 10);
 }
 
-/** Compacta y trunca un fragmento de cambio para listarlo en la tarjeta de fix. */
+/** Compacts and truncates a change fragment for listing in the fix card. */
 export function truncateFixChangeText(text: string, maxLength = 120): string {
 	const compact = text.replace(/\s+/g, ' ').trim();
 	if (compact.length <= maxLength) return compact;
@@ -87,8 +87,8 @@ export function truncateFixChangeText(text: string, maxLength = 120): string {
 }
 
 /**
- * Deriva notas de cambio legibles ("Replace … with …") comparando el snippet
- * original con el reescrito.
+ * Derives readable change notes ("Replace … with …") by comparing the original
+ * snippet with the rewritten one.
  */
 export function buildFixSuggestionChangeNotes(original: string, rewritten: string): string[] {
 	const changeLog = buildChangeLog(original, rewritten);

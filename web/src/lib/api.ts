@@ -1,12 +1,12 @@
 import axios from 'axios';
 
 /**
- * Cliente HTTP del frontend.
+ * Frontend HTTP client.
  *
- * `baseURL` es relativo (`/api/v1`): el navegador llama same-origin y Next hace
- * de proxy al backend (ver `next.config.ts` → rewrites), evitando CORS. El
- * interceptor inyecta `Authorization: Token <key>` cuando hay un token disponible
- * — andamiaje para una futura capa de login.
+ * `baseURL` is relative (`/api/v1`): the browser makes same-origin calls and Next
+ * proxies to the backend (see `next.config.ts` → rewrites), avoiding CORS. The
+ * interceptor injects `Authorization: Token <key>` when a token is available
+ * — scaffolding for a future login layer.
  */
 export const api = axios.create({
 	baseURL: process.env.NEXT_PUBLIC_API_BASE ?? '/api/v1',

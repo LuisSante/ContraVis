@@ -2,12 +2,12 @@ import { escapeRegex } from '@/features/docx/utils/text';
 import { normalizeParagraphExplanationEntityKey } from '@/features/docx/utils/assistant/paragraph-explanation';
 
 /**
- * Resaltado de entidades dentro del cuerpo del documento (no solo en el chat).
- * Envuelve las apariciones de cada entidad en un `<span.docx-paragraph-explanation-entity-link>`
- * con su `data-entity-key` y color, para que coincidan con las entidades del
- * panel/chat y se sincronicen al hacer hover. Port de
+ * Entity highlighting within the document body (not only in the chat).
+ * Wraps each entity occurrence in a `<span.docx-paragraph-explanation-entity-link>`
+ * with its `data-entity-key` and color, so they match the entities in the
+ * panel/chat and sync on hover. Port of
  * `highlightParagraphExplanationEntitiesInElement` / `clearParagraphExplanationEntityMarks`
- * / `setHoveredParagraphExplanationEntityKey` del Svelte `+page.svelte`.
+ * / `setHoveredParagraphExplanationEntityKey` from the Svelte `+page.svelte`.
  */
 
 export type DocumentEntityHighlight = {
@@ -17,7 +17,7 @@ export type DocumentEntityHighlight = {
 	softColor: string;
 };
 
-/** Quita los marcadores de entidad de un elemento, restaurando el texto. */
+/** Removes entity markers from an element, restoring the text. */
 export function clearEntityMarks(element: HTMLElement) {
 	const marks = element.querySelectorAll<HTMLElement>('span.docx-paragraph-explanation-entity-link');
 	for (const mark of marks) {
@@ -28,7 +28,7 @@ export function clearEntityMarks(element: HTMLElement) {
 	}
 }
 
-/** Envuelve las entidades encontradas en el texto del elemento. */
+/** Wraps the entities found in the element's text. */
 export function highlightEntitiesInElement(
 	element: HTMLElement,
 	entities: DocumentEntityHighlight[]
@@ -100,7 +100,7 @@ export function highlightEntitiesInElement(
 	}
 }
 
-/** Sincroniza el estado hover de una entidad en TODO el documento y el chat. */
+/** Syncs an entity's hover state across the ENTIRE document and the chat. */
 export function syncHoveredEntityKey(nextKey: string | null) {
 	if (typeof document === 'undefined') return;
 	for (const element of document.querySelectorAll<HTMLElement>('[data-entity-key]')) {

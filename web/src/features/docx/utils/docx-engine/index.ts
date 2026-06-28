@@ -1,22 +1,22 @@
 /**
- * docx-engine — motor de render de documentos `.docx` fiel a Word.
+ * docx-engine — render engine for `.docx` documents faithful to Word.
  *
- * Autocontenido y agnóstico de la app: parsea (docx4js), aplica estilos OOXML
- * (fuentes métricas, interlineado, sangrías), pagina (incl. secciones
- * `continuous`) y monta DOM editable. Única dependencia externa: `docx4js`.
+ * Self-contained and app-agnostic: parses (docx4js), applies OOXML styles
+ * (metric fonts, line spacing, indents), paginates (incl. `continuous`
+ * sections) and mounts editable DOM. Only external dependency: `docx4js`.
  *
- * Flujo típico de consumo:
- *   1. `loadBrowserDocx4js()` → parsear el ArrayBuffer del `.docx`.
- *   2. `createRenderer(docId, callbacks, deps, options)` → fábrica de nodos DOM.
- *   3. montar el DOM en un contenedor y `paginateRenderedSections(viewer)`.
- *   4. opcional: `detectDocxNoiseNodeIds(viewer)` para excluir cabeceras/pies
- *      repetidos y números de página de cualquier análisis posterior.
+ * Typical consumption flow:
+ *   1. `loadBrowserDocx4js()` → parse the `.docx` ArrayBuffer.
+ *   2. `createRenderer(docId, callbacks, deps, options)` → DOM node factory.
+ *   3. mount the DOM in a container and `paginateRenderedSections(viewer)`.
+ *   4. optional: `detectDocxNoiseNodeIds(viewer)` to exclude repeated
+ *      headers/footers and page numbers from any later analysis.
  *
- * Las features de la app (edición, badges, contradicciones) se enchufan vía los
- * `callbacks`/`deps` que se inyectan a `createRenderer` — el motor no las conoce.
+ * The app features (editing, badges, contradictions) plug in via the
+ * `callbacks`/`deps` injected into `createRenderer` — the engine does not know them.
  */
 
-// Tipos del motor (modelo de párrafo, XML, docx4js).
+// Engine types (paragraph model, XML, docx4js).
 export type {
 	XmlNode,
 	Docx4jsDocument,
@@ -26,7 +26,7 @@ export type {
 	ParagraphEditState
 } from './types';
 
-// Render.
+// Rendering.
 export {
 	createRenderer,
 	type DocxRendererCallbacks,
@@ -34,14 +34,14 @@ export {
 	type DocxRendererOptions
 } from './renderer';
 
-// Parseo del binario.
+// Binary parsing.
 export { loadBrowserDocx4js } from './docx-page';
 
-// Paginación (corte en páginas fieles + fusión de secciones continuous).
+// Pagination (faithful page splitting + merging of continuous sections).
 export { paginateRenderedSections } from './pagination';
 
-// Detección de ruido (cabeceras/pies repetidos, números de página).
+// Noise detection (repeated headers/footers, page numbers).
 export { detectDocxNoiseNodeIds } from './noise';
 
-// Estado de edición por párrafo (helper de modelo).
+// Per-paragraph edit state (model helper).
 export { ensureNodeEditState } from './edit-state';

@@ -10,9 +10,9 @@ interface LlmEstimateDialogProps {
 }
 
 /**
- * Toast de confirmación de coste LLM (esquina inferior derecha). Muestra el coste
- * y tokens estimados antes de lanzar la llamada. Port del bloque `llmEstimateToast`
- * del Svelte `+page.svelte`.
+ * LLM cost confirmation toast (bottom-right corner). Shows the estimated cost
+ * and tokens before firing the call. Port of the `llmEstimateToast` block from
+ * the Svelte `+page.svelte`.
  */
 export function LlmEstimateDialog({ estimate, isOpen, onResolve }: LlmEstimateDialogProps) {
 	if (!isOpen || !estimate) return null;

@@ -1,27 +1,27 @@
-// Motor compartido del "acercar con Shift + Scroll": mantiene un valor de
-// compresión (0→1), lo anima con un tween RAF (easing cúbico) al hacer
-// Shift+Scroll y reprograma un recálculo en scroll/resize/ResizeObserver del host.
-// Lo usan el puente de related y la compresión de evidencia de contradicción; cada
-// uno solo aporta su `refresh` (qué recalcular), su `durationMs` y, opcionalmente,
-// `canCompress` (cuándo permitir el gesto).
+// Shared engine for "zoom with Shift + Scroll": keeps a compression value
+// (0→1), animates it with a RAF tween (cubic easing) on
+// Shift+Scroll and reschedules a recompute on the host's scroll/resize/ResizeObserver.
+// Used by the related bridge and the contradiction evidence compression; each
+// one only provides its `refresh` (what to recompute), its `durationMs` and, optionally,
+// `canCompress` (when to allow the gesture).
 
 const COMPRESS_SNAP_EPSILON = 0.001;
 const WHEEL_DIRECTION_DEADZONE = 2;
 
 interface AttachShiftWheelCompressionOptions {
 	host: HTMLElement;
-	/** Duración del tween en ms (related: 560, contradicción: 420). */
+	/** Tween duration in ms (related: 560, contradiction: 420). */
 	durationMs: number;
-	/** Recalcula con el valor de compresión actual (compute + setState + clases). */
+	/** Recomputes with the current compression value (compute + setState + classes). */
 	refresh: (compression: number) => void;
-	/** Si devuelve false, el Shift+Scroll no comprime (deja el scroll normal). */
+	/** If it returns false, Shift+Scroll does not compress (leaves normal scrolling). */
 	canCompress?: () => boolean;
 }
 
 /**
- * Engancha el motor de compresión al host y devuelve la función de limpieza.
- * Llamar dentro de un `useEffect` (el ciclo de vida/deps lo gobierna el hook que
- * lo usa). Un `cleanup()` cancela el tween, los RAF y quita los listeners.
+ * Attaches the compression engine to the host and returns the cleanup function.
+ * Call inside a `useEffect` (lifecycle/deps are governed by the hook that
+ * uses it). A `cleanup()` cancels the tween, the RAFs and removes the listeners.
  */
 export function attachShiftWheelCompression({
 	host,

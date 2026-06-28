@@ -6,15 +6,15 @@ import type { RelatedBridge } from '@/features/docx/utils/related/related-bridge
 interface RelatedBridgeOverlayProps {
 	bridge: RelatedBridge;
 	onJumpToParagraph: (paragraphId: string) => void;
-	/** Arrastrar el rail scrollea el documento (scrub). */
+	/** Dragging the rail scrolls the document (scrub). */
 	onRailMouseDown?: (event: MouseEvent) => void;
 }
 
 /**
- * Capa visual del puente de párrafos relacionados: la línea/conector con el
- * párrafo seleccionado, los caps y etiquetas reference/similarity, los pliegues,
- * las tarjetas colapsadas (al acercar con Shift+Scroll) y el rail de marcadores
- * de scroll. Port del bloque de plantilla del Svelte `RightPanelAnalysis`/page.
+ * Visual layer of the related-paragraphs bridge: the line/connector to the
+ * selected paragraph, the reference/similarity caps and labels, the folds, the
+ * collapsed cards (when zoomed in with Shift+Scroll), and the scroll marker
+ * rail. Port of the template block from the Svelte `RightPanelAnalysis`/page.
  */
 export function RelatedBridgeOverlay({
 	bridge,
@@ -111,7 +111,7 @@ export function RelatedBridgeOverlay({
 							key={`collapsed-card-${card.paragraphId}`}
 							className="docx-paragraph-explanation-collapsed-card"
 							style={{ left: card.leftPx, top: card.topPx, width: card.widthPx }}
-							// El HTML proviene del DOM ya renderizado del propio documento (clon estático).
+							// The HTML comes from the document's own already-rendered DOM (static clone).
 							dangerouslySetInnerHTML={{ __html: card.html }}
 						/>
 					))}

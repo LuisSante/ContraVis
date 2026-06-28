@@ -28,11 +28,11 @@ interface UseRelatedBridgeParams {
 }
 
 /**
- * Mantiene el "puente" de párrafos relacionados: la línea/conector con el
- * párrafo seleccionado, las etiquetas reference/similarity y la compresión por
- * **Shift + Scroll** que acerca los relacionados (con su tarjeta colapsada).
- * Recalcula con RAF en scroll/resize y aplica las clases de estado a los nodos.
- * Port del sistema `paragraphExplanationConnectors` del Svelte `+page.svelte`.
+ * Maintains the "bridge" of related paragraphs: the line/connector with the
+ * selected paragraph, the reference/similarity labels and the **Shift + Scroll**
+ * compression that brings the related ones closer (with their collapsed card).
+ * Recomputes with RAF on scroll/resize and applies the state classes to the nodes.
+ * Port of the `paragraphExplanationConnectors` system from the Svelte `+page.svelte`.
  */
 export function useRelatedBridge({
 	active,

@@ -28,11 +28,11 @@ export interface ContradictionEvidenceCollapsedCard {
 export interface ContradictionMarkersResult {
 	markers: ContradictionScrollMarker[];
 	link: ContradictionEvidenceLink | null;
-	/** True si la evidencia A/B vive en párrafos distintos (compresible). */
+	/** True if the A/B evidence lives in different paragraphs (compressible). */
 	interParagraph: boolean;
-	/** Tarjeta(s) flotantes con el clon de los párrafos B al comprimir. */
+	/** Floating card(s) with the clone of the B paragraphs when compressing. */
 	collapsedCards: ContradictionEvidenceCollapsedCard[];
-	/** Ids (data-node-id) de los párrafos B a ocultar mientras se comprime. */
+	/** Ids (data-node-id) of the B paragraphs to hide while compressing. */
 	hiddenParagraphIds: string[];
 }
 
@@ -41,7 +41,7 @@ export function computeContradictionMarkers(params: {
 	paragraphElementById: Map<string, HTMLElement>;
 	resultsByParagraphId: Map<string, ContradictionParagraphResult>;
 	selectedParagraphId: string | null;
-	/** 0 = posiciones reales, 1 = B totalmente acercado a A (solo inter-párrafo). */
+	/** 0 = real positions, 1 = B fully moved next to A (inter-paragraph only). */
 	compression?: number;
 }): ContradictionMarkersResult {
 	const {
@@ -156,7 +156,7 @@ export function computeContradictionMarkers(params: {
 				displayBCenterPx = top;
 			}
 		}
-		// Inter-párrafo: A queda fija y solo B se acerca a A (Shift+Scroll).
+		// Inter-paragraph: A stays fixed and only B moves toward A (Shift+Scroll).
 		if (interParagraph && compression > 0) {
 			const aFixed = displayACenterPx;
 			const bStart = displayBCenterPx;
@@ -164,7 +164,7 @@ export function computeContradictionMarkers(params: {
 			const bTarget = aFixed + direction * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
 			displayBCenterPx = bStart * (1 - compression) + bTarget * compression;
 			displayACenterPx = aFixed;
-			// Centros sin clamp para que la copia flotante pueda viajar entre páginas.
+			// Unclamped centers so the floating copy can travel across pages.
 			const rawDirection = bCenterPx >= aCenterPx ? 1 : -1;
 			const rawTarget = aCenterPx + rawDirection * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
 			const rawCompressed = bCenterPx * (1 - compression) + rawTarget * compression;
@@ -173,7 +173,7 @@ export function computeContradictionMarkers(params: {
 		}
 	}
 
-	// Tarjetas colapsadas + ids a ocultar (solo si B se movió de verdad).
+	// Collapsed cards + ids to hide (only if B actually moved).
 	const collapsedCards: ContradictionEvidenceCollapsedCard[] = [];
 	const hiddenParagraphIds: string[] = [];
 	if (interParagraph && Math.abs(bTransformDeltaPx) > 0.5) {

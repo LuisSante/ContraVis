@@ -3,8 +3,8 @@
 import { useDocumentStore } from '@/stores/document';
 
 /**
- * Indicador flotante de carga (reemplaza el overlay con `transition:fade` del
- * antiguo `+layout.svelte`). Se muestra mientras `loading` está activo en el store.
+ * Floating loading indicator (replaces the `transition:fade` overlay from the
+ * old `+layout.svelte`). Shown while `loading` is active in the store.
  */
 export function LoadingOverlay() {
 	const loading = useDocumentStore((state) => state.loading);

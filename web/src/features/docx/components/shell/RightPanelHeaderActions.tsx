@@ -33,9 +33,9 @@ interface RightPanelHeaderActionsProps {
 }
 
 /**
- * Acciones del header del panel derecho, específicas por pestaña: Saved/Search en
- * análisis, Explain/Simplify en explicación, y provider + scope en el asistente.
- * Extraído de `DocxViewer` para aligerarlo.
+ * Right-panel header actions, specific per tab: Saved/Search in analysis,
+ * Explain/Simplify in explanation, and provider + scope in the assistant.
+ * Extracted from `DocxViewer` to slim it down.
  */
 export function RightPanelHeaderActions({
 	activeTab,
@@ -88,7 +88,7 @@ export function RightPanelHeaderActions({
 				>
 					Explain paragraph
 				</Button>
-				<Button variant="outline" size="sm" className={ACTION_BTN} disabled title="Simplify — próximamente">
+				<Button variant="outline" size="sm" className={ACTION_BTN} disabled title="Simplify — coming soon">
 					Simplify
 				</Button>
 			</div>
