@@ -10,17 +10,30 @@
 	.docx-relations-badge-host::before {
 		content: '';
 		position: absolute;
-		right: var(--docx-relations-guide-right, -14px);
-		top: 2px;
-		bottom: 2px;
+		right: var(--docx-relations-guide-right, -13px);
+		top: -2px;
+		bottom: -2px;
 		width: 2px;
 		border-radius: 9999px;
-		background: #d1d5db;
+		background: linear-gradient(
+			to bottom,
+			transparent 0%,
+			#e2e8f0 18%,
+			#e2e8f0 82%,
+			transparent 100%
+		);
 		pointer-events: none;
+		transition: background 140ms ease;
 	}
 
 	.docx-relations-badge-host[data-relations-tone='linked']::before {
-		background: #60a5fa;
+		background: linear-gradient(
+			to bottom,
+			transparent 0%,
+			#60a5fa 18%,
+			#60a5fa 82%,
+			transparent 100%
+		);
 	}
 
 	.docx-relations-badge-host::after {
@@ -29,26 +42,29 @@
 		right: var(--docx-relations-badge-right, -24px);
 		top: 50%;
 		display: inline-flex;
-		height: 22px;
-		width: 22px;
-		min-width: 22px;
+		height: 20px;
+		width: 20px;
+		min-width: 20px;
 		transform: translateY(-50%);
 		align-items: center;
 		justify-content: center;
 		border-radius: 9999px;
-		border: 1px solid #d1d5db;
-		background: #f3f4f6;
-		color: #6b7280;
+		border: 1px solid #e5e7eb;
+		background: #ffffff;
+		color: #2563eb;
 		font-size: 10px;
-		font-weight: 700;
+		font-weight: 600;
 		line-height: 1;
+		box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+		transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 		pointer-events: none;
 	}
 
 	.docx-relations-badge-host[data-relations-tone='linked']::after {
-		border-color: #93c5fd;
-		background: #dbeafe;
-		color: #1d4ed8;
+		border-color: transparent;
+		background: #2563eb;
+		color: #ffffff;
+		box-shadow: 0 2px 6px rgba(37, 99, 235, 0.32);
 	}
 
 	.related-badges-off .docx-relations-badge-host::before,

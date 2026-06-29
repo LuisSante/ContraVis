@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertTriangle, HelpCircle, Minus, Send, Square, Wand2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -109,26 +110,28 @@ export function ContradictionChatPanel({
 
 	return (
 		<div
-			className={`relative flex shrink-0 flex-col border-t border-gray-200 bg-white px-3 py-2 ${
+			className={`relative flex shrink-0 flex-col border-t border-border bg-card px-3 py-2 ${
 				isResizing ? '' : 'transition-[height] duration-200 ease-out'
 			}`}
 			style={{ height, minHeight: CHAT_PANEL_COLLAPSED_HEIGHT }}
 		>
 			<button
 				type="button"
-				className={`absolute top-0 left-1/2 h-2 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize rounded-full border bg-white transition ${
+				className={`absolute top-0 left-1/2 flex h-2.5 w-16 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize items-center justify-center rounded-full border transition ${
 					isResizing
-						? 'border-blue-300 bg-blue-50'
-						: 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+						? 'border-blue-300 bg-blue-50 dark:bg-blue-950/40'
+						: 'border-border bg-card hover:border-blue-300 hover:bg-accent'
 				}`}
 				aria-label="Resize contradiction chat"
 				title="Drag to resize chat area"
 				onMouseDown={startResize}
-			/>
+			>
+				<span className="h-0.5 w-6 rounded-full bg-muted-foreground/40" aria-hidden="true" />
+			</button>
 
 			<div className={`flex items-center gap-1.5 ${isOpen ? 'mb-2' : ''}`}>
 				<span
-					className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-gray-500"
+					className="inline-flex size-6 shrink-0 items-center justify-center text-muted-foreground"
 					aria-hidden="true"
 				>
 					<ChatIcon className="h-3.5 w-3.5" strokeWidth={1.8} />
@@ -137,57 +140,47 @@ export function ContradictionChatPanel({
 				<Button
 					variant="outline"
 					size="sm"
-					className="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					className="h-6 gap-1 rounded-full border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
 					onClick={() => runQuickAction(onWhy)}
 				>
+					<HelpCircle className="size-3" />
 					Why is it a contradiction?
 				</Button>
 				<Button
 					variant="outline"
 					size="sm"
-					className="h-6 border-gray-200 bg-gray-50 px-2 text-[10px] text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+					className="h-6 gap-1 rounded-full border-amber-200 bg-amber-50 px-2 text-[10px] text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
 					onClick={() => runQuickAction(onRisks)}
 				>
-					What are the risks of this contradiction?
+					<AlertTriangle className="size-3" />
+					What are the risks?
 				</Button>
 				<Button
-					variant="outline"
 					size="sm"
-					className="h-6 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100"
+					className="h-6 gap-1 rounded-full bg-blue-600 px-2 text-[10px] text-white hover:bg-blue-700"
 					disabled={rewriteBusy || loading}
 					onClick={() => runQuickAction(onSuggestFix)}
 				>
-					{rewriteBusy ? 'Preparing fix...' : 'Suggest contradiction fix'}
+					<Wand2 className="size-3" />
+					{rewriteBusy ? 'Preparing fix…' : 'Suggest fix'}
 				</Button>
 
-				<button
+				<Button
 					type="button"
-					className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-[10px] border border-gray-200 bg-white text-gray-700 transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
+					variant="outline"
+					size="icon"
+					className="ml-auto size-6 rounded-lg hover:border-blue-300 hover:bg-accent hover:text-blue-700"
 					onClick={togglePanel}
 					aria-label={isOpen ? 'Minimize contradiction chat' : 'Maximize contradiction chat'}
 					title={isOpen ? 'Minimize contradiction chat' : 'Maximize contradiction chat'}
 				>
-					{isOpen ? (
-						<svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-							<path
-								d="M5 10H15"
-								stroke="currentColor"
-								strokeWidth="1.6"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
-					) : (
-						<svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-							<rect x="4.5" y="4.5" width="11" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
-						</svg>
-					)}
-				</button>
+					{isOpen ? <Minus className="size-3.5" /> : <Square className="size-3" />}
+				</Button>
 			</div>
 
 			{isOpen ? (
 				<>
-					<ScrollArea className="min-h-0 flex-1 rounded border border-gray-200 bg-gray-50/70">
+					<ScrollArea className="min-h-0 flex-1 rounded-lg border border-border bg-muted/30">
 						<AssistantMessageList
 							messages={messages}
 							loading={loading}
@@ -200,43 +193,27 @@ export function ContradictionChatPanel({
 						/>
 					</ScrollArea>
 
-					{error ? <p className="mt-1 text-[10px] text-red-600">{error}</p> : null}
+					{error ? <p className="mt-1 text-[10px] text-destructive">{error}</p> : null}
 
 					<div className="mt-2 flex items-end gap-1.5">
 						<Textarea
 							rows={2}
-							placeholder="Ask about this contradiction..."
-							className="min-h-[50px] border-gray-200 bg-white text-[10px] text-gray-700"
+							placeholder="Ask about this contradiction…"
+							className="min-h-[50px] rounded-lg text-[11px]"
 							value={input}
 							onChange={(event) => onInputChange(event.target.value)}
 							onKeyDown={onKeydown}
 							disabled={loading}
 						/>
 						<Button
-							variant="outline"
-							size="sm"
-							className="h-7 w-7 border-gray-200 bg-white px-0 text-gray-700 hover:border-gray-300 hover:bg-gray-100"
+							size="icon"
+							className="size-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
 							onClick={onSubmit}
 							disabled={loading}
 							aria-label="Send contradiction chat message"
 							title="Send"
 						>
-							<svg viewBox="0 0 20 20" fill="none" className="h-3.5 w-3.5" aria-hidden="true">
-								<path
-									d="M3 10L17 3L10 17L8.2 11.8L3 10Z"
-									stroke="currentColor"
-									strokeWidth="1.6"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								/>
-								<path
-									d="M17 3L8.2 11.8"
-									stroke="currentColor"
-									strokeWidth="1.6"
-									strokeLinecap="round"
-									strokeLinejoin="round"
-								/>
-							</svg>
+							<Send className="size-3.5" />
 						</Button>
 					</div>
 				</>

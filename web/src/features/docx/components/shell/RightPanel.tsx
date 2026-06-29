@@ -67,10 +67,10 @@ export function RightPanel({
 				transform: isOpen ? 'translateX(0)' : `translateX(calc(100% + ${sidebarWidth + 20}px))`,
 			}}
 		>
-			<header className="flex items-center justify-between border-b border-gray-200/90 bg-white/90 px-4 py-2.5">
+			<header className="flex items-center justify-between border-b border-border bg-header px-4 py-2.5">
 				<div className="flex min-w-0 flex-1 items-center gap-2">
-					<h2 className="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-gray-700">
-						<span className="shrink-0 text-blue-700">
+					<h2 className="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-header-foreground">
+						<span className="shrink-0 text-header-foreground/90">
 							<Icon className="h-4 w-4" />
 						</span>
 						<span className="truncate">{label}</span>
@@ -81,7 +81,7 @@ export function RightPanel({
 				<Button
 					variant="outline"
 					size="icon-sm"
-					className="ml-2 h-7 w-7 shrink-0 border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700"
+					className="ml-2 h-7 w-7 shrink-0 border-transparent bg-card text-primary shadow-sm hover:bg-card/90 hover:text-primary"
 					onClick={onClose}
 					disabled={closeDisabled}
 					aria-label="Close"
