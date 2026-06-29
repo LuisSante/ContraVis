@@ -1,7 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { hexToRgba } from '@/features/docx/utils/contradiction/contradiction';
 import type { ContradictionParagraphResult } from '@/types/document';
 
@@ -51,12 +51,16 @@ export function ContradictionItem({
 				) : null}
 			</div>
 
-			<div className="rounded-md border border-gray-200 bg-white px-2.5 py-2">
-				<p className="mb-1 text-[9px] font-semibold text-gray-700">Assessment</p>
-				<p className="text-[10px] leading-relaxed text-gray-700">
-					{selectedContradictionResult?.brief_reason}
-				</p>
-			</div>
+			<Card className="gap-0 rounded-md border-gray-200 py-0 shadow-none">
+				<CardHeader className="gap-0 px-2.5 pt-2 pb-1">
+					<CardTitle className="text-[9px] font-semibold text-gray-700">Assessment</CardTitle>
+				</CardHeader>
+				<CardContent className="px-2.5 pb-2">
+					<p className="text-[10px] leading-relaxed text-gray-700">
+						{selectedContradictionResult?.brief_reason}
+					</p>
+				</CardContent>
+			</Card>
 
 			{hasSnippets ? (
 				<EvidenceSnippetDisplay

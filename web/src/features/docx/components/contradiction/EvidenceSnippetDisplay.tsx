@@ -2,7 +2,9 @@
 
 import { useMemo } from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { hexToRgba } from '@/features/docx/utils/contradiction/contradiction';
 import type { ContradictionParagraphResult } from '@/types/document';
 
@@ -39,15 +41,20 @@ export function EvidenceSnippetDisplay({
 
 	return (
 		<>
-			<div
-				className="mt-2 rounded-md border px-2.5 py-2"
+			<Card
+				className="mt-2 gap-0 rounded-md border py-0 shadow-none"
 				style={{ borderColor: typeColor, background: hexToRgba(typeColor, 0.08) }}
 			>
-				<div className="mb-1 flex items-center justify-between">
-					<span className="text-[9px] font-semibold" style={{ color: typeColor }}>
+				<CardHeader className="gap-0 px-2.5 pt-2 pb-1">
+					<Badge
+						variant="outline"
+						className="h-4 rounded-full bg-white/70 px-1.5 text-[8px] font-semibold"
+						style={{ borderColor: typeColor, color: typeColor }}
+					>
 						Snippet A
-					</span>
-				</div>
+					</Badge>
+				</CardHeader>
+				<CardContent className="px-2.5 pb-2">
 				<Button
 					variant="ghost"
 					className="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-900"
@@ -77,19 +84,23 @@ export function EvidenceSnippetDisplay({
 						)}
 					</span>
 				</Button>
-			</div>
+				</CardContent>
+			</Card>
 
-			<div
-				className="mt-2 rounded-md border px-2.5 py-2"
+			<Card
+				className="mt-2 gap-0 rounded-md border py-0 shadow-none"
 				style={{ borderColor: snippetBStyle.border, background: snippetBStyle.background }}
 			>
-				<div className="mb-1 flex items-center justify-between">
-					<div className="flex items-center gap-1.5">
-						<span className="text-[9px] font-semibold" style={{ color: snippetBStyle.color }}>
-							Snippet B
-						</span>
-					</div>
-				</div>
+				<CardHeader className="gap-0 px-2.5 pt-2 pb-1">
+					<Badge
+						variant="outline"
+						className="h-4 rounded-full bg-white/70 px-1.5 text-[8px] font-semibold"
+						style={{ borderColor: snippetBStyle.color, color: snippetBStyle.color }}
+					>
+						Snippet B
+					</Badge>
+				</CardHeader>
+				<CardContent className="px-2.5 pb-2">
 				<Button
 					variant="ghost"
 					className="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-800"
@@ -119,7 +130,8 @@ export function EvidenceSnippetDisplay({
 						)}
 					</span>
 				</Button>
-			</div>
+				</CardContent>
+			</Card>
 		</>
 	);
 }

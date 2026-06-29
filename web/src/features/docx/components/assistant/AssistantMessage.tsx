@@ -2,8 +2,12 @@
 
 import { Fragment } from 'react';
 
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import { Message, MessageAvatar, MessageContent } from '@/components/ui/message';
 import { ContractChatAssistantIcon, UserIcon } from '@/components/common/icons';
 import {
+	shortReferenceLabel,
 	splitReferenceAndEntityText,
 	splitReferenceText,
 	type ReferenceTextSegment,
@@ -27,6 +31,17 @@ interface AssistantMessageProps {
 	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
 }
 
+/**
+ * Peels a leading "Paragraph"/"Párrafo" word off the assistant content so it can
+ * be shown as a bold mini-header (matching the "Suggested questions" header),
+ * while the rest of the text keeps its reference/entity chips.
+ */
+function splitLeadLabel(content: string): { label: string | null; rest: string } {
+	const match = content.match(/^\s*(Paragraph|Párrafo)\b[ \t:]*/i);
+	if (!match) return { label: null, rest: content };
+	return { label: match[1], rest: content.slice(match[0].length) };
+}
+
 function renderSegments(
 	segments: ReferenceTextSegment[],
 	keyPrefix: string,
@@ -35,8 +50,8 @@ function renderSegments(
 		const key = `${keyPrefix}-${index}`;
 		if (segment.isReference) {
 			return (
-				<span key={key} className="docx-reference-chip align-middle">
-					{segment.text}
+				<span key={key} className="docx-reference-chip align-middle" title={segment.text}>
+					{shortReferenceLabel(segment.text)}
 				</span>
 			);
 		}
@@ -78,18 +93,39 @@ export function AssistantMessage({
 	const isUser = message.role === 'user';
 	const isAssistant = message.role === 'assistant';
 
-	// Contradiction actions (structured fix / free explanation) are rendered
-	// with their own card.
+	const align = isUser ? 'end' : 'start';
+
+	// Avatar shared by every branch so user/assistant figures stay consistent.
+	const avatar = (
+		<MessageAvatar>
+			<Avatar size="sm">
+				<AvatarFallback className={isUser ? 'text-blue-600' : 'text-gray-500'}>
+					{isUser ? (
+						<UserIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
+					) : (
+						<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
+					)}
+					<span className="sr-only">{isUser ? 'You' : 'Assistant'}</span>
+				</AvatarFallback>
+			</Avatar>
+		</MessageAvatar>
+	);
+
+	// Contradiction actions (structured fix / free explanation) keep their own
+	// card, but ride inside the shared Message/avatar layout.
 	if (message.fixContradictionSuggestion || message.freeContradictionExplanation) {
 		return (
-			<div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-				<ContradictionActionMessageCard
-					message={message}
-					rewriteBusy={rewriteBusy}
-					onFocusNodeFromPanel={onFocusNodeFromPanel}
-					onAcceptFixSuggestion={onAcceptFixSuggestion}
-				/>
-			</div>
+			<Message align={align}>
+				{avatar}
+				<MessageContent>
+					<ContradictionActionMessageCard
+						message={message}
+						rewriteBusy={rewriteBusy}
+						onFocusNodeFromPanel={onFocusNodeFromPanel}
+						onAcceptFixSuggestion={onAcceptFixSuggestion}
+					/>
+				</MessageContent>
+			</Message>
 		);
 	}
 
@@ -97,61 +133,62 @@ export function AssistantMessage({
 	const canToggleEntities = isAssistant && entities.length > 0;
 
 	return (
-		<div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-			<div className="inline-flex max-w-[92%] items-start gap-1.5">
-				{isAssistant ? (
-					<span className="mt-1 inline-flex shrink-0 items-center justify-center text-gray-500">
-						<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-						<span className="sr-only">Assistant</span>
-					</span>
-				) : null}
-
-				<div
-					className={`rounded border px-2 py-1 text-[10px] leading-relaxed ${
-						isUser
-							? 'border-blue-200 bg-blue-50 text-blue-800'
-							: 'border-gray-200 bg-white text-gray-700'
-					} ${canToggleEntities ? 'cursor-pointer' : ''}`}
-					onClick={canToggleEntities ? () => onToggleEntityHighlights() : undefined}
+		<Message align={align}>
+			{avatar}
+			<MessageContent>
+				<Bubble
+					variant={isUser ? 'default' : 'muted'}
+					align={align}
+					className={isAssistant ? 'max-w-[94%]' : undefined}
 				>
-					{isAssistant && message.structuredContradiction ? (
-						<StructuredContradictionMessage
-							messageContent={message.content}
-							structuredContradiction={message.structuredContradiction}
-						/>
-					) : (
-						<p className="whitespace-pre-wrap">
-							{renderSegments(
-								entityHighlightsEnabled && entities.length
-									? splitReferenceAndEntityText(message.content, entities)
-									: splitReferenceText(message.content),
-								`${message.id}-content`,
-							)}
-						</p>
-					)}
+					<BubbleContent
+						className={`text-xs ${canToggleEntities ? 'cursor-pointer' : ''}`}
+						onClick={canToggleEntities ? () => onToggleEntityHighlights() : undefined}
+					>
+						{isAssistant && message.structuredContradiction ? (
+							<StructuredContradictionMessage
+								messageContent={message.content}
+								structuredContradiction={message.structuredContradiction}
+							/>
+						) : (
+							(() => {
+								const { label, rest } = isAssistant
+									? splitLeadLabel(message.content)
+									: { label: null, rest: message.content };
+								return (
+									<>
+										{label ? (
+											<p className="mb-1 text-xs font-bold text-gray-800">{label}</p>
+										) : null}
+										<p className="leading-5 whitespace-pre-wrap">
+											{renderSegments(
+												entityHighlightsEnabled && entities.length
+													? splitReferenceAndEntityText(rest, entities)
+													: splitReferenceText(rest),
+												`${message.id}-content`,
+											)}
+										</p>
+									</>
+								);
+							})()
+						)}
 
-					{message.suggestedQuestions?.length ? (
-						<SuggestedQuestions
-							questions={message.suggestedQuestions}
-							onSuggestedQuestionClick={onSuggestedQuestionClick}
-						/>
-					) : null}
+						{message.suggestedQuestions?.length ? (
+							<SuggestedQuestions
+								questions={message.suggestedQuestions}
+								onSuggestedQuestionClick={onSuggestedQuestionClick}
+							/>
+						) : null}
 
-					{message.citations?.length ? (
-						<CitationChips
-							citations={message.citations}
-							onFocusNodeFromPanel={onFocusNodeFromPanel}
-						/>
-					) : null}
-				</div>
-
-				{isUser ? (
-					<span className="mt-1 inline-flex shrink-0 items-center justify-center text-blue-600">
-						<UserIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
-						<span className="sr-only">You</span>
-					</span>
-				) : null}
-			</div>
-		</div>
+						{message.citations?.length ? (
+							<CitationChips
+								citations={message.citations}
+								onFocusNodeFromPanel={onFocusNodeFromPanel}
+							/>
+						) : null}
+					</BubbleContent>
+				</Bubble>
+			</MessageContent>
+		</Message>
 	);
 }

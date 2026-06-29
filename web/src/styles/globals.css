@@ -123,7 +123,34 @@
 
 	.docx-reference-chip:focus-visible {
 		outline: none;
-		box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+		box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.35);
+	}
+
+	/* Animated gradient sweep across text — used by the chat "Thinking…" status. */
+	.shimmer {
+		background: linear-gradient(
+			90deg,
+			var(--muted-foreground) 0%,
+			var(--muted-foreground) 35%,
+			var(--foreground) 50%,
+			var(--muted-foreground) 65%,
+			var(--muted-foreground) 100%
+		);
+		background-size: 200% 100%;
+		background-clip: text;
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		color: transparent;
+		animation: contravis-text-shimmer 1.8s ease-in-out infinite;
+	}
+
+	@keyframes contravis-text-shimmer {
+		0% {
+			background-position: 100% 0;
+		}
+		100% {
+			background-position: -100% 0;
+		}
 	}
 }
 
@@ -164,12 +191,12 @@
 	--sidebar-accent-foreground: oklch(0.42 0.15 262);
 	--sidebar-border: oklch(0.92 0.008 262);
 	--sidebar-ring: oklch(0.62 0.17 262);
-	--docx-reference-chip-border: #fcd34d;
-	--docx-reference-chip-bg: #fef9c3;
-	--docx-reference-chip-text: #a16207;
-	--docx-reference-chip-border-hover: #f59e0b;
-	--docx-reference-chip-bg-hover: #fef3c7;
-	--docx-reference-chip-text-hover: #92400e;
+	--docx-reference-chip-border: #7dd3fc;
+	--docx-reference-chip-bg: #e0f2fe;
+	--docx-reference-chip-text: #0369a1;
+	--docx-reference-chip-border-hover: #38bdf8;
+	--docx-reference-chip-bg-hover: #bae6fd;
+	--docx-reference-chip-text-hover: #075985;
 }
 
 .dark {
@@ -206,10 +233,10 @@
 	--sidebar-accent-foreground: oklch(0.985 0 0);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.55 0.16 262);
-	--docx-reference-chip-border: #fbbf24;
-	--docx-reference-chip-bg: rgba(113, 63, 18, 0.42);
-	--docx-reference-chip-text: #fef08a;
-	--docx-reference-chip-border-hover: #f59e0b;
-	--docx-reference-chip-bg-hover: rgba(120, 53, 15, 0.56);
-	--docx-reference-chip-text-hover: #fde68a;
+	--docx-reference-chip-border: #0ea5e9;
+	--docx-reference-chip-bg: rgba(12, 74, 110, 0.45);
+	--docx-reference-chip-text: #bae6fd;
+	--docx-reference-chip-border-hover: #38bdf8;
+	--docx-reference-chip-bg-hover: rgba(7, 89, 133, 0.6);
+	--docx-reference-chip-text-hover: #e0f2fe;
 }

@@ -2,7 +2,6 @@
 
 import type { KeyboardEvent } from 'react';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
 import type { AssistantChatMessage } from '@/types/document';
 
 import { AssistantInputBox } from '@/features/docx/components/assistant/AssistantInputBox';
@@ -53,18 +52,16 @@ export function RightPanelAssistant({
 }: RightPanelAssistantProps) {
 	return (
 		<section className="flex min-h-0 flex-1 flex-col bg-white">
-			<ScrollArea className="min-h-0 flex-1">
-				<AssistantMessageList
-					messages={messages}
-					loading={loading}
-					entityHighlightsEnabled={entityHighlightsEnabled}
-					rewriteBusy={rewriteBusy}
-					onSuggestedQuestionClick={onSuggestedQuestionClick}
-					onFocusNodeFromPanel={onFocusNodeFromPanel}
-					onToggleEntityHighlights={onToggleEntityHighlights}
-					onAcceptFixSuggestion={onAcceptFixSuggestion}
-				/>
-			</ScrollArea>
+			<AssistantMessageList
+				messages={messages}
+				loading={loading}
+				entityHighlightsEnabled={entityHighlightsEnabled}
+				rewriteBusy={rewriteBusy}
+				onSuggestedQuestionClick={onSuggestedQuestionClick}
+				onFocusNodeFromPanel={onFocusNodeFromPanel}
+				onToggleEntityHighlights={onToggleEntityHighlights}
+				onAcceptFixSuggestion={onAcceptFixSuggestion}
+			/>
 
 			{error ? (
 				<div className="border-t border-red-100 bg-red-50 px-3 py-1.5 text-[10px] text-red-700">

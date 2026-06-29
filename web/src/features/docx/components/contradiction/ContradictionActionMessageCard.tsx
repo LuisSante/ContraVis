@@ -3,6 +3,7 @@
 import { ContractChatAssistantIcon, UserIcon } from '@/components/common/icons';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { shortReferenceLabel } from '@/features/docx/utils/text';
 import type { AssistantChatMessage } from '@/types/document';
 
 interface ContradictionActionMessageCardProps {
@@ -50,9 +51,10 @@ export function ContradictionActionMessageCard({
 							<button
 								type="button"
 								className="docx-reference-chip"
+								title={fix.paragraphId}
 								onClick={() => onFocusNodeFromPanel(fix.paragraphId, true)}
 							>
-								{fix.paragraphId}
+								{shortReferenceLabel(fix.paragraphId)}
 							</button>
 						</div>
 						{fix.status === 'applied' ? (

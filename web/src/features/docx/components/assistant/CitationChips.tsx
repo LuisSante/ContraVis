@@ -1,5 +1,6 @@
 'use client';
 
+import { shortReferenceLabel } from '@/features/docx/utils/text';
 import type { AssistantCitation } from '@/types/document';
 
 interface CitationChipsProps {
@@ -22,10 +23,10 @@ export function CitationChips({ citations, onFocusNodeFromPanel }: CitationChips
 					key={`${citation.id}-${index}`}
 					type="button"
 					className="docx-reference-chip"
-					title={citation.excerpt}
+					title={citation.excerpt ? `${citation.id} — ${citation.excerpt}` : citation.id}
 					onClick={() => onFocusNodeFromPanel(citation.id, true)}
 				>
-					{citation.id}
+					{shortReferenceLabel(citation.id)}
 				</button>
 			))}
 		</div>

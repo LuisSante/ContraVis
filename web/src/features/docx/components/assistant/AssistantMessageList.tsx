@@ -1,8 +1,19 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-
-import { Skeleton } from '@/components/ui/skeleton';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Bubble, BubbleContent } from '@/components/ui/bubble';
+import { Marker, MarkerContent, MarkerIcon } from '@/components/ui/marker';
+import { Message, MessageAvatar, MessageContent } from '@/components/ui/message';
+import {
+	MessageScroller,
+	MessageScrollerButton,
+	MessageScrollerContent,
+	MessageScrollerItem,
+	MessageScrollerProvider,
+	MessageScrollerViewport,
+} from '@/components/ui/message-scroller';
+import { Spinner } from '@/components/ui/spinner';
+import { ContractChatAssistantIcon } from '@/components/common/icons';
 import type { AssistantChatMessage } from '@/types/document';
 
 import { AssistantMessage } from '@/features/docx/components/assistant/AssistantMessage';
@@ -18,10 +29,38 @@ interface AssistantMessageListProps {
 	onAcceptFixSuggestion?: (messageId: string) => void | Promise<void>;
 }
 
+/** Assistant "thinking" placeholder: a muted bubble with a shimmering status. */
+function LoadingBubble() {
+	return (
+		<Message align="start">
+			<MessageAvatar>
+				<Avatar size="sm">
+					<AvatarFallback className="text-gray-500">
+						<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
+						<span className="sr-only">Assistant</span>
+					</AvatarFallback>
+				</Avatar>
+			</MessageAvatar>
+			<MessageContent>
+				<Bubble variant="muted" align="start">
+					<BubbleContent>
+						<Marker role="status" className="w-auto text-xs">
+							<MarkerIcon>
+								<Spinner className="size-3.5" />
+							</MarkerIcon>
+							<MarkerContent className="shimmer">Reviewing the contract…</MarkerContent>
+						</Marker>
+					</BubbleContent>
+				</Bubble>
+			</MessageContent>
+		</Message>
+	);
+}
+
 /**
  * Scrollable list of chat messages plus the loading skeleton. Auto-scrolls to
- * the bottom whenever new messages arrive or loading toggles. Ported from the
- * message-list region of the Svelte `RightPanelAssistant` component.
+ * the latest message via the shadcn message-scroller (autoScroll + last-anchor),
+ * and exposes a "scroll to latest" button when the user scrolls up.
  */
 export function AssistantMessageList({
 	messages,
@@ -33,55 +72,55 @@ export function AssistantMessageList({
 	onToggleEntityHighlights,
 	onAcceptFixSuggestion,
 }: AssistantMessageListProps) {
-	const bottomRef = useRef<HTMLDivElement | null>(null);
-
-	useEffect(() => {
-		bottomRef.current?.scrollIntoView({ block: 'end' });
-	}, [messages.length, loading]);
+	const lastIndex = messages.length - 1;
 
 	return (
-		<div className="flex min-h-full flex-col gap-2 p-2">
-			<div className="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-[10px] text-blue-800">
-				Tip: click an assistant message to toggle entity highlights.
-			</div>
-			<div className="rounded-md border border-indigo-100 bg-indigo-50/60 px-2 py-1 text-[10px] text-indigo-800">
-				Tip: hold <span className="font-semibold">Shift + Scroll</span> to bring related/evidence
-				blocks closer.
-			</div>
-
-			{messages.length === 0 && !loading ? (
-				<div className="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
-					<p className="text-[10px] italic">Chat about this contract</p>
-				</div>
-			) : null}
-
-			{messages.map((message) => (
-				<AssistantMessage
-					key={message.id}
-					message={message}
-					onSuggestedQuestionClick={onSuggestedQuestionClick}
-					onFocusNodeFromPanel={onFocusNodeFromPanel}
-					entityHighlightsEnabled={entityHighlightsEnabled}
-					rewriteBusy={rewriteBusy}
-					onToggleEntityHighlights={onToggleEntityHighlights}
-					onAcceptFixSuggestion={onAcceptFixSuggestion}
-				/>
-			))}
-
-			{loading ? (
-				<div className="flex justify-start">
-					<div className="w-[82%] max-w-[92%] rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
-						<div className="space-y-2">
-							<Skeleton className="h-3.5 w-28" />
-							<Skeleton className="h-3 w-full" />
-							<Skeleton className="h-3 w-[92%]" />
-							<Skeleton className="h-3 w-[70%]" />
+		<MessageScrollerProvider autoScroll defaultScrollPosition="end">
+			<MessageScroller className="min-h-0 flex-1">
+				<MessageScrollerViewport>
+					<MessageScrollerContent className="gap-3 p-2">
+						<div className="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-[10px] text-blue-800">
+							Tip: click an assistant message to toggle entity highlights.
 						</div>
-					</div>
-				</div>
-			) : null}
+						<div className="rounded-md border border-indigo-100 bg-indigo-50/60 px-2 py-1 text-[10px] text-indigo-800">
+							Tip: hold <span className="font-semibold">Shift + Scroll</span> to bring
+							related/evidence blocks closer.
+						</div>
 
-			<div ref={bottomRef} />
-		</div>
+						{messages.length === 0 && !loading ? (
+							<div className="flex flex-1 flex-col items-center justify-center py-10 text-gray-500">
+								<p className="text-[10px] italic">Chat about this contract</p>
+							</div>
+						) : null}
+
+						{messages.map((message, index) => (
+							<MessageScrollerItem
+								key={message.id}
+								messageId={message.id}
+								scrollAnchor={!loading && index === lastIndex}
+							>
+								<AssistantMessage
+									message={message}
+									onSuggestedQuestionClick={onSuggestedQuestionClick}
+									onFocusNodeFromPanel={onFocusNodeFromPanel}
+									entityHighlightsEnabled={entityHighlightsEnabled}
+									rewriteBusy={rewriteBusy}
+									onToggleEntityHighlights={onToggleEntityHighlights}
+									onAcceptFixSuggestion={onAcceptFixSuggestion}
+								/>
+							</MessageScrollerItem>
+						))}
+
+						{loading ? (
+							<MessageScrollerItem scrollAnchor>
+								<LoadingBubble />
+							</MessageScrollerItem>
+						) : null}
+					</MessageScrollerContent>
+				</MessageScrollerViewport>
+
+				<MessageScrollerButton direction="end" />
+			</MessageScroller>
+		</MessageScrollerProvider>
 	);
 }

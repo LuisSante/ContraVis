@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
+    "@shadcn/react": "^0.1.0",
     "@tanstack/react-query": "^5.101.2",
     "axios": "^1.18.1",
     "class-variance-authority": "^0.7.1",

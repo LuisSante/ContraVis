@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
 import { hexToRgba } from '@/features/docx/utils/contradiction/contradiction';
 import { cn } from '@/lib/utils';
 import type {
@@ -46,10 +47,10 @@ export function ContradictionSummary({
 				const itemStyle = resolveContradictionTypeStyle(item.contradictionType);
 				const isSelected = selectedParagraph?.id === item.paragraphId;
 				return (
-					<div
+					<Card
 						key={item.paragraphId}
 						className={cn(
-							'overflow-hidden rounded-lg border bg-white transition-[border-color,box-shadow,background-color] duration-200',
+							'gap-0 overflow-hidden rounded-lg border py-0 shadow-none transition-[border-color,box-shadow,background-color] duration-200',
 							isSelected
 								? 'shadow-[0_4px_12px_rgba(15,23,42,0.08)]'
 								: 'hover:shadow-[0_2px_10px_rgba(15,23,42,0.08)]',
@@ -64,7 +65,7 @@ export function ContradictionSummary({
 						<button
 							type="button"
 							className={cn(
-								'w-full px-3 py-2 text-left text-[11px] transition',
+								'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[11px] transition',
 								isSelected
 									? 'font-semibold'
 									: 'cursor-pointer text-gray-700 hover:bg-white/70',
@@ -77,15 +78,20 @@ export function ContradictionSummary({
 							onClick={() => onFocusNodeFromPanel(item.paragraphId, true)}
 						>
 							<span className="inline-flex items-center gap-2">
+								<span
+									className="inline-block size-2 shrink-0 rounded-full"
+									style={{ background: itemStyle.color }}
+									aria-hidden="true"
+								/>
 								<span>Contradiction {index + 1}</span>
-								<Badge
-									variant="outline"
-									className="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
-									style={{ borderColor: itemStyle.color, color: itemStyle.color }}
-								>
-									{itemStyle.label}
-								</Badge>
 							</span>
+							<Badge
+								variant="outline"
+								className="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+								style={{ borderColor: itemStyle.color, color: itemStyle.color }}
+							>
+								{itemStyle.label}
+							</Badge>
 						</button>
 
 						{isSelected && selectedContradictionResult?.contradiction ? (
@@ -96,7 +102,7 @@ export function ContradictionSummary({
 								onFocusEvidenceSnippet={onFocusEvidenceSnippet}
 							/>
 						) : null}
-					</div>
+					</Card>
 				);
 			})}
 		</div>

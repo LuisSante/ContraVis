@@ -173,7 +173,7 @@ export default function Home() {
 				</span>
 			</div>
 
-			{isPending ? (
+			{isPending || isError ? (
 				<div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
 					{Array.from({ length: 6 }).map((_, index) => (
 						<Card key={index} className="flex-row items-start gap-3 p-3 shadow-none">
@@ -185,10 +185,6 @@ export default function Home() {
 						</Card>
 					))}
 				</div>
-			) : isError ? (
-				<p className="py-12 text-center text-destructive">
-					Could not load CUAD documents from backend.
-				</p>
 			) : filteredDocuments.length === 0 ? (
 				<div className="flex flex-col items-center gap-2 py-16 text-center text-muted-foreground">
 					<Search className="size-6" />

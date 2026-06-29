@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, HelpCircle, Minus, Send, Square, Wand2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { ChatIcon } from '@/components/common/icons';
 import type { AssistantChatMessage } from '@/types/document';
@@ -180,7 +179,7 @@ export function ContradictionChatPanel({
 
 			{isOpen ? (
 				<>
-					<ScrollArea className="min-h-0 flex-1 rounded-lg border border-border bg-muted/30">
+					<div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-muted/30">
 						<AssistantMessageList
 							messages={messages}
 							loading={loading}
@@ -191,7 +190,7 @@ export function ContradictionChatPanel({
 							onToggleEntityHighlights={onToggleEntityHighlights}
 							onAcceptFixSuggestion={onAcceptFixSuggestion}
 						/>
-					</ScrollArea>
+					</div>
 
 					{error ? <p className="mt-1 text-[10px] text-destructive">{error}</p> : null}
 

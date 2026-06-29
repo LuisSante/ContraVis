@@ -11,6 +11,18 @@ export type ReferenceTextSegment = {
 
 export const PARAGRAPH_REFERENCE_PATTERN = /\S+-p-\d+(?=$|[\s.,;:!?\)\]])/g;
 
+/**
+ * Short, human-friendly label for a paragraph reference id. The full id (e.g.
+ * `target:ACME_INC_..-Supply_Agreement-p-228`) is kept for click handling and
+ * tooltips; only the visible chip text is shortened — to `¶ 228`.
+ */
+export function shortReferenceLabel(reference: string): string {
+	const paragraph = reference.match(/-p-(\d+)\s*$/);
+	if (paragraph) return `¶ ${paragraph[1]}`;
+	const tail = reference.split(/[-_/:]+/).filter(Boolean).pop();
+	return tail ?? reference;
+}
+
 export function splitReferenceText(value: string): ReferenceTextSegment[] {
 	if (!value) return [];
 	const segments: ReferenceTextSegment[] = [];
