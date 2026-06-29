@@ -32,10 +32,10 @@ export function DocxPageHeader({
 	modelDisabled,
 }: DocxPageHeaderProps) {
 	return (
-		<header className="flex flex-none items-center gap-3 border-b border-border bg-background/85 px-4 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+		<header className="flex flex-none items-center gap-3 border-b border-border bg-header px-4 py-2.5">
 			<Link
 				href="/"
-				className="flex size-7 flex-none items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+				className="flex size-7 flex-none items-center justify-center rounded-lg text-header-foreground/70 transition-colors hover:bg-header-foreground/15 hover:text-header-foreground"
 				aria-label="Back to documents"
 				title="Back to documents"
 			>
@@ -43,10 +43,10 @@ export function DocxPageHeader({
 			</Link>
 
 			<div className="flex min-w-0 flex-1 items-center gap-2">
-				<span className="flex size-7 flex-none items-center justify-center rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300">
+				<span className="flex size-7 flex-none items-center justify-center rounded-lg bg-card text-primary shadow-sm">
 					<FileText className="size-4" />
 				</span>
-				<div className="min-w-0 truncate text-sm font-medium text-foreground">
+				<div className="min-w-0 truncate text-sm font-medium text-header-foreground">
 					{documentName || 'No document selected'}
 				</div>
 			</div>
@@ -54,17 +54,17 @@ export function DocxPageHeader({
 			<div className="flex shrink-0 items-center gap-2.5">
 				{costLabel && (
 					<div
-						className="flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+						className="flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-[11px] font-medium text-primary shadow-sm"
 						title="Total accumulated real LLM usage cost"
 					>
-						<Coins className="size-3 text-blue-500" />
+						<Coins className="size-3 text-primary" />
 						{costLabel}
 					</div>
 				)}
 				<Select value={model} onValueChange={onModelChange} disabled={modelDisabled}>
 					<SelectTrigger
 						size="sm"
-						className="h-7 w-[88px] shrink-0 px-2 text-[11px]"
+						className="h-7 w-[88px] shrink-0 border-transparent bg-card px-2 text-[11px] text-primary shadow-sm hover:bg-card/90 focus-visible:ring-header-foreground/40 [&_svg]:text-primary"
 						title="Global model for Contradiction Analysis and Paragraph Explanation"
 					>
 						<SelectValue />

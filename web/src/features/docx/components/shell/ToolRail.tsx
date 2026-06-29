@@ -52,7 +52,7 @@ export function ToolRail({
 		>
 			<div
 				className={cn(
-					'relative flex h-full flex-col border-l border-gray-200 bg-white py-2 transition-[width,padding] duration-200 ease-out',
+					'relative flex h-full flex-col border-l border-header-foreground/10 bg-header py-2 transition-[width,padding] duration-200 ease-out',
 					labelsPinned ? 'ml-auto w-[calc(100%-6px)] px-1.5' : 'w-9 items-center px-[2px]'
 				)}
 			>
@@ -63,14 +63,14 @@ export function ToolRail({
 					)}
 				>
 					{labelsPinned && (
-						<span className="ml-1 text-[17px] font-semibold tracking-wide text-gray-600">
+						<span className="ml-1 text-[17px] font-semibold tracking-wide text-header-foreground">
 							{TOOL_BRAND_SHORT_NAME}
 						</span>
 					)}
 					<Button
 						variant="ghost"
 						size="icon-sm"
-						className="border border-transparent bg-transparent text-slate-500 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+						className="border border-transparent bg-transparent text-header-foreground/70 hover:bg-header-foreground/15 hover:text-header-foreground"
 						onClick={onToggleLabels}
 						aria-label={labelsPinned ? 'Collapse tool names' : 'Expand tool names'}
 						title={labelsPinned ? 'Hide names' : 'Show names'}
@@ -92,7 +92,7 @@ export function ToolRail({
 					</Button>
 				</div>
 
-				<div className="mb-7 h-px w-full bg-gray-200" aria-hidden="true" />
+				<div className="mb-7 h-px w-full bg-header-foreground/15" aria-hidden="true" />
 
 				<div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
 					{RIGHT_PANEL_TOOLS.map((item) => {
@@ -108,11 +108,11 @@ export function ToolRail({
 										: 'h-8 w-8 justify-center',
 									labelsPinned
 										? isActive
-											? 'border-blue-200 bg-blue-50 text-blue-700 shadow-[0_4px_10px_rgba(59,130,246,0.2)]'
-											: 'text-slate-600 hover:border-blue-100 hover:bg-blue-50/70 hover:text-blue-700'
+											? 'bg-card text-primary shadow-sm'
+											: 'text-header-foreground/75 hover:bg-header-foreground/15 hover:text-header-foreground'
 										: isActive
-											? 'border-blue-300 bg-blue-100 text-blue-700 shadow-[0_0_0_2px_rgba(147,197,253,0.55),0_7px_16px_rgba(29,78,216,0.25)]'
-											: 'text-blue-700 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-[0_6px_14px_rgba(59,130,246,0.22)]'
+											? 'bg-card text-primary shadow-sm'
+											: 'text-header-foreground/75 hover:bg-header-foreground/15 hover:text-header-foreground'
 								)}
 								onClick={() => onSelectTool(item.id)}
 								disabled={disabled}

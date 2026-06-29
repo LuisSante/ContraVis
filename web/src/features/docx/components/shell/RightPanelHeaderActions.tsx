@@ -13,7 +13,7 @@ import { PROVIDER_OPTIONS } from '@/constants/docx-viewer';
 import type { AssistantProvider, AssistantScope, RightPanelTab } from '@/types/document';
 
 const ACTION_BTN =
-	'h-7 border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:border-blue-300 hover:bg-blue-100';
+	'h-7 border-transparent bg-card px-2 text-[10px] text-primary shadow-sm hover:bg-card/90 hover:text-primary disabled:opacity-50';
 
 interface RightPanelHeaderActionsProps {
 	activeTab: RightPanelTab;
@@ -101,7 +101,7 @@ export function RightPanelHeaderActions({
 				<Select value={provider} onValueChange={(value) => onProviderChange(value as AssistantProvider)}>
 					<SelectTrigger
 						size="sm"
-						className="h-7 w-[92px] shrink-0 border-gray-200 bg-white px-1.5 text-[10px] text-gray-600"
+						className="h-7 w-[92px] shrink-0 border-header-foreground/20 bg-header-foreground/10 px-1.5 text-[10px] text-header-foreground [&_svg]:text-header-foreground/70"
 						title="Assistant provider"
 					>
 						<SelectValue />
@@ -118,14 +118,14 @@ export function RightPanelHeaderActions({
 						))}
 					</SelectContent>
 				</Select>
-				<div className="flex h-7 items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2">
-					<span className="text-[10px] font-semibold text-gray-600">Paragraph</span>
+				<div className="flex h-7 items-center gap-1.5 rounded-md border border-header-foreground/20 bg-header-foreground/10 px-2">
+					<span className="text-[10px] font-semibold text-header-foreground/90">Paragraph</span>
 					<Switch
-						className="data-[state=checked]:bg-blue-600"
+						className="data-[state=checked]:bg-header-foreground data-[state=checked]:[&>span]:bg-header data-[state=unchecked]:bg-header-foreground/30"
 						checked={scope === 'full_contract'}
 						onCheckedChange={(checked) => onScopeChange(checked ? 'full_contract' : 'selected')}
 					/>
-					<span className="text-[10px] font-semibold text-gray-600">Full contract</span>
+					<span className="text-[10px] font-semibold text-header-foreground/90">Full contract</span>
 				</div>
 			</div>
 		);
