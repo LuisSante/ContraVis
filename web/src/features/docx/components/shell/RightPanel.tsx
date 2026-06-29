@@ -69,8 +69,8 @@ export function RightPanel({
 		>
 			<header className="flex items-center justify-between border-b border-border bg-header px-4 py-2.5">
 				<div className="flex min-w-0 flex-1 items-center gap-2">
-					<h2 className="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-header-foreground">
-						<span className="shrink-0 text-header-foreground/90">
+					<h2 className="inline-flex min-w-0 flex-1 items-center gap-2 truncate text-sm font-semibold text-primary">
+						<span className="shrink-0 text-primary">
 							<Icon className="h-4 w-4" />
 						</span>
 						<span className="truncate">{label}</span>

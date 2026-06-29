@@ -51,7 +51,7 @@ export function AssistantInputBox({
 							type="button"
 							variant="outline"
 							size="sm"
-							className="h-7 w-auto shrink-0 rounded-full border-blue-200 bg-blue-50/60 px-3 text-[11px] text-blue-700 hover:bg-blue-600 hover:text-white dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
+							className="h-7 w-auto shrink-0 rounded-full border-blue-200 bg-blue-50/60 px-3 text-[11px] text-blue-700 hover:bg-indigo-600 hover:text-white dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
 							onClick={() => onSuggestionClick?.(suggestion)}
 						>
 							{suggestion}
@@ -74,7 +74,7 @@ export function AssistantInputBox({
 					type="submit"
 					size="icon"
 					disabled={loading}
-					className="size-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+					className="size-8 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
 					aria-label="Send chat message"
 					title="Send"
 				>

@@ -97,7 +97,7 @@ function GroupChip({
 			onClick={onClick}
 			className={
 				active
-					? 'h-7 rounded-full bg-blue-600 px-3 text-xs text-white hover:bg-blue-700'
+					? 'h-7 rounded-full bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-700'
 					: 'h-7 rounded-full px-3 text-xs text-muted-foreground'
 			}
 		>
@@ -136,7 +136,7 @@ export default function Home() {
 	return (
 		<main className="mx-auto w-full max-w-5xl px-6 py-12">
 			<header className="mb-8 flex items-center gap-3">
-				<span className="flex size-10 flex-none items-center justify-center rounded-xl bg-blue-600 text-white">
+				<span className="flex size-10 flex-none items-center justify-center rounded-xl bg-indigo-600 text-white">
 					<Scale className="size-5" />
 				</span>
 				<div>

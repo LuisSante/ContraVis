@@ -156,7 +156,7 @@ export function ContradictionChatPanel({
 				</Button>
 				<Button
 					size="sm"
-					className="h-6 gap-1 rounded-full bg-blue-600 px-2 text-[10px] text-white hover:bg-blue-700"
+					className="h-6 gap-1 rounded-full bg-indigo-600 px-2 text-[10px] text-white hover:bg-indigo-700"
 					disabled={rewriteBusy || loading}
 					onClick={() => runQuickAction(onSuggestFix)}
 				>
@@ -206,7 +206,7 @@ export function ContradictionChatPanel({
 						/>
 						<Button
 							size="icon"
-							className="size-8 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+							className="size-8 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
 							onClick={onSubmit}
 							disabled={loading}
 							aria-label="Send contradiction chat message"

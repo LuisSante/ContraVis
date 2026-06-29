@@ -244,7 +244,7 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 
 	return (
 		<main
-			className={`relative flex h-screen w-screen overflow-hidden bg-gray-100 font-sans ${
+			className={`relative flex h-screen w-screen overflow-hidden bg-[var(--canvas)] font-sans ${
 				relatedActive ? 'related-badges-on' : 'related-badges-off'
 			} ${relatedFocusOn ? 'related-focus-on' : ''}`}
 		>

@@ -42,7 +42,7 @@ export function LlmEstimateDialog({ estimate, isOpen, onResolve }: LlmEstimateDi
 					</Button>
 					<Button
 						size="sm"
-						className="bg-blue-600 text-white hover:bg-blue-700"
+						className="bg-indigo-600 text-white hover:bg-indigo-700"
 						onClick={() => onResolve(true)}
 					>
 						Send
