@@ -241,18 +241,18 @@ export function StructuredContradictionMessage({
 
 			<div className="rounded-xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/65 to-sky-50/35 px-2.5 py-2.5 shadow-[0_10px_28px_-18px_rgba(15,23,42,0.45)]">
 				<Tabs value={chatPreviewTab} onValueChange={handleTabChange} className="gap-1.5">
-					<TabsList className="h-6 w-full border border-gray-200 bg-white p-[2px]">
-						<TabsTrigger value="contradiction" className="text-[9px] font-semibold">
+					<TabsList className="h-6 w-full border border-border bg-card p-[2px]">
+						<TabsTrigger value="contradiction" className="text-2xs font-semibold">
 							Contradiction
 						</TabsTrigger>
-						<TabsTrigger value="claims" className="text-[9px] font-semibold">
+						<TabsTrigger value="claims" className="text-2xs font-semibold">
 							Snippet
 						</TabsTrigger>
 					</TabsList>
 
-					<TabsContent value="contradiction" className="text-[11px]">
+					<TabsContent value="contradiction" className="text-2xs">
 						<p
-							className="leading-relaxed break-words whitespace-normal text-gray-700"
+							className="leading-relaxed break-words whitespace-normal text-foreground"
 							onMouseLeave={clearChatPreviewHover}
 						>
 							{chatSegments.map((segment, segmentIndex) => {
@@ -297,18 +297,18 @@ export function StructuredContradictionMessage({
 											<TooltipContent
 												side="top"
 												sideOffset={6}
-												className="max-w-[290px] border border-gray-200 bg-white px-2 py-1.5 text-gray-700 shadow-md"
+												className="max-w-[290px] border border-border bg-card px-2 py-1.5 text-foreground shadow-md"
 											>
 												<div className="space-y-1">
 													<Badge
 														variant="outline"
-														className="h-4 px-1.5 text-[9px] font-semibold"
+														className="h-4 px-1.5 text-2xs font-semibold"
 														style={tooltipData.badgeStyle}
 													>
 														{tooltipData.badgeText}
 													</Badge>
 													{tooltipData.description ? (
-														<p className="text-[9px] leading-relaxed text-gray-600">
+														<p className="text-2xs leading-relaxed text-muted-foreground">
 															{tooltipData.description}
 														</p>
 													) : null}
@@ -339,7 +339,7 @@ export function StructuredContradictionMessage({
 								<Badge
 									key={category}
 									variant="outline"
-									className="h-4 items-center gap-1 border-gray-200 bg-white px-1.5 text-[9px] text-gray-600"
+									className="h-4 items-center gap-1 border-border bg-card px-1.5 text-2xs text-muted-foreground"
 								>
 									<span
 										className="inline-flex h-2 w-2 rounded-full"
@@ -351,8 +351,8 @@ export function StructuredContradictionMessage({
 						</div>
 					</TabsContent>
 
-					<TabsContent value="claims" className="text-[11px]">
-						<p className="leading-relaxed break-words whitespace-normal text-gray-700">
+					<TabsContent value="claims" className="text-2xs">
+						<p className="leading-relaxed break-words whitespace-normal text-foreground">
 							{chatSegments.map((segment, segmentIndex) =>
 								segment.claimSide ? (
 									<span
@@ -371,7 +371,7 @@ export function StructuredContradictionMessage({
 						<div className="mt-2 flex flex-wrap gap-1.5">
 							<Badge
 								variant="outline"
-								className="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+								className="h-4 items-center gap-1 px-1.5 text-2xs font-semibold"
 								style={{
 									borderColor: `${CONTRADICTION_CLAIM_SIDE_COLORS.a}55`,
 									background: `${CONTRADICTION_CLAIM_SIDE_COLORS.a}14`,
@@ -386,7 +386,7 @@ export function StructuredContradictionMessage({
 							</Badge>
 							<Badge
 								variant="outline"
-								className="h-4 items-center gap-1 px-1.5 text-[9px] font-semibold"
+								className="h-4 items-center gap-1 px-1.5 text-2xs font-semibold"
 								style={{
 									borderColor: `${CONTRADICTION_CLAIM_SIDE_COLORS.b}55`,
 									background: `${CONTRADICTION_CLAIM_SIDE_COLORS.b}14`,

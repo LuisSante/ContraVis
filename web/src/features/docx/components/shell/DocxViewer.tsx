@@ -9,6 +9,7 @@ import { LlmEstimateDialog } from '@/features/docx/components/shell/LlmEstimateD
 import { RightPanelHeaderActions } from '@/features/docx/components/shell/RightPanelHeaderActions';
 import { RightPanelContent } from '@/features/docx/components/shell/RightPanelContent';
 import { useRightDrawer } from '@/features/docx/hooks/useRightDrawer';
+import { useIsDesktop } from '@/hooks/useMediaQuery';
 import { useLlmEstimate } from '@/features/docx/hooks/useLlmEstimate';
 import { useDocumentEntityHighlights } from '@/features/docx/hooks/useDocumentEntityHighlights';
 import { useRelatedBadges } from '@/features/docx/hooks/useRelatedBadges';
@@ -38,6 +39,21 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 	const docId = id ?? '';
 
 	const drawer = useRightDrawer();
+	// Below the `lg` breakpoint the three-zone layout collapses: the panel becomes
+	// an overlay sheet over the full-width document instead of shrinking it.
+	const isDesktop = useIsDesktop();
+	const { open: openDrawer, close: closeDrawer } = drawer;
+	const wasDesktopRef = useRef(isDesktop);
+	useEffect(() => {
+		if (wasDesktopRef.current && !isDesktop) {
+			// Desktop → narrow: hide the overlay so the document leads on small screens.
+			closeDrawer();
+		} else if (!wasDesktopRef.current && isDesktop) {
+			// Narrow → desktop: restore the side-by-side panel.
+			openDrawer();
+		}
+		wasDesktopRef.current = isDesktop;
+	}, [isDesktop, openDrawer, closeDrawer]);
 	const llmEstimate = useLlmEstimate();
 	// Confirming (Ctrl/Cmd+Enter) a paragraph edit recomputes the graph.
 	const onParagraphCommitRef = useRef<(() => void) | null>(null);
@@ -240,7 +256,12 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 		);
 	}
 
-	const leftWidth = `calc(100% - ${drawer.sidebarWidth + (drawer.isOpen ? drawer.width : 0)}px)`;
+	// Desktop: the document shares the row with the open panel. Narrow: the panel
+	// overlays, so the document keeps the full width (minus only the tool rail).
+	const leftWidth = isDesktop
+		? `calc(100% - ${drawer.sidebarWidth + (drawer.isOpen ? drawer.width : 0)}px)`
+		: `calc(100% - ${drawer.sidebarWidth}px)`;
+	const overlayPanel = !isDesktop;
 
 	return (
 		<main
@@ -312,18 +333,27 @@ export function DocxViewer({ searchParams }: DocxViewerProps) {
 				/>
 			</RightPanel>
 
-			{drawer.isOpen && !graphBlocking && (
+			{overlayPanel && drawer.isOpen && !graphBlocking && (
+				<button
+					type="button"
+					aria-label="Close panel"
+					className="absolute inset-0 z-30 bg-foreground/30 transition-opacity duration-300"
+					onClick={drawer.close}
+				/>
+			)}
+
+			{isDesktop && drawer.isOpen && !graphBlocking && (
 				<div
 					role="separator"
 					aria-orientation="vertical"
 					aria-label="Resize side panel"
 					tabIndex={0}
-					className="absolute top-0 bottom-0 z-50 w-1 cursor-col-resize bg-gray-200/80 transition hover:bg-teal-300 focus:bg-teal-400 focus:outline-none"
+					className="absolute top-0 bottom-0 z-50 w-1 cursor-col-resize bg-border transition hover:bg-primary/50 focus:bg-primary focus:outline-none"
 					style={{ right: drawer.sidebarWidth + drawer.width }}
 					onMouseDown={startDrawerResize}
 					onKeyDown={handleDrawerResizeKeydown}
 				>
-					<span className="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray-400/70" />
+					<span className="pointer-events-none absolute top-1/2 left-1/2 h-10 w-[2px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-muted-foreground/40" />
 				</div>
 			)}
 

@@ -48,7 +48,7 @@ export function EvidenceSnippetDisplay({
 				<CardHeader className="gap-0 px-2.5 pt-2 pb-1">
 					<Badge
 						variant="outline"
-						className="h-4 rounded-full bg-white/70 px-1.5 text-[8px] font-semibold"
+						className="h-4 rounded-full bg-card/70 px-1.5 text-2xs font-semibold"
 						style={{ borderColor: typeColor, color: typeColor }}
 					>
 						Snippet A
@@ -57,7 +57,7 @@ export function EvidenceSnippetDisplay({
 				<CardContent className="px-2.5 pb-2">
 				<Button
 					variant="ghost"
-					className="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-900"
+					className="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-2xs leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-foreground hover:bg-transparent hover:text-foreground"
 					onClick={() =>
 						selectedContradictionResult &&
 						onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'a')
@@ -72,7 +72,7 @@ export function EvidenceSnippetDisplay({
 									style={{
 										background: hexToRgba(typeColor, 0.36),
 										boxShadow: `inset 0 0 0 1px ${hexToRgba(typeColor, 0.7)}`,
-										color: '#1f2937',
+										color: 'var(--foreground)',
 										fontWeight: 700,
 									}}
 								>
@@ -94,7 +94,7 @@ export function EvidenceSnippetDisplay({
 				<CardHeader className="gap-0 px-2.5 pt-2 pb-1">
 					<Badge
 						variant="outline"
-						className="h-4 rounded-full bg-white/70 px-1.5 text-[8px] font-semibold"
+						className="h-4 rounded-full bg-card/70 px-1.5 text-2xs font-semibold"
 						style={{ borderColor: snippetBStyle.color, color: snippetBStyle.color }}
 					>
 						Snippet B
@@ -103,7 +103,7 @@ export function EvidenceSnippetDisplay({
 				<CardContent className="px-2.5 pb-2">
 				<Button
 					variant="ghost"
-					className="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-[11px] leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-gray-700 hover:bg-transparent hover:text-gray-800"
+					className="h-auto w-full min-w-0 items-start justify-start px-0 py-0 text-left text-2xs leading-relaxed [overflow-wrap:anywhere] break-words whitespace-normal text-foreground hover:bg-transparent hover:text-foreground"
 					onClick={() =>
 						selectedContradictionResult &&
 						onFocusEvidenceSnippet(selectedContradictionResult.paragraph_id, 'b')
@@ -118,7 +118,7 @@ export function EvidenceSnippetDisplay({
 									style={{
 										background: hexToRgba(snippetBStyle.color, 0.36),
 										boxShadow: `inset 0 0 0 1px ${hexToRgba(snippetBStyle.color, 0.7)}`,
-										color: '#1f2937',
+										color: 'var(--foreground)',
 										fontWeight: 700,
 									}}
 								>

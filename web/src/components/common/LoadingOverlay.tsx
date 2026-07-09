@@ -13,7 +13,7 @@ export function LoadingOverlay() {
 
 	return (
 		<div
-			className="pointer-events-none fixed top-4 right-4 z-50 flex animate-in fade-in items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 shadow-xl ring-1 ring-black/5"
+			className="pointer-events-none fixed top-4 right-4 z-50 flex animate-in fade-in items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground shadow-xl ring-1 ring-black/5"
 			role="status"
 			aria-live="polite"
 		>

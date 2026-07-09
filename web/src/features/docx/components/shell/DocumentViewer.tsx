@@ -138,7 +138,7 @@ export function DocumentViewer({
 			<section
 				ref={scrollHostRef}
 				inert={dimmed || undefined}
-				className={`flex min-h-0 flex-1 flex-col items-center overflow-auto px-2 py-4 shadow-inner transition-opacity duration-300 ${
+				className={`flex min-h-0 flex-1 flex-col items-start overflow-auto px-2 py-4 shadow-inner transition-opacity duration-300 lg:items-center ${
 					dimmed ? 'pointer-events-none opacity-60 select-none' : ''
 				}`}
 			>

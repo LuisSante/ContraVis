@@ -99,7 +99,7 @@ export function AssistantMessage({
 	const avatar = (
 		<MessageAvatar>
 			<Avatar size="sm">
-				<AvatarFallback className={isUser ? 'text-blue-600' : 'text-gray-500'}>
+				<AvatarFallback className={isUser ? 'text-blue-600' : 'text-muted-foreground'}>
 					{isUser ? (
 						<UserIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
 					) : (
@@ -158,7 +158,7 @@ export function AssistantMessage({
 								return (
 									<>
 										{label ? (
-											<p className="mb-1 text-xs font-bold text-gray-800">{label}</p>
+											<p className="mb-1 text-xs font-bold text-foreground">{label}</p>
 										) : null}
 										<p className="leading-5 whitespace-pre-wrap">
 											{renderSegments(

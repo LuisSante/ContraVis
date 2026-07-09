@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/message-scroller';
 import { Spinner } from '@/components/ui/spinner';
 import { ContractChatAssistantIcon } from '@/components/common/icons';
+import { PanelEmptyState } from '@/features/docx/components/shell/PanelEmptyState';
 import type { AssistantChatMessage } from '@/types/document';
 
 import { AssistantMessage } from '@/features/docx/components/assistant/AssistantMessage';
@@ -35,7 +36,7 @@ function LoadingBubble() {
 		<Message align="start">
 			<MessageAvatar>
 				<Avatar size="sm">
-					<AvatarFallback className="text-gray-500">
+					<AvatarFallback className="text-muted-foreground">
 						<ContractChatAssistantIcon className="h-3.5 w-3.5" strokeWidth={1.9} />
 						<span className="sr-only">Assistant</span>
 					</AvatarFallback>
@@ -78,19 +79,25 @@ export function AssistantMessageList({
 		<MessageScrollerProvider autoScroll defaultScrollPosition="end">
 			<MessageScroller className="min-h-0 flex-1">
 				<MessageScrollerViewport>
-					<MessageScrollerContent className="gap-3 p-2">
-						<div className="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-[10px] text-blue-800">
-							Tip: click an assistant message to toggle entity highlights.
-						</div>
-						<div className="rounded-md border border-indigo-100 bg-indigo-50/60 px-2 py-1 text-[10px] text-indigo-800">
-							Tip: hold <span className="font-semibold">Shift + Scroll</span> to bring
-							related/evidence blocks closer.
-						</div>
+					<MessageScrollerContent className="flex min-h-full flex-col gap-3 p-2">
+						{messages.length > 0 ? (
+							<>
+								<div className="rounded-md border border-blue-100 bg-blue-50/60 px-2 py-1 text-2xs text-blue-800">
+									Tip: click an assistant message to toggle entity highlights.
+								</div>
+								<div className="rounded-md border border-indigo-100 bg-indigo-50/60 px-2 py-1 text-2xs text-indigo-800">
+									Tip: hold <span className="font-semibold">Shift + Scroll</span> to bring
+									related/evidence blocks closer.
+								</div>
+							</>
+						) : null}
 
 						{messages.length === 0 && !loading ? (
-							<div className="flex flex-1 flex-col items-center justify-center py-10 text-gray-500">
-								<p className="text-[10px] italic">Chat about this contract</p>
-							</div>
+							<PanelEmptyState
+								icon={<ContractChatAssistantIcon />}
+								title="Ask about this contract"
+								description="Type a question below, or pick a suggested one, to chat about the whole contract or the selected paragraph."
+							/>
 						) : null}
 
 						{messages.map((message, index) => (

@@ -9,6 +9,8 @@ import type { ExplanationEntity } from '@/features/docx/utils/assistant/paragrap
 import type { Node as ParagraphNode } from '@/types/document';
 
 import { ExplanationText } from '@/features/docx/components/paragraph-explanation/ExplanationText';
+import { PanelEmptyState } from '@/features/docx/components/shell/PanelEmptyState';
+import { ParagraphExplanationIcon } from '@/components/common/icons';
 
 interface RightPanelParagraphExplanationProps {
 	selectedParagraph: ParagraphNode | null;
@@ -50,26 +52,28 @@ export function RightPanelParagraphExplanation({
 
 	return (
 		<section className="flex min-h-0 flex-1 flex-col">
-			<header className="border-b border-gray-100 bg-gray-50 px-4 py-2">
-				<p className="text-[11px] text-gray-500">
+			<header className="border-b border-border bg-muted px-4 py-2">
+				<p className="text-2xs text-muted-foreground">
 					Detailed explanation for the selected paragraph.
 				</p>
 			</header>
 
-			<ScrollArea className="min-h-0 flex-1 bg-gray-50/30">
-				<div className="flex min-h-full flex-col gap-2 p-3">
-					{!selectedParagraph ? (
-						<div className="flex min-h-full flex-1 flex-col items-center justify-center text-gray-500">
-							<p className="text-[10px] italic">Select a paragraph on the left.</p>
-						</div>
-					) : (
+			{!selectedParagraph ? (
+				<PanelEmptyState
+					icon={<ParagraphExplanationIcon />}
+					title="No paragraph selected"
+					description="Select a paragraph in the document, then run Explain to get a plain-language breakdown of what it means."
+				/>
+			) : (
+				<ScrollArea className="min-h-0 flex-1 bg-muted/30">
+					<div className="flex min-h-full flex-col gap-2 p-3">
 						<>
 							{loading ? (
 								<ProcessingIndicator steps={EXPLANATION_PROCESSING_STEPS} />
 							) : null}
 
 							{error ? (
-								<div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+								<div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-2xs text-destructive">
 									{error}
 								</div>
 							) : null}
@@ -78,11 +82,11 @@ export function RightPanelParagraphExplanation({
 							    not ported in this migration step. */}
 
 							{explanationShort ? (
-								<div className="rounded border border-gray-200 bg-white px-3 py-2">
+								<div className="rounded border border-border bg-card px-3 py-2">
 									<div className="mb-1">
 										<Badge
 											variant="outline"
-											className="h-4 border-blue-100 bg-blue-50 px-1.5 text-[9px] font-semibold text-blue-600"
+											className="h-4 border-blue-100 bg-blue-50 px-1.5 text-2xs font-semibold text-blue-600"
 										>
 											Short explain
 										</Badge>
@@ -96,7 +100,7 @@ export function RightPanelParagraphExplanation({
 									{hasDetailedExplanation ? (
 										<button
 											type="button"
-											className="mt-2 text-[10px] font-semibold text-blue-700 transition hover:text-blue-800"
+											className="mt-2 text-2xs font-semibold text-blue-700 transition hover:text-blue-800"
 											onClick={() => setIsDetailedExpanded((prev) => !prev)}
 										>
 											{isDetailedExpanded
@@ -106,11 +110,11 @@ export function RightPanelParagraphExplanation({
 									) : null}
 
 									{showDetailed ? (
-										<div className="mt-2 border-t border-gray-100 pt-2">
+										<div className="mt-2 border-t border-border pt-2">
 											<div className="mb-1">
 												<Badge
 													variant="outline"
-													className="h-4 border-indigo-100 bg-indigo-50 px-1.5 text-[9px] font-semibold text-blue-600"
+													className="h-4 border-indigo-100 bg-indigo-50 px-1.5 text-2xs font-semibold text-blue-600"
 												>
 													Detailed explain
 												</Badge>
@@ -124,11 +128,11 @@ export function RightPanelParagraphExplanation({
 									) : null}
 
 									{explanationEntities.length > 0 ? (
-										<div className="mt-2 flex flex-wrap gap-1 border-t border-gray-100 pt-2">
+										<div className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2">
 											{explanationEntities.map((entity) => (
 												<span
 													key={entity.key}
-													className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium"
+													className="inline-flex items-center rounded-full px-1.5 py-0.5 text-2xs font-medium"
 													style={{
 														color: entity.color,
 														backgroundColor: entity.softColor,
@@ -142,9 +146,9 @@ export function RightPanelParagraphExplanation({
 								</div>
 							) : null}
 						</>
-					)}
-				</div>
-			</ScrollArea>
+					</div>
+				</ScrollArea>
+			)}
 		</section>
 	);
 }

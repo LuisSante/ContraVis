@@ -87,7 +87,10 @@ Definition:
 A contradiction means two or more statements in the paragraph/context are mutually incompatible about the same obligation, right, condition, or execution, such that they cannot all be true at the same time.
 
 Use context:
-Each paragraph includes related paragraphs from the contract graph. Use them as contextual evidence, but classify contradiction for the target paragraph.
+Each paragraph includes related_paragraphs from the contract graph. Each related paragraph has a "type":
+- "reference": the target paragraph explicitly cross-references this one (an authoritative structural link). Referential links often express hierarchy or exceptions ("subject to", "except as provided") rather than contradictions.
+- "semantic": the paragraph is only topically similar to the target (weaker, supporting context).
+Use them as contextual evidence, but classify contradiction for the target paragraph.
 
 
 Return ONLY valid JSON (no markdown, no extra text) with this shape:
@@ -380,6 +383,14 @@ def estimate_contradiction_analysis_request(payload: ContradictionAnalysisReques
     }
 
 
+def _relation_type_label(raw_type: Any) -> str:
+    """Map a graph edge type to the compact label sent to the LLM."""
+    normalized = str(raw_type or "").strip().lower()
+    if "reference" in normalized or normalized == "ref":
+        return "reference"
+    return "semantic"
+
+
 def _build_document_rows(
     payload: ContradictionAnalysisRequest,
 ) -> tuple[list[dict[str, Any]], list[str]]:
@@ -390,6 +401,7 @@ def _build_document_rows(
 
     node_by_id = {str(node.id): node for node in nodes}
     related_by_id: dict[str, set[str]] = defaultdict(set)
+    relation_type_by_pair: dict[tuple[str, str], str] = {}
 
     for edge in payload.graph.edges:
         source_id = str(edge.source)
@@ -397,9 +409,15 @@ def _build_document_rows(
         if source_id not in node_by_id or target_id not in node_by_id:
             continue
 
+        rel_type = _relation_type_label(getattr(edge, "type", ""))
+
         # Include both directions to maximize contextual evidence per paragraph.
         related_by_id[source_id].add(target_id)
         related_by_id[target_id].add(source_id)
+
+        for pair in ((source_id, target_id), (target_id, source_id)):
+            if relation_type_by_pair.get(pair) != "reference":
+                relation_type_by_pair[pair] = rel_type
 
     paragraph_rows: list[dict[str, Any]] = []
     ordered_ids: list[str] = []
@@ -419,6 +437,7 @@ def _build_document_rows(
                 {
                     "paragraph_id": rid,
                     "text": (node_by_id[rid].text or "").strip(),
+                    "type": relation_type_by_pair.get((paragraph_id, rid), "semantic"),
                 }
             )
 
