@@ -156,19 +156,19 @@
 }
 
 :root {
-	--background: oklch(0.985 0.007 75);
-	--foreground: oklch(0.23 0.008 55);
+	--background: oklch(0.985 0.006 285);
+	--foreground: oklch(0.24 0.012 280);
 	--card: oklch(1 0 0);
-	--card-foreground: oklch(0.23 0.008 55);
+	--card-foreground: oklch(0.24 0.012 280);
 	--popover: oklch(1 0 0);
-	--popover-foreground: oklch(0.23 0.008 55);
+	--popover-foreground: oklch(0.24 0.012 280);
 	--primary: oklch(0.51 0.214 277);
 	--primary-foreground: oklch(0.985 0 0);
-	--secondary: oklch(0.965 0.008 75);
-	--secondary-foreground: oklch(0.27 0.012 60);
-	--muted: oklch(0.965 0.008 75);
-	--muted-foreground: oklch(0.48 0.016 60);
-	--accent: oklch(0.95 0.012 75);
+	--secondary: oklch(0.965 0.012 285);
+	--secondary-foreground: oklch(0.27 0.015 280);
+	--muted: oklch(0.965 0.012 285);
+	--muted-foreground: oklch(0.48 0.02 285);
+	--accent: oklch(0.95 0.025 285);
 	--accent-foreground: oklch(0.42 0.15 277);
 	--destructive: oklch(0.577 0.245 27.325);
 	/* Semantic state colors (ready for the color-migration semantic sub-pass). */
@@ -178,9 +178,9 @@
 	--warning-foreground: oklch(0.27 0.05 75);
 	--info: oklch(0.55 0.16 262);
 	--info-foreground: oklch(0.985 0 0);
-	--border: oklch(0.91 0.01 75);
-	--input: oklch(0.91 0.01 75);
-	--canvas: #f5f1e9;
+	--border: oklch(0.91 0.012 285);
+	--input: oklch(0.91 0.012 285);
+	--canvas: oklch(0.95 0.012 285);
 	--ring: oklch(0.58 0.19 277);
 	--chart-1: oklch(0.62 0.18 262);
 	--chart-2: oklch(0.6 0.13 200);
@@ -190,8 +190,8 @@
 	--radius: 0.625rem;
 	/* Header bar — light/neutral (near-white slate) with dark slate text, so the
 	   chrome recedes and data/semantic colors stand out. Recolor the bar here. */
-	--header: #faf8f3;
-	--header-foreground: #292524;
+	--header: oklch(0.97 0.01 285);
+	--header-foreground: oklch(0.26 0.012 280);
 	--sidebar: oklch(0.984 0.004 262);
 	--sidebar-foreground: oklch(0.145 0 0);
 	--sidebar-primary: oklch(0.51 0.214 277);
