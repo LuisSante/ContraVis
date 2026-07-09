@@ -65,15 +65,15 @@ export function ContradictionSummary({
 						<button
 							type="button"
 							className={cn(
-								'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[11px] transition',
+								'flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-2xs transition',
 								isSelected
 									? 'font-semibold'
-									: 'cursor-pointer text-gray-700 hover:bg-white/70',
+									: 'cursor-pointer text-foreground hover:bg-card/70',
 							)}
 							style={
 								isSelected
 									? { background: hexToRgba(itemStyle.color, 0.16), color: itemStyle.color }
-									: { color: '#374151' }
+									: { color: 'var(--foreground)' }
 							}
 							onClick={() => onFocusNodeFromPanel(item.paragraphId, true)}
 						>
@@ -87,7 +87,7 @@ export function ContradictionSummary({
 							</span>
 							<Badge
 								variant="outline"
-								className="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+								className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
 								style={{ borderColor: itemStyle.color, color: itemStyle.color }}
 							>
 								{itemStyle.label}

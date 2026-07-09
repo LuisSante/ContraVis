@@ -54,7 +54,7 @@ export function DocxPageHeader({
 			<div className="flex shrink-0 items-center gap-2.5">
 				{costLabel && (
 					<div
-						className="flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-[11px] font-medium text-primary shadow-sm"
+						className="flex items-center gap-1 rounded-full bg-card px-2.5 py-1 text-2xs font-medium text-primary shadow-sm"
 						title="Total accumulated real LLM usage cost"
 					>
 						<Coins className="size-3 text-primary" />
@@ -64,7 +64,7 @@ export function DocxPageHeader({
 				<Select value={model} onValueChange={onModelChange} disabled={modelDisabled}>
 					<SelectTrigger
 						size="sm"
-						className="h-7 w-[88px] shrink-0 border-transparent bg-card px-2 text-[11px] text-primary shadow-sm hover:bg-card/90 focus-visible:ring-header-foreground/40 [&_svg]:text-primary"
+						className="h-7 w-[88px] shrink-0 border-transparent bg-card px-2 text-2xs text-primary shadow-sm hover:bg-card/90 focus-visible:ring-header-foreground/40 [&_svg]:text-primary"
 						title="Global model for Contradiction Analysis and Paragraph Explanation"
 					>
 						<SelectValue />
@@ -74,7 +74,7 @@ export function DocxPageHeader({
 							<SelectItem
 								key={option.value}
 								value={option.value}
-								className="text-[10px] whitespace-nowrap"
+								className="text-2xs whitespace-nowrap"
 							>
 								{option.label}
 							</SelectItem>

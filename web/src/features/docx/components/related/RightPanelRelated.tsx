@@ -6,6 +6,7 @@ import { ProcessingIndicator, type ProcessingStep } from '@/components/common/Pr
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { PanelEmptyState } from '@/features/docx/components/shell/PanelEmptyState';
 import {
 	formatReferenceSummary,
 	getNodeCurrentText,
@@ -62,32 +63,35 @@ export function RightPanelRelated({
 	return (
 		<section className="flex min-h-0 flex-1 flex-col">
 			<header className="border-b border-border bg-muted/40 px-4 py-2">
-				<p className="text-[11px] text-muted-foreground">
+				<p className="text-2xs text-muted-foreground">
 					View linked paragraphs, relation types, and semantic similarity context.
 				</p>
 			</header>
 
-			<ScrollArea className="min-h-0 flex-1">
-				<div className="flex min-h-full flex-col space-y-2 p-2">
-					<div className="rounded-lg border border-blue-100 bg-blue-50/60 px-2.5 py-1.5 text-[10px] text-blue-800 dark:border-blue-950/50 dark:bg-blue-950/20 dark:text-blue-300">
-						Tip: hold <span className="font-medium">Shift + Scroll</span> to bring related
-						paragraphs closer.
-					</div>
+			{!loading && !selectedParagraph ? (
+				<PanelEmptyState
+					icon={<Link2 />}
+					title="No paragraph selected"
+					description="Select a paragraph in the document to see the clauses it references and the ones semantically related to it."
+				/>
+			) : !loading && selectedRelatedParagraphs.length === 0 ? (
+				<PanelEmptyState
+					icon={<GitCompareArrows />}
+					title="No related paragraphs"
+					description="This paragraph has no references or semantic relations to other clauses in the contract."
+				/>
+			) : (
+				<ScrollArea className="min-h-0 flex-1">
+					<div className="flex min-h-full flex-col space-y-2 p-2">
+						<div className="rounded-lg border border-blue-100 bg-blue-50/60 px-2.5 py-1.5 text-2xs text-blue-800 dark:border-blue-950/50 dark:bg-blue-950/20 dark:text-blue-300">
+							Tip: hold <span className="font-medium">Shift + Scroll</span> to bring related
+							paragraphs closer.
+						</div>
 
-					{loading ? (
-						<ProcessingIndicator steps={RELATED_PROCESSING_STEPS} />
-					) : !selectedParagraph ? (
-						<div className="flex min-h-full flex-1 flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
-							<Link2 className="size-5 opacity-60" />
-							<p className="text-[11px]">Select a paragraph to see its related paragraphs.</p>
-						</div>
-					) : selectedRelatedParagraphs.length === 0 ? (
-						<div className="flex flex-1 flex-col items-center justify-center gap-2 py-12 text-muted-foreground/70">
-							<GitCompareArrows className="size-5 opacity-60" />
-							<p className="text-[11px]">No relations found for this element.</p>
-						</div>
-					) : (
-						selectedRelatedParagraphs.map((related) => (
+						{loading ? (
+							<ProcessingIndicator steps={RELATED_PROCESSING_STEPS} />
+						) : (
+							selectedRelatedParagraphs.map((related) => (
 							<Card
 								key={related.node.id}
 								role="button"
@@ -105,7 +109,7 @@ export function RightPanelRelated({
 									{hasSemanticRelation(related) && (
 										<Badge
 											variant="secondary"
-											className="gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-medium text-green-700 dark:bg-green-950/40 dark:text-green-300"
+											className="gap-1 rounded-full bg-green-50 px-2 py-0.5 text-2xs font-medium text-green-700 dark:bg-green-950/40 dark:text-green-300"
 										>
 											<GitCompareArrows className="size-2.5" />
 											Similarity
@@ -114,7 +118,7 @@ export function RightPanelRelated({
 									{hasReferenceRelation(related) && (
 										<Badge
 											variant="secondary"
-											className="gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+											className="gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-2xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
 										>
 											<Link2 className="size-2.5" />
 											Reference
@@ -122,20 +126,21 @@ export function RightPanelRelated({
 									)}
 								</div>
 
-								<p className="text-[11px] leading-relaxed text-muted-foreground">
+								<p className="text-2xs leading-relaxed text-muted-foreground">
 									{truncateText(getNodeCurrentText(nodeEditStateById, related.node))}
 								</p>
 
 								{related.references.length > 0 && (
-									<p className="text-[10px] text-muted-foreground/80">
+									<p className="text-2xs text-muted-foreground/80">
 										Refs: {formatReferenceSummary(related.references)}
 									</p>
 								)}
-							</Card>
-						))
-					)}
-				</div>
-			</ScrollArea>
+								</Card>
+							))
+						)}
+					</div>
+				</ScrollArea>
+			)}
 		</section>
 	);
 }

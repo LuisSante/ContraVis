@@ -33,17 +33,17 @@ export function ContradictionItem({
 
 	return (
 		<div
-			className="border-t bg-white/80 p-2 text-[11px]"
+			className="border-t bg-card/80 p-2 text-2xs"
 			style={{ borderColor: hexToRgba(typeColor, 0.28) }}
 		>
 			<div className="mb-2 flex items-center justify-between">
-				<p className="text-[9px] font-semibold" style={{ color: typeColor }}>
+				<p className="text-2xs font-semibold" style={{ color: typeColor }}>
 					Contradiction Evidence
 				</p>
 				{selectedContradictionEvidence ? (
 					<Badge
 						variant="outline"
-						className="h-4 rounded-full bg-white px-1.5 text-[8px] font-semibold"
+						className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
 						style={{ borderColor: typeColor, color: typeColor }}
 					>
 						{resolveEvidenceScopeLabel(selectedContradictionEvidence)}
@@ -51,12 +51,12 @@ export function ContradictionItem({
 				) : null}
 			</div>
 
-			<Card className="gap-0 rounded-md border-gray-200 py-0 shadow-none">
+			<Card className="gap-0 rounded-md border-border py-0 shadow-none">
 				<CardHeader className="gap-0 px-2.5 pt-2 pb-1">
-					<CardTitle className="text-[9px] font-semibold text-gray-700">Assessment</CardTitle>
+					<CardTitle className="text-2xs font-semibold text-foreground">Assessment</CardTitle>
 				</CardHeader>
 				<CardContent className="px-2.5 pb-2">
-					<p className="text-[10px] leading-relaxed text-gray-700">
+					<p className="text-2xs leading-relaxed text-foreground">
 						{selectedContradictionResult?.brief_reason}
 					</p>
 				</CardContent>
@@ -71,8 +71,8 @@ export function ContradictionItem({
 					onFocusEvidenceSnippet={onFocusEvidenceSnippet}
 				/>
 			) : (
-				<Card className="mt-1 gap-0 border-gray-200 bg-gray-50 py-0 text-[11px]">
-					<CardContent className="px-3 py-2 text-gray-600">
+				<Card className="mt-1 gap-0 border-border bg-muted py-0 text-2xs">
+					<CardContent className="px-3 py-2 text-muted-foreground">
 						Evidence snippets are unavailable for this contradiction.
 					</CardContent>
 				</Card>

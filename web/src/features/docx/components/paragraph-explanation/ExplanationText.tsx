@@ -54,7 +54,7 @@ function renderSegment(
 export function ExplanationText({ value, entities, keyPrefix }: ExplanationTextProps) {
 	const segments = splitReferenceAndEntityText(value, entities);
 	return (
-		<p className="whitespace-pre-wrap text-[12px] leading-relaxed text-gray-700">
+		<p className="whitespace-pre-wrap text-[12px] leading-relaxed text-foreground">
 			{segments.map((segment, index) =>
 				renderSegment(segment, `${keyPrefix}-${index}`),
 			)}

@@ -56,14 +56,17 @@ export function RightPanel({
 	return (
 		<aside
 			className={cn(
-				'absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-gray-200 bg-white transition-[transform,opacity,box-shadow] duration-300',
+				'absolute top-0 bottom-0 z-40 flex min-h-0 flex-col overflow-hidden border-l border-border bg-card transition-[transform,opacity,box-shadow] duration-300',
 				isOpen
 					? 'pointer-events-auto visible opacity-100 shadow-2xl'
 					: 'pointer-events-none invisible opacity-0 shadow-none'
 			)}
 			style={{
 				right: sidebarWidth,
-				width,
+				// Never exceed the viewport: on narrow screens the panel becomes an
+				// overlay sheet sized to fit beside the tool rail, so it can't push
+				// the document off-screen or cause horizontal overflow.
+				width: `min(${width}px, calc(100vw - ${sidebarWidth + 8}px))`,
 				transform: isOpen ? 'translateX(0)' : `translateX(calc(100% + ${sidebarWidth + 20}px))`,
 			}}
 		>

@@ -48,7 +48,7 @@ export function ProcessingIndicator({
 		<div className="rounded-xl border border-blue-100 bg-blue-50/40 p-3 dark:border-blue-950/50 dark:bg-blue-950/20">
 			<div className="mb-2.5 flex items-center gap-1.5">
 				<Spinner className="size-3 text-blue-600 dark:text-blue-400" />
-				<p className="text-[10px] font-semibold tracking-wide text-blue-700 uppercase dark:text-blue-300">
+				<p className="text-2xs font-semibold tracking-wide text-blue-700 uppercase dark:text-blue-300">
 					{label}
 				</p>
 			</div>

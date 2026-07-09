@@ -139,7 +139,7 @@ export function ContradictionChatPanel({
 				<Button
 					variant="outline"
 					size="sm"
-					className="h-6 gap-1 rounded-full border-blue-200 bg-blue-50 px-2 text-[10px] text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
+					className="h-6 gap-1 rounded-full border-blue-200 bg-blue-50 px-2 text-2xs text-blue-700 hover:bg-blue-100 dark:border-blue-900 dark:bg-blue-950/40 dark:text-blue-300"
 					onClick={() => runQuickAction(onWhy)}
 				>
 					<HelpCircle className="size-3" />
@@ -148,7 +148,7 @@ export function ContradictionChatPanel({
 				<Button
 					variant="outline"
 					size="sm"
-					className="h-6 gap-1 rounded-full border-amber-200 bg-amber-50 px-2 text-[10px] text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+					className="h-6 gap-1 rounded-full border-amber-200 bg-amber-50 px-2 text-2xs text-amber-700 hover:bg-amber-100 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
 					onClick={() => runQuickAction(onRisks)}
 				>
 					<AlertTriangle className="size-3" />
@@ -156,7 +156,7 @@ export function ContradictionChatPanel({
 				</Button>
 				<Button
 					size="sm"
-					className="h-6 gap-1 rounded-full bg-indigo-600 px-2 text-[10px] text-white hover:bg-indigo-700"
+					className="h-6 gap-1 rounded-full bg-indigo-600 px-2 text-2xs text-white hover:bg-indigo-700"
 					disabled={rewriteBusy || loading}
 					onClick={() => runQuickAction(onSuggestFix)}
 				>
@@ -192,13 +192,13 @@ export function ContradictionChatPanel({
 						/>
 					</div>
 
-					{error ? <p className="mt-1 text-[10px] text-destructive">{error}</p> : null}
+					{error ? <p className="mt-1 text-2xs text-destructive">{error}</p> : null}
 
 					<div className="mt-2 flex items-end gap-1.5">
 						<Textarea
 							rows={2}
 							placeholder="Ask about this contradiction…"
-							className="min-h-[50px] rounded-lg text-[11px]"
+							className="min-h-[50px] rounded-lg text-2xs"
 							value={input}
 							onChange={(event) => onInputChange(event.target.value)}
 							onKeyDown={onKeydown}

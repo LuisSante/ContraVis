@@ -32,49 +32,25 @@ function titleCase(value: string): string {
 	return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-/** Color accents per dataset group. */
-function groupClasses(group: string): { tile: string; tag: string } {
-	switch (group) {
-		case 'target':
-			return {
-				tile: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300',
-				tag: 'bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300',
-			};
-		case 'related':
-			return {
-				tile: 'bg-pink-50 text-pink-600 dark:bg-pink-950/40 dark:text-pink-300',
-				tag: 'bg-pink-50 text-pink-700 dark:bg-pink-950/40 dark:text-pink-300',
-			};
-		default:
-			return {
-				tile: 'bg-muted text-muted-foreground',
-				tag: 'bg-muted text-muted-foreground',
-			};
-	}
-}
-
 function DocumentCard({ doc }: { doc: DocumentMeta }) {
 	const group = doc.group_label || 'other';
-	const colors = groupClasses(group);
 	return (
 		<Link href={`/docx?id=${encodeURIComponent(doc.id)}`} title={doc.name} className="group block">
-			<Card className="flex-row items-start gap-3 rounded-xl p-3 shadow-none transition-colors group-hover:border-blue-500/60 group-hover:bg-accent">
-				<span
-					className={`flex size-9 flex-none items-center justify-center rounded-lg ${colors.tile}`}
-				>
+			<Card className="flex-row items-start gap-3 rounded-xl p-3 shadow-none transition-colors group-hover:border-primary/40 group-hover:bg-accent">
+				<span className="flex size-9 flex-none items-center justify-center rounded-lg bg-primary/10 text-primary">
 					<FileText className="size-[18px]" />
 				</span>
 				<div className="min-w-0 flex-1">
 					<p className="truncate text-sm font-medium">{agreementTitle(doc.name)}</p>
 					<p className="truncate text-xs text-muted-foreground">{companyHint(doc.name)}</p>
 					<div className="mt-2 flex items-center gap-2">
-						<Badge variant="secondary" className={`rounded-full font-normal ${colors.tag}`}>
+						<Badge variant="secondary" className="rounded-full font-normal">
 							{group}
 						</Badge>
-						<span className="text-[11px] text-muted-foreground">.docx</span>
+						<span className="text-2xs text-muted-foreground">.docx</span>
 					</div>
 				</div>
-				<ArrowRight className="size-4 flex-none text-muted-foreground transition-colors group-hover:text-blue-600" />
+				<ArrowRight className="size-4 flex-none text-muted-foreground transition-colors group-hover:text-primary" />
 			</Card>
 		</Link>
 	);
@@ -97,7 +73,7 @@ function GroupChip({
 			onClick={onClick}
 			className={
 				active
-					? 'h-7 rounded-full bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-700'
+					? 'h-7 rounded-full px-3 text-xs'
 					: 'h-7 rounded-full px-3 text-xs text-muted-foreground'
 			}
 		>
@@ -136,7 +112,7 @@ export default function Home() {
 	return (
 		<main className="mx-auto w-full max-w-5xl px-6 py-12">
 			<header className="mb-8 flex items-center gap-3">
-				<span className="flex size-10 flex-none items-center justify-center rounded-xl bg-indigo-600 text-white">
+				<span className="flex size-10 flex-none items-center justify-center rounded-xl bg-primary text-primary-foreground">
 					<Scale className="size-5" />
 				</span>
 				<div>

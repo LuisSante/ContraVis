@@ -11,7 +11,7 @@ import {
 	RelatedParagraphsIcon,
 } from '@/components/common/icons';
 
-const TOOL_BRAND_SHORT_NAME = 'ContractVis';
+const TOOL_BRAND_SHORT_NAME = 'ContraVis';
 
 const TOOL_ICONS: Record<RightPanelTab, React.ComponentType<{ className?: string }>> = {
 	analysis: ContradictionAnalysisIcon,
@@ -104,7 +104,7 @@ export function ToolRail({
 								variant="ghost"
 								className={cn(
 									labelsPinned
-										? 'h-8 w-full justify-start gap-1.5 px-1.5 text-[10px] font-semibold'
+										? 'h-8 w-full justify-start gap-1.5 px-1.5 text-2xs font-semibold'
 										: 'h-8 w-8 justify-center',
 									labelsPinned
 										? isActive
