@@ -2,6 +2,7 @@
 
 import json
 import logging
+import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -40,7 +41,7 @@ def load_saved_contradictions_for_document(
 
     for json_path in json_files:
         try:
-            with json_path.open("r", encoding="utf-8") as f:
+            with _filesystem_path(json_path).open("r", encoding="utf-8") as f:
                 payload = json.load(f)
         except (OSError, json.JSONDecodeError):
             logger.warning("Skipping unreadable saved contradiction file: %s", json_path)
@@ -66,7 +67,7 @@ def _list_readable_json_files(base_dir: Path) -> list[Path]:
     timestamped_paths: list[tuple[float, Path]] = []
     for path in base_dir.glob("*.json"):
         try:
-            timestamped_paths.append((path.stat().st_mtime, path))
+            timestamped_paths.append((_filesystem_path(path).stat().st_mtime, path))
         except OSError:
             logger.warning("Skipping unavailable saved contradiction file: %s", path)
 
@@ -103,10 +104,23 @@ def save_analyzed_contradictions(
         "rawResponse": response.rawResponse,
     }
 
-    with output_path.open("w", encoding="utf-8") as f:
+    with _filesystem_path(output_path).open("w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=2)
 
     return str(output_path)
+
+
+def _filesystem_path(path: Path) -> Path:
+    if os.name != "nt":
+        return path
+
+    resolved = path.resolve(strict=False)
+    path_text = str(resolved)
+    if path_text.startswith("\\\\?\\"):
+        return resolved
+    if path_text.startswith("\\\\"):
+        return Path("\\\\?\\UNC\\" + path_text.lstrip("\\"))
+    return Path("\\\\?\\" + path_text)
 
 
 def _extract_rows_for_document(payload: Any, candidate_ids: set[str]) -> list[dict[str, Any]]:

@@ -434,7 +434,6 @@ def should_skip_semantic_similarity(text: str, repeat_count: int) -> bool:
 
 
 def generate_graph_data(paragraphs_data: list) -> Graph:
-    model = get_embedding_model()
     nodes: list[Node] = []
     edges: list[Edge] = []
     
@@ -552,10 +551,19 @@ def generate_graph_data(paragraphs_data: list) -> Graph:
             continue
         semantic_candidate_indices.append(idx)
 
+    cosine_scores = None
     if semantic_candidate_indices:
-        semantic_texts = [nodes[idx].text for idx in semantic_candidate_indices]
-        embeddings = model.encode(semantic_texts, convert_to_tensor=True)
-        cosine_scores = util.cos_sim(embeddings, embeddings)
+        try:
+            model = get_embedding_model()
+            semantic_texts = [nodes[idx].text for idx in semantic_candidate_indices]
+            embeddings = model.encode(semantic_texts, convert_to_tensor=True)
+            cosine_scores = util.cos_sim(embeddings, embeddings)
+        except Exception:
+            logger.exception(
+                "Failed to compute semantic similarity edges; returning reference-only graph"
+            )
+
+    if semantic_candidate_indices and cosine_scores is not None:
         semantic_threshold = float(settings.SEMANTIC_SIMILARITY_THRESHOLD)
         semantic_mode = str(settings.SEMANTIC_RELATED_MODE).strip().lower()
 

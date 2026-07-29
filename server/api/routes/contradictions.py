@@ -43,6 +43,7 @@ def get_saved_contradictions(
     document_id: str,
     mode: ContradictionGraphMode = Query(default="without_kg"),
 ):
+    document_store.ensure_initialized()
     aliases = document_store.get_document_aliases(document_id)
     rows, source_file = load_saved_contradictions_for_document(
         document_id,

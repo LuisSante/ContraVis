@@ -7,6 +7,14 @@ import { cloneParagraphForCard } from '@/features/docx/utils/docx-engine/clone-p
 
 const CONTRADICTION_EVIDENCE_MARKER_MIN_GAP_PX = 18;
 const CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX = 55;
+const CONTRADICTION_EVIDENCE_CARD_GAP_PX = 14;
+const CONTRADICTION_EVIDENCE_VIEWPORT_PADDING_PX = 8;
+
+interface VerticalBounds {
+	top: number;
+	bottom: number;
+	height: number;
+}
 
 export interface ContradictionEvidenceLink {
 	topPx: number;
@@ -34,6 +42,52 @@ export interface ContradictionMarkersResult {
 	collapsedCards: ContradictionEvidenceCollapsedCard[];
 	/** Ids (data-node-id) of the B paragraphs to hide while compressing. */
 	hiddenParagraphIds: string[];
+}
+
+function boundsFromRect(rect: DOMRect, hostRect: DOMRect): VerticalBounds {
+	const top = rect.top - hostRect.top;
+	const bottom = rect.bottom - hostRect.top;
+	return { top, bottom, height: Math.max(0, bottom - top) };
+}
+
+function mergeBounds(bounds: VerticalBounds[]): VerticalBounds | null {
+	if (bounds.length === 0) return null;
+	const top = Math.min(...bounds.map((bound) => bound.top));
+	const bottom = Math.max(...bounds.map((bound) => bound.bottom));
+	return { top, bottom, height: Math.max(0, bottom - top) };
+}
+
+function resolveCompressedBTarget(params: {
+	aCenterPx: number;
+	bCenterPx: number;
+	aBounds: VerticalBounds;
+	bBounds: VerticalBounds;
+	hostHeight: number;
+}): { targetCenterPx: number; targetDeltaPx: number } {
+	const { aCenterPx, bCenterPx, aBounds, bBounds, hostHeight } = params;
+	const direction = bCenterPx >= aCenterPx ? 1 : -1;
+	const preferredCenter = aCenterPx + direction * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
+	const preferredTop = bBounds.top + preferredCenter - bCenterPx;
+	let targetTop: number;
+
+	if (direction >= 0) {
+		const minTop = aBounds.bottom + CONTRADICTION_EVIDENCE_CARD_GAP_PX;
+		const maxTop = hostHeight - bBounds.height - CONTRADICTION_EVIDENCE_VIEWPORT_PADDING_PX;
+		targetTop = Math.min(Math.max(preferredTop, minTop), Math.max(minTop, maxTop));
+	} else {
+		const minTop = CONTRADICTION_EVIDENCE_VIEWPORT_PADDING_PX;
+		const maxTop = aBounds.top - CONTRADICTION_EVIDENCE_CARD_GAP_PX - bBounds.height;
+		targetTop =
+			maxTop >= minTop
+				? Math.min(Math.max(preferredTop, minTop), maxTop)
+				: maxTop;
+	}
+
+	const targetDeltaPx = targetTop - bBounds.top;
+	return {
+		targetCenterPx: bCenterPx + targetDeltaPx,
+		targetDeltaPx,
+	};
 }
 
 export function computeContradictionMarkers(params: {
@@ -94,13 +148,17 @@ export function computeContradictionMarkers(params: {
 
 	let markA: HTMLElement | null = null;
 	let markB: HTMLElement | null = null;
+	let aContainer: HTMLElement | null = null;
 	const bContainers = new Set<HTMLElement>();
 	const allMarks = Array.from(
 		document.querySelectorAll<HTMLElement>('mark.docx-contradiction-snippet')
 	);
 	for (const mark of allMarks) {
 		if (mark.dataset.contradictionOwner !== selectedParagraphId) continue;
-		if (!markA && mark.dataset.contradictionRole === 'a') markA = mark;
+		if (!markA && mark.dataset.contradictionRole === 'a') {
+			markA = mark;
+			aContainer = mark.closest<HTMLElement>('[data-node-id]');
+		}
 		if (mark.dataset.contradictionRole === 'b') {
 			if (!markB) markB = mark;
 			const container = mark.closest<HTMLElement>('[data-node-id]');
@@ -117,6 +175,13 @@ export function computeContradictionMarkers(params: {
 
 	const markARect = markA.getBoundingClientRect();
 	const markBRect = markB.getBoundingClientRect();
+	const aBounds = boundsFromRect((aContainer ?? markA).getBoundingClientRect(), hostRect);
+	const bBounds =
+		mergeBounds(
+			Array.from(bContainers).map((container) =>
+				boundsFromRect(container.getBoundingClientRect(), hostRect)
+			)
+		) ?? boundsFromRect(markBRect, hostRect);
 	const aCenterPx = markARect.top - hostRect.top + markARect.height / 2;
 	const bCenterPx = markBRect.top - hostRect.top + markBRect.height / 2;
 	const showA = aCenterPx >= 0 && aCenterPx <= hostRect.height;
@@ -160,14 +225,17 @@ export function computeContradictionMarkers(params: {
 		if (interParagraph && compression > 0) {
 			const aFixed = displayACenterPx;
 			const bStart = displayBCenterPx;
-			const direction = bStart >= aFixed ? 1 : -1;
-			const bTarget = aFixed + direction * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
+			const { targetCenterPx, targetDeltaPx } = resolveCompressedBTarget({
+				aCenterPx,
+				bCenterPx,
+				aBounds,
+				bBounds,
+				hostHeight: hostRect.height,
+			});
+			const bTarget = Math.max(0, Math.min(hostRect.height, targetCenterPx));
 			displayBCenterPx = bStart * (1 - compression) + bTarget * compression;
 			displayACenterPx = aFixed;
-			// Unclamped centers so the floating copy can travel across pages.
-			const rawDirection = bCenterPx >= aCenterPx ? 1 : -1;
-			const rawTarget = aCenterPx + rawDirection * CONTRADICTION_EVIDENCE_COMPRESS_TARGET_GAP_PX;
-			const rawCompressed = bCenterPx * (1 - compression) + rawTarget * compression;
+			const rawCompressed = bCenterPx + targetDeltaPx * compression;
 			bTransformDeltaPx = rawCompressed - bCenterPx;
 			bVisualCenterPx = rawCompressed;
 		}

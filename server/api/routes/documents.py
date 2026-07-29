@@ -1,13 +1,19 @@
+import json
 import logging
 import re
 from collections import Counter
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 
 from api.deps import document_store
+from core.config import settings
 from schemas.types import (
     DatasetDocument,
+    Edge,
+    Graph,
+    Node,
     ProcessCacheMeta,
     ProcessDocumentRequest,
     ProcessDocumentResponse,
@@ -30,6 +36,80 @@ def is_page_marker(text: str) -> bool:
     if not text:
         return False
     return bool(PAGE_NUMBER_ONLY_RE.match(text) or PAGE_LABEL_RE.match(text))
+
+
+def paragraph_suffix(node_id: str | None) -> str | None:
+    match = re.search(r"-p-(\d+)$", str(node_id or ""))
+    return match.group(1) if match else None
+
+
+def build_graph_nodes(paragraphs_input: list[dict], doc_id: str) -> list[Node]:
+    return [
+        Node(
+            id=str(paragraph.get("id")),
+            documentId=doc_id,
+            text=str(paragraph.get("text", "")),
+            paragraph_enum=int(paragraph.get("paragraph_enum") or 0),
+            page=int(paragraph.get("page") or 0),
+            relationsCount=0,
+        )
+        for paragraph in paragraphs_input
+    ]
+
+
+def load_cached_graph_for_document(
+    doc_id: str,
+    paragraphs_input: list[dict],
+) -> tuple[Graph, ProcessCacheMeta] | None:
+    try:
+        doc_meta = document_store.get_document(doc_id)
+        if doc_meta is None:
+            return None
+
+        cache_path = settings.GRAPH_OUTPUT_DIR / f"{Path(doc_meta.relative_path).stem}.json"
+        if not cache_path.exists():
+            return None
+
+        with cache_path.open("r", encoding="utf-8") as f:
+            payload = json.load(f)
+
+        current_nodes = build_graph_nodes(paragraphs_input, doc_id)
+        current_id_by_suffix = {
+            suffix: node.id
+            for node in current_nodes
+            if (suffix := paragraph_suffix(node.id)) is not None
+        }
+        if not current_id_by_suffix:
+            return None
+
+        remapped_edges: list[Edge] = []
+        for raw_edge in payload.get("edges", []):
+            if not isinstance(raw_edge, dict):
+                continue
+            source_suffix = paragraph_suffix(raw_edge.get("source"))
+            target_suffix = paragraph_suffix(raw_edge.get("target"))
+            source = current_id_by_suffix.get(source_suffix or "")
+            target = current_id_by_suffix.get(target_suffix or "")
+            if not source or not target or source == target:
+                continue
+            remapped_edges.append(
+                Edge(
+                    source=source,
+                    target=target,
+                    type=str(raw_edge.get("type") or ""),
+                    score=raw_edge.get("score"),
+                    ref_label=raw_edge.get("ref_label"),
+                    ref_value=raw_edge.get("ref_value"),
+                )
+            )
+
+        return (
+            Graph(nodes=current_nodes, edges=remapped_edges),
+            ProcessCacheMeta(enabled=True, hit=True, key=str(cache_path)),
+        )
+    except Exception:
+        logger.exception("Failed to load cached graph fallback for %s", doc_id)
+        return None
 
 
 def is_repeated_boundary_candidate(text: str) -> bool:
@@ -108,6 +188,7 @@ def get_document_file(doc_id: str):
 
 @router.post("/process", response_model=ProcessDocumentResponse)
 async def process_document(payload: ProcessDocumentRequest) -> ProcessDocumentResponse:
+    document_store.ensure_initialized()
     raw_doc_id = payload.documentId
     doc_id = document_store.get_canonical_id(raw_doc_id) or raw_doc_id
     pages = [page.model_dump() for page in payload.pages]
@@ -151,13 +232,26 @@ async def process_document(payload: ProcessDocumentRequest) -> ProcessDocumentRe
                 }
             )
 
-    graph_obj = generate_graph_data(all_paragraphs_input)
+    cache_meta = ProcessCacheMeta()
+    try:
+        graph_obj = generate_graph_data(all_paragraphs_input)
+    except Exception:
+        logger.exception(
+            "Failed to compute backend graph for %s; attempting cached graph fallback",
+            doc_id,
+        )
+        cached = load_cached_graph_for_document(doc_id, all_paragraphs_input)
+        if cached is not None:
+            graph_obj, cache_meta = cached
+        else:
+            graph_obj = Graph(nodes=build_graph_nodes(all_paragraphs_input, doc_id), edges=[])
+            cache_meta = ProcessCacheMeta(enabled=True, hit=False)
 
     return ProcessDocumentResponse(
         status="success",
         documentId=doc_id,
         graph=graph_obj,
-        cache=ProcessCacheMeta(),
+        cache=cache_meta,
     )
 
 

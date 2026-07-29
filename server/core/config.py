@@ -3,13 +3,16 @@ from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+SERVER_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = SERVER_ROOT.parent
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
 
     # Output paths (configurable per environment).
-    SAVED_CONTRADICTIONS_DIR: Path = Path("../infra/contradiction_results")
-    GRAPH_OUTPUT_DIR: Path = Path("../infra/json/graph")
+    SAVED_CONTRADICTIONS_DIR: Path = REPO_ROOT / "infra" / "contradiction_results"
+    GRAPH_OUTPUT_DIR: Path = REPO_ROOT / "infra" / "json" / "graph"
 
     # Neo4j (knowledge graph).
     NEO4J_URI: str = ""
@@ -31,6 +34,14 @@ class Settings(BaseSettings):
 
     LLM_TIMEOUT_SECONDS: float = 60.0
     LLM_MAX_RETRIES: int = 2
+
+    @field_validator("SAVED_CONTRADICTIONS_DIR", "GRAPH_OUTPUT_DIR", mode="before")
+    @classmethod
+    def _resolve_repo_path(cls, value) -> Path:
+        path = Path(value)
+        if path.is_absolute():
+            return path
+        return (SERVER_ROOT / path).resolve()
 
     @field_validator("NEO4J_URI", "NEO4J_USERNAME", "NEO4J_PASSWORD")
     @classmethod
