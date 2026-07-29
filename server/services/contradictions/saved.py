@@ -1,8 +1,10 @@
 ﻿from __future__ import annotations
 
 import json
+import logging
 import re
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from core.config import settings
@@ -18,6 +20,8 @@ _ALLOWED_CONTRADICTION_TYPES = {
     "specificity",
 }
 
+logger = logging.getLogger(__name__)
+
 
 def load_saved_contradictions_for_document(
     document_id: str,
@@ -30,17 +34,17 @@ def load_saved_contradictions_for_document(
             f"Pasta de resultados salvos nao encontrada: {base_dir}"
         )
 
-    json_files = sorted(
-        base_dir.glob("*.json"),
-        key=lambda path: path.stat().st_mtime,
-        reverse=True,
-    )
+    json_files = _list_readable_json_files(base_dir)
 
     candidate_ids = _build_candidate_ids(document_id, aliases)
 
     for json_path in json_files:
-        with json_path.open("r", encoding="utf-8") as f:
-            payload = json.load(f)
+        try:
+            with json_path.open("r", encoding="utf-8") as f:
+                payload = json.load(f)
+        except (OSError, json.JSONDecodeError):
+            logger.warning("Skipping unreadable saved contradiction file: %s", json_path)
+            continue
 
         if not _payload_matches_mode(payload, json_path, mode):
             continue
@@ -56,6 +60,18 @@ def load_saved_contradictions_for_document(
     raise NotFoundError(
         f"Ainda nao ha contradicoes salvas para este documento: {document_id}"
     )
+
+
+def _list_readable_json_files(base_dir: Path) -> list[Path]:
+    timestamped_paths: list[tuple[float, Path]] = []
+    for path in base_dir.glob("*.json"):
+        try:
+            timestamped_paths.append((path.stat().st_mtime, path))
+        except OSError:
+            logger.warning("Skipping unavailable saved contradiction file: %s", path)
+
+    timestamped_paths.sort(key=lambda item: item[0], reverse=True)
+    return [path for _, path in timestamped_paths]
 
 
 def save_analyzed_contradictions(
