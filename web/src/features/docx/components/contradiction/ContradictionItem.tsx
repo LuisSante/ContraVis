@@ -2,7 +2,10 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { hexToRgba } from '@/features/docx/utils/contradiction/contradiction';
+import {
+	hexToRgba,
+	resolveContradictionConfidenceBand,
+} from '@/features/docx/utils/contradiction/contradiction';
 import type { ContradictionParagraphResult } from '@/types/document';
 
 import { resolveEvidenceScopeLabel } from '@/features/docx/components/contradiction/contradiction-style';
@@ -31,6 +34,15 @@ export function ContradictionItem({
 		!!selectedContradictionEvidence?.snippet_a?.trim() &&
 		!!selectedContradictionEvidence?.snippet_b?.trim();
 
+	const confidence = selectedContradictionResult?.confidence ?? 0;
+	const confidenceBand = resolveContradictionConfidenceBand(confidence);
+	const CONFIDENCE_BAND_COLORS: Record<'low' | 'medium' | 'high', string> = {
+		high: '#16a34a',
+		medium: '#d97706',
+		low: '#dc2626',
+	};
+	const confidenceColor = CONFIDENCE_BAND_COLORS[confidenceBand];
+
 	return (
 		<div
 			className="border-t bg-card/80 p-2 text-2xs"
@@ -40,15 +52,25 @@ export function ContradictionItem({
 				<p className="text-2xs font-semibold" style={{ color: typeColor }}>
 					Contradiction Evidence
 				</p>
-				{selectedContradictionEvidence ? (
+				<span className="inline-flex items-center gap-1">
 					<Badge
 						variant="outline"
 						className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
-						style={{ borderColor: typeColor, color: typeColor }}
+						title={`Model confidence: ${confidence}/100 (${confidenceBand}). LLM-reported certainty for this candidate; validate against the evidence.`}
+						style={{ borderColor: confidenceColor, color: confidenceColor }}
 					>
-						{resolveEvidenceScopeLabel(selectedContradictionEvidence)}
+						confidence {confidence}/100
 					</Badge>
-				) : null}
+					{selectedContradictionEvidence ? (
+						<Badge
+							variant="outline"
+							className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
+							style={{ borderColor: typeColor, color: typeColor }}
+						>
+							{resolveEvidenceScopeLabel(selectedContradictionEvidence)}
+						</Badge>
+					) : null}
+				</span>
 			</div>
 
 			<Card className="gap-0 rounded-md border-border py-0 shadow-none">

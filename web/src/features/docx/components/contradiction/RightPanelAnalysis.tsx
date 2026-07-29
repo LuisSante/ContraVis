@@ -28,6 +28,7 @@ interface RightPanelAnalysisProps {
 		paragraphId: string;
 		label: string;
 		contradictionType: ContradictionTaxonomyType;
+		confidence: number;
 	}[];
 	selectedContradictionResult: ContradictionParagraphResult | null;
 	selectedContradictionEvidence: ContradictionParagraphResult['evidence'];
