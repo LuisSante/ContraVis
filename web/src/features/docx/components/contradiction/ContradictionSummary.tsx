@@ -2,7 +2,10 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { hexToRgba } from '@/features/docx/utils/contradiction/contradiction';
+import {
+	hexToRgba,
+	resolveContradictionConfidenceBand,
+} from '@/features/docx/utils/contradiction/contradiction';
 import { cn } from '@/lib/utils';
 import type {
 	ContradictionParagraphResult,
@@ -17,7 +20,15 @@ export interface ContradictionSummaryItem {
 	paragraphId: string;
 	label: string;
 	contradictionType: ContradictionTaxonomyType;
+	/** Model confidence for the primary contradiction candidate (0-100). */
+	confidence: number;
 }
+
+const CONFIDENCE_BAND_COLORS: Record<'low' | 'medium' | 'high', string> = {
+	high: '#16a34a',
+	medium: '#d97706',
+	low: '#dc2626',
+};
 
 interface ContradictionSummaryProps {
 	selectedParagraph: ParagraphNode | null;
@@ -85,13 +96,26 @@ export function ContradictionSummary({
 								/>
 								<span>Contradiction {index + 1}</span>
 							</span>
-							<Badge
-								variant="outline"
-								className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
-								style={{ borderColor: itemStyle.color, color: itemStyle.color }}
-							>
-								{itemStyle.label}
-							</Badge>
+							<span className="inline-flex items-center gap-1">
+								<Badge
+									variant="outline"
+									className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
+									title={`Model confidence: ${item.confidence}/100 (${resolveContradictionConfidenceBand(item.confidence)}). LLM-reported certainty for this candidate; validate against the evidence.`}
+									style={{
+										borderColor: CONFIDENCE_BAND_COLORS[resolveContradictionConfidenceBand(item.confidence)],
+										color: CONFIDENCE_BAND_COLORS[resolveContradictionConfidenceBand(item.confidence)],
+									}}
+								>
+									{item.confidence}%
+								</Badge>
+								<Badge
+									variant="outline"
+									className="h-4 rounded-full bg-card px-1.5 text-2xs font-semibold"
+									style={{ borderColor: itemStyle.color, color: itemStyle.color }}
+								>
+									{itemStyle.label}
+								</Badge>
+							</span>
 						</button>
 
 						{isSelected && selectedContradictionResult?.contradiction ? (

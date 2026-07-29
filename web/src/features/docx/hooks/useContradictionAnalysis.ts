@@ -32,6 +32,8 @@ export interface ContradictionSummaryItem {
 	paragraphId: string;
 	label: string;
 	contradictionType: ContradictionTaxonomyType;
+	/** Model confidence for the primary contradiction candidate (0-100). */
+	confidence: number;
 }
 
 interface UseContradictionAnalysisParams {
@@ -195,6 +197,7 @@ export function useContradictionAnalysis({
 				label,
 				paragraphEnum,
 				contradictionType: row.contradiction_type ?? 'specificity',
+				confidence: row.confidence,
 			});
 		}
 		items.sort(
@@ -202,10 +205,11 @@ export function useContradictionAnalysis({
 				left.paragraphEnum - right.paragraphEnum ||
 				left.paragraphId.localeCompare(right.paragraphId)
 		);
-		return items.map(({ paragraphId, label, contradictionType }) => ({
+		return items.map(({ paragraphId, label, contradictionType, confidence }) => ({
 			paragraphId,
 			label,
 			contradictionType,
+			confidence,
 		}));
 	}, [resultsByParagraphId]);
 
