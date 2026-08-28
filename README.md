@@ -9,10 +9,16 @@
 > **ContraVis**, a visual analytics system for human-in-the-loop contradiction
 > analysis in legal contracts. The system models contracts as **typed paragraph
 > graphs** that combine explicit contractual references with semantic
-> relationships between paragraphs, supporting graph-conditioned LLM reasoning and
-> coordinated visual exploration for contradiction triage, evidence inspection,
-> neighborhood exploration, and expert validation.
->
+> relationships between paragraphs. This graph plays a dual role: it conditions LLM
+> reasoning and serves as the interactive representation the analyst explores,
+> keeping model context and human inspection aligned across coordinated views.
+>  In a controlled comparison, graph-conditioned reasoning recovered more injected
+> contradictions than standalone LLM analysis as contract length grew, while surfacing
+> additional candidates for analyst validation. A formative study with contract-domain
+> lawyers indicated that in-context evidence comparison supported contradiction 
+> validation, and we distill design implications for evidence-grounded,
+> LLM-assisted document review.
+> 
 > — *ContraVis (SIBGRAPI), abstract.*
 
 Formally, given a contract `C = {p₁, p₂, …, pₙ}`, ContraVis builds a typed
@@ -151,10 +157,22 @@ document.
 - [`server/`](server): FastAPI backend (paragraph graph, contradiction analysis).
 - [`infra/`](infra): datasets and support files (CUAD, ContractNLI, etc.).
 - [`notebooks/`](notebooks): exploration and experiment notebooks.
-- [`client/`](client): legacy SvelteKit frontend (superseded by `web/`).
 
 ## Documentation
 
 - **Setup & run:** [INSTALL.md](INSTALL.md)
 - Backend: [server/README.md](server/README.md)
 - Frontend: [web/README.md](web/README.md)
+
+## Cite
+
+```
+@article{2026-ContraVis, 
+  title={ContraVis: Evidence-Grounded Visual Analytics for Contradiction Review in Legal Contracts}, 
+  author={Luis Sante and Paula Lima and Mariana Rocha and Jorge Poco},
+  journal={Graphics, Patterns and Images (SIBGRAPI) }, 
+  year={2026}, 
+  url={},
+  date={2026-10-02}
+}
+```
